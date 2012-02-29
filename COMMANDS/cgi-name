@@ -1,0 +1,190 @@
+#!/usr/bin/env python
+#coding: utf-8
+#
+# cgi-name ＰＯＳＴメソッドによる変数と値を name 形式に変換する（OpenUSP版）
+# 
+# designed by Nobuaki Tounaka
+# written by Yoshio Katayama
+# 
+# The MIT License
+# 
+# Copyright (C) 2011 Universal Shell Programming Lab.
+# 
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+_usage = "cgi-name [-d<c>][-i<string>] <param_file>"
+_option = "         [--template <html>]"
+_version = "Fri Oct 21 11:26:06 JST 2011"
+_code = "OpenUSP (LINUX/PYTHON2.4/UTF-8)"
+
+import re
+import os
+import sys
+
+def error(msg, *arg):
+	print >> sys.stderr, 'Error[check_need_name] :', msg % arg
+	sys.exit(1)
+
+def usage():
+	print >> sys.stderr, "Usage   :", _usage
+	print >> sys.stderr, "Option  :", _option
+	print >> sys.stderr, "Version :", _version
+	print >> sys.stderr, "         ", _code
+	sys.exit(1)
+
+#
+# 入力ファイルオープン
+#
+def open_file(n, quiet = False):
+	if type(n) == type(0):
+		if n >= len(sys.argv):
+			n = '-'
+		else:
+			n = sys.argv[n]
+	if n == '-':
+		file = sys.stdin
+	else:
+		try:
+			file = open(n)
+		except:
+			if not quiet:
+				error("ファイル '%s' をオープンできません。", n)
+			else:
+				sys.exit(1)
+	return file
+
+#
+# タグのエンドサーチ
+#
+def find_tag(str):
+	if '/>' in str:
+		l = str.index('/>') + 2
+		s = str[:l]
+		if re.search(r'\btype="(radio|checkbox)"', s):
+			return l
+	return None
+
+#
+# name の取り出し
+#
+def get_name(str):
+	r = re.search('name="([^"]*)"', str)
+	return r and r.group(1)
+
+#
+# <html> から name リストの取り出し
+#
+def template(fname):
+	file = open_file(fname)
+	str = file.read()
+	name = []
+	while '<input' in str:
+		str = str[str.index('<input') + 6:]
+		l = find_tag(str)
+		if l:
+			nm = get_name(str[:l])
+			if nm:
+				name += [ nm ]
+			str = str[l:]
+	return name
+
+#
+# name リストから変数を削除する
+#
+def del_name(name, n):
+	n = re.sub(r'_\d+$', '', n)
+	d = []
+	for (i, x) in enumerate(name):
+		if re.sub(r'_%\d+$', '', x) == n:
+			d += [ i ]
+	d.reverse()
+	for i in d:
+		del name[i]
+
+#
+#メイン関数
+#
+if __name__ == '__main__':
+
+	if len(sys.argv) > 1 \
+	 and (sys.argv[1] == '--help' \
+	  or sys.argv[1] == '--version') :
+		usage()
+
+	#
+	# オプション解析
+	#
+	ltmpl = len('--template')
+	name, null, blank = [], '', ' '
+	while len(sys.argv) > 1:
+		if len(sys.argv[1]) < 2 or sys.argv[1][0] != '-':
+			break;
+		if sys.argv[1][:ltmpl] == '--template':
+			if sys.argv[1][ltmpl:] and sys.argv[1][ltmpl] == '=':
+				name += template(sys.argv[1][ltmpl + 1:])
+			elif len(sys.argv) > 2:
+				name += template(sys.argv[2])
+				del sys.argv[2]
+			else:
+				error("--template オプションの引数がありません。")
+		elif sys.argv[1][1] == 'i':
+			if sys.argv[1][2:]:
+				null = sys.argv[1][2:]
+			elif len(sys.argv) <= 2:
+				error("-i オプションの引数がありません。")
+			else:
+				null = sys.argv[2]
+				del(sys.argv[2])
+		elif sys.argv[1][1] == 'd':
+			blank = sys.argv[1][2:]
+		else:
+			c = sys.argv[1][i]
+			if c < '\x21' or c > '\x7e':
+				c = hex(ord(c))
+			print >>sys.stderr, "不明なオプション文字です: %s" % c
+			usage()
+		del(sys.argv[1])
+
+	#
+	# 入力の解析
+	#
+	for token in re.split(r'[&\n\r]+', open_file(1, True).readline()):
+		r = re.match(r'([^=]+)=(.*)', token)
+		if r:
+			print r.group(1),
+			del_name(name, r.group(1))
+			d = r.group(2)
+			d = re.sub(r'%0D%0A', r'\\n', d)
+			d = re.sub(r'%([0-9A-F]{2})', lambda x: chr(int(x.group(1), 16)), d)
+			d = re.sub(r' ', blank, d)
+			d = d or null
+			if d:
+				print d,
+			print
+
+	#
+	# 出力されなかった name を出力
+	#
+	for n in name:
+		print re.sub(r'_%\d+$', '', n),
+		if null:
+			print null,
+		print
+
+	sys.exit(0)

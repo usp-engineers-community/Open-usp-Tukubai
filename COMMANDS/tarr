@@ -1,0 +1,160 @@
+#!/usr/bin/env python
+#coding: utf-8
+# 
+# tarr 縦アレー: フィールドをレコードに分ける （OpenUSP版）
+#
+# designed by Nobuaki Tounaka
+# written by Ryuichi Ueda
+#
+# The MIT License
+#
+# Copyright (C) 2011 Universal Shell Programming Lab.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+_usage = "tarr [num=<n>] [-<m>] <file>"
+_version = "Thu Dec  8 11:22:55 JST 2011"
+_code = "OpenUSP (LINUX/PYTHON2.4+/UTF-8)"
+
+import re
+import os
+import sys
+
+class Operator:
+	#コンストラクタ
+	def __init__(self):
+		self.key_num = 0
+		self.return_num = 1
+		self.value_delimiter = ' '
+
+	def setKeyNum(self,num):
+		self.key_num = int(num)
+		if self.key_num < 0:
+			die("キー範囲指定に誤りがあります。")
+
+	def setReturnNum(self,num):
+		self.return_num = int(num)
+		if self.return_num <= 0:
+			die("数字指定に誤りがあります。")
+
+	def setValueDelimiter(self,str):
+		self.value_delimiter = str.decode('utf8')
+
+	def tokenizer(self,line):
+		if self.value_delimiter == " ":
+			return line.split(' ')
+
+		#値のデリミタが空白でないとき
+
+		#まず空白で区切る
+		sp_tokens = line.split(' ')
+
+		#キーはスペースで区切られている
+		keys = sp_tokens[:self.key_num]
+
+		#値部をもとにもどす
+		tmp_values = " ".join(sp_tokens[self.key_num:])
+		#指定されたデリミタを改行に変換する
+		tmp_values = tmp_values.replace(self.value_delimiter,'\n')
+		#改行で切り離す
+		values = tmp_values.split('\n')
+
+		return keys + values
+		
+
+	def output(self,line):
+
+		tokens = self.tokenizer(line)
+		keys = tokens[0:self.key_num]
+		values = tokens[self.key_num:]
+
+		n = 0
+		while n < len(values):
+			m = n + self.return_num
+			if m >= len(values):
+				m = len(values)
+
+			if len(keys) != 0:
+				outstr = keys + values[n:m]
+			else:
+				outstr = values[n:m]
+
+			print " ".join(outstr).encode('utf_8')
+
+			n += self.return_num
+		
+				
+
+	def debugPrint(self):
+		print self.key_num, self.return_num
+
+def die(message):
+	print >> sys.stderr, "Error[tarr] :", message
+	sys.exit(1)
+
+def printUsage():
+	print >> sys.stderr , "Usage    :", _usage
+	print >> sys.stderr , "Version  :", _version
+	print >> sys.stderr , "          ", _code
+	sys.exit(1)
+
+def prefixEqual(prefix,token):
+	if len(prefix) > len(token):	return False
+	
+	p = token[0:len(prefix)]
+	if p == prefix:	return True
+
+	return False
+
+###########################################
+#メイン関数
+###########################################
+if __name__ == '__main__':
+
+	###########################################
+	#ヘルプ
+	###########################################
+	if len(sys.argv) > 1:
+		if sys.argv[1] == '--help' or sys.argv[1] == '--version':
+			printUsage()
+
+	###########################################
+	#オプションの処理
+	###########################################
+	op = Operator()
+
+	file = sys.stdin
+
+	argc = len(sys.argv)
+	#ファイルか、num=か、-nか
+	for i in range(1, argc):
+		arg = sys.argv[i]
+		if prefixEqual("-d",arg):	op.setValueDelimiter(arg[2:])
+		elif arg == "-":		pass
+		elif prefixEqual("-",arg):	op.setReturnNum(arg[1:])
+		elif prefixEqual("num=",arg):	op.setKeyNum(arg[4:])
+		else:				file = open(arg,'r')
+
+	###########################################
+	#出力
+	###########################################
+	for line in file:
+		#utf_8からユニコードに変換して改行を取る
+		line = unicode(line, "utf_8").rstrip()
+		op.output(line)

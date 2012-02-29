@@ -1,0 +1,294 @@
+#!/usr/bin/env python
+#coding: utf-8
+#
+# mojihame 変数はめ込みツール（OpenUSP版）
+# 
+# designed by Nobuaki Tounaka
+# written by Yoshio Katayama
+#
+# The MIT License
+#
+# Copyright (C) 2011 Universal Shell Programming Lab.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+_usage = "mojihame <template> <data>            (通常)"
+_usage1 = "mojihame -l <label> <template> <data> (行単位)"
+_usage2 = "mojihame -h <label> <template> <data> (階層データ)"
+_option = " -d[c]"
+_version = "Fri Oct 21 11:26:06 JST 2011"
+_code = "OpenUSP (LINUX/PYTHON2.4/UTF-8)"
+
+import re
+import os
+import sys
+
+def error(msg, *arg):
+	print >> sys.stderr, 'Error[mojihame] :', msg % arg
+	sys.exit(1)
+
+def usage():
+	print >> sys.stderr, "Usage   :", _usage
+	print >> sys.stderr, "        :", _usage1
+	print >> sys.stderr, "        :", _usage2
+	print >> sys.stderr, "Option  :", _option
+	print >> sys.stderr, "Version :", _version
+	print >> sys.stderr, "         ", _code
+	sys.exit(1)
+
+class FieldLine:
+	def __init__(self, line, allow_z = False):
+		self.__allow_zero = allow_z
+		line = line.rstrip('\n')
+		self.__fields = [ line ]
+		self.__fields += [ x for x in line.split(' ') if x ]
+
+	def size(self):
+		return len(self.__fields) - 1
+
+	def getFieldNum(self, key):
+		if type(key) == type(0):
+			return key
+		if re.match(r'\d+$', key):
+			key = int(key)
+		elif key == 'NF':
+			key = self.size()
+		else:
+			key = self.size() - int(key[3:])
+			if key <= 0:
+				error("NF-x の x が大きすぎます。")
+		if key < 0:
+			error("フィールド番号が負です。")
+		if key == 0 and not self.__allow_zero:
+			error("フィールド番号が０です。")
+		if key > self.size():
+			error("フィールド番号が大きすぎます。")
+		return key
+
+	def getField(self, s, e = None):
+		s = self.getFieldNum(s)
+		if e == None:
+			e = s
+		else:
+			e = self.getFieldNum(e)
+		if s <= e:
+			return ' '.join(self.__fields[s : e + 1])
+		else:
+			t = self.__fields[e : s + 1]
+			t.reverse()
+			return ' '.join(t)
+
+#
+# 入力ファイルオープン
+#
+def open_file(n, mode = 'r'):
+	if n >= len(sys.argv) or sys.argv[n] == '-':
+		file = sys.stdin
+	else:
+		try:
+			file = open(sys.argv[n], mode)
+		except:
+			error("ファイル %s をオープンできません。", sys.argv[n])
+	return file
+
+#
+# 置換文字列の正規化
+#
+def canon(s, null):
+	r = re.compile(r'(^|[^\\])_')
+	s = re.sub(r'\\_', '_', r.sub(r'\1 ', r.sub(r'\1 ', s)))
+	if s == null:
+		return ''
+	else:
+		return s
+
+#
+# 置換して出力
+#
+def repl_put(body, data):
+	data = [ canon(x, null) for x in re.split(r'[ \n]+', data) if x ]
+	sys.stdout.write(body[0])
+	for x in body[1:]:
+		r = re.match(r'(\d*)(.*)', x, re.DOTALL)
+		n = int(r.group(1) or 0)
+		if n:
+			sys.stdout.writelines(data[n - 1:n])
+		else:
+			sys.stdout.write('%' + r.group(1))
+		sys.stdout.write(r.group(2))
+
+#
+# キー位置を求める
+#
+def keylist(tmpl):
+	return [ int(x) for x in re.findall(r'%(\d*[1-9]0*)', ''.join(tmpl)) ]
+
+#
+# キーの抽出
+#
+def getkey(data, keylist):
+	data = [ x for x in re.split(r'[ \n]+', data) if x ]
+	data = [ data[x - x:x] and data[x - x:x][0] or '' for x in keylist ]
+	return ' '.join(data)
+
+#
+# データをキーで分割
+#
+def split_data(data, keylist):
+	oldkey = None
+	block = []
+	for d in data:
+		key = getkey(d, keylist)
+		if key != oldkey:
+			block += [ [] ]
+			oldkey = key
+		block[-1] += [ d ]
+	return block
+
+#
+# 階層データ
+#
+def do_hier(tmpl, label, data, top):
+	lab = [ label in x for x in tmpl ]
+	if not(max(lab)):
+		if top:
+			error("<template> ラベル '%s' がありません。", label);
+		body = ''.join(tmpl).split('%')
+		for d in data:
+			repl_put(body, d)
+		return
+	ls = lab.index(True)
+	lab.reverse()
+	le = len(lab) - 1 - lab.index(True)
+	if top:
+		sys.stdout.writelines(tmpl[:ls])
+		do_hier(tmpl[ls + 1:le], label, data, False)
+		sys.stdout.writelines(tmpl[le + 1:])
+	else:
+		head = tmpl[:ls]
+		body = tmpl[ls + 1:le]
+		tail = tmpl[le + 1:]
+		for blk in split_data(data, keylist(head + tail)):
+			repl_put(''.join(head).split('%'), blk[0])
+			# sys.stdout.writelines(blk)  XXX
+			do_hier(body, label, blk, False)
+			repl_put(''.join(tail).split('%'), blk[0])
+
+#
+#メイン関数
+#
+if __name__ == '__main__':
+
+	if len(sys.argv) <= 1 \
+	 or sys.argv[1] == '--help' \
+	 or sys.argv[1] == '--version':
+		usage()
+
+	#
+	# オプション
+	#  d::l:: が使えないので getopt は使えない
+	#
+	mode, label, null = '', '', '@'
+	while len(sys.argv) > 1:
+		if sys.argv[1][:2] == '-d':
+			null = sys.argv[1][2:]
+			del(sys.argv[1])
+		elif sys.argv[1][:2] == '-h':
+			if len(sys.argv[1]) > 2:
+				label = sys.argv[1][2:]
+			elif len(sys.argv) > 2:
+				label = sys.argv[2]
+				del(sys.argv[2])
+			else:
+				usage()
+			if not label:
+				error("ラベルが空文字列です。")
+			mode += 'h'
+			del(sys.argv[1])
+		elif sys.argv[1][:2] == '-l' or sys.argv[1] == '-r':
+			label = sys.argv[1][2:]
+			mode += 'l'
+			del(sys.argv[1])
+		elif sys.argv[1][0] == '-' and len(sys.argv[1]) > 1:
+			error("不明なオプション(%s)です。", sys.argv[1])
+		else:
+			break
+	if len(mode) > 1:
+		error("-l/-r/-h は１回しか指定できません。")
+
+	if len(sys.argv) < 2:
+		usage()
+
+	#
+	# 入力ファイルオープン
+	#
+	tmpl = open_file(1)
+	data = open_file(2)
+
+	#
+	# 通常
+	#
+	if mode == '':
+		repl_put(tmpl.read().split('%'), data.read())
+
+	#
+	# 行単位
+	#
+	elif mode == 'l':
+		t = tmpl.readlines()
+		if label:
+			lab = [ label in x for x in t ]
+			#
+			# ラベルが <template> にない場合はそのまま出力
+			#
+			if not max(lab):
+				sys.stdout.writelines(t)
+				sys.exit(0)
+			n = lab.index(True)
+			head = t[:n]
+			if max(lab[n + 1:]):
+				m = lab[n + 1:].index(True)
+				body = t[n + 1: n + m + 1]
+				tail = t[n + m + 2:]
+			else:
+				body = t[n + 1:]
+				tail = []
+		else:
+			head, body, tail = [], t, []
+		body = ''.join(body).split('%')
+		sys.stdout.writelines(head)
+		for d in data:
+			repl_put(body, d)
+		sys.stdout.writelines(tail)
+
+	#
+	# 階層データ
+	#
+	else:
+		t = tmpl.readlines()
+		lab = [ label in x for x in t ]
+		if not(max(lab)):
+			error("<template> ラベル '%s' がありません。", label);
+		ls = lab.index(True)
+		lab.reverse()
+		le = len(lab) - 1 - lab.index(True)
+		key = keylist(t[:ls] + t[le + 1:])
+		do_hier(t, label, data.readlines(), True)
+
+	sys.exit(0)

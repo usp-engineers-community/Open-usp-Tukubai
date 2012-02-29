@@ -1,0 +1,159 @@
+juni(USP)
+
+＜名前＞
+juni : 同一キー内での順位を出力する
+
+＜書式＞
+sage   : juni [<k1> <k2>] <file>
+        : juni -h [<k1> <k2>] <file>
+Version : Thu Dec 15 13:46:38 JST 2011
+
+＜説明＞
+第<k1>フィールドから第<k2>フィールドまでをキーフィールドとして、
+同一キーレコード内での順位をレコード先頭に挿入します。
+<k1> <k2>を指定しないときは、すべてのレコードが同一キーレコード
+とみなします。この場合は単純にレコード先頭に行番号を挿入するのと
+同じになります。
+
+-h オプションを指定した場合、各キーフィールドの順位を階層的に
+出力します。
+
+<file>を指定しない、あるいは、"-" の時には標準入力ファイルを期待
+します。
+
+＜例１＞
+単純に行番号を付番する。
+$ cat data
+0000007 セロリ 100
+0000017 練馬大根 95
+0000021 温州みかん 80
+0000025 プリンスメロン 70
+0000030 じゃが芋 30
+
+$ juni data
+1 0000007 セロリ 100
+2 0000017 練馬大根 95
+3 0000021 温州みかん 80
+4 0000025 プリンスメロン 70
+5 0000030 じゃが芋 30
+
+＜例２＞
+キーが関係する場合、キーの開始フィールドと終了フィールドを
+指定して、同一キーをもつレコードブロック内で順位を付番する。
+$ cat data
+関東 パスタ 100
+関東 おにぎり 90
+関東 パン 40
+九州 おにぎり 150
+九州 パン 140
+九州 パスタ 100
+
+$ juni 1 1 data
+1 関東 パスタ 100
+2 関東 おにぎり 90
+3 関東 パン 40
+1 九州 おにぎり 150
+2 九州 パン 140
+3 九州 パスタ 100
+
+＜例３＞
+-h オプションを指定した場合、各キーフィールドの順位を
+階層的に出力します。
+$ cat data
+A A1 A11 A111
+A A1 A11 A112
+A A1 A12 A121
+A A1 A12 A122
+A A2 A21 A211
+A A2 A21 A212
+A A2 A22 A221
+A A2 A22 A222
+B B1 B11 B111
+B B1 B11 B112
+B B1 B12 B121
+B B1 B12 B122
+B B2 B21 B211
+B B2 B21 B212
+B B2 B22 B221
+B B2 B22 B222
+
+$ juni -h 1 3 data
+1 1 1 A A1 A11 A111
+1 1 1 A A1 A11 A112
+1 1 2 A A1 A12 A121
+1 1 2 A A1 A12 A122
+1 2 1 A A2 A21 A211
+1 2 1 A A2 A21 A212
+1 2 2 A A2 A22 A221
+1 2 2 A A2 A22 A222
+2 1 1 B B1 B11 B111
+2 1 1 B B1 B11 B112
+2 1 2 B B1 B12 B121
+2 1 2 B B1 B12 B122
+2 2 1 B B2 B21 B211
+2 2 1 B B2 B21 B212
+2 2 2 B B2 B22 B221
+2 2 2 B B2 B22 B222
+
+＜例４＞
+-h オプションでキーを指定しないと、
+第１フィールド〜最終フィールドまでを
+キーフィールドとみなします。
+
+$ juni -h data
+1 1 1 1 A A1 A11 A111
+1 1 1 2 A A1 A11 A112
+1 1 2 1 A A1 A12 A121
+1 1 2 2 A A1 A12 A122
+1 2 1 1 A A2 A21 A211
+1 2 1 2 A A2 A21 A212
+1 2 2 1 A A2 A22 A221
+1 2 2 2 A A2 A22 A222
+2 1 1 1 B B1 B11 B111
+2 1 1 2 B B1 B11 B112
+2 1 2 1 B B1 B12 B121
+2 1 2 2 B B1 B12 B122
+2 2 1 1 B B2 B21 B211
+2 2 1 2 B B2 B21 B212
+2 2 2 1 B B2 B22 B221
+2 2 2 2 B B2 B22 B222
+
+＜備考＞
+rank(USP) コマンド
+
+＜公開の経緯と商用利用について＞
+
+ユニバーサル・シェル・プログラミング研究所（USP研究所）では、弊社の哲学に基き
+コマンドとシェルスクリプトを利用した独自のシステム開発や
+シェルプログラミングの普及・教育活動を行っています。
+
+Open usp Tukubaiは、シェルを利用したデータ処理の可能性を体感していただくために、
+商用版Tsukubai（有償）から利用頻度の高いものを厳選し、
+一部の機能をオープンソースソフトウェアとして公開したものです。
+
+Open usp Tukubaiのサポート（有償）や、商用版Tukubaiにご興味のある方は、
+以下のメールアドレスまでお問い合わせください。
+info@usp-lab.com
+
+
+# The MIT License
+#
+# Copyright (c) 2011 Universal Shell Programming Lab.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.

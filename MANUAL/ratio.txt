@@ -1,0 +1,157 @@
+ratio(USP)
+
+＜名前＞
+ratio : 構成比を求める。
+
+＜書式＞
+Usage  : ratio key=<key> <file>
+Option : ref=<ref> -- 参照キーの指定
+         -<s> ------- 小数点以下の精度
+         +<n>h ------ 先頭<n>行をヘッダーとみなす
+Version : Thu Dec 15 13:46:38 JST 2011
+
+＜説明＞
+引数のファイル又は標準入力のテキストデータの、"key="で指定したフィールドについて
+全レコード(行)の合計にしめる各フィールドの値の構成比を算出し、次のフィールドに
+挿入して出力します。
+
+＜例１＞
+(元データ：data) 店 日付 売数 客数
+$ cat data
+a店 1日目 103  62
+b店 1日目 210 113
+c店 1日目 81   52
+d店 1日目 75   48
+e店 1日目 211 140
+
+売数(第３フィールド)の店別構成比を求めて売数の次のフィールドに挿入します。
+$ ratio key=3 data | keta 
+a店 1日目 103 15.1  62
+b店 1日目 210 30.9 113
+c店 1日目  81 11.9  52
+d店 1日目  75 11.0  48
+e店 1日目 211 31.0 140
+              ↑構成比
+
+＜例２＞ "ref" オプション
+"ref="で指定したフィールドをキーフィールドとし、キーフィールドの値が同じレコード
+の中で構成比を計算して出力します。
+尚、キーフィールドはあらかじめソートされていることが条件となります。
+
+(元データ：data) 店 日付 売数 客数
+$ cat data
+a店 1日目 103  62
+a店 2日目 157  94
+a店 3日目  62  30
+b店 1日目 210 113
+b店 2日目 237 121
+b店 3日目 150  82
+c店 1日目  81  52
+c店 2日目  76  49
+c店 3日目  38  21
+d店 1日目  75  48
+d店 2日目  72  42
+d店 3日目  34  19
+e店 1日目 211 140
+e店 2日目 149  91
+e店 3日目 120  73
+
+各日(第２フィールド)毎に店別の売数(第３フィールド)の構成比を求めます。
+$ sort -k2,2 -k1,1 data | ratio ref=2 key=3 | keta
+a店 1日目 103 15.1  62  ----
+b店 1日目 210 30.9 113   ↑
+c店 1日目  81 11.9  52   1日目の中での構成比
+d店 1日目  75 11.0  48   ↓
+e店 1日目 211 31.0 140  ----
+a店 2日目 157 22.7  94  ----
+b店 2日目 237 34.3 121   ↑
+c店 2日目  76 11.0  49   2日目の中での構成比
+d店 2日目  72 10.4  42   ↓
+e店 2日目 149 21.6  91  ----
+a店 3日目  62 15.3  30  ----
+b店 3日目 150 37.1  82   ↑
+c店 3日目  38  9.4  21   3日目の中での構成比
+d店 3日目  34  8.4  19   ↓
+e店 3日目 120 29.7  73  ----
+              ↑構成比のフィールド
+
+＜例３＞ "+h" オプション
+"+<n>h" オプションを付けると先頭の<n>レコードを飛ばして、構成比を計算します。
+先頭行に、既に項目名などのヘッダーが付与されているデータを計算する場合などに使用
+します。新たに増える構成比のフィールドのヘッダーは "@" となります。
+
+(元データ：data)
+$ cat data
+店   日付 売数 客数  <- 項目名のヘッダーがある。
+a店 1日目  103   62
+b店 1日目  210  113
+c店 1日目   81   52
+d店 1日目   75   48
+e店 1日目  211  140
+
+先頭行を飛ばして売数(第３フィールド)の店別構成比を求めて売数の次のフィールドに
+挿入します。
+$ ratio +h key=3 data | keta
+店   日付 売数    @ 客数       <- 先頭行はそのまま(計算しない)
+a店 1日目  103 15.1   62
+b店 1日目  210 30.9  113
+c店 1日目   81 11.9   52
+d店 1日目   75 11.0   48
+e店 1日目  211 31.0  140
+              ↑構成比
+
+＜例４＞ "-<s>" オプション
+-<数値> で構成比の小数点以下の精度を指定できます。
+
+(元データ：data) 店 日付 売数 客数
+$ cat data
+a店 1日目 103  62
+b店 1日目 210 113
+c店 1日目 81   52
+d店 1日目 75   48
+e店 1日目 211 140
+
+売数(第３フィールド)の店別構成比を小数点３桁まで求めます。
+$ ratio -3 key=3 data | keta 
+a店 1日目 103 15.147  62
+b店 1日目 210 30.882 113
+c店 1日目  81 11.912  52
+d店 1日目  75 11.029  48
+e店 1日目 211 31.029 140
+
+＜公開の経緯と商用利用について＞
+
+ユニバーサル・シェル・プログラミング研究所（USP研究所）では、弊社の哲学に基き
+コマンドとシェルスクリプトを利用した独自のシステム開発や
+シェルプログラミングの普及・教育活動を行っています。
+
+Open usp Tukubaiは、シェルを利用したデータ処理の可能性を体感していただくために、
+商用版Tsukubai（有償）から利用頻度の高いものを厳選し、
+一部の機能をオープンソースソフトウェアとして公開したものです。
+
+Open usp Tukubaiのサポート（有償）や、商用版Tukubaiにご興味のある方は、
+以下のメールアドレスまでお問い合わせください。
+info@usp-lab.com
+
+
+# The MIT License
+#
+# Copyright (c) 2011 Universal Shell Programming Lab.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.

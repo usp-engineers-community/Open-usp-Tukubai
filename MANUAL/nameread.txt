@@ -1,0 +1,109 @@
+nameread(USP)
+
+＜名前＞
+nameread : name 形式のファイルを読む (USP-TOOL)
+
+＜書式＞
+Usage   : nameread [-el] <name> <namefile>
+Option  : -d<c>       空白を置換
+        : -i<string>  ヌルデータの初期化
+Version : Thu Dec 15 13:46:38 JST 2011
+
+＜説明＞
+name 形式ファイルから name を指定して値を読みます。
+<namefile> が "-" あるいは指定が無いときは、
+標準入力ファイルを取り込みます。
+-l オプションで name も合わせて出力します。
+-e オプションで正規表現を指定できます。
+-d オプションで空白データを置換する文字を指定します。
+(指定がない場合は空白データを削除します)
+-i オプションでヌルデータの初期化を行います。 
+
+＜例＞
+$ cat namefile
+A usp
+B usp laboratory
+C
+
+# 通常の出力
+$ nameread A namefile
+usp
+
+# name 形式のデータは空白を含む
+$ nameread B namefile
+usp laboratory
+
+# 空白を変換したいとき
+$ nameread -d_ B namefile
+usp_laboratory
+
+# 空白を削除したいとき
+$ nameread -d B namefile
+usplaboratory
+
+# 無い値を読むと空行が出力
+$ nameread C namefile    
+
+# ヌルデータを初期化したいとき 
+$ namread -i @@@ C namefile
+@@@
+
+# 無い名前を読むと何も出力しない(-i オプションも効かない)
+$ nameread D namefile    
+$
+
+# ラベルと一緒に出力するとき
+$ nameread -l A namefile
+A usp
+
+# 正規表現指定
+$ cat namefile2
+A01 1
+A02 2
+A03 3
+A10 5
+$ nameread -e '^A0[0-9]$' namefile2
+1
+2
+3
+$ nameread -el '^A0[0-9]$' namefile2
+A01 1
+A02 2
+A03 3
+
+＜公開の経緯と商用利用について＞
+
+ユニバーサル・シェル・プログラミング研究所（USP研究所）では、弊社の哲学に基き
+コマンドとシェルスクリプトを利用した独自のシステム開発や
+シェルプログラミングの普及・教育活動を行っています。
+
+Open usp Tukubaiは、シェルを利用したデータ処理の可能性を体感していただくために、
+商用版Tsukubai（有償）から利用頻度の高いものを厳選し、
+一部の機能をオープンソースソフトウェアとして公開したものです。
+
+Open usp Tukubaiのサポート（有償）や、商用版Tukubaiにご興味のある方は、
+以下のメールアドレスまでお問い合わせください。
+info@usp-lab.com
+
+
+# The MIT License
+#
+# Copyright (c) 2011 Universal Shell Programming Lab.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.

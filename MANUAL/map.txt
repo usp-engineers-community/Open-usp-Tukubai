@@ -1,0 +1,283 @@
+map(USP)
+
+＜名前＞
+map : 縦型ファイルを縦キー/横キー形式のマトリクス型ファイルに変換
+
+＜書式＞
+Usage   : map       [-<l>] num=<n>x<m> <file>
+        : map +yarr [-<l>] num=<n>x<m> <file>
+        : map +arr  [-<l>] num=<n>x<m> <file>
+Option  : -m<c>
+        : -n
+Version : Sat Dec 10 21:04:17 JST 2011
+          OpenUSP (LINUX/PYTHON2.4/UTF-8)
+
+＜説明＞
+引数のファイル又は標準入力のテキストデータが、縦キーフィールド<n>個、
+横キーフィールド<m>個（未指定時 m=1)、残りがデータフィールドであると
+いう前提で、データをマトリクス状に並べ直します。
+マトリクスにした場合データの欠落が発生する場合は "0" で補完します。
+この文字は -m オプションで変更できます。
+
+＜例１＞
+縦型データを map する。num=<n> の値は縦キーのフィールド数を表す。
+$ cat data
+001 a店 01/01 103
+001 a店 01/02 157
+002 b店 01/01 210
+002 b店 01/02 237
+↑       ↑     ↑
+縦KEY   横KEY データ部 
+num=2  必ず幅１
+
+$ map num=2 data | keta 
+  *   * 01/01 01/02  ← 横KEY
+001 a店   103   157
+002 b店   210   237
+↑ 
+縦KEY
+
+＜例２＞
+データに欠落がある場合、データが存在しない場所に値0が補完されます。
+$ cat data
+001 a店 01/01 103
+002 b店 01/02 237
+
+$ map num=2 data | keta 
+  *   * 01/01 01/02
+001 a店   103     0
+002 b店     0   237
+
+＜例３＞
+データ部が複数列ある場合は、複数行にマッピングします。
+この時、各行は、A B C・・・と順にインデックスが自動的に付加されます。
+
+$ cat data
+縦KEY＝店舗 横KEY＝日 データ＝売数、客数の２列の場合
+a店 1日目 103 62
+a店 2日目 157 94
+a店 3日目 62 30
+a店 4日目 131 84
+       ・
+       ・
+d店 6日目 98 69
+d店 7日目 101 90
+↑     ↑   <---->
+縦KEY 横KEY データ部 
+
+$ map num=1 data | keta 
+  * * 1日目 2日目 3日目 4日目 5日目 6日目 7日目  ← 横KEY
+a店 A   103   157    62   131   189   350   412
+a店 B    62    94    30    84   111    20   301
+b店 A   210   237   150   198   259   421   589
+b店 B   113   121    82   105   189   287   493
+c店 A    81    76    38    81    98   109   136
+c店 B    52    49    21    48    61    91   110
+d店 A    75    72    34    74    91    98   101
+d店 B    48    42    19    43    51    69    90
+↑  ↑ 
+縦 インデックスを付与 (A-Z)
+KEY
+
+＜ワンポイント＞
+例２の結果をさらに"sed"コマンドで"A"を"売れ数"、"B"を"客数"に置換して
+あげると以下の様な表になります。
+
+$ map num=1 data | sed -e 's/A/売数/1' -e 's/B/客数/1' | keta 
+  *    * 1日目 2日目 3日目 4日目 5日目 6日目 7日目
+a店 売数   103   157    62   131   189   350   412
+a店 客数    62    94    30    84   111    20   301
+b店 売数   210   237   150   198   259   421   589
+b店 客数   113   121    82   105   189   287   493
+c店 売数    81    76    38    81    98   109   136
+c店 客数    52    49    21    48    61    91   110
+d店 売数    75    72    34    74    91    98   101
+d店 客数    48    42    19    43    51    69    90
+
+＜例５＞
+"+yarr" オプションは、データ部の複数列を横に展開するオプションです。
+
+$ map +yarr num=1 data | keta 
+  * 1日目 1日目 2日目 2日目 3日目 3日目  -- 7日目 7日目
+  *     a     b     a     b     a     b  --     a     b  <-- 自動的に
+a店   103    62   157    94    62    30  --   412   301      付与(a-z)
+b店   210   113   237   121   150    82  --   589   493
+c店    81    52    76    49    38    21  --   136   110
+d店    75    48    72    42    34    19  --   101    90
+
+$ map +yarr num=1 data | sed -e '2s/a/売数/g' -e '2s/b/客数/g' | keta 
+  * 1日目 1日目 2日目 2日目 3日目 3日目  -- 7日目 7日目
+  *  売数  客数  売数  客数  売数  客数  --  売数  客数 
+a店   103    62   157    94    62    30  --   412   301 
+b店   210   113   237   121   150    82  --   589   493
+c店    81    52    76    49    38    21  --   136   110
+d店    75    48    72    42    34    19  --   101    90
+
+横インデックスが不要な場合は、"+arr" オプションを使います。
+
+$ map +yarr num=1 data | keta
+  * 1日目 1日目 2日目 2日目 3日目 3日目  -- 7日目 7日目
+a店   103    62   157    94    62    30  --   412   301
+b店   210   113   237   121   150    82  --   589   493
+c店    81    52    76    49    38    21  --   136   110
+d店    75    48    72    42    34    19  --   101    90
+
+＜例６＞
+map は -m オプションでダミー文字を指定できます。(デフォルトは "0" )
+
+$ cat data
+A a 1
+A b 2
+B a 4
+
+$ map -m@ num=1 data
+* a b
+A 1 2
+B 4 @
+
+＜例７＞
+-<数値> オプションを使うと、<数値>フィールド分ずつ map します。<数値>
+はデータ部のフィールド数の約数でなければなりません。
+
+$ cat data
+X x 1 2 3 4 5 6
+X y 1 2 3 4 5 6
+Y x 1 2 3 4 5 6
+Y y 1 2 3 4 5 6
+    ----- -----
+      3     3
+
+$ map -3 num=1 data  <-- ３フィールド分ずつ map する
+* * x x y y
+* * a b a b
+X A 1 4 1 4
+X B 2 5 2 5
+X C 3 6 3 6
+Y A 1 4 1 4
+Y B 2 5 2 5
+Y C 3 6 3 6
+
+$ map +yarr -3 num=1 data  <-- +yarr の場合、３フィールドずつ折り返します
+* * x x x y y y
+* * a b c a b c
+X A 1 2 3 1 2 3
+X B 4 5 6 4 5 6
+Y A 1 2 3 1 2 3
+Y B 4 5 6 4 5 6
+
+＜例８＞
+num=<n>x<m> で縦キー<n>個、横キー<m>個にすることができます。
+横キーはヘッダー<m>行に展開されます。
+
+$ cat data
+X1 Y1 Z1 1 8
+X1 Y1 Z2 2 7
+X1 Y2 Z1 3 6
+X1 Y2 Z2 4 5
+X2 Y1 Z1 5 4
+X2 Y1 Z2 6 3
+X2 Y2 Z1 7 2
+X2 Y2 Z2 8 1
+
+$ map num=1x2 data 
+*  * Y1 Y1 Y2 Y2     <-- 横ヘッダーが２行になる
+*  * Z1 Z2 Z1 Z2
+X1 A  1  2  3  4
+X1 B  8  7  6  5
+X2 A  5  6  7  8
+X2 B  4  3  2  1
+
+$ map +yarr num=1x2 data
+*  Y1 Y1 Y1 Y1 Y2 Y2 Y2 Y2   <-- 横ヘッダーが２行になる
+*  Z1 Z1 Z2 Z2 Z1 Z1 Z2 Z2
+*  a  b  a  b  a  b  a  b 
+X1 1  8  2  7  3  6  4  5
+X2 5  4  6  3  7  2  8  1
+
+＜例９＞
+-<l> オプションと num=<n>x<m> の組み合わせ
+$ cat data3
+X1 Y1 Z1 1 8 4 5 6 7
+X1 Y1 Z2 2 7 4 5 6 7
+X1 Y2 Z1 3 6 4 5 6 7
+X1 Y2 Z2 4 5 4 5 6 7
+X2 Y1 Z1 5 4 4 5 6 7
+X2 Y1 Z2 6 3 4 5 6 7
+X2 Y2 Z1 7 2 4 5 6 7
+X2 Y2 Z2 8 1 4 5 6 7
+
+$ map -3 num=1x2 data3
+ * * Y1 Y1 Y1 Y1 Y2 Y2 Y2 Y2
+ * * Z1 Z1 Z2 Z2 Z1 Z1 Z2 Z2
+ * *  a  b  a  b  a  b  a  b
+X1 A  1  5  2  5  3  5  4  5
+X1 B  8  6  7  6  6  6  5  6
+X1 C  4  7  4  7  4  7  4  7
+X2 A  5  5  6  5  7  5  8  5
+X2 B  4  6  3  6  2  6  1  6
+X2 C  4  7  4  7  4  7  4  7
+
+$ map +yarr -3 num=1x2 data3
+ * * Y1 Y1 Y1 Y1 Y1 Y1 Y2 Y2 Y2 Y2 Y2 Y2
+ * * Z1 Z1 Z1 Z2 Z2 Z2 Z1 Z1 Z1 Z2 Z2 Z2
+ * *  a  b  c  a  b  c  a  b  c  a  b  c
+X1 A  1  8  4  2  7  4  3  6  4  4  5  4
+X1 B  5  6  7  5  6  7  5  6  7  5  6  7
+X2 A  5  4  4  6  3  4  7  2  4  8  1  4
+X2 B  5  6  7  5  6  7  5  6  7  5  6  7
+
+＜例１０＞
+-n オプションを指定すると、付加するインデックスが数値になります。この
+場合はインデックスが 26個に制限されないので、データ部が多い場合もマッ
+プすることができます。
+
+$ cat data4
+X1 Y1 A1 A2 A3 A4 -- A99 A100
+X1 Y2 B1 B2 B3 B4 -- B99 B100
+X1 Y3 C1 C2 C3 C4 -- C99 C100
+
+$ map -n num=1 data4
+ *  *   Y1   Y2   Y3
+X1  1   A1   B1   C1
+X1  2   A2   B2   C2
+       ・
+       ・
+X1 29  A99  B99  C99
+X1 30 A100 B100 C100
+
+＜公開の経緯と商用利用について＞
+
+ユニバーサル・シェル・プログラミング研究所（USP研究所）では、弊社の哲学に基き
+コマンドとシェルスクリプトを利用した独自のシステム開発や
+シェルプログラミングの普及・教育活動を行っています。
+
+Open usp Tukubaiは、シェルを利用したデータ処理の可能性を体感していただくために、
+商用版Tsukubai（有償）から利用頻度の高いものを厳選し、
+一部の機能をオープンソースソフトウェアとして公開したものです。
+
+Open usp Tukubaiのサポート（有償）や、商用版Tukubaiにご興味のある方は、
+以下のメールアドレスまでお問い合わせください。
+info@usp-lab.com
+
+
+# The MIT License
+#
+# Copyright (c) 2011 Universal Shell Programming Lab.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.

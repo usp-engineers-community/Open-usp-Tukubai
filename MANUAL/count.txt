@@ -1,0 +1,78 @@
+count(USP)
+
+＜名前＞
+count :  同じキーをもつ行数をカウントする。
+
+＜書式＞
+Usage   : count <k1> <k2> <file>
+Version : Thu Dec 15 13:46:38 JST 2011
+
+＜説明＞
+引数のファイル又は標準入力のテキストデータの指定したキーフィールドの値が同じ行
+(レコード)の数を出力するツールです。キーとなるフィールドは開始となるフィールド
+"key1"から終了となるフィールド"key2"の形で指定します。
+
+＜例１＞
+(元データ)
+$ cat data
+01 埼玉県 01 さいたま市 91 59 20 76 54
+01 埼玉県 02 川越市 46 39 8 5 21
+01 埼玉県 03 熊谷市 82 0 23 84 10
+02 東京都 04 新宿区 30 50 71 36 30
+02 東京都 05 中央区 78 13 44 28 51
+02 東京都 06 港区 58 71 20 10 6
+02 東京都 07 千代田区 39 22 13 76 08
+02 東京都 08 八王子市 82 79 16 21 80
+02 東京都 09 立川市 50 2 33 15 62
+03 千葉県 10 千葉市 52 91 44 9 0
+03 千葉県 11 市川市 60 89 33 18 6
+03 千葉県 12 柏市 95 60 35 93 76
+04 神奈川県 13 横浜市 92 56 83 96 75
+04 神奈川県 14 川崎市 30 12 32 44 19
+04 神奈川県 15 厚木市 48 66 23 71 24
+04 神奈川県 16 小田原市 45 21 24 39 03
+
+県毎の市の数を数えて出力します。
+$ count 1 2 data > data2
+$ cat data2
+01 埼玉県 3
+02 東京都 6
+03 千葉県 3
+04 神奈川県 4
+
+＜公開の経緯と商用利用について＞
+
+ユニバーサル・シェル・プログラミング研究所（USP研究所）では、弊社の哲学に基き
+コマンドとシェルスクリプトを利用した独自のシステム開発や
+シェルプログラミングの普及・教育活動を行っています。
+
+Open usp Tukubaiは、シェルを利用したデータ処理の可能性を体感していただくために、
+商用版Tsukubai（有償）から利用頻度の高いものを厳選し、
+一部の機能をオープンソースソフトウェアとして公開したものです。
+
+Open usp Tukubaiのサポート（有償）や、商用版Tukubaiにご興味のある方は、
+以下のメールアドレスまでお問い合わせください。
+info@usp-lab.com
+
+
+# The MIT License
+#
+# Copyright (c) 2011 Universal Shell Programming Lab.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.

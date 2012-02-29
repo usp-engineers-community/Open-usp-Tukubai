@@ -1,0 +1,85 @@
+divsen(USP)
+
+＜名前＞
+divsen : 指定フィールドを千で割る
+
+＜書式＞
+Usage : divsen [-s] <f1> <f2> ... <file>
+Version : Thu Dec 15 13:46:38 JST 2011 
+
+＜説明＞
+引数のファイル又は標準入力のテキストデータの数値を千で除算し
+出力するツールです。千単位の表を作成する場合などに使用します。
+引数で千で除算する各フィールドを順に指定します。尚、小数点以下
+の数値は四捨五入されます。
+-s オプションを指定すると、四捨五入せず、小数点の値をそのまま
+出力します。
+
+＜例１＞
+$ cat data
+20060201 296030 6710000
+20060202 1300100 3130000
+20060203 309500 20100
+20060204 16300 300100
+20060205 41000 210000
+20060206 771100 400000
+
+２フィールド目と３フィールド目を千で除算します。
+$ divsen 2 3 data
+20060201 296 6710
+20060202 1300 3130
+20060203 310 20
+20060204 16 300
+20060205 41 210
+20060206 771 400
+
+-s をつけると四捨五入せず、小数以下まで正しく計算します。
+marume コマンドなどで後加工します。
+$ divsen -s 2 3 data
+20060201 296.030 6710.000
+20060202 1300.100 3130.000
+20060203 309.500 20.100
+20060204 16.300 300.100
+20060205 41.000 210.000
+20060206 771.100 400.000
+
+＜ワンポイント＞
+"divsen"された結果をさらにパイプでつないで"divsen"を実行すると、
+百万単位のデータを作成することができます。
+
+＜公開の経緯と商用利用について＞
+
+ユニバーサル・シェル・プログラミング研究所（USP研究所）では、弊社の哲学に基き
+コマンドとシェルスクリプトを利用した独自のシステム開発や
+シェルプログラミングの普及・教育活動を行っています。
+
+Open usp Tukubaiは、シェルを利用したデータ処理の可能性を体感していただくために、
+商用版Tsukubai（有償）から利用頻度の高いものを厳選し、
+一部の機能をオープンソースソフトウェアとして公開したものです。
+
+Open usp Tukubaiのサポート（有償）や、商用版Tukubaiにご興味のある方は、
+以下のメールアドレスまでお問い合わせください。
+info@usp-lab.com
+
+
+# The MIT License
+#
+# Copyright (c) 2011 Universal Shell Programming Lab.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.

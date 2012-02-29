@@ -1,0 +1,143 @@
+#!/usr/bin/env python
+#coding: utf-8
+#
+# nameread name 形式のファイルを読む（OpenUSP版）
+# 
+# designed by Nobuaki Tounaka
+# written by Yoshio Katayama
+#
+# The MIT License
+#
+# Copyright (C) 2011 Universal Shell Programming Lab.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+_usage = "nameread [-el] <name> <name_file>"
+_option = "-d<c>       空白を置換"
+_option1 = "-i<string>  ヌルデータの初期化"
+_version = "Fri Oct 21 11:26:06 JST 2011"
+_code = "OpenUSP (LINUX/PYTHON2.4/UTF-8)"
+
+import warnings
+warnings.filterwarnings("ignore", ".* regex .*", DeprecationWarning, __name__, append=1)
+
+import re
+import os
+import sys
+import regex
+from regex_syntax import *
+
+def error(msg, *arg):
+	print >> sys.stderr, 'Error[check_need_name] :', msg % arg
+	sys.exit(1)
+
+def usage():
+	print >> sys.stderr, "Usage   :", _usage
+	print >> sys.stderr, "Option  :", _option
+	print >> sys.stderr, "Option  :", _option1
+	print >> sys.stderr, "Version :", _version
+	print >> sys.stderr, "         ", _code
+	sys.exit(1)
+
+#
+# 入力ファイルオープン
+#
+def open_file(n, mode = 'r'):
+	if n >= len(sys.argv) or sys.argv[n] == '-':
+		file = sys.stdin
+	else:
+		try:
+			file = open(sys.argv[n], mode)
+		except:
+			error("ファイル '%s' をオープンできません。", sys.argv[n])
+	return file
+
+#
+#メイン関数
+#
+if __name__ == '__main__':
+
+	#
+	# ( ) | をメタキャラクタと扱う
+	#
+	regex.set_syntax(RE_NO_BK_PARENS | RE_NO_BK_VBAR)
+
+	if len(sys.argv) <= 1 \
+	 or sys.argv[1] == '--help' \
+	 or sys.argv[1] == '--version':
+		usage()
+
+	#
+	# オプション解析
+	#
+	eflag, lflag, blank, null = False, False, '', ''
+	while len(sys.argv) > 1:
+		if sys.argv[1][0] != '-':
+			break;
+		for i in range(1, len(sys.argv[1])):
+			if sys.argv[1][i] == 'e':
+				eflag = True;
+			elif sys.argv[1][i] == 'l':
+				lflag = True
+			elif sys.argv[1][i] == 'd':
+				blank = sys.argv[1][i + 1:]
+				break
+			elif sys.argv[1][i] == 'i':
+				if sys.argv[1][i + 1:]:
+					null = sys.argv[1][i + 1:]
+					break
+				elif len(sys.argv) <= 2:
+					error("-i オプションの引数がありません。")
+				else:
+					null = sys.argv[2]
+					del(sys.argv[2])
+					break
+			else:
+				c = sys.argv[1][i]
+				if c < '\x21' or c > '\x7e':
+					c = hex(ord(c))
+				print >>sys.stderr, "不明なオプション文字です: %s" % c
+				usage()
+		del(sys.argv[1])
+
+	if not blank:
+		blank = ' '
+
+	if len(sys.argv) <= 1:
+		usage()
+
+	#
+	# <name>
+	#
+	name = sys.argv[1]
+
+	#
+	# メインループ
+	#
+	for line in open_file(2):
+		l = re.findall(r' *([^ \n]+) ?(.*)', line)
+		if not l:
+			error("<name_file> に空行があります。")
+		elif eflag and regex.search(name, l[0][0]) >= 0 \
+		  or not eflag and l[0][0] == name:
+			if lflag:
+				print l[0][0],
+			print re.sub(' ', blank[0], l[0][1] or null)
+
+	sys.exit(0)

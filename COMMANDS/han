@@ -1,0 +1,265 @@
+#!/usr/bin/env python
+#coding: utf-8
+#
+# han 半角変換フィルタ（OpenUSP版）
+# 
+# designed by Nobuaki Tounaka
+# written by Yoshio Katayama
+#
+# The MIT License
+#
+# Copyright (C) 2011 Universal Shell Programming Lab.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+_usage = "han <f1> <f2> .. <file>"
+_usage1 = "han -d <string>"
+_version = "Fri Oct 21 11:26:06 JST 2011"
+_code = "OpenUSP (LINUX/PYTHON2.4/UTF-8)"
+_keypat = r'(\d+|NF(-\d+)?)(/(\d+|NF(-\d+)?))?$'
+		# 1: 1st field
+		# 4: 2nd field
+
+import re
+import os
+import sys
+
+def error(msg, *arg):
+	print >> sys.stderr, 'Error[han] :', msg % arg
+	sys.exit(1)
+
+def usage():
+	print >> sys.stderr, "Usage   :", _usage
+	print >> sys.stderr, "        :", _usage1
+	print >> sys.stderr, "Version :", _version
+	print >> sys.stderr, "         ", _code
+	sys.exit(1)
+
+class FieldLine:
+	def __init__(self, line, allow_z = False):
+		self.__allow_zero = allow_z
+		line = line.rstrip('\n')
+		self.__fields = [ line ]
+		self.__fields += [ x for x in line.split(' ') if x ]
+
+	def size(self):
+		return len(self.__fields) - 1
+
+	def getFieldNum(self, key):
+		if type(key) == type(0):
+			return key
+		if re.match(r'\d+$', key):
+			key = int(key)
+		elif key == 'NF':
+			key = self.size()
+		else:
+			key = self.size() - int(key[3:])
+			if key <= 0:
+				error("NF-x の x が大きすぎます。")
+		if key < 0:
+			error("フィールド番号が負です。")
+		if key == 0 and not self.__allow_zero:
+			error("フィールド番号が０です。")
+		if key > self.size():
+			error("フィールド番号が大きすぎます。")
+		return key
+
+	def getField(self, s, e = None):
+		s = self.getFieldNum(s)
+		if e == None:
+			e = s
+		else:
+			e = self.getFieldNum(e)
+		if s <= e:
+			return ' '.join(self.__fields[s : e + 1])
+		else:
+			t = self.__fields[e : s + 1]
+			t.reverse()
+			return ' '.join(t)
+
+#
+# 入力ファイルオープン
+#
+def open_file(n, mode = 'r'):
+	if n >= len(sys.argv):
+		file = sys.stdin
+	elif sys.argv[n] == '-':
+		file = sys.stdin
+		del sys.argv[n]
+	else:
+		try:
+			file = open(sys.argv[n], mode)
+			del sys.argv[n]
+		except:
+			file = None
+	return file
+
+#
+# unicode 変換
+#
+def to_unicode(s):
+	try:
+		return unicode(s, 'utf_8')
+	except:
+		error("不当なマルチバイト文字が含まれています。")
+
+#
+# 全角変換
+#
+def utf(ch):
+	return unichr(ch).encode('utf_8')
+
+def utford(ch):
+	return ord(to_unicode(ch))
+
+table = [ None for c in range(0x10000) ]
+for pair in (('‘', '`'), ('’', '\''), ('”', '"'), ('″', 'ﾞ'),
+	     ('　', ' '), ('。', '｡'), ('『', '｢'), ('』', '｣'),
+	     ('、', ','), ('・', '･'), ('ヲ', 'ｦ'), ('ァ', 'ｧ'),
+	     ('ィ', 'ｨ'), ('ゥ', 'ｩ'), ('ェ', 'ｪ'), ('ォ', 'ｫ'),
+	     ('ャ', 'ｬ'), ('ュ', 'ｭ'), ('ョ', 'ｮ'), ('ッ', 'ｯ'),
+	     ('ー', 'ｰ'), ('〜', '~'), ('ア', 'ｱ'), ('イ', 'ｲ'),
+	     ('ウ', 'ｳ'), ('エ', 'ｴ'), ('オ', 'ｵ'), ('カ', 'ｶ'),
+	     ('キ', 'ｷ'), ('ク', 'ｸ'), ('ケ', 'ｹ'), ('コ', 'ｺ'),
+	     ('サ', 'ｻ'), ('シ', 'ｼ'), ('ス', 'ｽ'), ('セ', 'ｾ'),
+	     ('ソ', 'ｿ'), ('タ', 'ﾀ'), ('チ', 'ﾁ'), ('ツ', 'ﾂ'),
+	     ('テ', 'ﾃ'), ('ト', 'ﾄ'), ('ナ', 'ﾅ'), ('ニ', 'ﾆ'),
+	     ('ヌ', 'ﾇ'), ('ネ', 'ﾈ'), ('ノ', 'ﾉ'), ('ハ', 'ﾊ'),
+	     ('ヒ', 'ﾋ'), ('フ', 'ﾌ'), ('ヘ', 'ﾍ'), ('ホ', 'ﾎ'),
+	     ('マ', 'ﾏ'), ('ミ', 'ﾐ'), ('ム', 'ﾑ'), ('メ', 'ﾒ'),
+	     ('モ', 'ﾓ'), ('ヤ', 'ﾔ'), ('ユ', 'ﾕ'), ('ヨ', 'ﾖ'),
+	     ('ラ', 'ﾗ'), ('リ', 'ﾘ'), ('ル', 'ﾙ'), ('レ', 'ﾚ'),
+	     ('ロ', 'ﾛ'), ('ワ', 'ﾜ'), ('ン', 'ﾝ'), ('゜', 'ﾟ'),
+	     ('ガ', 'ｶﾞ'), ('ギ', 'ｷﾞ'), ('グ', 'ｸﾞ'), ('ゲ', 'ｹﾞ'),
+	     ('ゴ', 'ｺﾞ'), ('ザ', 'ｻﾞ'), ('ジ', 'ｼﾞ'), ('ズ', 'ｽﾞ'),
+	     ('ゼ', 'ｾﾞ'), ('ゾ', 'ｿﾞ'), ('ダ', 'ﾀﾞ'), ('ヂ', 'ﾁﾞ'),
+	     ('ヅ', 'ﾂﾞ'), ('デ', 'ﾃﾞ'), ('ド', 'ﾄﾞ'), ('バ', 'ﾊﾞ'),
+	     ('ビ', 'ﾋﾞ'), ('ブ', 'ﾌﾞ'), ('ベ', 'ﾍﾞ'), ('ボ', 'ﾎﾞ'),
+	     ('ヴ', 'ｳﾞ'), ('パ', 'ﾊﾟ'), ('ピ', 'ﾋﾟ'), ('プ', 'ﾌﾟ'),
+	     ('ペ', 'ﾍﾟ'), ('ポ', 'ﾎﾟ'), ('！', '!'), ('＃', '#'),
+	     ('＄', '$'), ('％', '%'), ('＆', '&'), ('（', '('),
+	     ('）', ')'), ('＊', '*'), ('＋', '+'), ('，', '､'),
+	     ('－', '-'), ('．', '.'), ('／', '/'), ('０', '0'),
+	     ('１', '1'), ('２', '2'), ('３', '3'), ('４', '4'),
+	     ('５', '5'), ('６', '6'), ('７', '7'), ('８', '8'),
+	     ('９', '9'), ('：', ':'), ('；', ';'), ('＜', '<'),
+	     ('＝', '='), ('＞', '>'), ('？', '?'), ('＠', '@'),
+	     ('Ａ', 'A'), ('Ｂ', 'B'), ('Ｃ', 'C'), ('Ｄ', 'D'),
+	     ('Ｅ', 'E'), ('Ｆ', 'F'), ('Ｇ', 'G'), ('Ｈ', 'H'),
+	     ('Ｉ', 'I'), ('Ｊ', 'J'), ('Ｋ', 'K'), ('Ｌ', 'L'),
+	     ('Ｍ', 'M'), ('Ｎ', 'N'), ('Ｏ', 'O'), ('Ｐ', 'P'),
+	     ('Ｑ', 'Q'), ('Ｒ', 'R'), ('Ｓ', 'S'), ('Ｔ', 'T'),
+	     ('Ｕ', 'U'), ('Ｖ', 'V'), ('Ｗ', 'W'), ('Ｘ', 'X'),
+	     ('Ｙ', 'Y'), ('Ｚ', 'Z'), ('［', '['), ('＼', '\\'),
+	     ('］', ']'), ('＾', '^'), ('＿', '_'), ('ａ', 'a'),
+	     ('ｂ', 'b'), ('ｃ', 'c'), ('ｄ', 'd'), ('ｅ', 'e'),
+	     ('ｆ', 'f'), ('ｇ', 'g'), ('ｈ', 'h'), ('ｉ', 'i'),
+	     ('ｊ', 'j'), ('ｋ', 'k'), ('ｌ', 'l'), ('ｍ', 'm'),
+	     ('ｎ', 'n'), ('ｏ', 'o'), ('ｐ', 'p'), ('ｑ', 'q'),
+	     ('ｒ', 'r'), ('ｓ', 's'), ('ｔ', 't'), ('ｕ', 'u'),
+	     ('ｖ', 'v'), ('ｗ', 'w'), ('ｘ', 'x'), ('ｙ', 'y'),
+	     ('ｚ', 'z'), ('｛', '{'), ('｜', '|'), ('｝', '}')):
+	table[utford(pair[0])] = pair[1]
+
+def to_han(str):
+	s = ''
+	for c in to_unicode(str):
+		if ord(c) < 0x10000 and table[ord(c)]:
+			s += table[ord(c)]
+		else:
+			s += c.encode('utf_8')
+	return s
+
+#
+#メイン関数
+#
+if __name__ == '__main__':
+
+	if len(sys.argv) > 1 \
+	 and (sys.argv[1] == '--help' or sys.argv[1] == '--version'):
+		usage()
+
+	#
+	# -d
+	#
+	if len(sys.argv) > 1 and sys.argv[1] == '-d':
+		if len(sys.argv) != 3:
+			usage()
+		print to_han(sys.argv[2])
+		sys.exit(0)
+
+	#
+	# ファイル名のみ指定
+	#
+	if len(sys.argv) <= 2:
+		file = open_file(1)
+		if file:
+			for line in file:
+				print to_han(line),
+			sys.exit(0)
+
+	#
+	# 入力ファイルのオープン
+	#
+	file = open_file(len(sys.argv) - 1)
+	if not file:
+		file = sys.stdin
+
+	#
+	# メインループ
+	#
+	for line in file:
+		line = FieldLine(line)
+		nf = line.size()
+
+		#
+		#  フィールドの取得
+		#
+		key = []
+		for arg in sys.argv[1:]:
+			r = re.match(_keypat, arg)
+			if not r:
+				error("フィールド指定が正しくありません。")
+			f1 = line.getFieldNum(r.group(1))
+			if r.group(4):
+				f2 = line.getFieldNum(r.group(4))
+				if f1 > f2:
+					error("フィールド位置が昇順になっていません。")
+				key += range(f1, f2 + 1)
+			else:
+				key += [ f1 ]
+		if max(key) > nf:
+			error("フィールド番号が大きすぎます。")
+		for x in zip(key, key[1:]):
+			if x[0] >= x[1]:
+				error("フィールド位置が昇順になっていません。")
+
+		#
+		# 全角変換
+		#
+		f = key[:]
+		for i in range(1, nf + 1):
+			if not f or i < f[0]:
+				print line.getField(i),
+				continue
+			print to_han(line.getField(i)),
+			del f[0]
+		print
+
+	sys.exit(0)

@@ -1,0 +1,393 @@
+#!/usr/bin/env python
+#coding: utf-8
+#
+# check_attr_name name 形式の属性チェック（OpenUSP版）
+# 
+#designed by Nobuaki Tounaka
+#written by Yoshio Katayama
+#
+#The MIT License
+#
+# Copyright (C) 2011 Universal Shell Programming Lab.
+#
+#Permission is hereby granted, free of charge, to any person obtaining a copy
+#of this software and associated documentation files (the "Software"), to deal
+#in the Software without restriction, including without limitation the rights
+#to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+#copies of the Software, and to permit persons to whom the Software is
+#furnished to do so, subject to the following conditions:
+#
+#The above copyright notice and this permission notice shall be included in
+#all copies or substantial portions of the Software.
+#
+#THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+#OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+#THE SOFTWARE.
+
+_usage = "check_attr_name <check_file> <name_file>"
+_option = "--through <string>"
+_option1 = "--ngword <ng_file>"
+_attribute = "n N (０以上整数)"
+_attribute1 = "s S (符号つき整数)"
+_attribute2 = "f F (小数)"
+_attribute3 = "v V (符号つき小数)"
+_attribute4 = "e E (英字)"
+_attribute5 = "a A (アスキー文字)"
+_attribute6 = "b B (英数字)"
+_attribute7 = "h H (半角文字)"
+_attribute8 = "z Z (全角文字)"
+_attribute9 = "k K (全角カタカナ)"
+_attribute10 = "x X (文字)"
+_attribute11 = "c C (チェックディジット)"
+_attribute12 = "o O (英大文字)"
+_attribute13 = "j J (住所=全角+半角英数)"
+_version = "Fri Oct 21 11:26:06 JST 2011"
+_code = "OpenUSP (LINUX/PYTHON2.4/UTF-8)"
+
+import re
+import os
+import sys
+
+def error(msg, *arg):
+	print >> sys.stderr, 'Error[check_attr_name] :', msg % arg
+	sys.exit(1)
+
+def usage():
+	print >> sys.stderr, "Usage    :", _usage
+	print >> sys.stderr, "Option   :", _option
+	print >> sys.stderr, "          ", _option1
+	print >> sys.stderr, "Attribute:", _attribute
+	print >> sys.stderr, "          ", _attribute1
+	print >> sys.stderr, "          ", _attribute2
+	print >> sys.stderr, "          ", _attribute3
+	print >> sys.stderr, "          ", _attribute4
+	print >> sys.stderr, "          ", _attribute5
+	print >> sys.stderr, "          ", _attribute6
+	print >> sys.stderr, "          ", _attribute7
+	print >> sys.stderr, "          ", _attribute8
+	print >> sys.stderr, "          ", _attribute9
+	print >> sys.stderr, "          ", _attribute10
+	print >> sys.stderr, "          ", _attribute11
+	print >> sys.stderr, "          ", _attribute12
+	print >> sys.stderr, "          ", _attribute13
+	print >> sys.stderr, "Version  :", _version
+	print >> sys.stderr, "          ", _code
+	sys.exit(1)
+
+#
+# 入力ファイルオープン
+#
+def open_file(n, mode = 'r'):
+	if type(n) == type(0):
+		if n >= len(sys.argv):
+			n = '-'
+		else:
+			n = sys.argv[n]
+	if n == '-':
+		file = sys.stdin
+	else:
+		try:
+			file = open(n, mode)
+		except:
+			error("ファイル '%s' をオープンできません。", n)
+	return file
+
+#
+# unicode 変換
+#
+def to_unicode(s):
+	try:
+		return unicode(s, 'utf_8')
+	except:
+		error("不当なマルチバイト文字が含まれています。")
+
+#
+# 文字列の表示幅
+#
+def strwidth_u(s):
+	wid = 0
+	for c in s:
+		if c <= '\x7f' or c >= u'\uff61' and c <= u'\uff9f':
+			wid += 1
+		else:
+			wid += 2
+	return wid
+
+#
+# ngword ファイルの読み込み
+#
+def read_ngword(fname):
+	ngword = ''
+	for line in open_file(fname):
+		l = [ x for x in re.split('[ \n]+', line) if x ]
+		if l:
+			ngword += to_unicode(l[0])[0]
+	return ngword
+
+#
+# <check_file>
+#
+def read_check(n):
+	letters = 'nNsSfFvVeEaAbBhHzZkKxXcCoOjJ-_'
+	funcs = [
+		chk_uint, chk_int, chk_ufloat, chk_float,
+		chk_alpha, chk_ascii, chk_alnum, chk_halfwid,
+		chk_fullwid, chk_fullkata, chk_valid, chk_checkdig,
+		chk_upper, chk_addr, None
+	]
+	attr = []
+	for line in open_file(1):
+		l = [ x for x in re.split('[ \n]+', line) if x ]
+		if len(l) < 2:
+			continue
+		if not l[1][0] in letters:
+			error("属性が正しくありません: '%s'", l[1])
+		f = funcs[letters.index(l[1][0]) / 2]
+		if f:
+			if l[1][0].lower() == 'f' or l[1][0].lower() == 'v':
+				r = re.match(r'(\d*)\.?(\d*)$', l[1][1:])
+			else:
+				r = re.match(r'(\d*)()$', l[1][1:])
+			if not r:
+				error("属性が正しくありません: '%s'", l[1])
+			w1 = int(r.group(1) or 0)
+			w2 = int(r.group(2) or 0)
+			attr += [ (l[0], l[1], w1, w2, f) ]
+	return attr
+
+#
+# 符号無し整数
+#
+def chk_uint(attr, w1, w2, ngword, data):
+	if not re.match(r'\d+$', data):
+		return True
+	elif attr[0].isupper():
+		return w1 and len(data) != w1
+	else:
+		return w1 and len(data) > w1
+
+#
+# 符号付き整数
+#
+def chk_int(attr, w1, w2, ngword, data):
+	r = re.match(r'[+-]?(\d+)$', data)
+	if not r:
+		return True
+	elif attr[0].isupper():
+		return w1 and len(r.group(1)) != w1
+	else:
+		return w1 and len(r.group(1)) > w1
+
+#
+# 符号無し小数
+#
+def chk_ufloat(attr, w1, w2, ngword, data):
+	r = re.match(r'(\d*)\.?(\d*)$', data)
+	if not r or not r.group(1) + r.group(2):
+		return True
+	elif attr[0].isupper():
+		return w1 and len(r.group(1)) != w1 \
+			or w2 and len(r.group(2)) != w2
+	else:
+		return w1 and len(r.group(1)) > w1 \
+			or w2 and len(r.group(2)) > w2
+
+#
+# 符号付き小数
+#
+def chk_float(attr, w1, w2, ngword, data):
+	r = re.match(r'[+-]?(\d*)\.?(\d*)$', data)
+	if not r or not r.group(1) + r.group(2):
+		return True
+	elif attr[0].isupper():
+		return w1 and len(r.group(1)) != w1 \
+			or w2 and len(r.group(2)) != w2
+	else:
+		return w1 and len(r.group(1)) > w1 \
+			or w2 and len(r.group(2)) > w2
+
+#
+# 英字
+#
+def chk_alpha(attr, w1, w2, ngword, data):
+	if not re.match(r'[a-zA-Z]+$', data):
+		return True
+	elif attr[0].isupper():
+		return w1 and len(data) != w1
+	else:
+		return w1 and len(data) > w1
+
+#
+# 印刷可能文字(ASCII)
+#
+def chk_ascii(attr, w1, w2, ngword, data):
+	if not re.match(r'[\x21-\x7e]+$', data):
+		return True
+	elif attr[0].isupper():
+		return w1 and len(data) != w1
+	else:
+		return w1 and len(data) > w1
+
+#
+# 英数字
+#
+def chk_alnum(attr, w1, w2, ngword, data):
+	if not re.match(r'[a-zA-Z0-9]+$', data):
+		return True
+	elif attr[0].isupper():
+		return w1 and len(data) != w1
+	else:
+		return w1 and len(data) > w1
+
+#
+# 半角文字
+#
+def chk_halfwid(attr, w1, w2, ngword, data):
+	data = to_unicode(data)
+	if not re.match(ur'[\x21-\x7e\uff61-\uff9f]+$', data):
+		return True
+	elif attr[0].isupper():
+		return w1 and len(data) != w1
+	else:
+		return w1 and len(data) > w1
+
+#
+# 全角文字
+#
+def chk_fullwid(attr, w1, w2, ngword, data):
+	data = to_unicode(data)
+	if not re.match(ur'[^\x00-\x7f\uff61-\uff9f%s]+$' % ngword, data):
+		return True
+	elif attr[0].isupper():
+		return w1 and strwidth_u(data) != w1
+	else:
+		return w1 and strwidth_u(data) > w1
+
+#
+# 全角カタカナ
+#
+def chk_fullkata(attr, w1, w2, ngword, data):
+	data = to_unicode(data)
+	if not re.match(ur'[ァ-ロワヲンヴ。『』，・ー]+$', data):
+		return True
+	elif attr[0].isupper():
+		return w1 and strwidth_u(data) != w1
+	else:
+		return w1 and strwidth_u(data) > w1
+
+#
+# 有効文字
+#
+def chk_valid(attr, w1, w2, ngword, data):
+	data = to_unicode(data)
+	if re.search(ur'[\x00-\x20\x7f%s]' % ngword, data):
+		return True
+	elif attr[0].isupper():
+		return w1 and strwidth_u(data) != w1
+	else:
+		return w1 and strwidth_u(data) > w1
+
+#
+# チェックデジット
+#
+def chk_checkdig(attr, w1, w2, ngword, data):
+	if not re.match(r'\d+$', data):
+		return True
+	chk = 0
+	for x in data:
+		chk += int(x)
+	for i in range(1, len(data), 2):
+		chk += 2 * int(data[i])
+	return chk % 10 != 0
+
+#
+# 英大文字
+#
+def chk_upper(attr, w1, w2, ngword, data):
+	if not re.match(r'[\x21-\x60\x7b-\x7e]+$', data):
+		return True
+	elif attr[0].isupper():
+		return w1 and len(data) != w1
+	else:
+		return w1 and len(data) > w1
+
+#
+# 住所用文字（全角文字＋半角英数）
+#
+def chk_addr(attr, w1, w2, ngword, data):
+	data = to_unicode(data)
+	if not re.match(ur'[^\x00-\x20\x7f\uff61-\uff9f%s]+$' % ngword, data):
+		return True
+	elif attr[0].isupper():
+		return w1 and strwidth_u(data) != w1
+	else:
+		return w1 and strwidth_u(data) > w1
+
+#
+#メイン関数
+#
+if __name__ == '__main__':
+
+	if len(sys.argv) <= 1 \
+	 or sys.argv[1] == '--help' \
+	 or sys.argv[1] == '--version':
+		usage()
+
+	#
+	# オプション解析
+	#
+	through, ngword = [], ''
+	while len(sys.argv) > 1:
+		if sys.argv[1] == '--through':
+			if len(sys.argv) <= 2:
+				error("--through オプションの引数がありません。")
+			through += [ sys.argv[2] ]
+			del sys.argv[1:3]
+		elif re.match(r'--through=(.+)', sys.argv[1]):
+			r = re.match(r'--through=(.+)', sys.argv[1])
+			through += [ r.group(1) ]
+			del sys.argv[1]
+		elif sys.argv[1] == '--ngword':
+			if len(sys.argv) <= 2:
+				error("--ngword オプションの引数がありません。")
+			ngword += read_ngword(sys.argv[2])
+			del sys.argv[1:3]
+		elif re.match(r'--ngword=(.+)', sys.argv[1]):
+			r = re.match(r'--ngword=(.+)', sys.argv[1])
+			ngword += read_ngword(r.group(1))
+			del sys.argv[1]
+		elif sys.argv[1][0] == '-' and len(sys.argv[1]) > 1:
+			error("不明なオプション(%s)です。", sys.argv[1])
+		else:
+			break
+	if not through:
+		through = [ '_' ]
+
+	if len(sys.argv) <= 1:
+		usage()
+
+	#
+	# <check_file>
+	#
+	attr = read_check(1)
+
+	#
+	# メインループ
+	#
+	stat = 0
+	for line in open_file(2):
+		l = re.findall(r' *([^ \n]+) ?(.*)', line)
+		if not l or not l[0][1] or l[0][1] in through:
+			continue
+		for x in attr:
+			if re.match(x[0] + r'(_[+-]?\d+)?$', l[0][0]):
+				if x[-1](x[1], x[2], x[3], ngword, l[0][1]):
+					print '%s %s' % (l[0][0], x[1])
+					stat = 1
+				break
+
+	sys.exit(stat)

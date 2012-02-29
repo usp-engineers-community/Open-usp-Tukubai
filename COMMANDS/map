@@ -1,0 +1,373 @@
+#!/usr/bin/env python
+#coding: utf-8
+#
+# map 縦ファイルを縦横ファイルに変換（OpenUSP版）
+# 
+# designed by Nobuaki Tounaka
+# written by Yoshio Katayama
+#
+# The MIT License
+#
+# Copyright (C) 2011 Universal Shell Programming Lab.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+_usage = "map       [-<l>] num=<n>x<m> <file>"
+_usage1 = "map +yarr [-<l>] num=<n>x<m> <file>"
+_usage2 = "map +arr  [-<l>] num=<n>x<m> <file>"
+_option = "-m<c>"
+_option1 = "-n"
+_version = "Sat Dec 10 21:04:17 JST 2011"
+_code = "OpenUSP (LINUX/PYTHON2.4/UTF-8)"
+_keypat = r'\d+$'
+_numpat = r'(\d+)(x\d+)?$'
+		# 1: num_x
+		# 2: 'x' + num_y
+
+import re
+import os
+import sys
+import stat
+import tempfile
+
+def error(msg, *arg):
+	print >> sys.stderr, 'Error[map] :', msg % arg
+	sys.exit(1)
+
+def usage():
+	print >> sys.stderr, "Usage   :", _usage
+	print >> sys.stderr, "        :", _usage1
+	print >> sys.stderr, "        :", _usage2
+	print >> sys.stderr, "Option  :", _option
+	print >> sys.stderr, "        :", _option1
+	print >> sys.stderr, "Version :", _version
+	print >> sys.stderr, "         ", _code
+	sys.exit(1)
+
+class FieldLine:
+	def __init__(self, line, allow_z = False):
+		self.__allow_zero = allow_z
+		line = line.rstrip('\n')
+		self.__fields = [ line ]
+		self.__fields += [ x for x in line.split(' ') if x ]
+
+	def size(self):
+		return len(self.__fields) - 1
+
+	def getFieldNum(self, key):
+		if type(key) == type(0):
+			return key
+		if re.match(r'\d+$', key):
+			key = int(key)
+		elif key == 'NF':
+			key = self.size()
+		else:
+			key = self.size() - int(key[3:])
+			if key <= 0:
+				error("NF-x の x が大きすぎます。")
+		if key < 0:
+			error("フィールド番号が負です。")
+		if key == 0 and not self.__allow_zero:
+			error("フィールド番号が０です。")
+		if key > self.size():
+			error("フィールド番号が大きすぎます。")
+		return key
+
+	def getField(self, s, e = None):
+		s = self.getFieldNum(s)
+		if e == None:
+			e = s
+		else:
+			e = self.getFieldNum(e)
+		if s <= e:
+			return ' '.join(self.__fields[s : e + 1])
+		else:
+			t = self.__fields[e : s + 1]
+			t.reverse()
+			return ' '.join(t)
+
+#
+# 入力ファイルオープン
+#
+def open_file(n, mode = 'r'):
+	if n >= len(sys.argv) or sys.argv[n] == '-':
+		file = sys.stdin
+	else:
+		try:
+			file = open(sys.argv[n], mode)
+		except:
+			error("ファイル %s をオープンできません。", sys.argv[n])
+	return file
+
+#
+# 通常ファイルの判定
+#
+def isfile(fd):
+	try:
+		return stat.S_ISREG(os.fstat(fd).st_mode)
+	except:
+		return False
+
+#
+# サブキーの生成
+#
+def gensub(k, subkey):
+	if subkey == '0':
+		return str(k + 1)
+	else:
+		return chr(ord(subkey) + k)
+
+#
+# ヘッダーの出力
+#
+def puthead(key_y, num_x, num_y, a, subkey_x, subkey_y):
+	if subkey_x:
+		num_x += 1
+	for i in range(num_y):
+		print ' '.join([ '*' ] * num_x),
+		for k in key_y:
+			print ' '.join([ k.split(' ')[i] ] * a),
+		print
+	if subkey_y:
+		print ' '.join([ '*' ] * num_x),
+		for j in range(len(key_y)):
+			for k in range(a):
+				print gensub(k, subkey_y),
+		print
+
+#
+# ブロックの出力
+#
+def putblk(table, key_y_len, a, b, subkey, oldkey):
+	if not table:
+		return
+	for i in range(a):
+		print oldkey,
+		if subkey:
+			print gensub(i, subkey),
+		for j in range(b * key_y_len):
+			print table[i][j],
+		print
+
+#
+# map 処理 (+yarr / +arr 有り)
+#
+def do_map_array(file, key_y, num_x, num_y, numkey, nfld, L, pad, array):
+	#
+	# サブキーの確認
+	#
+	if numkey:
+		subkey_x, subkey_y = '0', '0'
+	else:
+		subkey_x, subkey_y = 'A', 'a'
+	if nfld / L == 1:
+		subkey_x = None
+	if L == 1 or array == 2:
+		subkey_y = None
+	if not numkey and (nfld / L > 26 or L > 26):
+		error("サブキーが足りません。-n オプションを指定してください。")
+
+	#
+	# ヘッダーの出力
+	#
+	puthead(key_y, num_x, num_y, L, subkey_x, subkey_y)
+
+	#
+	# メインループ
+	#
+	oldkey = None
+	table = None
+	for line in file:
+		line = FieldLine(line)
+		if line.getField(1, num_x) != oldkey:
+			putblk(table, len(key_y), nfld / L, L, subkey_x, oldkey)
+			oldkey = line.getField(1, num_x)
+			l = L * len(key_y)
+			table = [ [ pad ] * l for i in range(nfld / L) ]
+		pos = key_y.index(line.getField(num_x + 1, num_x + num_y))
+		n = num_x + num_y + 1
+		for i in range(nfld / L):
+			for j in range(L):
+				table[i][L * pos + j] = line.getField(n)
+				n += 1
+	putblk(table, len(key_y), nfld / L, L, subkey_x, oldkey)
+
+#
+# map 処理 (+yarr / +arr 無し)
+#
+def do_map(file, key_y, num_x, num_y, numkey, nfld, L, pad):
+	#
+	# サブキーの確認
+	#
+	if numkey:
+		subkey_x, subkey_y = '0', '0'
+	else:
+		subkey_x, subkey_y = 'A', 'a'
+	if L == 1:
+		subkey_x = None
+	if nfld / L == 1:
+		subkey_y = None
+	if not numkey and (L > 26 or nfld / L > 26):
+		error("サブキーが足りません。-n オプションを指定してください。")
+
+	#
+	# ヘッダーの出力
+	#
+	puthead(key_y, num_x, num_y, nfld / L, subkey_x, subkey_y)
+
+	#
+	# メインループ
+	#
+	oldkey = None
+	table = None
+	for line in file:
+		line = FieldLine(line)
+		if line.getField(1, num_x) != oldkey:
+			putblk(table, len(key_y), L, nfld / L, subkey_x, oldkey)
+			oldkey = line.getField(1, num_x)
+			l = (nfld / L) * len(key_y)
+			table = [ [ pad ] * l for i in range(L) ]
+		pos = key_y.index(line.getField(num_x + 1, num_x + num_y))
+		n = num_x + num_y + 1
+		for i in range(nfld / L):
+			for j in range(L):
+				table[j][nfld / L * pos + i] = line.getField(n)
+				n += 1
+	putblk(table, len(key_y), L, nfld / L, subkey_x, oldkey)
+
+#
+#メイン関数
+#
+if __name__ == '__main__':
+
+	if len(sys.argv) <= 1 \
+	 or sys.argv[1] == '--help' \
+	 or sys.argv[1] == '--version':
+		usage()
+
+	#
+	# +yarr / +yarr
+	#
+	if sys.argv[1] == '+yarr' or sys.argv[1] == '+arr':
+		if sys.argv[1] == '+yarr':
+			array = 1
+		else:
+			array = 2
+		del sys.argv[1]
+		if len(sys.argv) <= 1:
+			usage()
+	else:
+		array = 0
+
+	#
+	# -m<c> / -n / -<n>
+	#
+	pad = '0'
+	numkey = False
+	L = None
+	while sys.argv[1][0] == '-':
+		if sys.argv[1][:2] == '-m':
+			if len(sys.argv[1]) > 2:
+				pad = sys.argv[1][2:]
+			elif len(sys.argv) <= 2:
+				error("-m オプションの引数がありません。")
+			else:
+				pad = sys.argv[2]
+				del sys.argv[1]
+		elif sys.argv[1] == '-n':
+			numkey = True
+		elif re.match('-' + _keypat, sys.argv[1]):
+			L = int(sys.argv[1][1:])
+		else:
+			break
+		del sys.argv[1]
+		if len(sys.argv) <= 1:
+			usage()
+
+	#
+	# num=<n>x<m>
+	#
+	r = re.match('num=' + _numpat, sys.argv[1])
+	if not r:
+		usage()
+	num_x = int(r.group(1))
+	if r.group(2):
+		num_y = int(r.group(2)[1:])
+	else:
+		num_y = 1
+	if num_x * num_y == 0:
+		usage()
+
+	#
+	# ファイルのオープン
+	#
+	file = open_file(2)
+	if not isfile(file.fileno()):
+		tmp = tempfile.mkstemp(prefix='map-')
+		os.unlink(tmp[1])
+		tmp = os.fdopen(tmp[0], 'w+')
+	else:
+		tmp = None
+
+	#
+	# 1st pass
+	#
+	nfld = 0
+	key_y = set([])
+	for line in file:
+		if tmp:
+			print >>tmp, line,
+		line = FieldLine(line)
+		if not nfld:
+			nfld = line.size()
+			if not nfld:
+				error("1行目が空です。")
+			if line.size() < num_x + num_y:
+				error("フィールドが足りません。")
+			elif line.size() <= num_x + num_y:
+				error("データフィールドがありません。")
+		if line.size() > nfld:
+			error("フィールドが多過ぎます。")
+		elif line.size() < nfld:
+			error("フィールドが足りません。")
+		key_y |= set([ line.getField(num_x + 1, num_x + num_y) ])
+	if not nfld:
+		sys.exit(0)
+	nfld -= num_x + num_y
+	key_y = list(key_y)
+	key_y.sort()
+	if not L:
+		L = nfld
+	elif nfld % L != 0:
+		error("フィールド数が -<l> オプションの倍数ではありません。")
+
+	if tmp:
+		file.close()
+		file = tmp
+	file.seek(0)
+
+	#
+	# 2nd pass
+	#
+	if array:
+		do_map_array(file, key_y, num_x, num_y, numkey, nfld, L, pad, array)
+	else:
+		do_map(file, key_y, num_x, num_y, numkey, nfld, L, pad)
+
+	sys.exit(0)
