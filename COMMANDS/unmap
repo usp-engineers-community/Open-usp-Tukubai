@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #coding: utf-8
 #
-# unmap 逆マップ（OpenUSP版）
+# unmap 逆マップ（Open usp Tukubai版）
 # 
 # designed by Nobuaki Tounaka
 # written by Yoshio Katayama
@@ -32,7 +32,7 @@ _usage = "unmap       num=<n>x<m> <file>"
 _usage1 = "unmap +yarr num=<n>x<m> <file>"
 _usage2 = "unmap +arr  num=<n>x<m> <file>"
 _version = "Sat Dec 10 21:04:17 JST 2011"
-_code = "OpenUSP (LINUX/PYTHON2.4/UTF-8)"
+_code = "Open usp Tukubai (LINUX/PYTHON2.4/UTF-8)"
 _numpat = r'(\d+)(x\d+)?$'
 		# 1: num_x
 		# 2: 'x' + num_y

@@ -30,7 +30,7 @@
 
 _usage = "delf <f1> <f2> ... [file]"
 _version = "Fri Oct 21 11:26:06 JST 2011"
-_code = "OpenUSP (LINUX/PYTHON2.4/UTF-8)"
+_code = "Open usp Tukubai (LINUX/PYTHON2.4/UTF-8)"
 
 import re
 import os

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #coding: utf-8
 #
-# yobi 曜日挿入フィルタ（OpenUSP版）
+# yobi 曜日挿入フィルタ（Open usp Tukubai版）
 # 
 # designed by Nobuaki Tounaka
 # written by Yoshio Katayama
@@ -31,7 +31,7 @@
 _usage = "yobi [-ej] <field> <filename>"
 _usage1 = "yobi -d[ej] <string>"
 _version = "Fri Oct 21 11:26:06 JST 2011"
-_code = "OpenUSP (LINUX/PYTHON2.4/UTF-8)"
+_code = "Open usp Tukubai (LINUX/PYTHON2.4/UTF-8)"
 _keypat = r'\d+$'
 
 import re

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #coding: utf-8
 #
-# ratio 構成比を求める（OpenUSP版）
+# ratio 構成比を求める（Open usp Tukubai版）
 # 
 # designed by Nobuaki Tounaka
 # written by Yoshio Katayama
@@ -33,7 +33,7 @@ _option = "ref=<ref> -- 参照キーの指定"
 _option1 = "-<s> ------- 小数点以下の精度"
 _option2 = "+<n>h ------ 先頭<n>行をヘッダーとみなす"
 _version = "Fri Oct 21 11:26:06 JST 2011"
-_code = "OpenUSP (LINUX/PYTHON2.4/UTF-8)"
+_code = "Open usp Tukubai (LINUX/PYTHON2.4/UTF-8)"
 _keypat = r'(\d+|NF(-\d+)?)(([/@](\d+|NF(-\d+)?))*)$'
 		# 1: 1st field
 		# 3: 2nd and later fields with separator

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #coding: utf-8
 #
-# sm4 小計/中計挿入ツール（OpenUSP版）
+# sm4 小計/中計挿入ツール（Open usp Tukubai版）
 # 
 # designed by Nobuaki Tounaka
 # written by Yoshio Katayama
@@ -30,7 +30,7 @@
 
 _usage = "sm4 [+h] <k1> <k2> <d1> <d2> <s1> <s2> <file>"
 _version = "Fri Oct 21 11:26:06 JST 2011"
-_code = "OpenUSP (LINUX/PYTHON2.4/UTF-8)"
+_code = "Open usp Tukubai (LINUX/PYTHON2.4/UTF-8)"
 _keypat = r'\d+|NF(-\d+)?$'
 
 DUMMY_CHAR = '@'

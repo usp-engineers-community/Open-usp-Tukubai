@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #coding: utf-8
 #
-# keycut キーカットプログラム（OpenUSP版）
+# keycut キーカットプログラム（Open usp Tukubai版）
 # 
 # designed by Nobuaki Tounaka
 # written by Yoshio Katayama
@@ -33,7 +33,7 @@ _option = "-d : キーの削除"
 _option1 = "-a : ファイル追記"
 _option2 = "-z : 圧縮"
 _version = "Wed Oct 26 03:01:58 JST 2011"
-_code = "OpenUSP (LINUX/PYTHON2.4/UTF-8)"
+_code = "Open usp Tukubai (LINUX/PYTHON2.4/UTF-8)"
 _keypat = r'([^%]*)%(\d+)((\.\d{1,3})?)((\.\d{1,3})?)((\b|\D).*)'
 		# 1: string before '%'
 		# 2: field number

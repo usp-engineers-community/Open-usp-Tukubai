@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #coding: utf-8
 #
-# rank 順位をつける（OpenUSP版）
+# rank 順位をつける（Open usp Tukubai版）
 # 
 # designed by Nobuaki Tounaka
 # written by Yoshio Katayama
@@ -30,7 +30,7 @@
 
 _usage = "rank [ref=<ref>] [key=<key>] <file>"
 _version = "Fri Oct 21 11:26:06 JST 2011"
-_code = "OpenUSP (LINUX/PYTHON2.4/UTF-8)"
+_code = "Open usp Tukubai (LINUX/PYTHON2.4/UTF-8)"
 _refpat = r'(\d+)(([/@]\d+)*)$'
 		# 1: 1st field
 		# 2: 2nd and later fields with separator

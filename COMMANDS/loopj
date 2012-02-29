@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #coding: utf-8
 #
-# loopj loop of join3（OpenUSP版）
+# loopj loop of join3（Open usp Tukubai版）
 # 
 # designed by Nobuaki Tounaka
 # written by Yoshio Katayama
@@ -30,7 +30,7 @@
 
 _usage = "loopj [-d<string>] num=<num> <file1> <file2> .."
 _version = "Fri Oct 21 11:26:06 JST 2011"
-_code = "OpenUSP (LINUX/PYTHON2.4/UTF-8)"
+_code = "Open usp Tukubai (LINUX/PYTHON2.4/UTF-8)"
 _keypat = r'(\d+)(([/@](\d+))*)$'
 		# 1: 1st field
 		# 2: 2nd and later fields with separator

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #coding: utf-8
 #
-# nameread name 形式のファイルを読む（OpenUSP版）
+# nameread name 形式のファイルを読む（Open usp Tukubai版）
 # 
 # designed by Nobuaki Tounaka
 # written by Yoshio Katayama
@@ -32,7 +32,7 @@ _usage = "nameread [-el] <name> <name_file>"
 _option = "-d<c>       空白を置換"
 _option1 = "-i<string>  ヌルデータの初期化"
 _version = "Fri Oct 21 11:26:06 JST 2011"
-_code = "OpenUSP (LINUX/PYTHON2.4/UTF-8)"
+_code = "Open usp Tukubai (LINUX/PYTHON2.4/UTF-8)"
 
 import warnings
 warnings.filterwarnings("ignore", ".* regex .*", DeprecationWarning, __name__, append=1)

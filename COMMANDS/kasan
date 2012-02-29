@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #coding: utf-8
 #
-# kasan 加算する（OpenUSP版）
+# kasan 加算する（Open usp Tukubai版）
 # 
 # designed by Nobuaki Tounaka
 # written by Yoshio Katayama
@@ -30,7 +30,7 @@
 
 _usage = "kasan [+r] [ref=<ref>] key=<n> <file>"
 _version = "Fri Oct 21 11:26:06 JST 2011"
-_code = "OpenUSP (LINUX/PYTHON2.4/UTF-8)"
+_code = "Open usp Tukubai (LINUX/PYTHON2.4/UTF-8)"
 _refpat = r'(|(\d+|NF(-\d+)?)(/(\d+|NF(-\d+)?))?)$'
 		# 2: 1st field
 		# 5: 2nd field

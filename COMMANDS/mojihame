@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #coding: utf-8
 #
-# mojihame 変数はめ込みツール（OpenUSP版）
+# mojihame 変数はめ込みツール（Open usp Tukubai版）
 # 
 # designed by Nobuaki Tounaka
 # written by Yoshio Katayama
@@ -33,7 +33,7 @@ _usage1 = "mojihame -l <label> <template> <data> (行単位)"
 _usage2 = "mojihame -h <label> <template> <data> (階層データ)"
 _option = " -d[c]"
 _version = "Fri Oct 21 11:26:06 JST 2011"
-_code = "OpenUSP (LINUX/PYTHON2.4/UTF-8)"
+_code = "Open usp Tukubai (LINUX/PYTHON2.4/UTF-8)"
 
 import re
 import os

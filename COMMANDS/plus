@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #coding: utf-8
 # 
-# plus オプションの数字を足す （OpenUSP版）
+# plus オプションの数字を足す （Open usp Tukubai版）
 #
 # designed by Nobuaki Tounaka
 # written by Ryuichi Ueda
@@ -30,7 +30,7 @@
 
 _usage = "plus <n1> <n2> ..."
 _version = "Thu Dec  8 10:46:51 JST 2011"
-_code = "OpenUSP (LINUX/PYTHON2.4/UTF-8)"
+_code = "Open usp Tukubai (LINUX/PYTHON2.4/UTF-8)"
 
 import sys
 from decimal import Decimal
