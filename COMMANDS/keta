@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #coding: utf-8
 #
-# keta 桁整形フィルタ（OpenUSP版）
+# keta 桁整形フィルタ（Open usp Tukubai版）
 # 
 # designed by Nobuaki Tounaka
 # written by Yoshio Katayama
@@ -32,7 +32,7 @@ _usage = "keta n1 n2 .. <filename>"
 _usage1 = "keta -v <filename>"
 _usage2 = "keta [--] <filename>"
 _version = "Fri Oct 21 11:26:06 JST 2011"
-_code = "OpenUSP (LINUX/PYTHON2.4/UTF-8)"
+_code = "Open usp Tukubai (LINUX/PYTHON2.4/UTF-8)"
 _keypat = r'(-?\d+)(x((\d+)|(NF)(-\d+)?))?$'
 		# 1: - width
 		# 4: constant multiplier

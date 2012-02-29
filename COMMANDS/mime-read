@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #coding: utf-8
 #
-# mime-read ＭＩＭＥ型式データリード（OpenUSP版）
+# mime-read ＭＩＭＥ型式データリード（Open usp Tukubai版）
 # 
 # designed by Nobuaki Tounaka
 # written by Yoshio Katayama
@@ -31,7 +31,7 @@
 _usage = "mime-read <name> <file>"
 _usage1 = "mime-read -v <file>"
 _version = "Fri Oct 21 11:26:06 JST 2011"
-_code = "OpenUSP (LINUX/PYTHON2.4/UTF-8)"
+_code = "Open usp Tukubai (LINUX/PYTHON2.4/UTF-8)"
 
 import re
 import os

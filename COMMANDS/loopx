@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #coding: utf-8
 #
-# loopx レコードを総掛けしてファイルを結合 （OpenUSP版）
+# loopx レコードを総掛けしてファイルを結合 （Open usp Tukubai版）
 # 
 # designed by Nobuaki Tounaka
 # written by Ryuichi Ueda
@@ -30,7 +30,7 @@
 
 _usage = "loopx <file1> <file2> ..."
 _version = "Thu Jan 12 18:35:55 JST 2012"
-_code = "OpenUSP (LINUX/PYTHON2.4/UTF-8)"
+_code = "Open usp Tukubai (LINUX/PYTHON2.4/UTF-8)"
 
 import sys
 import tempfile

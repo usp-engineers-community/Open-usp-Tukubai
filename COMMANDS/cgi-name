@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #coding: utf-8
 #
-# cgi-name ＰＯＳＴメソッドによる変数と値を name 形式に変換する（OpenUSP版）
+# cgi-name ＰＯＳＴメソッドによる変数と値を name 形式に変換する（Open usp Tukubai版）
 # 
 # designed by Nobuaki Tounaka
 # written by Yoshio Katayama
@@ -31,7 +31,7 @@
 _usage = "cgi-name [-d<c>][-i<string>] <param_file>"
 _option = "         [--template <html>]"
 _version = "Fri Oct 21 11:26:06 JST 2011"
-_code = "OpenUSP (LINUX/PYTHON2.4/UTF-8)"
+_code = "Open usp Tukubai (LINUX/PYTHON2.4/UTF-8)"
 
 import re
 import os

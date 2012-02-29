@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #coding: utf-8
 #
-# mdate 日付、月の処理 （OpenUSP版）
+# mdate 日付、月の処理 （Open usp Tukubai版）
 # 
 # designed by Nobuaki Tounaka
 # written by Ryuichi Ueda
@@ -64,7 +64,7 @@ _usage = """
 # mdate -ly <f>              : 前年日
 
 _version = "Wed Dec 28 15:32:10 JST 2011"
-_code = "OpenUSP (LINUX/PYTHON2.4/UTF-8)"
+_code = "Open usp Tukubai (LINUX/PYTHON2.4/UTF-8)"
 
 import re
 import os

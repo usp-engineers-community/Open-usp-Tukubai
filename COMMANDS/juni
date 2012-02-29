@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #coding: utf-8
 #
-# juni 順位をつける（OpenUSP版）
+# juni 順位をつける（Open usp Tukubai版）
 # 
 # designed by Nobuaki Tounaka
 # written by Yoshio Katayama
@@ -31,7 +31,7 @@
 _usage = "juni [<k1> <k2>] <file>"
 _usage1 = "juni -h [<k1> <k2>] <file>"
 _version = "Wed Oct 26 03:01:58 JST 2011"
-_code = "OpenUSP (LINUX/PYTHON2.4/UTF-8)"
+_code = "Open usp Tukubai (LINUX/PYTHON2.4/UTF-8)"
 _keypat = r'\d+$'
 
 import re

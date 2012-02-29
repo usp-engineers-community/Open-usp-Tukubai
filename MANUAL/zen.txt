@@ -8,7 +8,7 @@ Usage   : zen <f1> <f2> .. <file>
         : zen [-k] <file>
         : zen -d <string>
 Version : Fri Oct 21 11:26:06 JST 2011
-          OpenUSP (LINUX/PYTHON2.4/UTF-8)
+          Open usp Tukubai (LINUX/PYTHON2.4/UTF-8)
 
 ＜説明＞
 引数のファイル又は標準入力のテキストデータ・文字列の、半角英数・カタカナの部分を
