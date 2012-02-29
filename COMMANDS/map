@@ -34,7 +34,7 @@ _usage2 = "map +arr  [-<l>] num=<n>x<m> <file>"
 _option = "-m<c>"
 _option1 = "-n"
 _version = "Sat Dec 10 21:04:17 JST 2011"
-_code = "Open usp Tukubai (LINUX/PYTHON2.4/UTF-8)"
+_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
 _keypat = r'\d+$'
 _numpat = r'(\d+)(x\d+)?$'
 		# 1: num_x

@@ -32,7 +32,7 @@ _usage = "unmap       num=<n>x<m> <file>"
 _usage1 = "unmap +yarr num=<n>x<m> <file>"
 _usage2 = "unmap +arr  num=<n>x<m> <file>"
 _version = "Sat Dec 10 21:04:17 JST 2011"
-_code = "Open usp Tukubai (LINUX/PYTHON2.4/UTF-8)"
+_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
 _numpat = r'(\d+)(x\d+)?$'
 		# 1: num_x
 		# 2: 'x' + num_y

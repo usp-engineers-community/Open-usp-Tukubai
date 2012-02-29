@@ -30,7 +30,7 @@
 
 _usage = "plus <n1> <n2> ..."
 _version = "Thu Dec  8 10:46:51 JST 2011"
-_code = "Open usp Tukubai (LINUX/PYTHON2.4/UTF-8)"
+_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
 
 import sys
 from decimal import Decimal

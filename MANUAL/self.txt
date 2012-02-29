@@ -8,7 +8,7 @@ self : 指定したフィールドのデータを取り出す (USP-TOOL)
 Usage   : self f1 f2 ... file
         : self -d f1 f2 ... string
 Version : Wed Dec 14 15:20:01 JST 2011
-          Open usp Tukubai (LINUX/PYTHON2.4/UTF-8)
+          Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)
 
 ＜説明＞
 <file> ファイルから、指定したフィールドのデータだけを取り出して

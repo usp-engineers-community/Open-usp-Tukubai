@@ -8,7 +8,7 @@ Usage   : map       [-<l>] num=<n>x<m> <file>
         : map +yarr [-<l>] num=<n>x<m> <file>
         : map +arr  [-<l>] num=<n>x<m> <file>
 Version : Sat Dec 10 21:04:17 JST 2011
-          Open usp Tukubai (LINUX/PYTHON2.4/UTF-8)
+          Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)
 
 ＜説明＞
 mapコマンドの逆の働きをします。

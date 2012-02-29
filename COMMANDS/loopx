@@ -30,7 +30,7 @@
 
 _usage = "loopx <file1> <file2> ..."
 _version = "Thu Jan 12 18:35:55 JST 2012"
-_code = "Open usp Tukubai (LINUX/PYTHON2.4/UTF-8)"
+_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
 
 import sys
 import tempfile
