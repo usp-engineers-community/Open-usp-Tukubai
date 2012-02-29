@@ -10,7 +10,7 @@ Usage   : map       [-<l>] num=<n>x<m> <file>
 Option  : -m<c>
         : -n
 Version : Sat Dec 10 21:04:17 JST 2011
-          Open usp Tukubai (LINUX/PYTHON2.4/UTF-8)
+          Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)
 
 ＜説明＞
 引数のファイル又は標準入力のテキストデータが、縦キーフィールド<n>個、

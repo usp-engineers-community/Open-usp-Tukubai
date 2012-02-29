@@ -32,7 +32,7 @@ _usage = "zen <f1> <f2> .. <file>"
 _usage1 = "zen [-k] <file>"
 _usage2 = "zen -d <string>"
 _version = "Fri Oct 21 11:26:06 JST 2011"
-_code = "Open usp Tukubai (LINUX/PYTHON2.4/UTF-8)"
+_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
 _keypat = r'(\d+|NF(-\d+)?)(/(\d+|NF(-\d+)?))?$'
 		# 1: 1st field
 		# 4: 2nd field

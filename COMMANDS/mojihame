@@ -33,7 +33,7 @@ _usage1 = "mojihame -l <label> <template> <data> (行単位)"
 _usage2 = "mojihame -h <label> <template> <data> (階層データ)"
 _option = " -d[c]"
 _version = "Fri Oct 21 11:26:06 JST 2011"
-_code = "Open usp Tukubai (LINUX/PYTHON2.4/UTF-8)"
+_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
 
 import re
 import os

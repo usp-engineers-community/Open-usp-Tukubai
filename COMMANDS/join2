@@ -30,7 +30,7 @@
 
 _usage = "join2 [-d<string>] key=<n> <master> <tran>"
 _version = "Wed Oct 26 03:01:58 JST 2011"
-_code = "Open usp Tukubai (LINUX/PYTHON2.4/UTF-8)"
+_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
 _keypat = r'(\d+|NF(-\d+)?)(([/@](\d+|NF(-\d+)?))*)$'
 		# 1: 1st field
 		# 3: 2nd and later fields with separator
