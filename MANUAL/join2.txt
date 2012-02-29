@@ -1,0 +1,186 @@
+join2(USP)
+
+＜名前＞
+join2 : トランザクションファイルにマスターファイルを連結する。
+        (キーフィールドがマッチする行はマスターを連結、
+         マッチしない行は、ダミーデータを連結して出力する。)
+
+＜書式＞
+Usage   : join2 [+<string>] key=<key> <master_file> <trans_file>
+Version : Thu Dec 15 13:46:38 JST 2011
+          UTF-8
+
+＜説明＞
+テキストファイル "tran" の "key=<n>" で指定したキーフィールドが
+マスターファイル "master" の第１フィールド（キーフィールド）と
+マッチした行は "tran" から抽出して、"master" の情報を連結して
+出力します。マッチしない行は、ダミーデータ "*" を連結して
+出力します。ダミーデータは指定することもできます。
+
+"master" の第１フィールドおよび "tran" の 第<n>フィールドは
+必ず昇順でソートされていることが条件になります。
+さらに "master" についてはキーフィールド(第１フィールド)について、
+各レコードがユニークでなければなりません。(第１フィールドが同じ値を
+もつレコードが複数あってはならない)  "tran" についてはこの制約は無く、
+キーフィールド(第<n>フィールド)が同じ値をレコードはいくつあっても
+構いません。
+
+キーに選択するフィールドは複数指定することも可能です。
+
+＜例１＞ 基本パターン
+(マスターファイル：master)
+$ cat master
+0000003 杉山______ 26 F
+0000005 崎村______ 50 F
+0000007 梶川______ 42 F
+0000010 柳本______ 50 F
+
+(トランザクションファイル：kekka)
+$ cat kekka
+0000000 91 59 20 76 54
+0000001 46 39 8  5  21
+0000003 30 50 71 36 30
+0000004 58 71 20 10 6
+0000005 82 79 16 21 80
+0000007 50 2  33 15 62
+0000008 52 91 44 9  0
+0000009 60 89 33 18 6
+0000010 95 60 35 93 76
+0000011 92 56 83 96 75
+
+"master" に存在しない行は "*" で補完して出力されます。
+$ join2 key=1 master kekka > data
+$ cat data
+0000000 ********** ** * 91 59 20 76 54
+0000001 ********** ** * 46 39 8  5  21
+0000003 杉山______ 26 F 30 50 71 36 30
+0000004 ********** ** * 58 71 20 10 6
+0000005 崎村______ 50 F 82 79 16 21 80
+0000007 梶川______ 42 F 50 2  33 15 62
+0000008 ********** ** * 52 91 44 9  0
+0000009 ********** ** * 60 89 33 18 6
+0000010 柳本______ 50 F 95 60 35 93 76
+0000011 ********** ** * 92 56 83 96 75
+
+＜例２＞
+左から順に連続した複数のフィールドをキーに指定する場合です。
+(マスター：master)
+$ cat master 
+A 0000003 杉山______ 26 F
+A 0000005 崎村______ 50 F
+B 0000007 梶川______ 42 F
+C 0000010 柳本______ 50 F
+
+(トランザクション：kekka)
+$ cat kekka
+1 A 0000000 91 59 20 76 54
+2 A 0000001 46 39 8  5  21
+3 A 0000003 30 50 71 36 30
+4 A 0000004 58 71 20 10 6
+5 A 0000005 82 79 16 21 80
+6 B 0000007 50 2  33 15 62
+7 B 0000008 52 91 44 9  0
+8 C 0000009 60 89 33 18 6
+9 C 0000010 95 60 35 93 76
+10 C 0000011 92 56 83 96 75
+
+第２、第３フィールドでキーをマッチングします。
+$ join2 key=2/3 master kekka > data
+$ cat data
+1 A 0000000 ********** ** * 91 59 20 76 54
+2 A 0000001 ********** ** * 46 39 8  5  21
+3 A 0000003 杉山______ 26 F 30 50 71 36 30
+4 A 0000004 ********** ** * 58 71 20 10 6
+5 A 0000005 崎村______ 50 F 82 79 16 21 80
+6 B 0000007 梶川______ 42 F 50 2  33 15 62
+7 B 0000008 ********** ** * 52 91 44 9  0
+8 C 0000009 ********** ** * 60 89 33 18 6
+9 C 0000010 柳本______ 50 F 95 60 35 93 76
+10 C 0000011 ********** ** * 92 56 83 96 75
+
+＜例３＞
+"+<string>" 補完する文字を指定するオプションです。
+"+"の後に補完で使用する文字を指定します。
+
+(マスターファイル：master)
+$ cat master
+0000003 杉山______ 26 F
+0000005 崎村______ 50 F
+0000007 梶川______ 42 F
+0000010 柳本______ 50 F
+
+(トランザクションファイル：kekka)
+$ cat kekka
+0000000 91 59 20 76 54
+0000001 46 39 8  5  21
+0000003 30 50 71 36 30
+0000004 58 71 20 10 6
+0000005 82 79 16 21 80
+0000007 50 2  33 15 62
+0000008 52 91 44 9  0
+0000009 60 89 33 18 6
+0000010 95 60 35 93 76
+0000011 92 56 83 96 75
+
+ダミーデータに "@" を指定します。
+$ join2 +@ key=1 master kekka > data
+$ cat data
+0000000 @ @ @ 91 59 20 76 54
+0000001 @ @ @ 46 39 8  5  21
+0000003 杉山______ 26 F 30 50 71 36 30
+0000004 @ @ @ 58 71 20 10 6
+0000005 崎村______ 50 F 82 79 16 21 80
+0000007 梶川______ 42 F 50 2  33 15 62
+0000008 @ @ @ 52 91 44 9  0
+0000009 @ @ @ 60 89 33 18 6
+0000010 柳本______ 50 F 95 60 35 93 76
+0000011 @ @ @ 92 56 83 96 75
+
+＜コラム＞
+"master" が０バイトの時は、何も連結せず、
+"tran" そのものを出力します。
+$ : > master
+$ join2 key=1 master tran > data
+$ cmp tran data           # （同じデータが出力される）
+
+"master" のフィールドを保証したい時は
+例えば、次のようなコードを書きます。
+$ [ ! -s master ] && echo 0000000 0 > master 
+$ join2 key=1 master tran
+
+＜公開の経緯と商用利用について＞
+
+ユニバーサル・シェル・プログラミング研究所（USP研究所）では、弊社の哲学に基き
+コマンドとシェルスクリプトを利用した独自のシステム開発や
+シェルプログラミングの普及・教育活動を行っています。
+
+Open usp Tukubaiは、シェルを利用したデータ処理の可能性を体感していただくために、
+商用版Tsukubai（有償）から利用頻度の高いものを厳選し、
+一部の機能をオープンソースソフトウェアとして公開したものです。
+
+Open usp Tukubaiのサポート（有償）や、商用版Tukubaiにご興味のある方は、
+以下のメールアドレスまでお問い合わせください。
+info@usp-lab.com
+
+
+# The MIT License
+#
+# Copyright (c) 2011 Universal Shell Programming Lab.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.

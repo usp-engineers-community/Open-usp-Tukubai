@@ -1,0 +1,173 @@
+self(USP)
+
+＜名前＞
+self : 指定したフィールドのデータを取り出す (USP-TOOL)
+       self=select field
+
+＜書式＞
+Usage   : self f1 f2 ... file
+        : self -d f1 f2 ... string
+Version : Wed Dec 14 15:20:01 JST 2011
+          OpenUSP (LINUX/PYTHON2.4/UTF-8)
+
+＜説明＞
+<file> ファイルから、指定したフィールドのデータだけを取り出して
+出力する <file> ファイルの指定が無いとき、あるいはファイル名が "-" の
+時は、標準入力ファイルを取り込みます。
+
+＜オプション>
+-d : ダイレクトモード
+     "<string>" に対して self コマンドを適用する
+
+＜例１＞
+テキストデータの第４フィールドと第２フィールドを取り出して出力します。
+$ cat data
+0000000 浜地______ 50 F 91 59 20 76 54
+0000001 鈴田______ 50 F 46 39 8  5  21
+0000003 杉山______ 26 F 30 50 71 36 30
+0000004 白土______ 40 M 58 71 20 10 6
+0000005 崎村______ 50 F 82 79 16 21 80
+
+$ self 4 2 data
+F 浜地______
+F 鈴田______
+F 杉山______
+M 白土______
+F 崎村______
+
+＜例２＞
+"self"はフィールド中の部分を切り出して出力することができます。
+("awk"の"substr"関数を使用した場合と同じ機能です)
+
+第1フィールドの4文字目以降を出力します。
+$ self 1.4 2 data
+0000 浜地______
+0001 鈴田______
+0003 杉山______
+0004 白土______
+0005 崎村______
+
+第２フィールドの１文字目から半角4文字分(全角2文字分)出力します。
+$ self 2.1.4 3 data
+浜地 50
+鈴田 50
+杉山 26
+白土 40
+崎村 50
+
+＜例３＞
+"0" レコード全体を指定することができます。
+$ self 0 data
+0000000 浜地______ 50 F 91 59 20 76 54
+0000001 鈴田______ 50 F 46 39 8  5  21
+0000003 杉山______ 26 F 30 50 71 36 30
+0000004 白土______ 40 M 58 71 20 10 6
+0000005 崎村______ 50 F 82 79 16 21 80
+
+$ self 4 0 data
+F 0000000 浜地______ 50 F 91 59 20 76 54
+F 0000001 鈴田______ 50 F 46 39 8 5 21
+F 0000003 杉山______ 26 F 30 50 71 36 30
+M 0000004 白土______ 40 M 58 71 20 10 6
+F 0000005 崎村______ 50 F 82 79 16 21 80
+
+＜例４＞
+連続したフィールドを記述できます。
+$ self 2/5 data
+浜地______ 50 F 91
+鈴田______ 50 F 46
+杉山______ 26 F 30
+白土______ 40 M 58
+崎村______ 50 F 82
+
+＜例５＞
+NF を使用することができます。
+$ self 1 NF-3 NF data
+0000000 59 54
+0000001 39 21
+0000003 50 30
+0000004 71 6
+0000005 79 80
+
+＜例６＞
+複数の空白があるフィールドを１つの空白にすることができます。　
+$ cat data2
+   a    b  
+c   d e
+
+$ self 1/NF data2
+a b
+c d e
+
+＜例７＞
+ダイレクトモードを使用して、文字列を加工することができます。
+$ self -d 1.1.4 "20070401 12345"
+2007
+
+＜例８＞
+self の substr 指定は画面表示長の半角文字分を１としています。
+$ echo ｱｲｳｴｵｶｷｸｹｺ | self 1.3.4
+ｳｴｵｶ
+
+＜注意＞
+入力ファイルが改行文字で終了していない場合、つまり行が尻切れ
+になっている場合は、ファイル末尾に改行文字が追加されて、完結
+した行になります。
+
+＜バグ＞
+数字名のファイルを使用してはいけません。
+もし "10" という名前のファイルが存在すると
+delf 1 10 --> ファイル名が "10" であるファイルから第１フィ
+ールドを抽出するという動作をして、標準入力ファイルから第１、
+１０フィールドを抽出するという動作をしなくなります。
+ただし、"2" のように数字１文字だけを指定した場合は、そのファ
+イルが存在しても、それは無視して、フィールドとして扱います。
+
+
+＜バグ＞
+substr 指定で文字の途中で開始したり、長さを指定したときは
+エラーとなります。
+$ echo ＵＳＰ研究所 | self 1.2.4
+Error[self] : Rec 1. エラー
+
+フィールドの幅より大きい開始位置を指定してもエラーとなりま
+す。
+$ echo ＵＳＰ研究所 | self 1.20
+Error[self] : Rec 1. エラー
+
+＜公開の経緯と商用利用について＞
+
+ユニバーサル・シェル・プログラミング研究所（USP研究所）では、弊社の哲学に基き
+コマンドとシェルスクリプトを利用した独自のシステム開発や
+シェルプログラミングの普及・教育活動を行っています。
+
+Open usp Tukubaiは、シェルを利用したデータ処理の可能性を体感していただくために、
+商用版Tsukubai（有償）から利用頻度の高いものを厳選し、
+一部の機能をオープンソースソフトウェアとして公開したものです。
+
+Open usp Tukubaiのサポート（有償）や、商用版Tukubaiにご興味のある方は、
+以下のメールアドレスまでお問い合わせください。
+info@usp-lab.com
+
+
+# The MIT License
+#
+# Copyright (c) 2011 Universal Shell Programming Lab.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.

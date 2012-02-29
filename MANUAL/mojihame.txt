@@ -1,0 +1,281 @@
+mojihame(USP)
+
+＜名前＞
+mojihame : テンプレートに文字をはめ込む
+
+＜書式＞
+Usage :                                              
+ 1.mojihame <template> <data>            (通常)      
+ 2.mojihame -l <label> <template> <data> (行単位)    
+ 3.mojihame -h <label> <template> <data> (階層データ)
+Option  : -d[c]                                      
+Version : Thu Dec 15 13:46:38 JST 2011
+
+＜呼び出しコマンドのバージョン＞
+Usage   : mojihame-p [-d<c>] <template> <data>
+Version : Sat Jan 24 13:30:10 JST 2009
+
+Usage   : mojihame-l [-l<label>][-d<c>] <template> <data>
+Version : Sat Jan 24 13:31:13 JST 2009
+
+Usage : mojihame-h -h<label> [-d<c>] <template> <data>
+Version : Sat Jan 24 13:59:43 JST 2009
+
+＜説明＞
+引数に指定する "template" ファイルに、"data" あるいは環境変数
+からデータを読んで、値をはめ込みます。以下の４つの使い方があります。
+
+1. data のすべてのフィールドを順番にはめ込む(通常)
+2. data のレコード単位のフィールドを template の指定ラベル間繰り返し
+   はめ込む(行単位)
+3. data が階層データの場合、template の指定ラベル間、階層的に
+   はめ込む(階層データ)
+
+＜例１＞(通常)
+"template" 中にある %1 %2 %3 ... の部分に、"data" のフィールド(左上から
+右下に順番に %1 %2 %3 ...に対応)を読んで、置換します。
+$ cat data
+a b
+c d
+$ cat template
+1st=%1 
+2nd=%2
+3rd=%3 4th=%4
+$ mojihame template data
+1st=a 
+2nd=b
+3rd=c 4th=d
+
+＜例２＞(通常)
+デフォルトでは、"@" というデータは、ヌル文字列として置換されます。
+このデフォルトを変更するには、-d オプションを使います。
+-d オプションを単独で使用した場合には、ヌル文字列に置換する機能
+はなくなります。
+$ cat data
+a @
+@ d
+$ cat template
+1st=%1 
+2nd=%2
+3rd=%3 4th=%4
+$ mojihame template data
+1st=a  
+2nd=
+3rd= 4th=d
+$ mojihame -da template data
+1st=  
+2nd=@
+3rd=@ 4th=d
+
+＜例３＞(行単位)
+"data" は１レコード単位に読み込まれ、レコードの各フィールドが %1 %2 .. 
+に対応します。次のレコードが読み込まれるときは、再び "template" が使用され、
+データがはめ込まれ出力されます。この使い方は 旧 mojihame の -r と互換性が 
+あります。mojihame -r は将来廃止されます。
+$ cat data
+a b c d
+w x y z
+$ cat template
+1st=%1 2nd=%2 
+3rd=%3 4th=%4
+$ mojihame -l template data
+1st=a 2nd=b
+3rd=c 4th=d
+1st=w 2nd=x
+3rd=y 4th=z
+$ mojihame -r template data
+1st=a 2nd=b
+3rd=c 4th=d
+1st=w 2nd=x
+3rd=y 4th=z
+
+＜例４＞(行単位)
+-l オプションで引数(ラベル)を指定した場合、"template" の "ラベル" で
+囲まれた行のみにデータが繰り返しはめ込まれます。このとき、"ラベル" を含む行は
+出力されません。また、"ラベル" にはさまれていない前後の部分は何も変換されません。
+(%数字の記述があっても何も変換されず、そのまま出力されます)
+また、"ラベル" はスタート行とエンド行の２箇所のみ記述可能です。
+指定ラベルは、部分一致でラベル行と判断しますので、注意が必要です。
+
+$ cat data
+a b
+y z
+$ cat template
+header %1
+LABEL
+1st=%1 2nd=%2 
+LABEL
+footer %2
+$ mojihame -lLABEL template data
+header %1
+1st=a 2nd=b
+1st=y 2nd=z
+footer %2
+
+＜例５＞(行単位)
+mojihame -l オプションを繰り返し使用することにより、プルダウンなどの
+ＨＴＭＬを簡易に生成することができます。
+指定ラベルは "template" に１組しか認められていないので、次の例のように、
+内側のラベルから順番に値をはめていくという順番が大切です。
+$ cat member
+佐藤
+鈴木
+$ cat kbn1
+東京
+大阪
+横浜
+$ cat kbn2
+男
+女
+$ cat template
+MEMBER
+氏名＝%1
+K1
+地名＝%1
+K1
+K2
+性別＝%1
+K2
+MEMBER
+$ mojihame -lK1 template kbn1 |\
+  mojihame -lK2 -        kbn2 |\
+  mojihame -lMEMBER - member
+氏名＝佐藤
+地名＝東京
+地名＝大阪
+地名＝横浜
+性別＝男
+性別＝女
+氏名＝鈴木
+地名＝東京
+地名＝大阪
+地名＝横浜
+性別＝男
+性別＝女
+
+＜例６＞(行単位)
+デフォルトでは、"@" というデータは、ヌル文字列として置換されます。
+このデフォルトを変更するには、-d オプションを使います。
+-d オプションは -l オプションの後に指定しなくてはなりません。
+$ mojihame -lLABEL -dx template data
+
+＜例７＞(階層データ)
+"-h" オプションは、階層的なデータをはめ込みます。必ず "ラベル" を指定
+することが必要です。"template" において、階層的ラベルに囲まれた部分に現れる
+"%数字" 文字列が、"data" の階層的キーフィールドに対応します。例えば、次の
+"template" 場合、"LABEL-1" に囲まれているのは %1、"LABEL-1" に囲まれている部分
+にさらに "LABEL-2" があり、"LABEL-2" で囲まれている部分に %2 と %3 があります。
+このとき、第１フィールドが変化する回数だけ、"LABEL-1" で囲まれている部分が繰り
+返し値がはめられ、"LABEL-2" で囲まれている部分は、同じ第１フィールドの値をもつ
+第２、第３フィールドのレコードの数だけ、繰り返し値がはめられます。
+階層の深さに制約はありません。また、"ラベル” は、部分一致でラベル行と判定
+されますので、例のように、コマンドライン上は、"-hLABEL" とし、"template" 
+上は、階層にあわせて、"LABEL-1"、"LABEL-2" とするのが有効です。
+さらに、このような階層ラベルは "template" の中で１組しか認められません。
+
+$ cat data
+山田 東京 10:00
+山田 大阪 20:00
+山田 横浜 09:30
+鈴木 東京 16:45
+鈴木 神戸 15:30
+$ cat template
+表題 %1
+LABEL-1
+氏名＝%1
+LABEL-2
+地名＝%2 時刻＝%3
+LABEL-2
+LABEL-1
+$ mojihame -hLABEL template data
+表題 %1
+氏名＝山田
+地名＝東京 時刻＝10:00
+地名＝大阪 時刻＝20:00
+地名＝横浜 時刻＝09:30
+氏名＝鈴木
+地名＝東京 時刻＝16:45
+地名＝神戸 時刻＝15:30
+
+＜註＞
+デフォルトでは、"@" というデータは、ヌル文字列として置換されます。
+このデフォルトを変更するには、-d オプションを使います。
+-d オプションは -h や -l オプションの後に指定しなくてはなりません。
+$ mojihame -dx template data
+$ mojihame -lLABEL -dx template data
+$ mojihame -hLABEL -dx template data
+
+＜註＞(アンダースコアデータの扱い)
+データの中の "\_" は mojihame 後、"_" に置換されます。
+エスケープの無い、"_" は、" " に置換されます。
+
+$ cat template
+<input type="text" value="%1" />
+<input type="text" value="%2" />
+<input type="text" value="%3" />
+
+$ cat data
+usp_lab
+usp\_lab
+______\_\_
+
+$ mojihame template data
+<input type="text" value="usp lab" />
+<input type="text" value="usp_lab" />
+<input type="text" value="      __" />
+
+＜註＞
+ファイル名に "-" を指定したときは、標準入力ファイルを期待します。
+"template" も "data" のいずれかを指定できます。
+
+＜註＞
+mojihame はシェルスクリプトです。オプションの指定により、
+mojihame-p (通常)
+mojihame-l (行単位)
+mojihame-h (階層データ)
+を起動します。
+
+＜註＞
+-d オプションはダミー文字列を指定しないと、ダミー文字列が無い、
+つまり "data" の値はすべてそのまま "template" にはめ込まれます。
+
+＜註＞
+mojihame-e は廃止しました。
+(変数の受け渡しがファイルによらず、明示的になりにくいため)
+
+＜公開の経緯と商用利用について＞
+
+ユニバーサル・シェル・プログラミング研究所（USP研究所）では、弊社の哲学に基き
+コマンドとシェルスクリプトを利用した独自のシステム開発や
+シェルプログラミングの普及・教育活動を行っています。
+
+Open usp Tukubaiは、シェルを利用したデータ処理の可能性を体感していただくために、
+商用版Tsukubai（有償）から利用頻度の高いものを厳選し、
+一部の機能をオープンソースソフトウェアとして公開したものです。
+
+Open usp Tukubaiのサポート（有償）や、商用版Tukubaiにご興味のある方は、
+以下のメールアドレスまでお問い合わせください。
+info@usp-lab.com
+
+
+# The MIT License
+#
+# Copyright (c) 2011 Universal Shell Programming Lab.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.

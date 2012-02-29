@@ -1,0 +1,271 @@
+#!/usr/bin/env python
+#coding: utf-8
+#
+# self セレクトフィールド（OpenUSP版）
+# 
+# designed by Nobuaki Tounaka
+# written by Yoshio Katayama
+#
+# The MIT License
+#
+# Copyright (C) 2011 Universal Shell Programming Lab.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+_usage = "self f1 f2 ... file"
+_usage1 = "self -d f1 f2 ... string"
+_version = "Wed Dec 14 15:20:01 JST 2011"
+_code = "OpenUSP (LINUX/PYTHON2.4/UTF-8)"
+_keypat = r'(\d+|NF(-\d+)?)((\.\d+)?)((\.\d+)?)((/(\d+|NF(-\d+)?)((\.\d+)?)((\.\d+)?))?)$'
+		#  1: 1st field
+		#  3: 1st field offset
+		#  5: 1st field length
+		#  9: 2nd field
+		# 11: 2nd field offset
+		# 13: 2nd field length
+
+import re
+import os
+import sys
+
+def error(msg, *arg):
+	print >> sys.stderr, 'Error[self] :', msg % arg
+	sys.exit(1)
+
+def usage():
+	print >> sys.stderr, "Usage   :", _usage
+	print >> sys.stderr, "Version :", _version
+	print >> sys.stderr, "         ", _code
+	sys.exit(1)
+
+class FieldLine:
+	def __init__(self, line, allow_z = False):
+		self.__allow_zero = allow_z
+		line = line.rstrip('\n')
+		self.__fields = [ line ]
+		self.__fields += [ x for x in line.split(' ') if x ]
+
+	def size(self):
+		return len(self.__fields) - 1
+
+	def getFieldNum(self, key):
+		if type(key) == type(0):
+			return key
+		if re.match(r'\d+$', key):
+			key = int(key)
+		elif key == 'NF':
+			key = self.size()
+		else:
+			key = self.size() - int(key[3:])
+			if key <= 0:
+				error("NF-x の x が大きすぎます。")
+		if key < 0:
+			error("フィールド番号が負です。")
+		if key == 0 and not self.__allow_zero:
+			error("フィールド番号が０です。")
+		if key > self.size():
+			error("フィールド番号が大きすぎます。")
+		return key
+
+	def getField(self, s, e = None):
+		s = self.getFieldNum(s)
+		if e == None:
+			e = s
+		else:
+			e = self.getFieldNum(e)
+		if s <= e:
+			return ' '.join(self.__fields[s : e + 1])
+		else:
+			t = self.__fields[e : s + 1]
+			t.reverse()
+			return ' '.join(t)
+
+#
+# 入力ファイルオープン
+#
+def open_file(n, mode = 'r'):
+	if n >= len(sys.argv):
+		file = sys.stdin
+	elif sys.argv[n] == '-':
+		file = sys.stdin
+		del sys.argv[n]
+	else:
+		try:
+			file = open(sys.argv[n], mode)
+			del sys.argv[n]
+		except:
+			file = sys.stdin
+	return file
+
+#
+# フィールド引数の解析
+#
+def getfield(arg):
+	f = re.match(_keypat, arg)
+	if f == None:
+		error("フィールド指定が正しくありません。");
+	fld1 = f.group(1)
+	off1 = f.group(3)
+	len1 = f.group(5)
+	if off1:
+		off1 = int(off1[1:])
+		if off1 == 0:
+			error("部分文字列開始位置が０です。")
+	if len1:
+		len1 = int(len1[1:])
+		if len1 == 0:
+			error("部分文字列長が０です。")
+	if f.group(9):
+		fld2 = f.group(9)
+		off2 = f.group(11)
+		len2 = f.group(13)
+		if off2:
+			off2 = int(off2[1:])
+		if off2 != off1:
+			error("部分文字列開始位置が異なります。")
+		if len2:
+			len2 = int(len2[1:])
+		if len2 != len1:
+			error("部分文字列長が異なります。")
+		return [ (fld1, off1, len1, fld2) ]
+	else:
+		return [ (fld1, off1, len1) ]
+	return key
+
+#
+# unicode 変換
+#
+def to_unicode(s):
+	try:
+		return unicode(s, 'utf_8')
+	except:
+		error("不当なマルチバイト文字が含まれています。")
+
+#
+# 文字の表示幅
+#
+def chwidth(c):
+	if c <= '\x7f' or c >= u'\uff61' and c <= u'\uff9f':
+		return 1
+	else:
+		return 2
+
+#
+# 部分身字列の出力
+#
+def putsub(line, fld, off, len):
+	str = line.getField(fld)
+	if not off:
+		print str,
+		return
+	str = to_unicode(str)
+	o = 1
+	while o < off:
+		o += chwidth(str[0])
+		str = str[1:]
+		if not str:
+			error("部分文字列開始位置が大きすぎます。")
+	if o > off:
+		error("部分文字列が文字を分割しようとしています。")
+	if not len:
+		print str,
+		return
+	s = ''
+	l = 0
+	while l < len and str:
+		l += chwidth(str[0])
+		s += str[0]
+		str = str[1:]
+	if l > len:
+		error("部分文字列が文字を分割しようとしています。")
+	print s.encode('utf_8'),
+	return
+
+#
+# フィールドの出力
+#
+def putfield(line, fld):
+	if len(fld) == 4:
+		f1 = line.getFieldNum(fld[0])
+		f2 = line.getFieldNum(fld[3])
+		if f1 * f2 == 0:
+			error("フィールド番号が０です。")
+		if f1 <= f2:
+			for i in range(f1, f2 + 1):
+				putsub(line, i, fld[1], fld[2])
+		else:
+			for i in range(f1, f2 - 1, -1):
+				putsub(line, i, fld[1], fld[2])
+	else:
+		putsub(line, fld[0], fld[1], fld[2])
+
+#
+#メイン関数
+#
+if __name__ == '__main__':
+
+	if len(sys.argv) < 2 \
+	 or sys.argv[1] == '--help' \
+	 or sys.argv[1] == '--version':
+		usage()
+
+	#
+	# ダイレクトモード
+	#
+	if sys.argv[1] == '-d':
+		if len(sys.argv) < 4:
+			usage()
+		line = FieldLine(sys.argv[-1], True)
+		del(sys.argv[-1])
+
+		#
+		# フィールドの解析
+		#
+		fld = []
+		for arg in sys.argv[2:]:
+			fld += getfield(arg)
+
+		for f in fld:
+			putfield(line, f)
+		print
+		sys.exit(0)
+
+	#
+	# 入力ファイルのオープン
+	#
+	file = open_file(len(sys.argv) - 1)
+	if len(sys.argv) < 2:
+		usage()
+
+	#
+	# フィールドの解析
+	#
+	fld = []
+	for arg in sys.argv[1:]:
+		fld += getfield(arg)
+
+	#
+	# メインループ
+	#
+	for line in file:
+		line = FieldLine(line, True)
+		for f in fld:
+			putfield(line, f)
+		print
+	sys.exit(0)

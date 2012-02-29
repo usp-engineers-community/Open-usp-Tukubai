@@ -1,0 +1,236 @@
+#!/usr/bin/env python
+#coding: utf-8
+#
+# loopj loop of join3（OpenUSP版）
+# 
+# designed by Nobuaki Tounaka
+# written by Yoshio Katayama
+#
+# The MIT License
+#
+# Copyright (C) 2011 Universal Shell Programming Lab.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+_usage = "loopj [-d<string>] num=<num> <file1> <file2> .."
+_version = "Fri Oct 21 11:26:06 JST 2011"
+_code = "OpenUSP (LINUX/PYTHON2.4/UTF-8)"
+_keypat = r'(\d+)(([/@](\d+))*)$'
+		# 1: 1st field
+		# 2: 2nd and later fields with separator
+
+import re
+import os
+import sys
+from getopt import getopt
+
+def error(msg, *arg):
+	print >> sys.stderr, 'Error[loopj] :', msg % arg
+	sys.exit(1)
+
+def usage():
+	print >> sys.stderr, "Usage   :", _usage
+	print >> sys.stderr, "Version :", _version
+	print >> sys.stderr, "         ", _code
+	sys.exit(1)
+
+class FieldLine:
+	def __init__(self, line, allow_z = False):
+		self.__allow_zero = allow_z
+		line = line.rstrip('\n')
+		self.__fields = [ line ]
+		self.__fields += [ x for x in line.split(' ') if x ]
+
+	def size(self):
+		return len(self.__fields) - 1
+
+	def getFieldNum(self, key):
+		if type(key) == type(0):
+			return key
+		if re.match(r'\d+$', key):
+			key = int(key)
+		elif key == 'NF':
+			key = self.size()
+		else:
+			key = self.size() - int(key[3:])
+			if key <= 0:
+				error("NF-x の x が大きすぎます。")
+		if key < 0:
+			error("フィールド番号が負です。")
+		if key == 0 and not self.__allow_zero:
+			error("フィールド番号が０です。")
+		if key > self.size():
+			error("フィールド番号が大きすぎます。")
+		return key
+
+	def getField(self, s, e = None):
+		s = self.getFieldNum(s)
+		if e == None:
+			e = s
+		else:
+			e = self.getFieldNum(e)
+		if s <= e:
+			return ' '.join(self.__fields[s : e + 1])
+		else:
+			t = self.__fields[e : s + 1]
+			t.reverse()
+			return ' '.join(t)
+
+	def getHead(self, n):
+		pat = '( *([^ ]+ +){%d}[^ ]+)' % (n - 2)
+		r = re.match(pat, self.__fields[0])
+		return r.group(1)
+
+	def getTail(self, n):
+		pat = ' *([^ ]+ +){%d}[^ ]+ ?(.*)' % (n - 1)
+		r = re.match(pat, self.__fields[0])
+		return r.group(2)
+
+#
+# 入力ファイルオープン
+#
+def open_file(fname):
+	if fname == '-':
+		file = sys.stdin
+	else:
+		try:
+			file = open(fname, 'r')
+		except:
+			error("ファイル %s をオープンできません。", fname)
+	return file
+
+#
+# num= の解析
+#
+def getnum(arg):
+	k = re.match('num=' + _keypat, arg)
+	if k == None:
+		error("num 引数が正しくありません。");
+	key = [ int(k.group(1)) ]
+	while k.group(2) != '':
+		sep = k.group(2)[0]
+		str = k.group(2)[1:]
+		k = re.match(_keypat, str)
+		n = int(k.group(1))
+		if sep == '@':
+			key += [ n ]
+		elif key[-1] <= n:
+			key += range(key[-1] + 1, n + 1)
+		else:
+			key += range(key[-1] - 1, n - 1, -1)
+	if len(key) == 1:
+		return range(1, key[0] + 1)
+	elif min(key) == 1:
+		return key
+	else:
+		error("キーの値が正しくありません。")
+
+#
+# ダミー文字列の生成
+#
+def make_dummy(line, num, dstr):
+	return ' '.join([ dstr ] * (line.size() - num))
+
+#
+# キー文字列の抽出
+#
+def keystr(line, key):
+	return ' '.join(map(line.getField, key))
+
+#
+# 最小キーの抽出
+#
+def minkey(key):
+	k = [ k for k in key if k ]
+	if k:
+		return min(k)
+	else:
+		return None
+
+#
+#メイン関数
+#
+if __name__ == '__main__':
+
+	if len(sys.argv) < 3 \
+	 or sys.argv[1] == '--help' \
+	 or sys.argv[1] == '--version':
+		usage()
+
+	#
+	# -d<string>
+	#
+	try:
+		opts = getopt(sys.argv[1:], "d:")
+		if opts[0]:
+			dstr = opts[0][-1][1]
+		else:
+			dstr = '0'
+		if len(opts[1]) < 2:
+			usage()
+	except:
+		usage()
+
+	#
+	# num=<num>
+	#
+	if opts[1][0][:4] != 'num=':
+		usage()
+	key = getnum(opts[1][0])
+
+	#
+	# １行入力
+	#
+	file, line, kstr, dummy = [], [], [], []
+	for arg in opts[1][1:]:
+		file += [ open_file(arg) ]
+		l = file[-1].readline()
+		if not l:
+			error("ファイル '%s' が空です。", arg)
+		line += [ FieldLine(l) ]
+		if line[-1].size() == 0:
+			error("ファイル '%s' にフィールドがありません。")
+		kstr += [ keystr(line[-1], key) ]
+		#
+		# ダミー文字列の生成
+		#
+		dummy += [ make_dummy(line[-1], max(key), dstr) ]
+
+	#
+	# メインループ
+	#
+	eof = 0;
+	while eof < len(file):
+		k = minkey(kstr)
+		print k,
+		for i in range(len(file)):
+			if kstr[i] == k:
+				tail = line[i].getTail(max(key))
+				if tail:
+					print tail,
+				l = file[i].readline()
+				if l:
+					line[i] = FieldLine(l)
+					kstr[i] = keystr(line[i], key)
+				else:
+					kstr[i] = None
+					eof += 1
+			else:
+				print dummy[i],
+		print

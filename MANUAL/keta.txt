@@ -1,0 +1,133 @@
+keta(USP)
+
+＜名前＞
+keta : テキストファイルの桁そろえをする。
+
+＜書式＞
+Usage   : keta n1 n2 .. <filename>
+          keta -v <filename>
+          keta [--] <filename>
+Version : Thu Dec 15 13:46:38 JST 2011
+          UTF-8
+
+＜説明＞
+引数のファイル又は標準入力のテキストデータの各フィールドの桁数をそろえて出力する
+ツールです。
+各フィールドの桁数を自動的に判断して出力する場合とフィールド毎の桁を指定して出力
+することが可能です。
+
+＜例１＞
+引数で指定したファイルの各フィールド毎に最大桁数を判断して桁数を自動出力します。
+$ cat data
+01 埼玉県 01 さいたま市 91 59 20 76 54
+01 埼玉県 02 川越市 46 39 8 5 21
+01 埼玉県 03 熊谷市 82 0 23 84 10
+02 東京都 04 新宿区 30 50 71 36 30
+02 東京都 06 港区 58 71 20 10 6
+04 神奈川県 13 横浜市 92 56 83 96 75
+
+$ keta data   (右詰め) 
+01   埼玉県 01 さいたま市 91 59 20 76 54
+01   埼玉県 02     川越市 46 39  8  5 21
+01   埼玉県 03     熊谷市 82  0 23 84 10
+02   東京都 04     新宿区 30 50 71 36 30
+02   東京都 06       港区 58 71 20 10  6
+04 神奈川県 13     横浜市 92 56 83 96 75
+
+$ keta -- data (左詰め)
+01 埼玉県   01 さいたま市 91 59 20 76 54
+01 埼玉県   02 川越市     46 39 8  5  21
+01 埼玉県   03 熊谷市     82 0  23 84 10
+02 東京都   04 新宿区     30 50 71 36 30
+02 東京都   06 港区       58 71 20 10 6
+04 神奈川県 13 横浜市     92 56 83 96 75
+
+＜例２＞
+各フィールド毎の桁数を指定して出力します。
+引数としてファイルの各フィールドの1番目から最終フィールドまでのそれぞれの桁数を
+順に指定します。
+
+        ↓２フィールド目の桁数
+keta n1 n2 n3 ・・・・nNF 
+     ↑               ↑
+1フィールド目の桁数  最終フィールド目の桁数
+
+尚、桁数は半角の文字数で指定します。大文字の場合は半角2文字分の指定が必要です。
+keta 4 は半角では4文字分、全角では2文字分になります。
+
+$ keta 2 8 2 10 2 2 2 2 2 data
+>> 例１と同じ出力になります。
+
+
+＜例３＞
+通常は桁は右詰めで出力されますが、左詰めで出力する場合は 桁数に"-"をつけて
+指定します。
+
+第２フィールドと第4フィールドを左詰めにして出力
+$ keta 2 -8 2 -10 2 2 2 2 2 data 
+01 埼玉県   01 さいたま市 91 59 20 76 54
+01 埼玉県   02 川越市     46 39  8  5 21
+01 埼玉県   03 熊谷市     82  0 23 84 10
+02 東京都   04 新宿区     30 50 71 36 30
+02 東京都   06 港区       58 71 20 10  6
+04 神奈川県 13 横浜市     92 56 83 96 75
+
+
+＜例４＞
+同じ桁数を連続したフィールドに指定する場合は "桁数"x"連続するフィールド数" と
+簡潔に表記することができます。keta 3x4 は keta 3 3 3 3 と同じ意味になります。
+フィールド数には、NF (１レコードのフィールド数）を使用し、NF-xx と指定できます。
+
+$ keta 2 -8 2 -10 2x5 data
+$ keta 2 -8 2 -10 2xNF-4 data
+>> 例３と同じ出力になります。
+
+
+＜例５＞
+"-v" オプションを使用するとファイルの各フィールドの最大桁数を表示させることが
+できます。
+
+$ keta -v data
+2 8 2 10 2 2 2 2 2
+
+$ keta $(keta -v data) data
+>> 例１と同じ出力になります。
+
+
+
+＜公開の経緯と商用利用について＞
+
+ユニバーサル・シェル・プログラミング研究所（USP研究所）では、弊社の哲学に基き
+コマンドとシェルスクリプトを利用した独自のシステム開発や
+シェルプログラミングの普及・教育活動を行っています。
+
+Open usp Tukubaiは、シェルを利用したデータ処理の可能性を体感していただくために、
+商用版Tsukubai（有償）から利用頻度の高いものを厳選し、
+一部の機能をオープンソースソフトウェアとして公開したものです。
+
+Open usp Tukubaiのサポート（有償）や、商用版Tukubaiにご興味のある方は、
+以下のメールアドレスまでお問い合わせください。
+info@usp-lab.com
+
+
+# The MIT License
+#
+# Copyright (c) 2011 Universal Shell Programming Lab.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.

@@ -1,0 +1,115 @@
+check_attr_name(USP)
+
+＜名前＞
+check_attr_name : name 形式データの属性をチェックする
+
+＜書式＞
+Usage  : check_attr_name <check_file> <name_file>
+Option : --through <string>
+         --ngword <ng_file>
+                           
+Attribute: n N (０以上整数)
+           s S (符号つき整数)
+           f F (小数)
+           v V (符号つき小数)
+           e E (英字)
+           a A (英数字)
+           h H (半角文字)
+           z Z (全角文字)
+           k K (全角カタカナ)
+           x X (文字)
+           c C (チェックディジット)
+           o O (英大文字)
+
+Version  : Thu Dec 15 13:46:38 JST 2011
+           UTF-8
+
+＜説明＞
+<check_file> に記述されているタグ名、桁数＋属性の指定に従って
+<name_file> のデータをチェックします。属性が大文字なら
+桁数に等しい値を、小文字なら、指定桁数以下の値を要求します。
+<name_file> のタグは、タグ名_数値 であれば、_数値部分を
+取り除いたタグ名のみでチェックをします。
+エラーがあった場合は、コマンドはエラー終了し、標準出力にタグ名と、
+桁数＋属性を出力します。
+
+<オプション>
+--through <string>
+<name_file> のデータが<string>のうちいずれかに等しい場合は、
+チェックを実施しません。<string>のデフォルトは、"_" となります。
+このオプションは繰り返し使って複数の<string>を指定することができます。
+
+--ngword <ng_file>
+Z X K などの日本語文字チェックのとき、<ng_file> に含まれてる
+マルチバイト文字はエラーとします。
+
+＜例１＞ 通常のチェック
+[usp1 usp@ ~]$ cat check
+A N3            <-- ３桁整数
+B n4            <-- ４桁以下の整数
+C x3            <-- ３桁以下の文字
+D X6            <-- ６桁の文字
+
+[usp1 usp@ ~]$ cat data
+A 200
+B 12345
+C abcde
+D_001 xxxxxx    <-- "D 6X" としてチェックされる 
+D_002 xxxxx
+D_003 xxxx
+[usp1 usp@ ~]$ check_attr_name check data
+B n4
+C x3
+D_002 X6
+D_003 X6
+[usp1 usp@ ~]$ echo $?
+1
+
+＜例２＞ --through オプションでチェックしない値を指定する
+[usp1 usp@ ~]$ cat data2
+A 200
+B _
+C _
+D_001 xxxxxx
+D_002 _
+D_003 _
+[usp1 usp@ ~]$ check_attr_name --through _ check data2
+[usp1 usp@ ~]$ echo $?
+0
+
+＜公開の経緯と商用利用について＞
+
+ユニバーサル・シェル・プログラミング研究所（USP研究所）では、弊社の哲学に基き
+コマンドとシェルスクリプトを利用した独自のシステム開発や
+シェルプログラミングの普及・教育活動を行っています。
+
+Open usp Tukubaiは、シェルを利用したデータ処理の可能性を体感していただくために、
+商用版Tsukubai（有償）から利用頻度の高いものを厳選し、
+一部の機能をオープンソースソフトウェアとして公開したものです。
+
+Open usp Tukubaiのサポート（有償）や、商用版Tukubaiにご興味のある方は、
+以下のメールアドレスまでお問い合わせください。
+info@usp-lab.com
+
+
+# The MIT License
+#
+# Copyright (c) 2011 Universal Shell Programming Lab.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.

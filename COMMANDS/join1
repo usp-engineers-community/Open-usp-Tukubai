@@ -1,0 +1,240 @@
+#!/usr/bin/env python
+#coding: utf-8
+#
+# join1 シーケンシャルマッチングジョイン（OpenUSP版）
+# 
+# designed by Nobuaki Tounaka
+# written by Yoshio Katayama
+#
+# The MIT License
+#
+# Copyright (C) 2011 Universal Shell Programming Lab.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+_usage = "join1 [+ng<fd>] key=<n> <master> <tran>"
+_version = "Fri Oct 21 11:26:06 JST 2011"
+_code = "OpenUSP (LINUX/PYTHON2.4/UTF-8)"
+_keypat = r'(\d+|NF(-\d+)?)(([/@](\d+|NF(-\d+)?))*)$'
+		# 1: 1st field
+		# 3: 2nd and later fields with separator
+
+import re
+import os
+import sys
+
+def error(msg, *arg):
+	print >> sys.stderr, 'Error[join1] :', msg % arg
+	sys.exit(1)
+
+def usage():
+	print >> sys.stderr, "Usage   :", _usage
+	print >> sys.stderr, "Version :", _version
+	print >> sys.stderr, "         ", _code
+	sys.exit(1)
+
+class FieldLine:
+	def __init__(self, line, allow_z = False):
+		self.__allow_zero = allow_z
+		line = line.rstrip('\n')
+		self.__fields = [ line ]
+		self.__fields += [ x for x in line.split(' ') if x ]
+
+	def size(self):
+		return len(self.__fields) - 1
+
+	def getFieldNum(self, key):
+		if type(key) == type(0):
+			return key
+		if re.match(r'\d+$', key):
+			key = int(key)
+		elif key == 'NF':
+			key = self.size()
+		else:
+			key = self.size() - int(key[3:])
+			if key <= 0:
+				error("NF-x の x が大きすぎます。")
+		if key < 0:
+			error("フィールド番号が負です。")
+		if key == 0 and not self.__allow_zero:
+			error("フィールド番号が０です。")
+		if key > self.size():
+			error("フィールド番号が大きすぎます。")
+		return key
+
+	def getField(self, s, e = None):
+		s = self.getFieldNum(s)
+		if e == None:
+			e = s
+		else:
+			e = self.getFieldNum(e)
+		if s <= e:
+			return ' '.join(self.__fields[s : e + 1])
+		else:
+			t = self.__fields[e : s + 1]
+			t.reverse()
+			return ' '.join(t)
+
+	def getHead(self, n):
+		pat = '( *([^ ]+ +){%d}[^ ]+)' % (n - 2)
+		r = re.match(pat, self.__fields[0])
+		return r.group(1)
+
+	def getTail(self, n):
+		pat = ' *([^ ]+ +){%d}[^ ]+ ?(.*)' % (n - 1)
+		r = re.match(pat, self.__fields[0])
+		return r.group(2)
+
+#
+# 入力ファイルオープン
+#
+def open_file(n, mode = 'r'):
+	if n >= len(sys.argv) or sys.argv[n] == '-':
+		file = sys.stdin
+	else:
+		try:
+			file = open(sys.argv[n], mode)
+		except:
+			error("ファイル %s をオープンできません。", sys.argv[n])
+	return file
+
+#
+# key= の解析
+#
+def getkey(line, arg):
+	k = re.match('key=' + _keypat, arg)
+	if k == None:
+		error("key 引数が正しくありません。");
+	key = [ line.getFieldNum(k.group(1)) ]
+	while k.group(3) != '':
+		sep = k.group(3)[0]
+		str = k.group(3)[1:]
+		k = re.match(_keypat, str)
+		n = line.getFieldNum(k.group(1))
+		if sep == '@':
+			key += [ n ]
+		elif key[-1] <= n:
+			key += range(key[-1] + 1, n + 1)
+		else:
+			key += range(key[-1] - 1, n - 1, -1)
+	return key
+
+#
+# tran の後始末
+#
+def flush_tran(tran, ngfile, tline):
+	if ngfile:
+		print >> ngfile, tline.getField(0)
+		for tline in tran:
+			print >> ngfile, tline,
+	else:
+		for tline in tran:
+			pass
+	sys.exit(0)
+
+#
+# キー文字列の抽出
+#
+def keystr(line, key):
+	return ' '.join(map(line.getField, key))
+
+#
+#メイン関数
+#
+if __name__ == '__main__':
+
+	if len(sys.argv) < 3 \
+	 or sys.argv[1] == '--help' \
+	 or sys.argv[1] == '--version':
+		usage()
+
+	#
+	# +ng<fd>
+	#
+	if sys.argv[1][0:3] == '+ng':
+		if len(sys.argv[1]) == 3:
+			fd = 2
+		else:
+			try:
+				fd = int(sys.argv[1][3:])
+			except:
+				error("ファイル記述子が正しくありません。")
+		try:
+			ngfile = os.fdopen(fd, 'w', 4096)
+		except:
+			error("ファイル記述子が正しくありません。")
+		del sys.argv[1]
+		if len(sys.argv) < 3:
+			usage()
+	else:
+		ngfile = None
+
+	mast = open_file(2)
+	tran = open_file(3)
+
+	#
+	# １行入力
+	#
+	tline = tran.readline()
+	if not tline:
+		sys.exit(0)
+	tline = FieldLine(tline)
+
+	mline = mast.readline()
+	if not mline:
+		flush_tran(tran, ngfile, tline)
+	mline = FieldLine(mline)
+
+	#
+	# key=
+	#
+	if sys.argv[1][:4] != 'key=':
+		usage()
+	tkey = getkey(tline, sys.argv[1])
+	ks = min(tkey)
+	ke = max(tkey)
+	mkey = [ t - ks + 1 for t in tkey ]
+
+	tkstr = keystr(tline, tkey)
+	mkstr = keystr(mline, mkey)
+
+	#
+	# メインループ
+	#
+	while True:
+		while tkstr > mkstr:
+			mline = mast.readline()
+			if not mline:
+				flush_tran(tran, ngfile, tline)
+			mline = FieldLine(mline)
+			mkstr = keystr(mline, mkey)
+		if tkstr == mkstr:
+			if ks > 1:
+				print tline.getHead(ks),
+			if ke < tline.size():
+				print mline.getField(0), tline.getTail(ke)
+			else:
+				print mline.getField(0)
+		elif ngfile:
+			print >> ngfile, tline.getField(0)
+		tline = tran.readline()
+		if not tline:
+			sys.exit(0)
+		tline = FieldLine(tline)
+		tkstr = keystr(tline, tkey)

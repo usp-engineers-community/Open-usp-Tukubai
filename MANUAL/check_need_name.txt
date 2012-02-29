@@ -1,0 +1,99 @@
+check_need_name(USP)
+
+＜名前＞
+check_need_name : name 形式データの存在をチェックする
+
+＜書式＞
+Usage    : check_need_name <check_file> <name_file>
+Option   : --blank <string>
+Version  : Thu Dec 15 13:46:38 JST 2011
+
+＜説明＞
+<check_file> に記述されているタグ名について、
+<name_file> のデータをチェックします。タグが無かったり、
+値が無かった場合に、コマンドはエラー終了し、標準出力に
+タグ名を出力します。
+<check_file> は、タグ名+("_"以外の文字列)でも正しく
+認識します。
+
+<オプション>
+--blank <string>
+<name_file> のデータの値が<string>の場合は、データが無いと見なします。
+つまり、<check_file>に指定されていて、値が<string>であるレコードは、
+エラーになります。<string>のデフォルトは、"_" となります。
+
+＜例１＞ 通常のチェック
+[usp1 usp@ ~]$ cat check
+A 
+B 
+C 
+D 
+
+(check と次のcheck2 は同等)
+[usp1 usp@ ~]$ cat check2
+A need
+B need 
+C need
+D need
+E _
+F _
+
+[usp1 usp@ ~]$ cat data
+A _
+B 12345
+C abcde
+D_001 _
+D_002 xxx
+[usp1 usp@ ~]$ check_need_name check data
+A 
+D_001
+$ echo $?
+1 
+
+＜例２＞ --blank オプションでヌルデータを指定する。
+[usp1 usp@ ~]$ cat data2
+A @
+B 1
+C 2
+D 3
+[usp1 usp@ ~]$ check_need_name --blank @ check data
+A
+[usp1 usp@ ~]$ echo $?
+1
+
+＜公開の経緯と商用利用について＞
+
+ユニバーサル・シェル・プログラミング研究所（USP研究所）では、弊社の哲学に基き
+コマンドとシェルスクリプトを利用した独自のシステム開発や
+シェルプログラミングの普及・教育活動を行っています。
+
+Open usp Tukubaiは、シェルを利用したデータ処理の可能性を体感していただくために、
+商用版Tsukubai（有償）から利用頻度の高いものを厳選し、
+一部の機能をオープンソースソフトウェアとして公開したものです。
+
+Open usp Tukubaiのサポート（有償）や、商用版Tukubaiにご興味のある方は、
+以下のメールアドレスまでお問い合わせください。
+info@usp-lab.com
+
+
+# The MIT License
+#
+# Copyright (c) 2011 Universal Shell Programming Lab.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.

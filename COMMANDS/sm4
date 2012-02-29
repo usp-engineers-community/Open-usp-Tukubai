@@ -1,0 +1,246 @@
+#!/usr/bin/env python
+#coding: utf-8
+#
+# sm4 小計/中計挿入ツール（OpenUSP版）
+# 
+# designed by Nobuaki Tounaka
+# written by Yoshio Katayama
+#
+# The MIT License
+#
+# Copyright (C) 2011 Universal Shell Programming Lab.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+_usage = "sm4 [+h] <k1> <k2> <d1> <d2> <s1> <s2> <file>"
+_version = "Fri Oct 21 11:26:06 JST 2011"
+_code = "OpenUSP (LINUX/PYTHON2.4/UTF-8)"
+_keypat = r'\d+|NF(-\d+)?$'
+
+DUMMY_CHAR = '@'
+
+import re
+import os
+import sys
+from decimal import Decimal
+
+def error(msg, *arg):
+	print >> sys.stderr, 'Error[sm4] :', msg % arg
+	sys.exit(1)
+
+def usage():
+	print >> sys.stderr, "Usage   :", _usage
+	print >> sys.stderr, "Version :", _version
+	print >> sys.stderr, "         ", _code
+	sys.exit(1)
+
+class FieldLine:
+	def __init__(self, line, allow_z = False):
+		self.__allow_zero = allow_z
+		line = line.rstrip('\n')
+		self.__fields = [ line ]
+		self.__fields += [ x for x in line.split(' ') if x ]
+
+	def size(self):
+		return len(self.__fields) - 1
+
+	def getFieldNum(self, key):
+		if type(key) == type(0):
+			return key
+		if re.match(r'\d+$', key):
+			key = int(key)
+		elif key == 'NF':
+			key = self.size()
+		else:
+			key = self.size() - int(key[3:])
+			if key <= 0:
+				error("NF-x の x が大きすぎます。")
+		if key < 0:
+			error("フィールド番号が負です。")
+		if key == 0 and not self.__allow_zero:
+			error("フィールド番号が０です。")
+		if key > self.size():
+			error("フィールド番号が大きすぎます。")
+		return key
+
+	def getField(self, s, e = None):
+		s = self.getFieldNum(s)
+		if e == None:
+			e = s
+		else:
+			e = self.getFieldNum(e)
+		if s <= e:
+			return ' '.join(self.__fields[s : e + 1])
+		else:
+			t = self.__fields[e : s + 1]
+			t.reverse()
+			return ' '.join(t)
+
+#
+# unicode 変換
+#
+def to_unicode(s):
+	try:
+		return unicode(s, 'utf_8')
+	except:
+		error("不当なマルチバイト文字が含まれています。")
+
+#
+# 文字列の表示幅
+#
+def strwidth(s):
+	wid = 0
+	for c in to_unicode(s):
+		if c <= '\x7f' or c >= u'\uff61' and c <= u'\uff9f':
+			wid += 1
+		else:
+			wid += 2
+	return wid
+
+#
+# 入力ファイルオープン
+#
+def open_file(n, mode = 'r'):
+	if n >= len(sys.argv) or sys.argv[n] == '-':
+		file = sys.stdin
+	else:
+		try:
+			file = open(sys.argv[n], mode)
+		except:
+			error("ファイル %s をオープンできません。", sys.argv[n])
+	return file
+
+#
+# フィールド値の取得
+#
+def getval(line, n):
+	if re.match(r'(\+|-)?(\d+\.?|\d*\.\d+)$', line.getField(n)):
+		return Decimal(line.getField(n))
+	else:
+		error("数値変換できません。")
+
+#
+#メイン関数
+#
+if __name__ == '__main__':
+
+	if len(sys.argv) < 7:
+		usage()
+
+	#
+	# +h
+	#
+	if sys.argv[1] == '+h':
+		header = True
+		del sys.argv[1]
+		if len(sys.argv) < 7:
+			usage()
+	else:
+		header = False
+
+	#
+	# key=<key>
+	#
+	k1 = sys.argv[1]
+	k2 = sys.argv[2]
+	d1 = sys.argv[3]
+	d2 = sys.argv[4]
+	s1 = sys.argv[5]
+	s2 = sys.argv[6]
+	p = re.compile(_keypat)
+	if not (p.match(k1) and p.match(k2) and p.match(s1) and p.match(s2)):
+		usage()
+
+	file = open_file(7)
+
+	#
+	# ヘッダー出力
+	#
+	if header:
+		line = file.readline()
+		if not line:
+			sys.exit(0)
+		print line,
+
+	#
+	# １行入力
+	#
+	line = file.readline()
+	if not line:
+		sys.exit(0)
+	line = FieldLine(line)
+	k1 = line.getFieldNum(k1)
+	k2 = line.getFieldNum(k2)
+	d1 = line.getFieldNum(d1)
+	d2 = line.getFieldNum(d2)
+	s1 = line.getFieldNum(s1)
+	s2 = line.getFieldNum(s2)
+	if k1 > k2 or d1 > d2 or s1 > s2 or k2 > d1 or d2 > s1:
+		usage()
+
+	#
+	# ダミー文字列の生成
+	#
+	dummy = ''
+	for i in range(d1, d2):
+		dummy += DUMMY_CHAR * strwidth(line.getField(i)) + ' '
+	dummy += DUMMY_CHAR * strwidth(line.getField(d2))
+
+	#
+	# 合計の初期化
+	#
+	sum = [ 0 for i in range(s2 + 1) ]
+	if not DUMMY_CHAR in line.getField(d1, d2):
+		for i in range(s1, s2 + 1):
+			sum[i] = getval(line, i)
+		if (k1):
+			key = line.getField(k1, k2)
+	print line.getField(0)
+
+	#
+	# メインループ
+	#
+	for line in file:
+		line = FieldLine(line)
+		if DUMMY_CHAR in line.getField(d1, d2):
+			print line.getField(0)
+			continue
+		if line.getField(k1, k2) == key:
+			for i in range(s1, s2 + 1):
+				sum[i] += getval(line, i)
+			print line.getField(0)
+			continue
+		print key, dummy,
+		for i in range(s1, s2):
+			print sum[i],
+		print sum[s2]
+		for i in range(s1, s2 + 1):
+			sum[i] = getval(line, i)
+		key = line.getField(k1, k2)
+		print line.getField(0)
+
+	#
+	# 残り合計の出力
+	#
+	print key, dummy,
+	for i in range(s1, s2):
+		print sum[i],
+	print sum[s2]
+
+	sys.exit(0)

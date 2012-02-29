@@ -1,0 +1,36 @@
+
+               Universal Shell Programming Laboratory
+                          info@usp-lab.com
+                    Mon Feb 27 23:54:52 JST 2012
+
+Tukubaiインストール
+===================
+
+ファイルを展開し、COMMAND内のPythonスクリプトをコマンドを配置する
+対象となるディレクトリにコピー。マニュアル（テキストファイル）も、
+アクセスしやすい場所にコピー。その後、AまたはBのいずれかを実施。
+
+Method A
+--------
+
+Tukubaiコマンドをchmod(1)等で実行可能な状態とし、コマンドをコピーした
+ディレクトリを環境変数PATHへ追加する。
+
+  サンプル（~/binに置く場合）
+    $ chmod +x ~/bin/*
+    $ PATH=~/bin:${PATH}
+    $ delf -v
+    Usage    : delf <f1> <f2> ... [file]
+    Version  : Fri Oct 21 11:26:06 JST 2011
+               OpenUSP (LINUX,FreeBSD/PYTHON2.4/UTF-8)
+
+Method B
+--------
+
+Tukubaiコマンドをpython(1)コマンドの引数に指定して実行する。
+
+  サンプル（~/binに置く場合）
+    $ python ./delf -v
+    Usage    : delf <f1> <f2> ... [file]
+    Version  : Fri Oct 21 11:26:06 JST 2011
+               OpenUSP (LINUX,FreeBSD/PYTHON2.4/UTF-8)

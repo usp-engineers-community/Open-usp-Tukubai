@@ -1,0 +1,143 @@
+#!/usr/bin/env python
+#coding: utf-8
+#
+# mime-read ＭＩＭＥ型式データリード（OpenUSP版）
+# 
+# designed by Nobuaki Tounaka
+# written by Yoshio Katayama
+#
+# The MIT License
+#
+# Copyright (C) 2011 Universal Shell Programming Lab.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+_usage = "mime-read <name> <file>"
+_usage1 = "mime-read -v <file>"
+_version = "Fri Oct 21 11:26:06 JST 2011"
+_code = "OpenUSP (LINUX/PYTHON2.4/UTF-8)"
+
+import re
+import os
+import sys
+
+def error(msg, *arg):
+	print >> sys.stderr, 'Error[check_need_name] :', msg % arg
+	sys.exit(1)
+
+def usage():
+	print >> sys.stderr, "Usage    :", _usage
+	print >> sys.stderr, "         :", _usage1
+	print >> sys.stderr, "Version  :", _version
+	print >> sys.stderr, "          ", _code
+	sys.exit(1)
+
+#
+# 入力ファイルオープン
+#
+def open_file(n, mode = 'r'):
+	if n >= len(sys.argv) or sys.argv[n] == '-':
+		file = sys.stdin
+	else:
+		try:
+			file = open(sys.argv[n], mode)
+		except:
+			error("ファイル '%s' をオープンできません。", sys.argv[n])
+	return file
+
+#
+# 改行シーケンス（\r\n）の削除
+#
+def rm_eol(line):
+	return line.rstrip('\n').rstrip('\r')
+
+#
+# 1行入力
+#
+def getline(file):
+	line = file.readline()
+	if line:
+		return line
+	error("boundary がありません。")
+
+#
+#メイン関数
+#
+if __name__ == '__main__':
+
+	if len(sys.argv) <= 1 \
+	 or sys.argv[1] == '--help' \
+	 or sys.argv[1] == '--version':
+		usage()
+
+	#
+	# オプション
+	#
+	if sys.argv[1] == '-v':
+		vflag = True
+	else:
+		vflag = False
+		name = sys.argv[1]
+
+	#
+	# boundary の取得 & ヘッダー部のスキップ
+	#
+	file = open_file(2)
+	boundary = None
+	for line in file:
+		line = rm_eol(line)
+		if line == boundary:
+			break
+		elif boundary:
+			if line == boundary + '--':
+				error("boundary がありません。")
+			continue
+		r = re.match(r'Content-Type: [^"]* boundary="(.*)"', line)
+		if r:
+			boundary = '--' + r.group(1)
+		elif line[:2] == '--' and len(line) > 2:
+			boundary = line
+			break
+	else:
+		error("boundary がありません。")
+
+	#
+	# メインループ
+	#
+	n = 1
+	head, hit = True, False
+	for line in file:
+		line = rm_eol(line)
+		if line == boundary:
+			n += 1
+			head, hit = True, False
+		elif line == boundary + '--':
+			sys.exit(0)
+		elif head:
+			if not line:
+				head = False
+			elif vflag:
+				print '%d %s' % (n, line)
+			else:
+				r = re.match(r'[^"]* name="(.+?)"', line)
+				hit |= (r or False) and r.group(1) == name
+		elif hit:
+			print line
+
+	error("boundary がありません。")

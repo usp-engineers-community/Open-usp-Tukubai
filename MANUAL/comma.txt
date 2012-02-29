@@ -1,0 +1,119 @@
+comma(USP)
+
+＜名前＞
+comma : 指定したフィールドに３桁(４桁)カンマをふる 
+
+＜書式＞
+Usage   : comma [+<n>h][-4] <f1> <f2> ... <file>
+        : comma -d[4] <string>
+Version : Thu Dec 15 13:46:38 JST 2011
+
+＜説明＞
+引数のファイル又は標準入力のテキストデータの数字フィールドに
+３桁(４桁)カンマをふるツールです。カンマをふるフィールドを引数で
+指定します。
+
+＜例１＞
+$ cat data
+20060201 296030 6710000
+20060202 1300100 3130000
+20060203 309500 20100
+20060204 16300 300100
+20060205 41000 210000
+20060206 771100 400000
+
+$ comma 2 3 data 
+20060201 296,030 6,710,000
+20060202 1,300,100 3,130,000
+20060203 309,500 20,100
+20060204 16,300 300,100
+20060205 41,000 210,000
+20060206 771,100 400,000
+
+４桁カンマ
+$ comma -4 2 3 data 
+20060201 29,6030 671,0000
+20060202 130,0100 313,0000
+20060203 30,9500 2,0100
+20060204 1,6300 30,0100
+20060205 4,1000 21,0000
+20060206 77,1100 40,0000
+
+＜例２＞
+"+h"オプションを使用すると１行目のレコードを除いてカンマをふります。
+先頭行が項目名などの場合に使用します。+2h +3h のように数字を
+指定すると、２行め、３行め以降のレコードをカンマ編集します。
+
+(元データ : 先頭行に項目（ヘッダー）がついている)
+$ cat data
+年月日 売上高 発注高 
+20060201 296030 6710000
+20060202 1300100 3130000
+20060203 309500 20100
+20060204 16300 300100
+20060205 41000 210000
+20060206 771100 400000
+
+先頭行を除いてカンマ変換します。
+$ comma +h 2 3 data > data2
+$ cat data2
+年月日 売上高 発注高
+20060201 296,030 6,710,000
+20060202 1,300,100 3,130,000
+20060203 309,500 20,100
+20060204 16,300 300,100
+20060205 41,000 210,000
+20060206 771,100 400,000
+
+＜例３＞
+数字の文字列を直接引数に指定してカンマをつけることができます。
+$ comma -d 1234567 
+1,234,567
+$ comma -d4 1234567 
+123,4567
+
+＜ワンポイント＞
+データファイルの数値に"comma"でカンマを付けてしまうと、
+それ以降は"sm2"や"divsen" などでの数値の計算はできなくなります。
+カンマの付与は全ての計算を終えたあとの最終成形の部分で使用します。
+
+＜ワンポイント＞
+小数桁については、カンマを付与しません。
+マイナスの数も正しくカンマ処理します。
+
+＜公開の経緯と商用利用について＞
+
+ユニバーサル・シェル・プログラミング研究所（USP研究所）では、弊社の哲学に基き
+コマンドとシェルスクリプトを利用した独自のシステム開発や
+シェルプログラミングの普及・教育活動を行っています。
+
+Open usp Tukubaiは、シェルを利用したデータ処理の可能性を体感していただくために、
+商用版Tsukubai（有償）から利用頻度の高いものを厳選し、
+一部の機能をオープンソースソフトウェアとして公開したものです。
+
+Open usp Tukubaiのサポート（有償）や、商用版Tukubaiにご興味のある方は、
+以下のメールアドレスまでお問い合わせください。
+info@usp-lab.com
+
+
+# The MIT License
+#
+# Copyright (c) 2011 Universal Shell Programming Lab.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.

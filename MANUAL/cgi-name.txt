@@ -1,0 +1,162 @@
+cgi-name(USP)
+
+＜名前＞ 
+cgi-name : CGI POST メソッドで受け渡されるデータを name 形式に
+           変換する
+
+＜書式＞
+Usage   : cgi-name [-d<c>][-i<string>] <param_file>
+Option  :          [--template <html>]
+Version : Thu Dec 15 13:46:38 JST 2011
+
+＜説明＞
+cgi-name は、WEBサーバーのCGI POST メソッドで受け渡されるデータを
+name 形式に変換します。
+
+＜例１＞
+WEBサーバーより、'place=tokyo&country=japan' という文字列が渡される場合、
+変数 値 という形式に加工される。
+$ dd bs=$CONTENT_LENGTH | cgi-name
+place tokyo
+country japan
+
+＜例２＞
+改行(%0D%0A)は、"\n" に変換されます。
+$ echo 'place=%E6%9D%B1%E4%BA%AC%0D%0A%E5%A4%A7%E9%98%AA&country=japan' | cgi-name
+place 東京\n大阪
+country japan
+
+＜例３＞
+-d オプションにより、半角空白は削除あるいは、指定文字に変換されます。
+$ echo 'place=tokyo osaka&country=japan' | cgi-name
+place tokyo osaka
+country japan
+$ echo 'place=tokyo osaka&country=japan' | cgi-name -d_
+place tokyo_osaka
+country japan
+$ echo 'place=tokyo osaka&country=japan' | cgi-name -d
+place tokyoosaka
+country japan
+
+＜例４＞
+-i オプションにより、返される文字列がヌルの場合、初期値を指定できます。
+$ echo 'place=&country=japan' | cgi-name
+place
+country japan
+$ echo 'place=&country=japan' | cgi-name -i somewhere
+place somewhere
+country japan
+
+＜例５＞
+--template オプションにより、指定した HTML テンプレートより、
+radiobox と checkbox の名称を取り出し、その名称でデータが
+出力されなければ、出力をその名称で補完します。
+これは、radiobox や checkbox は選択しないで submit すると 
+値そのものが出力されません。何も選択しなかったというデータを
+生成するためにこのオプションを使用します。
+
+$ cat html
+-----省略
+<input type="radiobox" name="XXXX" value="A" />
+<input type="radiobox" name="XXXX" value="B" />
+<input type="radiobox" name="XXXX" value="C" />
+<input type="checkbox" name="YYYY" value="a" />
+<input type="checkbox" name="YYYY" value="b" />
+<input type="checkbox" name="YYYY" value="c" />
+-----省略
+
+$ dd bs=$CONTENT_LENGTH | cgi-name -i_ --template html
+-----省略
+XXXX _
+YYYY _
+-----省略
+
+＜例６＞
+さらに、radiobox checkbox が htmlテンプレートの
+mojihame -l コマンド対象部分にあっても、タグ名_%数字
+を認識して、選択値が無いときでも、タグ名を出力します。
+$ cat html
+-----省略
+<!-- MOJIHAME --> 
+<input type="radiobox" name="X_%1" value="%2" />
+<!-- MOJIHAME --> 
+-----省略
+
+$ dd bs=$CONTENT_LENGTH | cgi-name -i_ --template html
+-----省略
+X _
+-----省略
+
+＜備考＞
+CGI POST メソッドで受け渡されるデータには改行がありません。通常のファイル
+として使用するには、ファイル末に改行コードを付加しておくほうが扱いやすい
+です。cgi-name コマンドはファイル末の改行が有っても無くても正しく値を
+取り出します。
+
+＜ライセンスについて＞
+本コマンドの利用許諾は、本コマンドのヘッダ部分に記載のMITライセンスに準拠します。
+また、本マニュアル自体もMITライセンスの適用となります。
+MITライセンスの性質上、再頒布の際に無保障を明記する必要があるため、
+商用利用の検討の際は本コマンドのライセンサーである
+有限会社ユニバーサル・シェル・プログラミング研究所
+http://www.usp-lab.com/access.html までご相談ください。
+
+The MIT License
+
+Copyright (C) 2011 Universal Shell Programming Lab.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+
+＜公開の経緯と商用利用について＞
+
+ユニバーサル・シェル・プログラミング研究所（USP研究所）では、弊社の哲学に基き
+コマンドとシェルスクリプトを利用した独自のシステム開発や
+シェルプログラミングの普及・教育活動を行っています。
+
+Open usp Tukubaiは、シェルを利用したデータ処理の可能性を体感していただくために、
+商用版Tsukubai（有償）から利用頻度の高いものを厳選し、
+一部の機能をオープンソースソフトウェアとして公開したものです。
+
+Open usp Tukubaiのサポート（有償）や、商用版Tukubaiにご興味のある方は、
+以下のメールアドレスまでお問い合わせください。
+info@usp-lab.com
+
+
+# The MIT License
+#
+# Copyright (c) 2011 Universal Shell Programming Lab.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.

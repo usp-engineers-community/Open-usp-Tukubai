@@ -1,0 +1,119 @@
+rank(USP)
+
+＜名前＞
+rank : ランクを付加する
+
+＜書式＞
+Usage : rank ref=<ref> key=<key> <file>
+Version : Thu Dec 15 13:46:38 JST 2011
+
+＜説明＞
+"file" の行番号を付加します。ref=<ref> で参照キーフィールドを指定した場合、
+参照キーフィールドが変化した位置で、行番号を１に初期化します。
+さらに、key=<key> で値フィールドを指定した場合、値が同じならば、同じ行番号
+をふります。
+
+＜例１＞ 基本パターン
+引数を何も指定しないときは、単純な行番号を付加します。
+$ cat data
+JPN 杉山______ 26
+JPN 崎村______ 27
+JPN 梶川______ 27
+JPN 柳本______ 30
+USA BOB_______ 25
+USA GEROGE____ 29
+USA SAM_______ 29
+USA TOM_______ 35
+$ rank data
+1 JPN 杉山______ 26
+2 JPN 崎村______ 27
+3 JPN 梶川______ 27
+4 JPN 柳本______ 30
+5 USA BOB_______ 25
+6 USA GEROGE____ 29
+7 USA SAM_______ 29
+8 USA TOM_______ 35
+
+＜例２＞ ref 指定
+ref=<ref> で参照フィールドを指定したときは、参照フィールドが変化した
+行で、行番号を１に初期化します。ref=1/2 ref=3@2/5 などの連続・不連続
+のフィールドを指定することも可能です。
+$ rank ref=1 data
+1 JPN 杉山______ 26
+2 JPN 崎村______ 27
+3 JPN 梶川______ 27
+4 JPN 柳本______ 30
+1 USA BOB_______ 25
+2 USA GEROGE____ 29
+3 USA SAM_______ 29
+4 USA TOM_______ 35
+
+＜例３＞ key 指定
+key=<key> で値フィールドを一つだけ指定することができます。
+この場合、値が同じフィールドを持つレコードには同じ行番号が付加されます。
+また、その次の行には、始めから数えた正しい行番号が再び付加されます。
+$ rank key=3 data
+1 JPN 杉山______ 26
+2 JPN 崎村______ 27
+2 JPN 梶川______ 27
+4 JPN 柳本______ 30
+5 USA BOB_______ 25
+6 USA GEROGE____ 29
+6 USA SAM_______ 29
+8 USA TOM_______ 35
+
+＜例４＞ ref と key 指定
+参照キーが変化するところで、行番号が初期化され、かつ同じ値フィールドを
+持つレコードには同じ行番号が振られます。
+$ rank ref=1 key=3 data
+1 JPN 杉山______ 26
+2 JPN 崎村______ 27
+2 JPN 梶川______ 27
+4 JPN 柳本______ 30
+1 USA BOB_______ 25
+2 USA GEROGE____ 29
+2 USA SAM_______ 29
+4 USA TOM_______ 35
+
+＊入力ファイルが "-" あるいは無指定の場合は、標準入力ファイルが
+  入力ファイルとなります。
+＊同じ順位をふるかどうかは、値が文字列として同じかどうかで判断
+  しています。(数値としては見ていません)
+
+
+＜公開の経緯と商用利用について＞
+
+ユニバーサル・シェル・プログラミング研究所（USP研究所）では、弊社の哲学に基き
+コマンドとシェルスクリプトを利用した独自のシステム開発や
+シェルプログラミングの普及・教育活動を行っています。
+
+Open usp Tukubaiは、シェルを利用したデータ処理の可能性を体感していただくために、
+商用版Tsukubai（有償）から利用頻度の高いものを厳選し、
+一部の機能をオープンソースソフトウェアとして公開したものです。
+
+Open usp Tukubaiのサポート（有償）や、商用版Tukubaiにご興味のある方は、
+以下のメールアドレスまでお問い合わせください。
+info@usp-lab.com
+
+
+# The MIT License
+#
+# Copyright (c) 2011 Universal Shell Programming Lab.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.

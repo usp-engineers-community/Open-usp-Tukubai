@@ -1,0 +1,190 @@
+join1(USP)
+
+＜名前＞
+join1 : トランザクションファイルにマスターファイルを連結する。
+        (キーフィールドがマッチする行のみ抽出)
+
+＜書式＞
+Usage   : join1 [+ng[<fd>]] key=<n> <master> <tran>
+Version : Thu Dec 15 13:46:38 JST 2011
+
+＜説明＞
+テキストファイル "tran" の "key=<n>" で指定したキーフィールドが
+マスターファイル "master" の第１フィールド（キーフィールド）と
+マッチした行のみ "tran" から抽出して、"master" の情報を連結して
+出力します。
+連結は、"tran" のキーフィールドの直後に "master" の内容を
+挿入連結されます。
+
+"master" の第１フィールドおよび "tran" の 第<n>フィールドは
+必ず昇順でソートされていることが条件になります。
+さらに "master" についてはキーフィールド(第１フィールド)について、
+各レコードがユニークでなければなりません。(第１フィールドが同じ値を
+もつレコードが複数あってはならない)  "tran" についてはこの制約は無く、
+キーフィールド(第<n>フィールド)が同じ値をレコードはいくつあっても
+構いません。
+
+キーに選択するフィールドは複数指定することも可能です。
+
++ng オプションをつけると、マッチした行を標準出力ファイルへ、
+マッチしなかった行をファイルデスクリプタ<fd>のファイルへ出力します。
+<fd>を省略した場合は標準エラー出力ファイルへ出力します。
+
+
+＜例１＞ 基本パターン
+経費ファイル "keihi" から "master"に登録されている４人の
+データを抽出し、マスターの内容を連結します。
+
+(マスターファイル：master)
+$ cat master
+0000003 杉山______ 26 F
+0000005 崎村______ 50 F
+0000007 梶川______ 42 F
+0000010 柳本______ 50 F
+
+(トランザクションファイル：keihi)
+$ cat keihi
+20070401 0000001 300
+20070403 0000001 500
+20070404 0000001 700
+20070401 0000003 200
+20070402 0000003 400
+20070405 0000003 600
+20070401 0000005 250
+20070402 0000005 450
+20070402 0000007 210
+20070404 0000007 410
+20070406 0000007 610
+
+keihi の第２フィールドをキーにして master を結合する
+masterに存在するキーをもつレコードにしか連結を行わない。存在しない行は捨てられる
+keihi は同じキーを持つ行が複数行あってもよい
+$ join1 key=2 master keihi > data
+$ cat data
+20070401 0000003 杉山______ 26 F 200
+20070402 0000003 杉山______ 26 F 400
+20070405 0000003 杉山______ 26 F 600
+20070401 0000005 崎村______ 50 F 250
+20070402 0000005 崎村______ 50 F 450
+20070402 0000007 梶川______ 42 F 210
+20070404 0000007 梶川______ 42 F 410
+20070406 0000007 梶川______ 42 F 610
+
+＜例２＞
+左から順に連続した複数のフィールドをキーに指定する場合です。
+# (マスター：master)
+$ cat master
+A 0000003 杉山______ 26 F
+A 0000005 崎村______ 50 F
+B 0000007 梶川______ 42 F
+C 0000010 柳本______ 50 F
+
+(トランザクション：kekka)
+$ cat kekka
+1 A 0000000 91 59 20 76 54
+2 A 0000001 46 39 8  5  21
+3 A 0000003 30 50 71 36 30
+4 A 0000004 58 71 20 10 6
+5 A 0000005 82 79 16 21 80
+6 B 0000007 50 2  33 15 62
+7 B 0000008 52 91 44 9  0
+8 C 0000009 60 89 33 18 6
+9 C 0000010 95 60 35 93 76
+10 C 0000011 92 56 83 96 75
+
+"kekka" ファイルの第２フィールド、第３フィールドをキーにして、
+(第２、第３フィールド順にソートされている)
+"master" ファイル(第１、第２フィールドの順にソートされている)
+に存在する行のみ抽出して、"master" の内容を連結して出力
+$ join1 key=2/3 master kekka > data
+3 A 0000003 杉山______ 26 F 30 50 71 36 30
+5 A 0000005 崎村______ 50 F 82 79 16 21 80
+6 B 0000007 梶川______ 42 F 50 2  33 15 62
+9 C 0000010 柳本______ 50 F 95 60 35 93 76
+
+※ 左から順に連続していない複数のフィールドをキーに指定することも
+可能です。この場合は複数のキーフィールドを@で繋げて指定します。
+下記の例の場合、"tran" は第４、第２フィールドの順にソートされ、
+"master" は第３、第１フィールドの順にソートされていることが必要です。
+$ join1 key=4@2 master tran > data
+
+＜例３＞ "+ng" オプション
+"master"とキーにマッチしないレコードを抽出することも可能です。
+キーにマッチするレコードは標準出力に、マッチしないレコードは標準エラー出力に出力
+されます。 この場合、マッチするレコードはマスターファイルと連結されますが、マッチ
+しないレコードはマスターに存在しないため連結されずそのまま出力されます。
+$ join1 +ng key=<n> <master> <tran> > ok-data 2> ng-data
+
+(マスターファイル：master)
+$ cat master
+0000003 杉山______ 26 F
+0000005 崎村______ 50 F
+0000007 梶川______ 42 F
+0000010 柳本______ 50 F
+
+(トランザクションファイル：kekka)
+$ cat kekka
+0000000 91 59 20 76 54
+0000001 46 39 8  5  21
+0000003 30 50 71 36 30
+0000004 58 71 20 10 6
+0000005 82 79 16 21 80
+0000007 50 2  33 15 62
+0000008 52 91 44 9  0
+0000009 60 89 33 18 6
+0000010 95 60 35 93 76
+0000011 92 56 83 96 75
+
+成績ファイル "kekka" から "master" に登録されている４名のデータと
+その他のデータとをそれぞれ抽出します。
+$ join1 +ng key=1 master kekka > ok-data 2> ng-data
+$ cat ok-data        # (マッチしたデータ) ("master" の内容が連結されている）
+0000003 杉山______ 26 F 30 50 71 36 30
+0000005 崎村______ 50 F 82 79 16 21 80
+0000007 梶川______ 42 F 50 2  33 15 62
+0000010 柳本______ 50 F 95 60 35 93 76
+
+$ cat ng-data        # (マッチしなかったデータ) (連結されずそのまま出力)
+0000000 91 59 20 76 54
+0000001 46 39 8  5  21
+0000004 58 71 20 10 6
+0000008 52 91 44 9  0
+0000009 60 89 33 18 6
+0000011 92 56 83 96 75
+
+＜公開の経緯と商用利用について＞
+
+ユニバーサル・シェル・プログラミング研究所（USP研究所）では、弊社の哲学に基き
+コマンドとシェルスクリプトを利用した独自のシステム開発や
+シェルプログラミングの普及・教育活動を行っています。
+
+Open usp Tukubaiは、シェルを利用したデータ処理の可能性を体感していただくために、
+商用版Tsukubai（有償）から利用頻度の高いものを厳選し、
+一部の機能をオープンソースソフトウェアとして公開したものです。
+
+Open usp Tukubaiのサポート（有償）や、商用版Tukubaiにご興味のある方は、
+以下のメールアドレスまでお問い合わせください。
+info@usp-lab.com
+
+
+# The MIT License
+#
+# Copyright (c) 2011 Universal Shell Programming Lab.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.

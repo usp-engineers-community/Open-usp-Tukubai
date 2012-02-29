@@ -1,0 +1,98 @@
+#!/usr/bin/env python
+#coding: utf-8
+#
+# loopx レコードを総掛けしてファイルを結合 （OpenUSP版）
+# 
+# designed by Nobuaki Tounaka
+# written by Ryuichi Ueda
+#
+# The MIT License
+#
+# Copyright (C) 2012 Universal Shell Programming Lab.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+_usage = "loopx <file1> <file2> ..."
+_version = "Thu Jan 12 18:35:55 JST 2012"
+_code = "OpenUSP (LINUX/PYTHON2.4/UTF-8)"
+
+import sys
+import tempfile
+
+def error(msg, *arg):
+	print >> sys.stderr, 'Error[loopx] :', msg % arg
+	sys.exit(1)
+
+def usage():
+	print >> sys.stderr, "Usage   :", _usage
+	print >> sys.stderr, "Version :", _version
+	print >> sys.stderr, "         ", _code
+	sys.exit(1)
+
+def combine(left,right,out):
+
+	for lline in left:
+		lline = lline.rstrip()
+		right.seek(0)
+		for rline in right:
+			rline = rline.rstrip()
+			print >> out, lline, rline
+
+#読み込みファイルを返す。標準入力だったら一度tmpに落とす
+def openReadFile(file_name):
+	if file_name != "-":
+		try:	return open(file_name,'r')
+		except:	error("ファイルを開けません。")
+
+	tmp = tempfile.TemporaryFile()
+	for line in sys.stdin:
+		tmp.write(line)
+
+	return tmp
+	
+if __name__ == '__main__':
+	filenames = sys.argv[1:]
+
+	if len(filenames) == 0:
+		usage()
+
+	#ファイルは最低二つ必要
+	if len(filenames) < 2:
+		if '--help' in sys.argv:	usage()
+		elif '-h' in sys.argv:		usage()
+
+		error("ファイル名を二個以上指定してください")
+
+	#ファイル名からファイルを取得
+	file_stack = [ openReadFile(f) for f in filenames ]
+
+	while True:
+		right = file_stack.pop()
+		left = file_stack.pop()
+		left.seek(0)
+
+		#フィニッシュ（ループを抜ける処理）
+		if len(file_stack) == 0:
+			combine(left,right,sys.stdout)
+			sys.exit(0)
+
+		out = tempfile.TemporaryFile()
+		combine(left,right,out)
+		out.seek(0)
+		file_stack.append(out)

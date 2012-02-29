@@ -1,0 +1,116 @@
+ycat(USP)
+
+＜名前＞
+ycat : ファイルの横連結
+
+＜書式＞
+Usage   : ycat [-n] file1 file2 ....
+Version : Thu Dec 15 13:46:38 JST 2011 
+          UTF-8
+
+＜説明＞
+引数で指定した複数のファイルを横に並べて連結して出力します。
+各ファイルの形は崩れることはなく、ファイルの見た目そのまま
+に横連結します。
+
+＜例１＞
+基本的な使い方
+$ cat file1
+0000000 浜地______ 50 F
+0000001 鈴田______ 50 F
+0000003 杉山______ 26 F
+0000004 白土______ 40 M
+0000005 崎村______ 50 F
+0000007 梶川______ 42 F
+
+$ cat file2
+0000000 91 59 20 76 54
+0000001 46 39 8  5  21
+0000003 30 50 71 36 30
+0000004 58 71 20 10 6
+0000005 82 79 16 21 80
+0000007 50 2  33 15 62
+
+$ ycat file1 file2 > file3
+$ cat file3
+0000000 浜地______ 50 F 0000000 91 59 20 76 54
+0000001 鈴田______ 50 F 0000001 46 39 8  5  21
+0000003 杉山______ 26 F 0000003 30 50 71 36 30
+0000004 白土______ 40 M 0000004 58 71 20 10 6
+0000005 崎村______ 50 F 0000005 82 79 16 21 80
+0000007 梶川______ 42 F 0000007 50 2  33 15 62
+
+＜例２＞
+"-数字" オプションを使用すると、ファイルを"-"の後に指定した
+文字の分だけ間を空けることができます。
+$ ycat -3 file1 file2 > file3
+$ cat file3
+0000000 浜地______ 50 F   0000000 91 59 20 76 54
+0000001 鈴田______ 50 F   0000001 46 39 8  5  21
+0000003 杉山______ 26 F   0000003 30 50 71 36 30
+0000004 白土______ 40 M   0000004 58 71 20 10 6
+0000005 崎村______ 50 F   0000005 82 79 16 21 80
+0000007 梶川______ 42 F   0000007 50 2  33 15 62
+
+                       ↑ 3文字分空いている。
+
+＜例３＞
+とくに -0 を指定すると、ファイルの隙間を空けません。
+ycat -0 file1 file2 > file3
+$ cat file3
+0000000 浜地______ 50 F0000000 91 59 20 76 54
+0000001 鈴田______ 50 F0000001 46 39 8  5  21
+0000003 杉山______ 26 F0000003 30 50 71 36 30
+0000004 白土______ 40 M0000004 58 71 20 10 6
+0000005 崎村______ 50 F0000005 82 79 16 21 80
+0000007 梶川______ 42 F0000007 50 2  33 15 62
+
+＜例４＞
+一方のテキストを標準入力から読み込む場合、
+標準入力側のテキストを"-"で表現します。
+$ cat file1 | ycat - file2 > file3
+$ cat file2 | ycat file1 - > file3
+
+＜備考＞
+ycat は、連結後の各ファイルの形が崩れないように、
+まず始めに各ファイルの最大幅を測ります。
+単純に空白横連結したいだけなら、
+$ paste -d" " file1 file2 file3 
+のように、paste コマンドを使う方が高速です。
+
+＜公開の経緯と商用利用について＞
+
+ユニバーサル・シェル・プログラミング研究所（USP研究所）では、弊社の哲学に基き
+コマンドとシェルスクリプトを利用した独自のシステム開発や
+シェルプログラミングの普及・教育活動を行っています。
+
+Open usp Tukubaiは、シェルを利用したデータ処理の可能性を体感していただくために、
+商用版Tsukubai（有償）から利用頻度の高いものを厳選し、
+一部の機能をオープンソースソフトウェアとして公開したものです。
+
+Open usp Tukubaiのサポート（有償）や、商用版Tukubaiにご興味のある方は、
+以下のメールアドレスまでお問い合わせください。
+info@usp-lab.com
+
+
+# The MIT License
+#
+# Copyright (c) 2011 Universal Shell Programming Lab.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.

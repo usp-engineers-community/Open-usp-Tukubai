@@ -1,0 +1,163 @@
+#!/usr/bin/env python
+#coding: utf-8
+#
+# getlast 同一キー先頭行の出力（OpenUSP版）
+# 
+# designed by Nobuaki Tounaka
+# written by Yoshio Katayama
+#
+# The MIT License
+#
+# Copyright (C) 2011 Universal Shell Programming Lab.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+_usage = "getlast [+ng<fd>] <n1> <n2> <file>"
+_version = "Fri Oct 21 11:26:06 JST 2011"
+_code = "OpenUSP (LINUX/PYTHON2.4/UTF-8)"
+
+import re
+import os
+import sys
+
+def error(msg, *arg):
+	print >> sys.stderr, 'Error[getlast] :', msg % arg
+	sys.exit(1)
+
+def usage():
+	print >> sys.stderr, "Usage   :", _usage
+	print >> sys.stderr, "Version :", _version
+	print >> sys.stderr, "         ", _code
+	sys.exit(1)
+
+class FieldLine:
+	def __init__(self, line, allow_z = False):
+		self.__allow_zero = allow_z
+		line = line.rstrip('\n')
+		self.__fields = [ line ]
+		self.__fields += [ x for x in line.split(' ') if x ]
+
+	def size(self):
+		return len(self.__fields) - 1
+
+	def getFieldNum(self, key):
+		if type(key) == type(0):
+			return key
+		if re.match(r'\d+$', key):
+			key = int(key)
+		elif key == 'NF':
+			key = self.size()
+		else:
+			key = self.size() - int(key[3:])
+			if key <= 0:
+				error("NF-x の x が大きすぎます。")
+		if key < 0:
+			error("フィールド番号が負です。")
+		if key == 0 and not self.__allow_zero:
+			error("フィールド番号が０です。")
+		if key > self.size():
+			error("フィールド番号が大きすぎます。")
+		return key
+
+	def getField(self, s, e = None):
+		s = self.getFieldNum(s)
+		if e == None:
+			e = s
+		else:
+			e = self.getFieldNum(e)
+		if s <= e:
+			return ' '.join(self.__fields[s : e + 1])
+		else:
+			t = self.__fields[e : s + 1]
+			t.reverse()
+			return ' '.join(t)
+
+#
+# 入力ファイルオープン
+#
+def open_file(n, mode = 'r'):
+	if n >= len(sys.argv) or sys.argv[n] == '-':
+		file = sys.stdin
+	else:
+		try:
+			file = open(sys.argv[n], mode)
+		except:
+			error("ファイル %s をオープンできません。", sys.argv[n])
+	return file
+
+#
+#メイン関数
+#
+if __name__ == '__main__':
+
+	if len(sys.argv) < 3 \
+	 or sys.argv[1] == '--help' \
+	 or sys.argv[1] == '--version':
+		usage()
+
+	#
+	# +ng<fd>
+	#
+	if sys.argv[1][0:3] == '+ng':
+		if len(sys.argv[1]) == 3:
+			fd = 2
+		else:
+			try:
+				fd = int(sys.argv[1][3:])
+			except:
+				error("ファイル記述子が正しくありません。")
+		try:
+			ngfile = os.fdopen(fd, 'w', 4096)
+		except:
+			error("ファイル記述子が正しくありません。")
+		del sys.argv[1]
+		if len(sys.argv) < 3:
+			usage()
+	else:
+		ngfile = None
+
+	#
+	# <n1> <n2>
+	#
+	try:
+		n1 = int(sys.argv[1])
+		n2 = int(sys.argv[2])
+		if n1 > n2:
+			raise 'argument error'
+	except:
+		usage()
+
+	file = open_file(3)
+
+	#
+	# メインループ
+	#
+	oldline, oldkey = None, None
+	for line in file:
+		line = FieldLine(line)
+		key = line.getField(n1, n2)
+		if oldkey and key != oldkey:
+			print oldline.getField(0)
+		elif oldline and ngfile:
+			print >>ngfile, oldline.getField(0)
+		oldline, oldkey = line, key
+	if oldline:
+		print oldline.getField(0)
+
+	sys.exit(0)

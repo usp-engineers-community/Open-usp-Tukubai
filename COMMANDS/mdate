@@ -1,0 +1,564 @@
+#!/usr/bin/env python
+#coding: utf-8
+#
+# mdate 日付、月の処理 （OpenUSP版）
+# 
+# designed by Nobuaki Tounaka
+# written by Ryuichi Ueda
+#
+# The MIT License
+#
+# Copyright (C) 2011 Universal Shell Programming Lab.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+_usage = """
+ DIRECT-MODE
+
+   日付  mdate -y <yyyymmdd>               : 曜日
+	 mdate -e <yyyywwdd>/±<dif>       : dif 日先までの日付を連続出力
+	 mdate -e <yyyymmdd1> <yyyymmdd2>  : 日付の範囲を連続出力
+	 mdate <yyyywwdd>/±<dif>          : dif 日先の日付
+	 mdate <yyyymmdd1> <yyyymmdd2>     : 日付の差
+	 mdate <yyyymm>m/±<dif>           : dif 月先の月
+	 mdate -e <yyyymm>m/±<dif>        : dif 月先までの月を連続出力
+	 mdate <yyyymm1>m <yyyymm2>m       : 月の差
+	 mdate -ly <yyyymm>m               : 前年月
+
+ FILTER-MODE
+   日付  mdate -f -y <f>               : 曜日
+	 mdate -f -e <f>/±<dif>       : dif 日先までの日付に展開
+	 mdate -f -e <f1> <f2>         : 日付間の展開
+	 mdate -f <f>/±<dif>          : dif 日先の日付
+	 mdate -f <f1> <f2>            : 日付の差
+	 mdate -f <f1> ±<f2>          : 日付の加算
+	 mdate -f -e <f1> ±<f2>       : 日付の加算 展開
+	 mdate -f -ly <f>              : 前年日
+   月次  mdate -f -d <f>m              : 日付を１カ月分出力
+	 mdate -f <f>m/±<dif>         : dif 月先の月
+	 mdate -f -e <f>m ±<dif>      : dif 月先の月まで展開
+	 mdate -f <f1>m <f2>m          : 月の差
+	 mdate -f -e <f1>m <f2>m       : 月の展開
+	 mdate -f <f>m ±<dif>         : 月の加算
+	 mdate -f -e <f>m ±<dif>      : 月の加算展開
+	 mdate -f -ly <f>m             : 前年月
+"""
+#未実装
+# mdate -ly <yyyymmdd>              : 前年同日
+# mdate -ly <f>              : 前年日
+
+_version = "Wed Dec 28 15:32:10 JST 2011"
+_code = "OpenUSP (LINUX/PYTHON2.4/UTF-8)"
+
+import re
+import os
+import sys
+from datetime import date, timedelta
+
+def error(msg, *arg):
+	print >> sys.stderr, 'Error[mdate] :', msg % arg
+	sys.exit(1)
+
+def usage():
+	print >> sys.stderr, "Usage   :", _usage
+	print >> sys.stderr, "Version :", _version
+	print >> sys.stderr, "         ", _code
+	sys.exit(1)
+
+def version():
+	print >> sys.stderr, "Version :", _version
+	print >> sys.stderr, "         ", _code
+	sys.exit(1)
+
+def strToDate(str):
+	if len(str) != 8:
+		error("サポートされていない日付指定です。")
+
+	y = int(str[0:4])
+	m = int(str[4:6])
+	d = int(str[6:8])
+	return date(y,m,d)
+
+def shiftDay(day,diff):
+	return day + timedelta(days = diff)
+
+def shiftMonth(m_str,diff):
+	y = int(m_str[:4])
+	m = int(m_str[4:]) + diff
+
+	m_zero = m - 1
+	dy = int(m_zero/12)
+	
+	y = str(y + dy)
+	m = str(m_zero%12 + 1)
+	if len(m) == 1: m = "0" + m
+
+	return y + m
+
+def printDays(f,t):
+	while f <= t: 
+		print f.strftime("%Y%m%d"),
+		f = shiftDay(f,1)
+
+def monthDelta(m1,m2):
+	y = int(m1[:4]) - int(m2[:4])
+	m = int(m1[4:6]) - int(m2[4:6])
+
+	return y*12 + m
+
+# YYYYMMDD/+1 形式をdateオブジェクトで返す
+def parseDaySlashForm(str):
+	tokens = str.split("/")
+	if len(tokens[0]) < 8:
+		return None, None
+
+	if tokens[1][0] != "+" and tokens[1][0] != "-":
+		error("サポートされていないオプション指定です。")
+
+	d1 = strToDate(tokens[0])
+	d2 = shiftDay(d1,int(tokens[1]))
+
+	return d1, d2
+
+# YYYYMMm/+1 形式をdateオブジェクトで返す
+def parseMonthSlashForm(str):
+	tokens = str.split("/")
+	diff = int(tokens[1])
+	m1 = tokens[0][:6]
+	m2 = shiftMonth(m1,diff)
+	
+	return m1, m2
+
+def parseFieldSlashForm(str):
+	tokens = str.split("/")
+	if len(tokens[0]) >= 8:
+		return None, None
+
+	if tokens[1][0] != "+" and tokens[1][0] != "-":
+		error("サポートされていないオプション指定です。")
+
+	return int(tokens[0])-1, int(tokens[1])
+
+
+def sortTwoDays(d1,d2):
+	if d1 < d2:	return d1, d2
+	else:		return d2, d1
+
+def printTokens(f1,f2,tokens):
+	for i in range(f1,f2):
+		print tokens[i],
+
+def printDay(d):
+	print d.strftime("%Y%m%d"),
+
+def monthToFirstDay(m_str):
+	y = int(m_str[0:4])
+	m = int(m_str[4:6])
+	d = 1
+	return date(y,m,d)
+
+def monthToLastDay(m_str):
+	#翌月を求めてその日の前日を求める
+	y = int(m_str[0:4])
+	m = int(m_str[4:6]) + 1
+	d = 1
+
+	if m == 13:
+		m = 1
+		y = y + 1
+
+	return shiftDay(date(y,m,d),-1)
+
+def directMode(opt):
+	if re.compile('^-y [0-9]{8}$').match(opt):
+		#日付  mdate -y <yyyymmdd>               : 曜日
+		d = strToDate(sys.argv[2])
+		print d.weekday() + 1
+	elif re.compile('^-d [0-9]{6}m$').match(opt):
+		#mdate -d <yyyymm>m                : 日付を１カ月分出力
+		d1 = monthToFirstDay(sys.argv[2])
+		d2 = monthToLastDay(sys.argv[2])
+		printDays(d1,d2)
+	elif re.compile('^[0-9]{6}m/[+-][0-9]*$').match(opt):
+		#mdate <yyyymm>m/±<dif>           : dif 月先の月
+		m1, m2 = parseMonthSlashForm(sys.argv[1])
+		print m2
+	elif re.compile('^-e [0-9]{6}m/[+-][0-9]*$').match(opt):
+		#mdate -e <yyyymm>m/±<dif>        : dif 月先までの月を連続出力
+		m1, m2 = parseMonthSlashForm(sys.argv[2])
+		if m1 > m2 : m1, m2 = m2, m1
+
+		m = m1
+		while m <= m2:
+			print m, 
+			m = shiftMonth(m,1)
+	elif re.compile('^[0-9]{6}m [0-9]{6}m$').match(opt):
+		#mdate <yyyymm1>m <yyyymm2>m       : 月の差
+		m1 = sys.argv[1][:6]
+		m2 = sys.argv[2][:6]
+
+		print monthDelta(m1,m2)
+
+	elif re.compile('^-e [0-9]{6}m [0-9]{6}m$').match(opt):
+		#mdate -e <yyyymm1>m <yyyymm2>m    : 月の範囲を連続出力
+		m1 = sys.argv[2][:6]
+		m2 = sys.argv[3][:6]
+		if m1 > m2 : m1, m2 = m2, m1
+
+		m = m1
+		while m <= m2:
+			print m, 
+			m = shiftMonth(m,1)
+		
+	elif re.compile('^-ly [0-9]{6}m$').match(opt):
+		# mdate -ly <yyyymm>m               : 前年月
+		y = int(sys.argv[2][:4]) - 1
+		print str(y) + sys.argv[2][4:6]
+	elif re.compile('-e [0-9]{8}/[+-][0-9]*').match(opt):
+		#日付  mdate -e <yyyywwdd>/±<dif>       : dif 日先までの日付を連続出力
+		date1, date2 = parseDaySlashForm(sys.argv[2])
+		d1, d2 = sortTwoDays(date1,date2)
+		printDays(d1,d2)
+	elif re.compile('-e [0-9]{8} [0-9]{8}').match(opt):
+	 	#mdate -e <yyyymmdd1> <yyyymmdd2>  : 日付の範囲を連続出力
+		date1 = strToDate(sys.argv[2])
+		date2 = strToDate(sys.argv[3])
+		d1, d2 = sortTwoDays(date1,date2)
+		printDays(d1,d2)
+	elif re.compile('^[0-9]{8}/[+-][0-9]*$').match(opt):
+		#mdate <yyyywwdd>/±<dif>          : dif 日先の日付
+		d1, d2 = parseDaySlashForm(sys.argv[1])
+		printDay(d2)
+	elif re.compile('^[0-9]{8} [0-9]{8}$').match(opt):
+		#mdate <yyyymmdd1> <yyyymmdd2>     : 日付の差
+		d1 = strToDate(sys.argv[1])
+		d2 = strToDate(sys.argv[2])
+		print (d1 - d2).days
+	else:
+		usage()
+
+
+def filterMode(opt):
+	if re.compile('^-f -e [0-9]+/[+-][0-9]*$').match(opt):
+		#日付  mdate -f -e <f>/±<dif>       : dif 日先までの日付に展開
+		f, diff = parseFieldSlashForm(sys.argv[3])
+	
+		for line in sys.stdin:
+			tokens = line.rstrip().split(' ')
+			printTokens(0,f,tokens)
+	
+			d1 = strToDate(tokens[f])
+			d2 = shiftDay(d1,diff)
+			d1, d2 = sortTwoDays(d1,d2)
+	
+			printDays(d1,d2)
+			
+			printTokens(f+1,len(tokens),tokens)
+			print ""
+
+	elif re.compile('^-f -e [0-9]+ [0-9]+$').match(opt):
+		#mdate -f -e <f1> <f2>         : 日付間の展開
+		f1 = int(sys.argv[3]) - 1
+		f2 = int(sys.argv[4]) - 1
+
+		if abs(f1-f2) != 1:
+			error("連続したフィールドを指定してください。")
+				
+		for line in sys.stdin:
+			tokens = line.rstrip().split(' ')
+
+			printTokens(0,f2+1,tokens)
+
+			d1 = strToDate(tokens[f1])
+			d2 = strToDate(tokens[f2])
+	
+			d1, d2 = sortTwoDays(d1,d2)
+			printDays(d1,d2)
+
+			printTokens(f2+1,len(tokens),tokens)
+	
+			print ""
+	elif re.compile('^-f [0-9]+/[+-][0-9]*$').match(opt):
+		#mdate -f <f>/±<dif>          : dif 日先の日付
+		f, diff = parseFieldSlashForm(sys.argv[2])
+
+		for line in sys.stdin:
+			tokens = line.rstrip().split(' ')
+
+			printTokens(0,f+1,tokens)
+
+			d1 = strToDate(tokens[f])
+			d2 = shiftDay(d1,diff)
+			print d2.strftime("%Y%m%d"),
+
+			printTokens(f+1,len(tokens),tokens)
+
+			print ""
+	elif re.compile('^-f -y [0-9]+$').match(opt):
+		#日付  mdate -f -y <f>               : 曜日
+		f = int(sys.argv[3]) - 1
+		for line in sys.stdin:
+			tokens = line.rstrip().split(' ')
+			printTokens(0,f,tokens)
+
+			d = strToDate(tokens[f])
+			printDay(d)
+			print d.weekday() + 1,
+
+			printTokens(f+1,len(tokens),tokens)
+			print ""
+
+	elif re.compile('^-f [0-9]+ [0-9]+$').match(opt):
+		#mdate -f <f1> <f2>            : 日付の差
+		f1 = int(sys.argv[2]) - 1
+		f2 = int(sys.argv[3]) - 1
+
+		if abs(f1-f2) != 1:
+			error("連続したフィールドを指定してください。")
+				
+		for line in sys.stdin:
+			tokens = line.rstrip().split(' ')
+
+			printTokens(0,f2+1,tokens)
+
+			d1 = strToDate(tokens[f1])
+			d2 = strToDate(tokens[f2])
+			
+			print (d1 - d2).days,
+
+			printTokens(f2+1,len(tokens),tokens)
+	
+			print ""
+	elif re.compile('^-f [0-9]+ \+[0-9]+$').match(opt):
+		# mdate -f <f1> +<f2>         : 日付の加算
+		f1 = int(sys.argv[2]) - 1
+		f2 = abs(int(sys.argv[3])) - 1
+		sign = 1
+		if int(sys.argv[2]) < 0 : sign = -1
+
+		for line in sys.stdin:
+			tokens = line.rstrip().split(' ')
+
+			printTokens(0,f2+1,tokens)
+
+			d1 = strToDate(tokens[f1])
+			d2 = shiftDay(d1,int(tokens[f2])*sign)
+
+			printDay(d2)
+
+			printTokens(f2+1,len(tokens),tokens)
+			print ""
+	elif re.compile('^-f -e [0-9]+ \+[0-9]+$').match(opt):
+		#mdate -f -e <f1> +<f2>       : 日付の加算 展開
+		f1 = int(sys.argv[3]) - 1
+		f2 = abs(int(sys.argv[4])) - 1
+		sign = 1
+		if int(sys.argv[3]) < 0 : sign = -1
+
+		for line in sys.stdin:
+			tokens = line.rstrip().split(' ')
+
+			printTokens(0,f2+1,tokens)
+
+			d1 = strToDate(tokens[f1])
+			d2 = shiftDay(d1,int(tokens[f2])*sign)
+			d1, d2 = sortTwoDays(d1,d2)
+
+			printDays(d1,d2)
+
+			printTokens(f2+1,len(tokens),tokens)
+			print ""
+	elif re.compile('^-f -d [0-9]+m$').match(opt):
+		#   月次  mdate -f -d <f>m              : 日付を１カ月分出力
+		f = int(sys.argv[3][:-1]) - 1
+
+		for line in sys.stdin:
+			tokens = line.rstrip().split(' ')
+
+			printTokens(0,f+1,tokens)
+
+			d1 = monthToFirstDay(tokens[f][:6])
+			d2 = monthToLastDay(tokens[f][:6])
+
+			printDays(d1,d2)
+
+			printTokens(f+1,len(tokens),tokens)
+			print ""
+	elif re.compile('^-f [0-9]+m/[+-][0-9]+$').match(opt):
+		#mdate <f>m/±<dif>         : dif 月先の月
+		opts = sys.argv[2].split("/")
+		f = int(opts[0][:-1]) - 1
+		diff = int(opts[1])
+
+		for line in sys.stdin:
+			tokens = line.rstrip().split(' ')
+
+			printTokens(0,f+1,tokens)
+
+			m1 = tokens[f]
+			m2 = shiftMonth(m1,diff)
+
+			print m2,
+
+			d1 = monthToFirstDay(tokens[f][:6])
+			printTokens(f+1,len(tokens),tokens)
+			print ""
+	elif re.compile('^-f -e [0-9]+m/[+-][0-9]+$').match(opt):
+		#mdate -f -e <f>m ±<dif>      : dif 月先の月まで展開
+		opts = sys.argv[3].split("/")
+		f = int(opts[0][:-1]) - 1
+		diff = int(opts[1])
+
+		for line in sys.stdin:
+			tokens = line.rstrip().split(' ')
+
+			printTokens(0,f,tokens)
+
+			m1 = tokens[f]
+			m2 = shiftMonth(m1,diff)
+			if m1 > m2 : m1, m2 = m2, m1
+
+			m = m1
+			while m <= m2:
+				print m, 
+				m = shiftMonth(m,1)
+
+			d1 = monthToFirstDay(tokens[f][:6])
+			printTokens(f+1,len(tokens),tokens)
+			print ""
+
+	elif re.compile('^-f [0-9]+m [0-9]+m$').match(opt):
+		#mdate -f <f1>m <f2>m          : 月の差
+		f1 = int(sys.argv[2][:-1]) - 1
+		f2 = int(sys.argv[3][:-1]) - 1
+
+		if abs(f1-f2) != 1:
+			error("連続したフィールドを指定してください。")
+				
+		for line in sys.stdin:
+			tokens = line.rstrip().split(' ')
+
+			printTokens(0,f2+1,tokens)
+
+			print monthDelta(tokens[f1],tokens[f2]),
+
+			printTokens(f2+1,len(tokens),tokens)
+	
+			print ""
+	elif re.compile('^-f -e [0-9]+m [0-9]+m$').match(opt):
+		#mdate -f -e <f1>m <f2>m       : 月の展開
+		f1 = int(sys.argv[3][:-1]) - 1
+		f2 = int(sys.argv[4][:-1]) - 1
+
+		if abs(f1-f2) != 1:
+			error("連続したフィールドを指定してください。")
+				
+		for line in sys.stdin:
+			tokens = line.rstrip().split(' ')
+
+			printTokens(0,f2+1,tokens)
+			
+			m1 = tokens[f1]
+			m2 = tokens[f2]
+			if m1 > m2 : m1, m2 = m2, m1
+
+			m = m1
+			while m <= m2:
+				print m, 
+				m = shiftMonth(m,1)
+
+			printTokens(f2+1,len(tokens),tokens)
+	
+			print ""
+
+	elif re.compile('^-f [0-9]+m \+[0-9]+$').match(opt):
+		#mdate -f <f>m ±<dif>         : 月の加算
+		f1 = int(sys.argv[2][:-1]) - 1
+		f2 = abs(int(sys.argv[3])) - 1
+		sign = 1
+		if int(sys.argv[3]) < 0 : sign = -1
+
+		for line in sys.stdin:
+			tokens = line.rstrip().split(' ')
+
+			printTokens(0,f2+1,tokens)
+
+			m1 = tokens[f1]
+			diff = int(tokens[f2])
+
+			m2 = shiftMonth(m1,diff*sign)
+
+			print m2,
+			printTokens(f2+1,len(tokens),tokens)
+			print ""
+	elif re.compile('^-f -e [0-9]+m \+[0-9]+$').match(opt):
+		#mdate -e <f>m ±<dif>      : 月の加算展開
+		f1 = int(sys.argv[3][:-1]) - 1
+		f2 = abs(int(sys.argv[4])) - 1
+		sign = 1
+		if int(sys.argv[4]) < 0 : sign = -1
+
+		for line in sys.stdin:
+			tokens = line.rstrip().split(' ')
+
+			printTokens(0,f2+1,tokens)
+
+			m1 = tokens[f1]
+			diff = int(tokens[f2])
+
+			m2 = shiftMonth(m1,diff*sign)
+			if m1 > m2 : m1, m2 = m2, m1
+
+			m = m1
+			while m <= m2:
+				print m, 
+				m = shiftMonth(m,1)
+
+			printTokens(f2+1,len(tokens),tokens)
+			print ""
+	elif re.compile('^-f -ly [0-9]+m$').match(opt):
+		#mdate -f -ly <f>m             : 前年月
+		f = int(sys.argv[3][:-1]) - 1
+
+		for line in sys.stdin:
+			tokens = line.rstrip().split(' ')
+
+			printTokens(0,f+1,tokens)
+
+			y = int(tokens[f][:4]) - 1
+			m = tokens[f][4:6]
+
+			print str(y) + m,
+			printTokens(f+1,len(tokens),tokens)
+
+			print ""
+	else:
+		usage()
+
+if __name__ == '__main__':
+
+	#オプションで処理を変える（べた書き->あとからリファクタリング）
+	opt = " ".join(sys.argv[1:])
+	if len(sys.argv) == 1:				usage()
+	elif re.compile('--help').match(opt):		usage()
+	elif re.compile('--version').match(opt):	version()
+	elif sys.argv[1] == "-f":			filterMode(opt)
+	else:						directMode(opt)
+
+	sys.exit(0)

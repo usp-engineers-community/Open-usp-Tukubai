@@ -1,0 +1,91 @@
+tcat(USP)
+
+＜名前＞
+tcat : ファイルを縦に並べる
+
+＜書式＞
+Usage   : tcat [-n] <file1> <file2>...
+Version : Thu Dec 15 13:46:38 JST 2011
+
+＜説明＞
+引数で指定した複数のファイルを縦に並べて連結して出力します。
+
+＜例１＞
+(ファイル1：file1)
+                             ---試験結果---
+氏名No  氏名       年齢 性別  A  B  C  D  E
+
+(ファイル2：file2)
+0000008 角屋______   50    F 52 91 44  9  0
+0000009 米原______   68    F 60 89 33 18  6
+0000010 柳本______   50    F 95 60 35 93 76
+0000011 安武______   55    F 92 56 83 96 75
+
+
+$ tcat file1 file2 > file3
+(file3)
+                             ---試験結果---
+氏名No  氏名       年齢 性別  A  B  C  D  E
+0000008 角屋______   50    F 52 91 44  9  0
+0000009 米原______   68    F 60 89 33 18  6
+0000010 柳本______   50    F 95 60 35 93 76
+0000011 安武______   55    F 92 56 83 96 75
+
+＜例２＞
+"-数字"オプションを使用すると、ファイルを"-"の後に指定した行数分だけ間をあけて
+連結することができます。
+
+２行分あけて連結して出力します。
+$ tcat -2 file1 file2 > file3
+(file3)
+                             ---試験結果---
+氏名No  氏名       年齢 性別  A  B  C  D  E
+                                             <- 2行分あいている。
+
+0000008 角屋______   50    F 52 91 44  9  0
+0000009 米原______   68    F 60 89 33 18  6
+0000010 柳本______   50    F 95 60 35 93 76
+0000011 安武______   55    F 92 56 83 96 75
+
+
+＜例３＞
+一方のテキストを標準入力から読み込む場合、標準入力側のテキストを引数"-"で記述
+します。
+$ cat file1 | tcat - file2 > file3
+
+＜公開の経緯と商用利用について＞
+
+ユニバーサル・シェル・プログラミング研究所（USP研究所）では、弊社の哲学に基き
+コマンドとシェルスクリプトを利用した独自のシステム開発や
+シェルプログラミングの普及・教育活動を行っています。
+
+Open usp Tukubaiは、シェルを利用したデータ処理の可能性を体感していただくために、
+商用版Tsukubai（有償）から利用頻度の高いものを厳選し、
+一部の機能をオープンソースソフトウェアとして公開したものです。
+
+Open usp Tukubaiのサポート（有償）や、商用版Tukubaiにご興味のある方は、
+以下のメールアドレスまでお問い合わせください。
+info@usp-lab.com
+
+
+# The MIT License
+#
+# Copyright (c) 2011 Universal Shell Programming Lab.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.

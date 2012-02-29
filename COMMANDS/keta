@@ -1,0 +1,289 @@
+#!/usr/bin/env python
+#coding: utf-8
+#
+# keta 桁整形フィルタ（OpenUSP版）
+# 
+# designed by Nobuaki Tounaka
+# written by Yoshio Katayama
+#
+# The MIT License
+#
+# Copyright (C) 2011 Universal Shell Programming Lab.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+_usage = "keta n1 n2 .. <filename>"
+_usage1 = "keta -v <filename>"
+_usage2 = "keta [--] <filename>"
+_version = "Fri Oct 21 11:26:06 JST 2011"
+_code = "OpenUSP (LINUX/PYTHON2.4/UTF-8)"
+_keypat = r'(-?\d+)(x((\d+)|(NF)(-\d+)?))?$'
+		# 1: - width
+		# 4: constant multiplier
+		# 5: NF
+		# 6: offset from NF
+
+import re
+import os
+import sys
+import stat
+import tempfile
+
+def error(msg, *arg):
+	print >> sys.stderr, 'Error[keta] :', msg % arg
+	sys.exit(1)
+
+def usage():
+	print >> sys.stderr, "Usage   :", _usage
+	print >> sys.stderr, "        :", _usage1
+	print >> sys.stderr, "        :", _usage2
+	print >> sys.stderr, "Version :", _version
+	print >> sys.stderr, "         ", _code
+	sys.exit(1)
+
+class FieldLine:
+	def __init__(self, line, allow_z = False):
+		self.__allow_zero = allow_z
+		line = line.rstrip('\n')
+		self.__fields = [ line ]
+		self.__fields += [ x for x in line.split(' ') if x ]
+
+	def size(self):
+		return len(self.__fields) - 1
+
+	def getFieldNum(self, key):
+		if type(key) == type(0):
+			return key
+		if re.match(r'\d+$', key):
+			key = int(key)
+		elif key == 'NF':
+			key = self.size()
+		else:
+			key = self.size() - int(key[3:])
+			if key <= 0:
+				error("NF-x の x が大きすぎます。")
+		if key < 0:
+			error("フィールド番号が負です。")
+		if key == 0 and not self.__allow_zero:
+			error("フィールド番号が０です。")
+		if key > self.size():
+			error("フィールド番号が大きすぎます。")
+		return key
+
+	def getField(self, s, e = None):
+		s = self.getFieldNum(s)
+		if e == None:
+			e = s
+		else:
+			e = self.getFieldNum(e)
+		if s <= e:
+			return ' '.join(self.__fields[s : e + 1])
+		else:
+			t = self.__fields[e : s + 1]
+			t.reverse()
+			return ' '.join(t)
+
+	def getHead(self, n):
+		pat = '( *([^ ]+ +){%d}[^ ]+)' % (n - 2)
+		r = re.match(pat, self.__fields[0])
+		return r.group(1)
+
+	def getTail(self, n):
+		pat = ' *([^ ]+ +){%d}[^ ]+ ?(.*)' % (n - 1)
+		r = re.match(pat, self.__fields[0])
+		return r.group(2)
+
+#
+# unicode 変換
+#
+def to_unicode(s):
+	try:
+		return unicode(s, 'utf_8')
+	except:
+		error("不当なマルチバイト文字が含まれています。")
+
+#
+# 文字列の表示幅
+#
+def strwidth(s):
+	wid = 0
+	for c in to_unicode(s):
+		if c <= '\x7f' or c >= u'\uff61' and c <= u'\uff9f':
+			wid += 1
+		else:
+			wid += 2
+	return wid
+
+#
+# 入力ファイルオープン
+#
+def open_file(n, mode = 'r'):
+	if n >= len(sys.argv) or sys.argv[n] == '-':
+		file = sys.stdin
+	else:
+		try:
+			file = open(sys.argv[n], mode)
+		except:
+			error("ファイル %s をオープンできません。", sys.argv[n])
+	return file
+
+#
+# 通常ファイルの判定
+#
+def isfile(fd):
+	try:
+		return stat.S_ISREG(os.fstat(fd).st_mode)
+	except:
+		return False
+
+#
+# 1st pass
+#
+def pass1(file, left, rewind):
+	if rewind and not isfile(file.fileno()):
+		tmp = tempfile.mkstemp(prefix='keta-')
+		os.unlink(tmp[1])
+		tmp = os.fdopen(tmp[0], 'w+')
+	else:
+		tmp = None
+
+	wid = []
+	for line in file:
+		if tmp:
+			print >>tmp, line,
+		line = FieldLine(line)
+		wid += [ 0 ] * (line.size() + 1 - len(wid))
+		for i in range(1, line.size() + 1):
+			wid[i] = max(wid[i], strwidth(line.getField(i)))
+
+	if left:
+		wid = [ -x for x in wid ]
+	if tmp:
+		file.close()
+		file = tmp
+	if rewind:
+		file.seek(0)
+	return [ file, wid[1:] ]
+
+#
+# 2nd pass
+#
+def pass2(arg):
+	for line in arg[0]:
+		prline(FieldLine(line), arg[1])
+	sys.exit(0)
+
+#
+# 2nd pass (with NF)
+#
+def pass2_nf(file, wid):
+	for line in file:
+		line = FieldLine(line)
+		prline(line, mkwidtab(wid, line.size()))
+	sys.exit(0)
+
+#
+# 1行出力
+#
+def prline(line, wid):
+	def pr1(str, wid):
+		if str == None:
+			return
+		if not wid:
+			wid = 0
+		else:
+			wid += wid / abs(wid) * (len(str) - strwidth(str))
+		print '%*s' % (wid, str),
+
+	map(pr1, map(line.getField, range(1, line.size() + 1)), wid)
+	print
+
+#
+# width テーブルの作成
+#
+def mkwidtab(wid, nf):
+	table = []
+	for w in wid:
+		if w[3]:
+			table += [ int(w[0]) ] * (nf + int(w[3]))
+		elif w[2]:
+			table += [ int(w[0]) ] * nf
+		elif w[1]:
+			table += [ int(w[0]) ] * int(w[1])
+		else:
+			table += [ int(w[0]) ]
+	return table
+#
+#メイン関数
+#
+if __name__ == '__main__':
+
+	if len(sys.argv) > 1 \
+	 and (sys.argv[1] == '--help' \
+	  or sys.argv[1] == '--version'):
+		usage()
+
+	#
+	# -v <filename>
+	#
+	if len(sys.argv) > 1 and sys.argv[1] == '-v':
+		if len(sys.argv) > 3:
+			usage()
+		file = open_file(2)
+		for i in pass1(file, 0, False)[1]:
+			print i,
+		print
+		sys.exit(0)
+	#
+	# [--] <filename>
+	#
+	if len(sys.argv) <= 1 or not re.match(_keypat, sys.argv[1]):
+		if len(sys.argv) > 1 and sys.argv[1] == '--':
+			left = True
+			del sys.argv[1]
+		else:
+			left = False
+		if len(sys.argv) > 2:
+			usage()
+		file = open_file(1)
+		pass2(pass1(file, left, True))
+
+	#
+	# n1 n2 .. <filename>
+	#
+	if re.match(_keypat, sys.argv[-1]):
+		file = sys.stdin
+	else:
+		file = open_file(-1)
+		del sys.argv[-1]
+
+	del sys.argv[0]
+	wid = []
+	nf = False
+	for arg in sys.argv:
+		r = re.match(_keypat, arg)
+		if not r:
+			usage()
+		wid += [ [ r.group(i) for i in 1, 4, 5, 6 ] ]
+		nf |= wid[-1][2] == 'NF'
+
+	if nf:
+		pass2_nf(file, wid)
+	else:
+		pass2([ file, mkwidtab(wid, 0) ])
