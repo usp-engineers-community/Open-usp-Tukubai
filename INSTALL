@@ -1,10 +1,30 @@
-
                Universal Shell Programming Laboratory
                           info@usp-lab.com
                     Mon Feb 27 23:54:52 JST 2012
 
-Tukubaiインストール
-===================
+Tukubaiインストール(Makefile)
+=============================
+
+デフォルトのパスにコマンドおよびドキュメント、マニュアルをインス
+トールする場合は次のように作業する。
+
+  $ make install
+
+デフォルトでは次のパスにインストールが実施される。
+
+  コマンド     /usr/local/bin
+  マニュアル   /usr/local/share/open-usp-tukubai/man
+  ドキュメント /usr/local/share/open-usp-tukubai/doc
+
+アンインストールは次のように作業する。
+
+  $ make uninstall
+
+CentOSおよびFreeBSDにおける動作が確認されている。
+
+
+Tukubaiインストール(手動)
+=========================
 
 ファイルを展開し、COMMAND内のPythonスクリプトをコマンドを配置する
 対象となるディレクトリにコピー。マニュアル（テキストファイル）も、
