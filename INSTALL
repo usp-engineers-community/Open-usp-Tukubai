@@ -2,8 +2,8 @@
                           info@usp-lab.com
                     Mon Feb 27 23:54:52 JST 2012
 
-Tukubaiインストール(Makefile)
-=============================
+Open usp Tukubaiインストール(Makefile)
+======================================
 
 デフォルトのパスにコマンドおよびドキュメント、マニュアルをインス
 トールする場合は次のように作業する。
@@ -23,20 +23,19 @@ Tukubaiインストール(Makefile)
 CentOSおよびFreeBSDにおける動作が確認されている。
 
 
-Tukubaiインストール(手動)
-=========================
+Open usp Tukubaiインストール(手動)
+==================================
 
-ファイルを展開し、COMMAND内のPythonスクリプトをコマンドを配置する
+ファイルを展開し、COMMANDS内のPythonスクリプトをコマンドを配置する
 対象となるディレクトリにコピー。マニュアル（テキストファイル）も、
-アクセスしやすい場所にコピー。その後、AまたはBのいずれかを実施。
+アクセスしやすい場所にコピー。その後、次の手順のいずれかを実施する。
 
-Method A
---------
+方法a)
 
-Tukubaiコマンドをchmod(1)等で実行可能な状態とし、コマンドをコピーした
-ディレクトリを環境変数PATHへ追加する。
+Open usp Tukubaiコマンドをchmod(1)等で実行可能な状態とし、コマンドを
+コピーしたディレクトリを環境変数PATHへ追加する。
 
-  サンプル（~/binに置く場合）
+  サンプル(~/binに置く場合)
     $ chmod +x ~/bin/*
     $ PATH=~/bin:${PATH}
     $ delf -v
@@ -44,13 +43,42 @@ Tukubaiコマンドをchmod(1)等で実行可能な状態とし、コマンド�
     Version  : Fri Oct 21 11:26:06 JST 2011
                OpenUSP (LINUX,FreeBSD/PYTHON2.4/UTF-8)
 
-Method B
---------
+方法b)
 
-Tukubaiコマンドをpython(1)コマンドの引数に指定して実行する。
+Open usp Tukubaiコマンドをpython(1)コマンドの引数に指定して実行する。
 
-  サンプル（~/binに置く場合）
+  サンプル (~/binに置く場合)
     $ python ./delf -v
     Usage    : delf <f1> <f2> ... [file]
     Version  : Fri Oct 21 11:26:06 JST 2011
                OpenUSP (LINUX,FreeBSD/PYTHON2.4/UTF-8)
+
+
+Pythonのバージョンとパスの確認
+=============================
+
+Open usp Tukubaiは、Python 2.x系 (2.4以上)で動作する。pythonのバー
+ジョンはターミナルからpythonコマンドにオプション"-V"を指定して実行
+することで確認できる。
+
+    $ python -V
+    Python 2.4.3
+    $
+
+pythonコマンドのパスはwhichコマンドで確認できる。
+
+    $ which python
+    /usr/bin/python
+    $
+
+
+動作確認
+========
+
+インストールおよびセットアップが環境すると、次のようにコマンドが
+動作する。
+
+    $ join0
+    Usage   : join0 [+ng<fd>] key=<n> <master> <tran>
+    Version : Fri Oct 21 11:26:06 JST 2011
+              OpenUSP (LINUX/PYTHON2.4/UTF-8)
