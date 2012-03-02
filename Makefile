@@ -37,9 +37,9 @@ MANUAL=		cgi-name.txt check_attr_name.txt check_need_name.txt \
 		join1.txt join2.txt juni.txt kasan.txt keta.txt keycut.txt \
 		loopj.txt loopx.txt map.txt marume.txt mdate.txt \
 		mime-read.txt mojihame.txt nameread.txt plus.txt rank.txt \
-		ratio.txt retu.txt self.txt sm2.txt sm4.txt sm5.txt tarr.txt \
-		tateyoko.txt tcat.txt unmap.txt up3.txt yarr.txt ycat.txt \
-		yobi.txt ysum.txt zen.txt
+		ratio.txt retu.txt self.txt sm2.txt sm4.txt sm5.txt \
+		tarr.txt tateyoko.txt tcat.txt unmap.txt up3.txt yarr.txt \
+		ycat.txt yobi.txt ysum.txt zen.txt
 DOC=		INSTALL LICENSE README
 
 INSTALL=	/usr/bin/install
