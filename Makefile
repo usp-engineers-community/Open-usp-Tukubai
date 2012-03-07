@@ -22,7 +22,7 @@
 
 LOCALBASE?=	/usr/local
 BINDIR?=	${LOCALBASE}/bin
-DATDIR?=	${LOCALBASE}/share/open-usp-tukubai
+DATDIR?=	${LOCALBASE}/share/open-usp-tukubai/devel
 MANDIR=		${DATDIR}/man
 DOCDIR=		${DATDIR}/doc
 
