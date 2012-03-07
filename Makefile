@@ -20,9 +20,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-LOCALBASE=	/usr/local
-BINDIR=		${LOCALBASE}/bin
-DATDIR=		${LOCALBASE}/share/open-usp-tukubai
+LOCALBASE?=	/usr/local
+BINDIR?=	${LOCALBASE}/bin
+DATDIR?=	${LOCALBASE}/share/open-usp-tukubai
 MANDIR=		${DATDIR}/man
 DOCDIR=		${DATDIR}/doc
 
@@ -42,10 +42,10 @@ MANUAL=		cgi-name.txt check_attr_name.txt check_need_name.txt \
 		ycat.txt yobi.txt ysum.txt zen.txt
 DOC=		INSTALL LICENSE README
 
-INSTALL=	/usr/bin/install
-MKDIR=		/bin/mkdir -p
-RMDIR=		/bin/rmdir
-RM=		/bin/rm
+INSTALL?=	/usr/bin/install
+MKDIR?=		/bin/mkdir -p
+RMDIR?=		/bin/rmdir
+RM?=		/bin/rm
 
 INSTALL_PROGRAM=	${INSTALL} -m ${BINMODE}
 INSTALL_DOCS=		${INSTALL} -m ${DOCMODE}
