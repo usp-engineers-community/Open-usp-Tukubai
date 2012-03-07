@@ -1,9 +1,9 @@
                Universal Shell Programming Laboratory
                           info@usp-lab.com
-                    Fri Mar  2 15:19:13 JST 2012
+                    Wed Mar  7 15:20:54 JST 2012
 
-Open usp Tukubaiインストール(Makefile)
-======================================
+Open usp Tukubaiインストール : Makefile
+=======================================
 
 デフォルトのパスにコマンドおよびドキュメント、マニュアルをインス
 トールする場合は次のように作業する。
@@ -13,14 +13,30 @@ Open usp Tukubaiインストール(Makefile)
 デフォルトでは次のパスにインストールが実施される。
 
   コマンド     /usr/local/bin
-  マニュアル   /usr/local/share/open-usp-tukubai/man
-  ドキュメント /usr/local/share/open-usp-tukubai/doc
+  マニュアル   /usr/local/share/open-usp-tukubai/devel/man
+  ドキュメント /usr/local/share/open-usp-tukubai/devel/doc
+
+インストールパスは環境変数またはmakeで指定する変数としてLOCALBASEを
+使うことで変更可能。LOCALBASEの値を/usr/local以外に変更するとほかの
+パスへインストールできる。コマンドのインストール先とドキュメントな
+どのインストール先はBINDIRおよびDATDIRにてさらに個別に指定すること
+もできる。
 
 アンインストールは次のように作業する。
 
   $ make uninstall
 
 CentOSおよびFreeBSDにおける動作が確認されている。
+
+
+Open usp Tukubaiインストール : FreeBSD
+======================================
+
+Ports Collectionからインストールする。Ports Collectionを最新の状態に
+更新したら、次のようにインストールする。
+
+  % cd /usr/ports/devel/open-usp-tukubai/
+  % make install clean
 
 
 Open usp Tukubaiインストール(手動)
@@ -41,7 +57,7 @@ Open usp Tukubaiコマンドをchmod(1)等で実行可能な状態とし、コ�
     $ delf -v
     Usage    : delf <f1> <f2> ... [file]
     Version  : Fri Oct 21 11:26:06 JST 2011
-               OpenUSP (LINUX,FreeBSD/PYTHON2.4/UTF-8)
+             : OpenUSP (LINUX,FreeBSD/PYTHON2.4/UTF-8)
 
 方法b)
 
@@ -51,7 +67,7 @@ Open usp Tukubaiコマンドをpython(1)コマンドの引数に指定して実�
     $ python ./delf -v
     Usage    : delf <f1> <f2> ... [file]
     Version  : Fri Oct 21 11:26:06 JST 2011
-               OpenUSP (LINUX,FreeBSD/PYTHON2.4/UTF-8)
+             : OpenUSP (LINUX,FreeBSD/PYTHON2.4/UTF-8)
 
 
 Pythonのバージョンとパスの確認
@@ -81,4 +97,4 @@ pythonコマンドのパスはwhichコマンドで確認できる。
     $ join0
     Usage   : join0 [+ng<fd>] key=<n> <master> <tran>
     Version : Fri Oct 21 11:26:06 JST 2011
-              OpenUSP (LINUX/PYTHON2.4/UTF-8)
+            : OpenUSP (LINUX/PYTHON2.4/UTF-8)
