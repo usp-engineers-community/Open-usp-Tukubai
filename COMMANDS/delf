@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 #coding: utf-8
 # 
-# delf delfのpython試作版
+# delf デリートフィールド（Open usp Tukubai版）
 #
 # designed by Nobuaki Tounaka
 # written by Ryuichi Ueda
 #
 # The MIT License
 #
-# Copyright (C) 2011 Universal Shell Programming Laboratory
+# Copyright (C) 2012 Universal Shell Programming Laboratory
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,7 @@
 # THE SOFTWARE.
 
 _usage = "delf <f1> <f2> ... [file]"
-_version = "Fri Oct 21 11:26:06 JST 2011"
+_version = "Sat Mar 10 17:18:43 JST 2012"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
 
 import re
