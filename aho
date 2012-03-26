@@ -1,0 +1,79 @@
+#!/bin/bash -xv
+
+dir=$(dirname $0)/..
+dirname $0)/..
+dirname $0
+++ dirname ./TEST/NAMEREAD.bash
++ dir=./TEST/..
+cd $dir
++ cd ./TEST/..
+
+com=./COMMANDS/nameread
++ com=./COMMANDS/nameread
+
+ERROR_CHECK(){
+	[ $(plus ${PIPESTATUS[@]} ) -eq 0 ] && return
+	rm -f $tmp-*
+	exit 1
+}
+
+tmp=/tmp/$$
++ tmp=/tmp/30408
+
+cat << FIN > $tmp-name
+A01 1
+A02 2
+A03 3
+A10 5
+FIN
++ cat
+
+###########################################
+#TEST1: ordinaly use
+
+ANS=$( ${com} A01 $tmp-name )
+ ${com} A01 $tmp-name )
+ ${com} A01 $tmp-name 
+++ ./COMMANDS/nameread A01 /tmp/30408-name
+ターゲット: A01 1
+
++ ANS=1
+[ "${ANS}" = "1" ] ; ERROR_CHECK
++ '[' 1 = 1 ']'
++ ERROR_CHECK
+plus ${PIPESTATUS[@]} )
+plus ${PIPESTATUS[@]} )
+plus ${PIPESTATUS[@]} 
+++ plus 0
++ '[' 0 -eq 0 ']'
++ return
+
+###########################################
+#TEST2: regular expression
+
+${com} '^A0[0-9]$' $tmp-name > $tmp-out
++ ./COMMANDS/nameread '^A0[0-9]$' /tmp/30408-name
+ターゲット: A01 1
+
+ターゲット: A02 2
+
+ターゲット: A03 3
+
+
+cat << FIN > $tmp-ans
+1
+2
+3
+FIN
++ cat
+
+diff $tmp-ans $tmp-out ; ERROR_CHECK
++ diff /tmp/30408-ans /tmp/30408-out
++ ERROR_CHECK
+plus ${PIPESTATUS[@]} )
+plus ${PIPESTATUS[@]} )
+plus ${PIPESTATUS[@]} 
+++ plus 1
++ '[' 1 -eq 0 ']'
++ rm -f /tmp/30408-ans /tmp/30408-name /tmp/30408-out
++ exit 1

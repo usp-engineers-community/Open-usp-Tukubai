@@ -5,6 +5,7 @@
 # 
 # designed by Nobuaki Tounaka
 # written by Yoshio Katayama
+# modified by Ryuichi Ueda Mar. 26, 2012
 #
 # The MIT License
 #
@@ -40,8 +41,8 @@ warnings.filterwarnings("ignore", ".* regex .*", DeprecationWarning, __name__, a
 import re
 import os
 import sys
-import regex
-from regex_syntax import *
+#import regex
+#from regex_syntax import *
 
 def error(msg, *arg):
 	print >> sys.stderr, 'Error[check_need_name] :', msg % arg
@@ -58,41 +59,39 @@ def usage():
 #
 # 入力ファイルオープン
 #
-def open_file(n, mode = 'r'):
+def openFile(n, mode = 'r'):
 	if n >= len(sys.argv) or sys.argv[n] == '-':
-		file = sys.stdin
-	else:
-		try:
-			file = open(sys.argv[n], mode)
-		except:
-			error("ファイル '%s' をオープンできません。", sys.argv[n])
-	return file
+		return sys.stdin
+
+	try:
+		return open(sys.argv[n], mode)
+	except:
+		error("ファイル '%s' をオープンできません。", sys.argv[n])
+
+	return None
+
 
 #
 #メイン関数
 #
 if __name__ == '__main__':
 
-	#
-	# ( ) | をメタキャラクタと扱う
-	#
-	regex.set_syntax(RE_NO_BK_PARENS | RE_NO_BK_VBAR)
-
 	if len(sys.argv) <= 1 \
 	 or sys.argv[1] == '--help' \
 	 or sys.argv[1] == '--version':
 		usage()
 
-	#
 	# オプション解析
-	#
 	eflag, lflag, blank, null = False, False, '', ''
+
+	# this part should be rewritten someday...
 	while len(sys.argv) > 1:
 		if sys.argv[1][0] != '-':
-			break;
+			break
+
 		for i in range(1, len(sys.argv[1])):
 			if sys.argv[1][i] == 'e':
-				eflag = True;
+				eflag = True
 			elif sys.argv[1][i] == 'l':
 				lflag = True
 			elif sys.argv[1][i] == 'd':
@@ -122,22 +121,31 @@ if __name__ == '__main__':
 	if len(sys.argv) <= 1:
 		usage()
 
-	#
-	# <name>
-	#
-	name = sys.argv[1]
+	designated_name = sys.argv[1]
 
-	#
 	# メインループ
-	#
-	for line in open_file(2):
-		l = re.findall(r' *([^ \n]+) ?(.*)', line)
-		if not l:
+	for line in openFile(2):
+		tokens = line.rstrip().split(' ')
+
+		if len(tokens) == 0:
 			error("<name_file> に空行があります。")
-		elif eflag and regex.search(name, l[0][0]) >= 0 \
-		  or not eflag and l[0][0] == name:
-			if lflag:
-				print l[0][0],
-			print re.sub(' ', blank[0], l[0][1] or null)
+
+		#tokens has a pair of name and value
+		name = tokens[0]
+		value = ""
+		if len(tokens) == 2:
+			value = tokens[1]
+
+		out_flag = False
+		if eflag:
+			if re.search(designated_name, name): out_flag = True
+		else:
+			if designated_name == name: out_flag = True
+
+		#output
+		if out_flag:
+			value_out = re.sub(' ', blank[0], value or null)
+			if lflag:	print name, value_out
+			else:		print value_out
 
 	sys.exit(0)
