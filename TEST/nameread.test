@@ -15,6 +15,7 @@ ERROR_CHECK(){
 	[ "$(echo ${PIPESTATUS[@]} | tr -d ' 0')" = "" ] && return
 
 	echo $1
+	echo "$com" NG
 	rm -f $tmp-*
 	exit 1
 }
