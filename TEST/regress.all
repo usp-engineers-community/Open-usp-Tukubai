@@ -18,5 +18,18 @@ while read com ; do
 	./nameread.test $com
 done
 
+#####################################
+#support of 3.x
+
+cat << FIN > $tmp-ver
+python3.1
+python3.2
+FIN
+
+cat $tmp-ver	|
+while read com ; do
+	./yarr.test $com
+done
+
 rm -f $tmp-*
 exit 0
