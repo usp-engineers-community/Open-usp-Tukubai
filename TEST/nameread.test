@@ -1,12 +1,20 @@
-#!/bin/bash -xv
+#!/usr/local/bin/bash -xv
+#
+# test script of nameread
+#
+# usage: ./YARR.bash <python ver>
 
 dir=$(dirname $0)/..
 cd $dir
 
-com=./COMMANDS/nameread
+scr=./COMMANDS/nameread
+com="$1 ${scr}"
+[ "$1" = "" ] && com=./COMMANDS/nameread
 
 ERROR_CHECK(){
-	[ $(plus ${PIPESTATUS[@]} ) -eq 0 ] && return
+	[ "$(echo ${PIPESTATUS[@]} | tr -d ' 0')" = "" ] && return
+
+	echo $1
 	rm -f $tmp-*
 	exit 1
 }
@@ -24,7 +32,7 @@ FIN
 #TEST1: ordinaly use
 
 ANS=$( ${com} A01 $tmp-name )
-[ "${ANS}" = "1" ] ; ERROR_CHECK
+[ "${ANS}" = "1" ] ; ERROR_CHECK "Test1 error"
 
 ###########################################
 #TEST2: regular expression
@@ -37,7 +45,7 @@ cat << FIN > $tmp-ans
 3
 FIN
 
-diff $tmp-ans $tmp-out ; ERROR_CHECK
+diff $tmp-ans $tmp-out ; ERROR_CHECK "Test2 error"
 
 ###########################################
 #TEST2: regular expression with output of names
@@ -50,8 +58,8 @@ A02 2
 A03 3
 FIN
 
-diff $tmp-ans $tmp-out ; ERROR_CHECK
+diff $tmp-ans $tmp-out ; ERROR_CHECK "Test3 error"
 
 rm $tmp-*
-echo OK
+echo "${com}" OK
 exit 0

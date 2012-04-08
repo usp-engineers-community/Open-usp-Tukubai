@@ -1,0 +1,22 @@
+#!/usr/local/bin/bash -xv
+
+tmp=/tmp/$$
+
+dir=$(dirname $0)
+cd $dir
+
+cat << FIN > $tmp-ver
+python2.7
+python2.6
+python2.5
+python2.4
+FIN
+
+cat $tmp-ver	|
+while read com ; do
+	./yarr.test $com
+	./nameread.test $com
+done
+
+rm -f $tmp-*
+exit 0

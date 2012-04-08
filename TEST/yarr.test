@@ -1,0 +1,43 @@
+#!/usr/local/bin/bash -xv
+#
+# test script of yarr 
+#
+# usage: ./yarr.test <python ver>
+
+tmp=/tmp/$$
+
+dir=$(dirname $0)/..
+cd $dir
+
+scr=./COMMANDS/yarr
+com="$1 ${scr}"
+[ "$1" = "" ] && com=./COMMANDS/yarr
+
+ERROR_CHECK(){
+	[ "$(echo ${PIPESTATUS[@]} | tr -d ' 0')" = "" ] && return
+
+	echo $1
+	rm -f $tmp-*
+	exit 1
+}
+
+###########################################
+#TEST1: no option use
+
+cat << FIN > $tmp-in
+山田
+山本
+田中
+FIN
+
+cat << FIN > $tmp-out
+山田 山本 田中
+FIN
+
+${com} $tmp-in > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1 error"
+
+rm -f $tmp-*
+echo "${com}" OK
+exit 0
