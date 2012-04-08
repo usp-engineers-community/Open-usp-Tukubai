@@ -11,7 +11,7 @@
 # Copyright (C) 2011 Universal Shell Programming Laboratory
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
+# of this software and associated documentation in_files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
@@ -28,9 +28,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-_usage = "yarr [num=<n>] [-<m>] <file>"
-_version = "Sun Apr  8 18:00:28 JST 2012"
-_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4+, PYTHON3.2/UTF-8)"
+_usage = "yarr [num=<n>] [-<m>] <in_file>"
+_version = "Thu Dec  8 11:42:19 JST 2011"
+_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4+/UTF-8)"
 
 import re
 import os
@@ -77,8 +77,7 @@ class Operator:
 			valstr = self.value_delimiter.join(self.hold_values)
 
 			outstr = " ".join([keystr,valstr])
-			x = outstr.lstrip(' ')
-			print(x)
+			print outstr.lstrip(' ')
 			return
 		
 		n = 0
@@ -89,29 +88,29 @@ class Operator:
 
 			if len(self.hold_keys) != 0:
 				tmp = self.value_delimiter.join(self.hold_values[n:m])
-				outstr = self.hold_keys + [tmp]
+				outstr = self.hold_keys + [tmp];
 			else:
 				outstr = self.hold_values[n:m]
 
-			print(" ".join(outstr))
+			print " ".join(outstr)
 
 			n += self.return_num
 
 		
 	def debugPrint(self):
-		print(self.key_num, self.return_num)
+		print self.key_num, self.return_num
 
 def eprint(message):
-	sys.stderr.write(message)
+	print >> sys.stderr, message
 
 def die(message):
-	sys.stderr.write("Error[yarr] : %s\n" % message)
+	print >> sys.stderr, "Error[yarr] :", message
 	sys.exit(1)
 
 def printUsage():
-	sys.stderr.write("Usage    : %s\n" % _usage)
-	sys.stderr.write("Version  : %s\n" % _version)
-	sys.stderr.write("	  %s\n"% _code)
+	print >> sys.stderr , "Usage    :", _usage
+	print >> sys.stderr , "Version  :", _version
+	print >> sys.stderr , "	  ", _code
 	sys.exit(1)
 
 def arrayEqual(array1,array2):
@@ -131,22 +130,6 @@ def prefixEqual(prefix,token):
 
 	return False
 
-def getInFile(file_name):
-	if file_name != "-":
-		return codecs.open(arg,'r','utf-8')
-
-	#choice of stdin
-	if sys.version_info[0] < 3:
-		return codecs.getreader('utf-8')(sys.stdin)
-
-	return codecs.getreader('utf-8')(sys.stdin.detach())
-
-def resetStdout():
-	if sys.version_info[0] < 3:
-		return codecs.getwriter('utf-8')(sys.stdout)
-
-	return codecs.getwriter('utf-8')(sys.stdout.detach())
-
 ###########################################
 #メイン関数
 ###########################################
@@ -159,10 +142,11 @@ if __name__ == '__main__':
 			printUsage()
 
 	###########################################
-	#処理クラスの準備とオプションの処理
+	#オプションの処理
 	op = Operator()
 
-	in_file_name = "-"
+	in_file = codecs.getreader('utf-8')(sys.stdin)
+	sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
 
 	argc = len(sys.argv)
 	#ファイルか、num=か、-nか
@@ -172,10 +156,7 @@ if __name__ == '__main__':
 		elif arg == "-":		pass
 		elif prefixEqual("-",arg):	op.setReturnNum(arg[1:])
 		elif prefixEqual("num=",arg):	op.setKeyNum(arg[4:])
-		else:				in_file_name = arg
-
-	in_file = getInFile(in_file_name)
-	sys.stdout = resetStdout()
+		else:				in_file = codecs.open(arg,'r','utf-8')
 
 	###########################################
 	#出力

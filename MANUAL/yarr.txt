@@ -6,7 +6,7 @@ yarr : 縦型のデータを横型に展開する。
 ＜書式＞
 Usage   : yarr [-<n>][-d<str>] <file>
           yarr [-<n>][-d<str>] num=<n> <file>
-Version : Thu Dec 15 13:46:38 JST 2011
+Version : Sun Apr  8 18:00:28 JST 2012
 
 ＜説明＞
 指定したファイルの、第１フィールド目から "num=<n>" で指定したフィールド数までの

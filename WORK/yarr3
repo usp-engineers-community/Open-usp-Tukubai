@@ -29,8 +29,8 @@
 # THE SOFTWARE.
 
 _usage = "yarr [num=<n>] [-<m>] <file>"
-_version = "Sun Apr  8 18:00:28 JST 2012"
-_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4+, PYTHON3.2/UTF-8)"
+_version = "Thu Dec  8 11:42:19 JST 2011"
+_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4+/UTF-8)"
 
 import re
 import os

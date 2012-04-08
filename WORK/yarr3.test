@@ -9,9 +9,9 @@ tmp=/tmp/$$
 dir=$(dirname $0)/..
 cd $dir
 
-scr=./COMMANDS/yarr
+scr=./WORK/yarr3
 com="$1 ${scr}"
-[ "$1" = "" ] && com=./COMMANDS/yarr
+[ "$1" = "" ] && com=./WORK/yarr3
 
 ERROR_CHECK(){
 	[ "$(echo ${PIPESTATUS[@]} | tr -d ' 0')" = "" ] && return
@@ -73,14 +73,17 @@ cat << FIN > $tmp-out
 002 田中 中
 FIN
 
+#1:input from file
 ${com} num=1 -2 $tmp-in > $tmp-ans
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST2-1 error"
 
+#2:input from stdin
 cat $tmp-in		|
-${com} num=1 -2 > $tmp-ans
+${com} num=1 -2 - > $tmp-ans
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST2-2 error"
+
 
 rm -f $tmp-*
 echo "${com}" OK
