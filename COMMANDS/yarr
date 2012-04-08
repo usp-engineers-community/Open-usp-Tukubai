@@ -38,7 +38,6 @@ import sys
 import codecs
 
 class Operator:
-	#コンストラクタ
 	def __init__(self):
 		self.key_num = 0
 		self.return_num = None
@@ -58,7 +57,6 @@ class Operator:
 
 	def setValueDelimiter(self,str):
 		self.value_delimiter = str
-		#str.decode('utf8')
 
 	def output(self,tokens):
 		keys = tokens[0:self.key_num]
@@ -79,7 +77,6 @@ class Operator:
 			valstr = self.value_delimiter.join(self.hold_values)
 
 			outstr = " ".join([keystr,valstr])
-			#print outstr.encode('utf_8')
 			print outstr.lstrip(' ')
 			return
 		
@@ -95,7 +92,7 @@ class Operator:
 			else:
 				outstr = self.hold_values[n:m]
 
-			print " ".join(outstr)#.encode('utf_8')
+			print " ".join(outstr)
 
 			n += self.return_num
 
@@ -148,7 +145,6 @@ if __name__ == '__main__':
 	#オプションの処理
 	op = Operator()
 
-	#file = sys.stdin
 	file = codecs.getwriter('utf-8')(sys.stdin)
 	sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
 
@@ -166,7 +162,6 @@ if __name__ == '__main__':
 	#出力
 	for line in file:
 		#utf_8からユニコードに変換して改行を取る
-	#	line = unicode(line, "utf_8").rstrip()
 		line = line.rstrip()
 		tokens = line.split(' ')
 		op.output(tokens)

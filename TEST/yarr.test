@@ -38,6 +38,45 @@ ${com} $tmp-in > $tmp-ans
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST1 error"
 
+###########################################
+#TEST2: use of num
+
+cat << FIN > $tmp-in
+001 山田
+001 山本
+002 田中
+FIN
+
+cat << FIN > $tmp-out
+001 山田 山本
+002 田中
+FIN
+
+${com} num=1 $tmp-in > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2 error"
+
+###########################################
+#TEST3: use of option num=<n> and -<m>
+
+cat << FIN > $tmp-in
+001 山田
+001 山本
+001 武田
+002 田中
+002 中
+FIN
+
+cat << FIN > $tmp-out
+001 山田 山本
+001 武田
+002 田中 中
+FIN
+
+${com} num=1 -2 $tmp-in > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2 error"
+
 rm -f $tmp-*
 echo "${com}" OK
 exit 0
