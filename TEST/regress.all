@@ -1,5 +1,7 @@
 #!/usr/local/bin/bash -xv
 
+exec 2> /tmp/log.$(basename $0)
+
 tmp=/tmp/$$
 
 dir=$(dirname $0)
@@ -16,6 +18,7 @@ cat $tmp-ver	|
 while read com ; do
 	./yarr.test $com
 	./nameread.test $com
+	./check_need_name.test $com
 done
 
 #####################################
@@ -29,6 +32,7 @@ FIN
 cat $tmp-ver	|
 while read com ; do
 	./yarr.test $com
+	./check_need_name.test $com
 done
 
 rm -f $tmp-*

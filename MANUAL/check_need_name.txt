@@ -6,7 +6,7 @@ check_need_name : name 形式データの存在をチェックする
 ＜書式＞
 Usage    : check_need_name <check_file> <name_file>
 Option   : --blank <string>
-Version  : Thu Dec 15 13:46:38 JST 2011
+Version  : Sat Apr 14 16:28:18 JST 2012
 
 ＜説明＞
 <check_file> に記述されているタグ名について、
@@ -28,15 +28,6 @@ A
 B 
 C 
 D 
-
-(check と次のcheck2 は同等)
-[usp1 usp@ ~]$ cat check2
-A need
-B need 
-C need
-D need
-E _
-F _
 
 [usp1 usp@ ~]$ cat data
 A _

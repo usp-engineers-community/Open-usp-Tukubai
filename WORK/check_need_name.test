@@ -1,0 +1,59 @@
+#!/usr/local/bin/bash -xv
+#
+# test script of check_need_name
+#
+# usage: ./check_attr_name.bash <python ver>
+
+dir=$(dirname $0)/..
+cd $dir
+
+scr=./WORK/check_need_name
+com="$1 ${scr}"
+[ "$1" = "" ] && com=./WORK/check_need_name
+
+ERROR_CHECK(){
+	[ "$(echo ${PIPESTATUS[@]} | tr -d ' 0')" = "" ] && return
+
+	echo $1
+	echo "$com" NG
+	rm -f $tmp-*
+	exit 1
+}
+
+tmp=/tmp/$$
+
+
+###########################################
+#TEST1: ordinaly use
+
+cat << FIN > $tmp-check
+PAGE
+FIN
+
+cat << FIN > $tmp-name
+PAGE aaa
+FIN
+
+${com} $tmp-check $tmp-name > $tmp-ans ; ERROR_CHECK "Test1 error"
+[ ! -s $tmp-ans ] ; ERROR_CHECK "Test1 error"
+
+###########################################
+#TEST2: blank option
+
+cat << FIN > $tmp-check
+PAGE
+FIN
+
+cat << FIN > $tmp-name
+PAGE @
+FIN
+
+#2-1: option handling
+${com} $tmp-check $tmp-name --blank > $tmp-ans 
+[ $? -eq 1 ] ; ERROR_CHECK "Test2-1-1 error"
+${com} --blank @@@ $tmp-check $tmp-name > $tmp-ans 
+[ $? -eq 0 ] ; ERROR_CHECK "Test2-1-2 error"
+
+rm $tmp-*
+echo "${com}" OK
+exit 0
