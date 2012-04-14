@@ -1,0 +1,167 @@
+#!/usr/local/bin/bash -xv
+#
+# test script of check_need_name
+#
+# usage: ./check_attr_name.bash <python ver>
+
+dir=$(dirname $0)/..
+cd $dir
+
+scr=./COMMANDS/check_need_name
+com="$1 ${scr}"
+[ "$1" = "" ] && com=./COMMANDS/check_need_name
+
+ERROR_CHECK(){
+	[ "$(echo ${PIPESTATUS[@]} | tr -d ' 0')" = "" ] && return
+
+	echo $1
+	echo "$com" NG
+	rm -f $tmp-*
+	exit 1
+}
+
+tmp=/tmp/$$
+
+
+###########################################
+#TEST1: ordinaly use
+
+cat << FIN > $tmp-check
+HOGE
+PAGE
+FIN
+
+cat << FIN > $tmp-name
+PAGE aaa
+HOGE aaho ho
+FIN
+
+cat << FIN > $tmp-res
+FIN
+
+${com} $tmp-check $tmp-name > $tmp-ans ; ERROR_CHECK "Test1 error"
+diff $tmp-res $tmp-ans ; ERROR_CHECK "Test1 error"
+
+###########################################
+#TEST2: ordinaly use
+
+cat << FIN > $tmp-check
+HOGE
+PAGE
+山田
+FIN
+
+cat << FIN > $tmp-name
+HOGE aaho ho
+
+FIN
+
+cat << FIN | sort > $tmp-res
+PAGE
+山田
+FIN
+
+${com} $tmp-check $tmp-name > $tmp-ans 
+[ $? -eq 1 ] ; ERROR_CHECK "Test2-1 error"
+
+sort $tmp-ans	|
+diff - $tmp-res ; ERROR_CHECK "Test2-2 error"
+
+###########################################
+#TEST3: blank option
+
+cat << FIN > $tmp-check
+PAGE
+FIN
+
+cat << FIN > $tmp-name
+PAGE @@
+FIN
+
+${com} $tmp-check $tmp-name --blank > $tmp-ans
+[ $? -eq 1 ] ; ERROR_CHECK "Test3-1 error"
+
+${com} --blank @@ $tmp-check $tmp-name > $tmp-ans 
+[ $? -eq 1 ] ; ERROR_CHECK "Test3-2-1 error"
+
+diff $tmp-ans $tmp-check ; ERROR_CHECK "Test3-2-1 error"
+
+${com} --blank @ $tmp-check $tmp-name > $tmp-ans 
+[ $? -eq 0 ] ; ERROR_CHECK "Test3-3-1 error"
+
+: |
+diff - $tmp-ans ; ERROR_CHECK "Test3-3-2 error"
+
+${com} $tmp-check --blank @@ $tmp-name > $tmp-ans 
+[ $? -eq 1 ] ; ERROR_CHECK "Test3-4-1 error"
+
+: |
+diff - $tmp-ans ; ERROR_CHECK "Test3-4-2 error"
+
+
+###########################################
+#TEST4: no value
+
+cat << FIN > $tmp-check
+PAGE
+FIN
+
+cat << FIN > $tmp-name
+PAGE
+FIN
+
+${com} $tmp-check $tmp-name > $tmp-ans
+[ $? -eq 1 ] ; ERROR_CHECK "Test4-1-1 error"
+
+diff $tmp-ans $tmp-check ; ERROR_CHECK "Test4-1-2 error"
+
+cat << FIN > $tmp-name
+PAGE _
+あいうえお aa
+FIN
+
+${com} $tmp-check $tmp-name > $tmp-ans
+[ $? -eq 1 ] ; ERROR_CHECK "Test4-2-1 error"
+
+diff $tmp-ans $tmp-check ; ERROR_CHECK "Test4-2-2 error"
+
+###########################################
+#TEST5: underscore
+
+cat << FIN > $tmp-check
+HOGE
+PAGE
+FIN
+
+cat << FIN > $tmp-name
+PAGE aaa
+HOGE_001 aaho
+FIN
+
+${com} $tmp-check $tmp-name > $tmp-ans ; ERROR_CHECK "Test5-1 error"
+
+: |
+diff - $tmp-ans ; ERROR_CHECK "Test5-2 error"
+
+###########################################
+#TEST6: invalid underscore
+
+cat << FIN > $tmp-check
+HOGE
+PAGE
+FIN
+
+cat << FIN > $tmp-name
+PAGE aaa
+HOGE_001_ aaho
+FIN
+
+${com} $tmp-check $tmp-name > $tmp-ans 
+[ $? -eq 1 ] ; ERROR_CHECK "Test6-1 error"
+
+echo "HOGE"	|
+diff - $tmp-ans ; ERROR_CHECK "Test6-2 error"
+
+rm $tmp-*
+echo "${com}" OK
+exit 0
