@@ -17,6 +17,7 @@ FIN
 cat $tmp-ver	|
 while read com ; do
 	./yarr.test $com
+	./self.test $com
 	./nameread.test $com
 	./check_need_name.test $com
 done
@@ -32,6 +33,7 @@ FIN
 cat $tmp-ver	|
 while read com ; do
 	./yarr.test $com
+	./self.test $com
 	./check_need_name.test $com
 done
 
