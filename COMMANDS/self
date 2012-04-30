@@ -29,7 +29,7 @@
 # THE SOFTWARE.
 
 _usage = [ "self f1 f2 ... file", "self -d f1 f2 ... string" ]
-_version = "Mon Apr 30 15:52:13 JST 2012"
+_version = "Mon Apr 30 19:26:55 JST 2012"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4+, 3.1, 3.2/UTF-8)"
 
 import re
@@ -134,26 +134,28 @@ class Operator:
 	def __init__(self):
 		self.out_sequence = []
 		self.field_num = 0
+		self.nf = None
 
 	def setOption(self,opt):
 		params = Params(opt.split('.'))
 		self.out_sequence.append(params)
 
-	def output(self,line,nf_set):
+	def output(self,line):
 		tokens = [line] + line.split()
 		#0: 一行全体 1以降: 各フィールド
 
-		nf = len(tokens)
+		self.nf = len(tokens)
+
 		print(" ".join(
-			[ self.cutWord(tokens,f,nf) for f in self.out_sequence ]
+			[ self.cutWord(tokens,f) for f in self.out_sequence ]
 		))
 
-	def cutWord(self,tokens,param,nf):
+	def cutWord(self,tokens,param):
 		frm = param.num_from
 		to = param.num_to
 
-		if param.nf_from == True:	frm = nf - frm - 1
-		if param.nf_to == True:		to = nf - to - 1
+		if param.nf_from == True:	frm = self.nf - frm - 1
+		if param.nf_to == True:		to = self.nf - to - 1
 
 		if param.start == None:
 			return " ".join(tokens[frm:to+1])
@@ -222,7 +224,7 @@ def directMode(argv):
 	for opt in argv[:-1]:
 		operator.setOption(opt)
 
-	operator.output(sys.argv[-1],False)
+	operator.output(sys.argv[-1])
 
 ###########################################
 #メイン関数
@@ -255,7 +257,7 @@ if __name__ == '__main__':
 	#実行
 	nf_set = False
 	for line in input_file:
-		operator.output(line.rstrip(),nf_set)
+		operator.output(line.rstrip())
 		nf_set = True
 
 	sys.exit(0)
