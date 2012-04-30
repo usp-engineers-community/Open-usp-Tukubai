@@ -29,7 +29,7 @@
 # THE SOFTWARE.
 
 _usage = [ "self f1 f2 ... file", "self -d f1 f2 ... string" ]
-_version = "Mon Apr 30 19:26:55 JST 2012"
+_version = "Mon Apr 30 20:38:54 JST 2012"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4+, 3.1, 3.2/UTF-8)"
 
 import re
@@ -134,7 +134,6 @@ class Operator:
 	def __init__(self):
 		self.out_sequence = []
 		self.field_num = 0
-		self.nf = None
 
 	def setOption(self,opt):
 		params = Params(opt.split('.'))
@@ -144,79 +143,66 @@ class Operator:
 		tokens = [line] + line.split()
 		#0: 一行全体 1以降: 各フィールド
 
-		self.nf = len(tokens)
-
 		print(" ".join(
 			[ self.cutWord(tokens,f) for f in self.out_sequence ]
 		))
 
 	def cutWord(self,tokens,param):
+		nf = len(tokens)
 		frm = param.num_from
 		to = param.num_to
 
-		if param.nf_from == True:	frm = self.nf - frm - 1
-		if param.nf_to == True:		to = self.nf - to - 1
+		if param.nf_from == True:	frm = nf - frm - 1
+		if param.nf_to == True:		to = nf - to - 1
 
 		if param.start == None:
 			return " ".join(tokens[frm:to+1])
 
 		token = tokens[param.num_from]
+		width = [ self.getCharWidth(ch) for ch in token ]
 
-		if not self.isAllHankaku(token):
-			return self.cutWordZenkaku(token,param)
+		#半角だけなら単純に文字列を切り取り
+		if not 2 in width:
+			if param.start >= len(token):
+				die("分割位置が後ろすぎます。")
+			if param.length == None:
+				return token[param.start:]
+			else:
+				return token[param.start:param.start+param.length]
 
-		#以下はアスキーコードだけのときの高速処理
-		token = token[param.start:]
-		if len(token) == 0:
-			die("分割位置が後ろすぎます。")
-
-		if param.length == None:
-			return token
-
-		return token[0:param.length]
-
-	def cutWordZenkaku(self,token,param):
-
+		#先頭部分の切り取り
 		pos = 0
-		width = 0
-		for ch in token:
-			if width < param.start:
+		wsum = 0
+		for w in width:
+			if wsum < param.start:
 				pos += 1
-			elif width > param.start:
+				wsum += w
+			elif wsum > param.start:
 				die("不正な分割位置です。")
 			else:
 				break
 
-			width += self.getCharWidth(ch)
-
-		token = token[pos:]
-		if len(token) == 0:
+		if len(token) <= pos:
 			die("分割位置が後ろすぎます。")
 
 		if param.length == None:
-			return token
+			return token[pos:]
 
-		pos = 0
-		width = 0
-		for ch in token:
-			if width < param.length:
-				pos += 1
-				width += self.getCharWidth(ch)
+		#後ろの切り取り
+		leng = 0
+		wsum = 0
+		for w in width:
+			if wsum < param.length:
+				leng += 1
+				wsum += w
 
-			if width == param.length:
+			elif wsum == param.length:
 				break
-			if width == param.length+1:
+			elif wsum == param.length+1:
 				die("不正な分割位置です。")
 				
-		return token[0:pos]
+		return token[pos:pos+leng]
 
-	def isAllHankaku(self,token):
-		for ch in token:
-			if self.getCharWidth(ch) == 2:
-				return False
-
-		return True
-			
 	def getCharWidth(self,c):
 		x = ord(c)
 		if x <= 0x7f:
