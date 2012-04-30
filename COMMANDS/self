@@ -139,7 +139,7 @@ class Operator:
 		params = Params(opt.split('.'))
 		self.out_sequence.append(params)
 
-	def output(self,line):
+	def output(self,line,nf_set):
 		tokens = [line] + line.split()
 		#0: 一行全体 1以降: 各フィールド
 
@@ -201,7 +201,6 @@ class Operator:
 			if width < param.length:
 				pos += 1
 				width += self.getCharWidth(ch)
-				res.append(ch)
 
 			if width == param.length:
 				break
@@ -223,7 +222,7 @@ def directMode(argv):
 	for opt in argv[:-1]:
 		operator.setOption(opt)
 
-	operator.output(sys.argv[-1])
+	operator.output(sys.argv[-1],False)
 
 ###########################################
 #メイン関数
@@ -254,7 +253,9 @@ if __name__ == '__main__':
 		operator.setOption(opt)
 
 	#実行
+	nf_set = False
 	for line in input_file:
-		operator.output(line.rstrip())
+		operator.output(line.rstrip(),nf_set)
+		nf_set = True
 
 	sys.exit(0)
