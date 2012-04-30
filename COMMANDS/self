@@ -162,9 +162,8 @@ class Operator:
 
 		token = tokens[param.num_from]
 
-		p = re.compile(r'[^\x20-\x7E]')
-		if p.match(token):
-			return self.cutWordJapanese(token,param)
+		if not self.isAllHankaku(token):
+			return self.cutWordZenkaku(token,param)
 
 		#以下はアスキーコードだけのときの高速処理
 		token = token[param.start:]
@@ -176,7 +175,7 @@ class Operator:
 
 		return token[0:param.length]
 
-	def cutWordJapanese(self,token,param):
+	def cutWordZenkaku(self,token,param):
 
 		pos = 0
 		width = 0
@@ -210,6 +209,13 @@ class Operator:
 				die("不正な分割位置です。")
 				
 		return token[0:pos]
+
+	def isAllHankaku(self,token):
+		for ch in token:
+			if self.getCharWidth(ch) == 2:
+				return False
+
+		return True
 			
 	def getCharWidth(self,c):
 		x = ord(c)
