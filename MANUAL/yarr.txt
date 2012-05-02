@@ -1,20 +1,24 @@
-yarr(USP)
+Tukubaiオンラインコマンドマニュアル
 
-＜名前＞
-yarr : 縦型のデータを横型に展開する。
+yarr(USP Lab(1))
 
-＜書式＞
+【名前】
+
+yarr : 縦型のデータを横型に展開
+
+【書式】
+
 Usage   : yarr [-<n>][-d<str>] <file>
-          yarr [-<n>][-d<str>] num=<n> <file>
-Version : Sun Apr  8 18:00:28 JST 2012
+        : yarr [-<n>][-d<str>] num=<n> <file>
+Version : Thu Dec 15 13:46:38 JST 2011
 
-＜説明＞
-指定したファイルの、第１フィールド目から "num=<n>" で指定したフィールド数までの
-フィールドをキーとして、キーが同一のレコードのフィールドを横に展開して１レコード
-として出力します。
+【説明】
 
-＜例１＞ 基本的な使い方
-(元データ：data)
+指定したファイルの第1フィールドからnum=<n>で指定したフィールド数までのフィール
+ドをキーとし、キーが同一の行のフィールドを横に展開して1行として出力する。
+
+【例1】基本的な使い方
+
 $ cat data
 0000000 浜地______ 50 F 91
 0000000 浜地______ 50 F 59
@@ -32,16 +36,19 @@ $ cat data
 0000004 白土______ 40 M 71
 0000004 白土______ 40 M 20
 0000004 白土______ 40 M 10
+$
 
-$ yarr num=4 data > data2
-$ cat data2
+$ yarr num=4 data
 0000000 浜地______ 50 F 91 59 20 76
 0000001 鈴田______ 50 F 46 39 8 5
 0000003 杉山______ 26 F 30 50 71 36
 0000004 白土______ 40 M 58 71 20 10
+$
 
-＜例２＞
--<n> オプションにより、<n>個ずつ横展開します。
+【例2】
+
+-<n>オプションを使うことで<n>個ずつ横展開できる。
+
 $ yarr -2 num=4 data > data3
 $ cat data3
 0000000 浜地______ 50 F 91 59
@@ -52,66 +59,46 @@ $ cat data3
 0000003 杉山______ 26 F 71 36
 0000004 白土______ 40 M 58 71
 0000004 白土______ 40 M 20 10
+$
 
-＜例３＞
-num=<n> を指定しないと単純に横展開します。
+【例3】
+
+num=<n>を指定しない場合単純に横展開する。
+
 $ cat data4
 1
 2
 3
 4
+$
+
 $ yarr data4
  1 2 3 4
+$
 
-＜例４＞
--d<str> オプションは横展開するときのフィールドセパレータを指定します。
+【例4】
+
+-d<str> オプションは横展開するときのフィールドセパレータを指定する。
+
 $ yarr -d@ num=4 data > data2
 $ cat data2
 0000000 浜地______ 50 F 91@59@20@76
 0000001 鈴田______ 50 F 46@39@8@5
 0000003 杉山______ 26 F 30@50@71@36
 0000004 白土______ 40 M 58@71@20@10
+$
 
-$ yarr -d'\n' num=4 data > data3
-$ cat data3
-0000000 浜地______ 50 F 91\n59\n20\n76
-0000001 鈴田______ 50 F 46\n39\n8\n5
-0000003 杉山______ 26 F 30\n50\n71\n36
-0000004 白土______ 40 M 58\n71\n20\n10
+$ yarr -d'n' num=4 data
+0000000 浜地______ 50 F 91n59n20n76
+0000001 鈴田______ 50 F 46n39n8n5
+0000003 杉山______ 26 F 30n50n71n36
+0000004 白土______ 40 M 58n71n20n10
+$
 
-＜公開の経緯と商用利用について＞
+【関連項目】
 
-ユニバーサル・シェル・プログラミング研究所（USP研究所）では、弊社の哲学に基き
-コマンドとシェルスクリプトを利用した独自のシステム開発や
-シェルプログラミングの普及・教育活動を行っています。
+tarr(USP Lab(1))
 
-Open usp Tukubaiは、シェルを利用したデータ処理の可能性を体感していただくために、
-商用版Tsukubai（有償）から利用頻度の高いものを厳選し、
-一部の機能をオープンソースソフトウェアとして公開したものです。
-
-Open usp Tukubaiのサポート（有償）や、商用版Tukubaiにご興味のある方は、
-以下のメールアドレスまでお問い合わせください。
-info@usp-lab.com
-
-
-# The MIT License
-#
-# Copyright (c) 2011 Universal Shell Programming Laboratory
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-# THE SOFTWARE.
+last modified: 2012-04-13 17:13:52
+Contact us: uecinfo@usp-lab.com
+Copyright (c) 2012 Universal Shell Programming Laboratory All Rights Reserved.

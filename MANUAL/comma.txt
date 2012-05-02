@@ -1,19 +1,24 @@
-comma(USP)
+Tukubaiオンラインコマンドマニュアル
 
-＜名前＞
-comma : 指定したフィールドに３桁(４桁)カンマをふる 
+comma(USP Lab(1))
 
-＜書式＞
+【名前】
+
+comma : 指定したフィールドに3桁または4桁のカンマを追加
+
+【書式】
+
 Usage   : comma [+<n>h][-4] <f1> <f2> ... <file>
         : comma -d[4] <string>
 Version : Thu Dec 15 13:46:38 JST 2011
 
-＜説明＞
-引数のファイル又は標準入力のテキストデータの数字フィールドに
-３桁(４桁)カンマをふるツールです。カンマをふるフィールドを引数で
-指定します。
+【説明】
 
-＜例１＞
+引数のファイルまたは標準入力のテキストデータの数字フィールドに3桁または4桁のカ
+ンマを追加する。カンマを追加するフィールドは引数で指定できる。
+
+【例1】
+
 $ cat data
 20060201 296030 6710000
 20060202 1300100 3130000
@@ -21,42 +26,43 @@ $ cat data
 20060204 16300 300100
 20060205 41000 210000
 20060206 771100 400000
+$
 
-$ comma 2 3 data 
+$ comma 2 3 data
 20060201 296,030 6,710,000
 20060202 1,300,100 3,130,000
 20060203 309,500 20,100
 20060204 16,300 300,100
 20060205 41,000 210,000
 20060206 771,100 400,000
+$
 
-４桁カンマ
-$ comma -4 2 3 data 
+$ comma -4 2 3 data     ←4桁カンマ
 20060201 29,6030 671,0000
 20060202 130,0100 313,0000
 20060203 30,9500 2,0100
 20060204 1,6300 30,0100
 20060205 4,1000 21,0000
 20060206 77,1100 40,0000
+$
 
-＜例２＞
-"+h"オプションを使用すると１行目のレコードを除いてカンマをふります。
-先頭行が項目名などの場合に使用します。+2h +3h のように数字を
-指定すると、２行め、３行め以降のレコードをカンマ編集します。
+【例2】
 
-(元データ : 先頭行に項目（ヘッダー）がついている)
-$ cat data
-年月日 売上高 発注高 
++hオプションを使用すると1行目の行を除いてカンマを追加する。先頭行が項目名などの
+場合に使用する。+2hや+3hのように数字を指定すると、2行目または3行目以降の行にカ
+ンマを追加するようになる。
+
+$ cat data              ←元データ：先頭行に項目(ヘッダー)がついている
+年月日 売上高 発注高
 20060201 296030 6710000
 20060202 1300100 3130000
 20060203 309500 20100
 20060204 16300 300100
 20060205 41000 210000
 20060206 771100 400000
+$
 
-先頭行を除いてカンマ変換します。
-$ comma +h 2 3 data > data2
-$ cat data2
+$ comma +h 2 3 data             ←先頭行を除いてカンマ変換する
 年月日 売上高 発注高
 20060201 296,030 6,710,000
 20060202 1,300,100 3,130,000
@@ -64,56 +70,34 @@ $ cat data2
 20060204 16,300 300,100
 20060205 41,000 210,000
 20060206 771,100 400,000
+$
 
-＜例３＞
-数字の文字列を直接引数に指定してカンマをつけることができます。
-$ comma -d 1234567 
+【例3】
+
+数字の文字列を直接引数に指定してカンマを追加することができる。
+
+$ comma -d 1234567
 1,234,567
-$ comma -d4 1234567 
+$
+
+$ comma -d4 1234567
 123,4567
+$
 
-＜ワンポイント＞
-データファイルの数値に"comma"でカンマを付けてしまうと、
-それ以降は"sm2"や"divsen" などでの数値の計算はできなくなります。
-カンマの付与は全ての計算を終えたあとの最終成形の部分で使用します。
+【ワンポイント】
 
-＜ワンポイント＞
-小数桁については、カンマを付与しません。
-マイナスの数も正しくカンマ処理します。
+データファイルの数値にcommaでカンマを追加してしまうと、それ以降はsm2(USP Lab
+(1))やdivsen(USP Lab(1))などでの数値計算はできなくなる。カンマの追加はすべての
+計算を終えた最終成形の段階で使用する。
 
-＜公開の経緯と商用利用について＞
+【ワンポイント】
 
-ユニバーサル・シェル・プログラミング研究所（USP研究所）では、弊社の哲学に基き
-コマンドとシェルスクリプトを利用した独自のシステム開発や
-シェルプログラミングの普及・教育活動を行っています。
+小数桁についてはカンマを追加しない。負数も正しくカンマ処理が実施される。
 
-Open usp Tukubaiは、シェルを利用したデータ処理の可能性を体感していただくために、
-商用版Tsukubai（有償）から利用頻度の高いものを厳選し、
-一部の機能をオープンソースソフトウェアとして公開したものです。
+【関連項目】
 
-Open usp Tukubaiのサポート（有償）や、商用版Tukubaiにご興味のある方は、
-以下のメールアドレスまでお問い合わせください。
-info@usp-lab.com
+keta(USP Lab(1))
 
-
-# The MIT License
-#
-# Copyright (c) 2011 Universal Shell Programming Laboratory
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-# THE SOFTWARE.
+last modified: 2012-04-12 18:47:48
+Contact us: uecinfo@usp-lab.com
+Copyright (c) 2012 Universal Shell Programming Laboratory All Rights Reserved.

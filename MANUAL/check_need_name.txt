@@ -1,90 +1,84 @@
-check_need_name(USP)
+Tukubaiオンラインコマンドマニュアル
 
-＜名前＞
-check_need_name : name 形式データの存在をチェックする
+check_need_name(USP Lab(1))
 
-＜書式＞
-Usage    : check_need_name <check_file> <name_file>
-Option   : --blank <string>
-Version  : Sat Apr 14 17:41:05 JST 2012
+【名前】
 
-＜説明＞
-<check_file> に記述されているタグ名について、
-<name_file> のデータをチェックします。タグが無かったり、
-値が無かった場合に、コマンドはエラー終了し、標準出力に
-タグ名を出力します。
-<check_file> は、タグ名+("_"以外の文字列)でも正しく
-認識します。
+check_need_name : ネームファイルの整合性判定
 
-<オプション>
---blank <string>
-<name_file> のデータの値が<string>の場合は、データが無いと見なします。
-つまり、<check_file>に指定されていて、値が<string>であるレコードは、
-エラーになります。<string>のデフォルトは、"_" となります。
+【書式】
 
-＜例１＞ 通常のチェック
-[usp1 usp@ ~]$ cat check
-A 
-B 
-C 
-D 
+Usage   : check_need_name <check_file> <name_file>
+Option  : --blank <string>
+Version : Thu Dec 15 13:46:38 JST 2011
 
-[usp1 usp@ ~]$ cat data
+【説明】
+
+<check_file>に記述されているフィールド値に基づいて、<name_file>ネームファイルの
+整合性を判断する。<check_file>に記述されている第1フィールドの値が<name_file>の
+第1フィールドのどこにも存在しなかったり、<name_file>の第2フィールドの値がない、
+または_だった場合にコマンドはエラー終了し、標準出力にそのフィールド値を出力する
+。
+
+<check_file>ファイルは2フィールドあっても動作する。詳しくは例1を参照のこと。
+<check_file>は、フィールド値+(_以外の文字列)でも正しく認識する。
+
+--blank <string>オプションは、<name_file>のデータの値が<string>の場合はデータが
+ないとみなす。つまり、<check_file>に指定されていて値が<string>である行はエラー
+になる。<string>のデフォルトは_となる。
+
+【例1】通常のチェック
+
+$ cat check_file
+A
+B
+C
+D
+$
+
+$ cat check_file2               ←checkとcheck2は同等
+A need
+B need
+C need
+D need
+E _
+F _
+$
+
+$ cat name_file
 A _
 B 12345
 C abcde
 D_001 _
 D_002 xxx
-[usp1 usp@ ~]$ check_need_name check data
-A 
+$
+
+$ check_need_name check_file name_file
+A
 D_001
 $ echo $?
-1 
+1
+$
 
-＜例２＞ --blank オプションでヌルデータを指定する。
-[usp1 usp@ ~]$ cat data2
+【例2】--blank オプションでヌルデータを指定する。
+
+$ cat data2
 A @
 B 1
 C 2
 D 3
-[usp1 usp@ ~]$ check_need_name --blank @ check data
+$
+
+$ check_need_name --blank @ check data
 A
-[usp1 usp@ ~]$ echo $?
+$ echo $?
 1
+$
 
-＜公開の経緯と商用利用について＞
+【関連項目】
 
-ユニバーサル・シェル・プログラミング研究所（USP研究所）では、弊社の哲学に基き
-コマンドとシェルスクリプトを利用した独自のシステム開発や
-シェルプログラミングの普及・教育活動を行っています。
+ネーム形式(USP Lab(5))
 
-Open usp Tukubaiは、シェルを利用したデータ処理の可能性を体感していただくために、
-商用版Tsukubai（有償）から利用頻度の高いものを厳選し、
-一部の機能をオープンソースソフトウェアとして公開したものです。
-
-Open usp Tukubaiのサポート（有償）や、商用版Tukubaiにご興味のある方は、
-以下のメールアドレスまでお問い合わせください。
-info@usp-lab.com
-
-
-# The MIT License
-#
-# Copyright (c) 2011 Universal Shell Programming Laboratory
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-# THE SOFTWARE.
+last modified: 2012-05-02 13:51:19
+Contact us: uecinfo@usp-lab.com
+Copyright (c) 2012 Universal Shell Programming Laboratory All Rights Reserved.

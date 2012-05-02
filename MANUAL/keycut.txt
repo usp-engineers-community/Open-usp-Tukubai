@@ -1,27 +1,34 @@
-keycut(USP)
+Tukubaiオンラインコマンドマニュアル
 
-＜名前＞
-keycut : キーでファイル分割する (キーについてソート要)
+keycut(USP Lab(1))
 
-＜書式＞
+【名前】
+
+keycut : キーでファイルを分割
+
+【書式】
+
 Usage   : keycut [options] <filename> <file>
-Options : -d : キーの削除            
-          -a : ファイル追記          
-          -z : 圧縮                  
+Options : -d : キーの削除
+        : -a : ファイル追記
+        : -z : 圧縮
 Version : Thu Dec 15 13:46:38 JST 2011
-( Version : zlib-1.2.3 )
+(Version: zlib-1.2.3 )
 
-＜説明＞
-<file>を読み込み、分割先ファイル名 <filename>で指定したキーフィールドの値が同一の
-レコードでファイルを分割します。例えば、第２フィールドが同じ値を持つレコードで、
-ファイルを分割したいときは、data.%2 のように、<filename> を指定します。この時、
-分割先ファイル名は、data.(第２フィールドの値) となります。
-keycut は、キーフィールドの値はソートされている必要があります。
-（内部的には、キーフィールドが変化したところで、ファイルに掃出します）
-<filename> におけるキーフィールドは、%(フィールド番号)と指定しますが、%5.2 %5.1.3 
-のように、サブストリング指定も可能です。
+【説明】
 
-＜例１＞
+<file>を読み込み、分割先ファイル名<filename>で指定したキーフィールドの値が同一
+の行でファイルを分割する。例えば、第2フィールドが同じ値を持つ行でファイルを分割
+したいときは、data.%2のように<filename>を指定する。この時、分割先ファイル名は
+data.(第2フィールドの値)となる。
+
+なお、keycutを使用する場合にはキーフィールドの値は事前に整列されている必要があ
+る(内部的にはキーフィールドが変化したところでファイルに出力している)。
+<filename>におけるキーフィールドは%(フィールド番号)と指定するが、%5.2 %5.1.3の
+ようにサブストリング指定も可能である。
+
+【例1】基本的な使用方法
+
 $ cat data
 01 埼玉県 03 熊谷市 82 0 23 84 10
 01 埼玉県 01 さいたま市 91 59 20 76 54
@@ -31,133 +38,123 @@ $ cat data
 03 千葉県 12 柏市 95 60 35 93 76
 04 神奈川県 13 横浜市 92 56 83 96 75
 04 神奈川県 16 小田原市 45 21 24 39 03
+$
 
 $ keycut data.%1 data
+
 $ ls -l data.*
--rw-r--r-- 1 usp usp 87 2009-02-19 11:14 data.01       ↑
--rw-r--r-- 1 usp usp 82 2009-02-19 11:14 data.02 ４つのファイルに
--rw-r--r-- 1 usp usp 77 2009-02-19 11:14 data.03 分割された
--rw-r--r-- 1 usp usp 91 2009-02-19 11:14 data.04       ↓
+-rw-r--r-- 1 usp usp 87 2009-02-19 11:14 data.01        ←4つのファイルに分割
+-rw-r--r-- 1 usp usp 82 2009-02-19 11:14 data.02
+-rw-r--r-- 1 usp usp 77 2009-02-19 11:14 data.03
+-rw-r--r-- 1 usp usp 91 2009-02-19 11:14 data.04
+$
+
 $ cat data.01
 01 埼玉県 03 熊谷市 82 0 23 84 10
 01 埼玉県 01 さいたま市 91 59 20 76 54
+$
 
 $ cat data.02
 02 東京都 04 新宿区 30 50 71 36 30
 02 東京都 05 中央区 78 13 44 28 51
+$
 
 $ cat data.03
 03 千葉県 10 千葉市 52 91 44 9 0
 03 千葉県 12 柏市 95 60 35 93 76
+$
 
 $ cat data.04
 04 神奈川県 13 横浜市 92 56 83 96 75
 04 神奈川県 16 小田原市 45 21 24 39 03
+$
 
-＜例２＞ (サブストリング指定)
+【例2】サブストリング指定
+
 $ keycut data.%1.2.1 data
+
 $ ls -l data.*
--rw-r--r-- 1 usp usp 87 2009-02-19 11:15 data.1 
+-rw-r--r-- 1 usp usp 87 2009-02-19 11:15 data.1
 -rw-r--r-- 1 usp usp 82 2009-02-19 11:15 data.2
 -rw-r--r-- 1 usp usp 77 2009-02-19 11:15 data.3
 -rw-r--r-- 1 usp usp 91 2009-02-19 11:15 data.4
+$
 
-＜例３＞ (-a 指定)
--a オプションを指定すると、分割先ファイルは追記されます。
-分割先ファイルが無いときは、新たに作成されます。
-このオプションを指定しないときは、ファイルは上書きに
-なります。
+【例3】-aオプション使用例
+
+-aオプションを指定すると分割先ファイルは追記されるようになる。分割先ファイルが
+ないときは新たに作成される。このオプションを指定しない場合にはファイルは上書き
+となる。
+
 $ keycut data.%1 data
+
 $ keycut -a data.%1 data
+
 $ ls -l data.*
--rw-r--r-- 1 usp usp 174 2009-02-19 11:16 data.01 
--rw-r--r-- 1 usp usp 164 2009-02-19 11:16 data.02 
--rw-r--r-- 1 usp usp 154 2009-02-19 11:16 data.03 
--rw-r--r-- 1 usp usp 182 2009-02-19 11:16 data.04 
+-rw-r--r-- 1 usp usp 174 2009-02-19 11:16 data.01
+-rw-r--r-- 1 usp usp 164 2009-02-19 11:16 data.02
+-rw-r--r-- 1 usp usp 154 2009-02-19 11:16 data.03
+-rw-r--r-- 1 usp usp 182 2009-02-19 11:16 data.04
+$
 
 $ cat data.01
 01 埼玉県 03 熊谷市 82 0 23 84 10
 01 埼玉県 01 さいたま市 91 59 20 76 54
 01 埼玉県 03 熊谷市 82 0 23 84 10
 01 埼玉県 01 さいたま市 91 59 20 76 54
+$
 
-＜例４＞ (-d 指定)
--d オプションを指定すると、キーフィールドを除いたレコードを
-分割先ファイルに作成します。キーフィールド指定が %1.2.1 等の
-サブストリング指定であっても、キーフィールド全体（この例
-だと第１フィールド全体）が取り除かれます。
+【例4】-dオプション使用例
+
+-dオプションを指定すると、キーフィールドを除いた行を分割先ファイルに作成するよ
+うになる。キーフィールド指定が%1.2.1等のサブストリング指定であっても、キーフィ
+ールド全体(この例だと第1フィールド全体)が取り除かれる。
 
 $ keycut -d data.%1 data
+
 $ ls -l data.*
 -rw-r--r-- 1 usp usp 81 2009-02-19 13:13 data.01
 -rw-r--r-- 1 usp usp 76 2009-02-19 13:13 data.02
 -rw-r--r-- 1 usp usp 71 2009-02-19 13:13 data.03
 -rw-r--r-- 1 usp usp 85 2009-02-19 13:13 data.04
+$
 
 $ cat data.01
 埼玉県 03 熊谷市 82 0 23 84 10
 埼玉県 01 さいたま市 91 59 20 76 54
+$
 
-＜例５＞ (-z 指定)
--z オプションを指定すると、出力ファイルが gz 圧縮形式
-になります。
+【例5】-zオプション使用例
+
+-zオプションを指定すると、出力ファイルがGzip圧縮形式になる。
 
 $ keycut -z data.%1.gz data
+
 $ ls -l data.*
 -rw-r--r-- 1 usp usp  98 2009-02-19 13:17 data.01.gz
 -rw-r--r-- 1 usp usp  94 2009-02-19 13:17 data.02.gz
 -rw-r--r-- 1 usp usp  82 2009-02-19 13:17 data.03.gz
 -rw-r--r-- 1 usp usp 100 2009-02-19 13:17 data.04.gz
+$
 
 $ gunzip < data.01.gz
 01 埼玉県 03 熊谷市 82 0 23 84 10
 01 埼玉県 01 さいたま市 91 59 20 76 54
+$
 
-＜備考１＞
-keycut.c は zlib を使用しています。コンパイル時は、
-$ cc keycut.c -lz -o /home/TOOL/keycut 
-としてください。
+【備考1】
 
-＜備考２＞
--a オプションと -z を併用したときは、
-すでに存在する圧縮ファイルに、圧縮ファイルが追記されます。
-出来上がった結果のファイルは、gunzip で正しく解凍される
-ようですが、これが仕様として認められているかどうか
-不明です。
+keycut.cはzlibライブラリを使用している。コンパイル時は次のようにオプションが必
+要。
 
-＜公開の経緯と商用利用について＞
+$ cc keycut.c -lz -o /home/TOOL/keycut
 
-ユニバーサル・シェル・プログラミング研究所（USP研究所）では、弊社の哲学に基き
-コマンドとシェルスクリプトを利用した独自のシステム開発や
-シェルプログラミングの普及・教育活動を行っています。
+【備考2】
 
-Open usp Tukubaiは、シェルを利用したデータ処理の可能性を体感していただくために、
-商用版Tsukubai（有償）から利用頻度の高いものを厳選し、
-一部の機能をオープンソースソフトウェアとして公開したものです。
+-aオプションと-zオプションを併用したときは、すでに存在する圧縮ファイルに圧縮フ
+ァイルが追記される。生成されるファイルはgunzip(1)コマンドで展開できるが、仕様的
+に正しい動作はどうかは未調査。
 
-Open usp Tukubaiのサポート（有償）や、商用版Tukubaiにご興味のある方は、
-以下のメールアドレスまでお問い合わせください。
-info@usp-lab.com
-
-
-# The MIT License
-#
-# Copyright (c) 2011 Universal Shell Programming Laboratory
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-# THE SOFTWARE.
+last modified: 2012-04-11 13:20:15
+Contact us: uecinfo@usp-lab.com
+Copyright (c) 2012 Universal Shell Programming Laboratory All Rights Reserved.

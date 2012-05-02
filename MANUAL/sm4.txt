@@ -1,29 +1,34 @@
-sm4(USP)
+Tukubaiオンラインコマンドマニュアル
 
-＜名前＞
-sm4 : 小計、中計を出す。
+sm4(USP Lab(1))
 
-＜書式＞
+【名前】
+
+sm4 : 小計、中計
+
+【書式】
+
 Usage   : sm4 [+h] <k1> <k2> <d1> <d2> <s1> <s2> <file>
 Version : Thu Dec 15 13:46:38 JST 2011
-          UTF-8
+        : UTF-8
 
-＜説明＞
-<file> ファイルの、サブキーによる小計や中計を計算するツールです。
-"k1"で指定したフィールドから"k2"で指定したフィールドまでを主キー、
-"subk1"から"subk2"までのフィールドがサブキー、"f1"から"f2"までの
-フィールドまでのフィールドを集計フィールドとして、主キーの値が同じキーをサブキーのフィールドを飛ばして
-集計フィールドを集計して各主キーのレコードの最終行に挿入します。集計レコードでは
-サブキーのフィールドには"@"で補完されます。
-また、小計、中計を段階的に付与するために"sm4"を複数回使用する場合、
-サブキーに"@"が含まれる行は、集計から除外されます。
-尚、キー又は集計フィールドいずれの範囲にも指定していないフィールドについては
-出力はされません。
+【説明】
 
-＜例１＞
-各都市での調査データ
-(元データ：data)
-01 埼玉県 01 さいたま市 91 59 20 76 54
+<file>ファイルにおけるサブキーによる小計や中計を計算する。k1で指定したフィール
+ドからk2で指定したフィールドまでを主キー、d1からd2までのフィールドがサブキー、
+s1からs2までのフィールドまでのフィールドを集計フィールドとして、主キーの値が同
+じキーをサブキーのフィールドを飛ばして集計フィールドを集計して各主キーの行の最
+終行に挿入する。
+
+集計行におけるサブキーのフィールドは@で補完される。小計および中計を段階的に付与
+するためにsm4を複数回使用する場合には、サブキーに@が含まれる行は集計から除外さ
+れる。キーまたは集計フィールドいずれの範囲にも指定していないフィールドについて
+は出力は実行されない。
+
+【例1】
+
+$ cat data
+01 埼玉県 01 さいたま市 91 59 20 76 54          ←各都市での調査データ
 01 埼玉県 02 川越市 46 39 8 5 21
 01 埼玉県 03 熊谷市 82 0 23 84 10
 02 東京都 04 新宿区 30 50 71 36 30
@@ -37,10 +42,11 @@ Version : Thu Dec 15 13:46:38 JST 2011
 04 神奈川県 12 横浜市 92 56 83 96 75
 04 神奈川県 13 川崎市 30 12 32 44 19
 04 神奈川県 14 厚木市 48 66 23 71 24
+$
 
-県別に小計を出します。
-$ sm4 1 2 3 4 5 NF data > data2
-(data2)
+県別に小計を出する。
+
+$ sm4 1 2 3 4 5 NF data
 01 埼玉県 01 さいたま市 91 59 20 76 54
 01 埼玉県 02 川越市 46 39 8 5 21
 01 埼玉県 03 熊谷市 82 0 23 84 10
@@ -59,9 +65,11 @@ $ sm4 1 2 3 4 5 NF data > data2
 04 神奈川県 13 川崎市 30 12 32 44 19
 04 神奈川県 14 厚木市 48 66 23 71 24
 04 神奈川県 @@ @@@@@@@@@ 170 134 138 211 118
+$
 
-<例２>
-小計と中計を出す場合
+【例2】
+
+小計と中計を出す。
 
 $ cat data
 01 関東地区 01 埼玉県 01 さいたま市 91 59 20 76 54
@@ -79,8 +87,10 @@ $ cat data
 02 関西地区 02 兵庫県 08 芦屋市 50 2 33 15 62
 02 関西地区 03 京都府 09 京都市 52 91 44 9 0
 02 関西地区 03 京都府 10 舞鶴市 60 89 33 18 6
+$
 
 $ sm4 1 4 5 6 7 11 data > data2
+$ cat data2
 01 関東地区 01 埼玉県 01 さいたま市 91 59 20 76 54
 01 関東地区 01 埼玉県 03 熊谷市 82 0 23 84 10
 01 関東地区 01 埼玉県 @@ @@@@@@@@@@ 173 59 43 160 64
@@ -101,6 +111,7 @@ $ sm4 1 4 5 6 7 11 data > data2
 02 関西地区 03 京都府 09 京都市 52 91 44 9 0
 02 関西地区 03 京都府 10 舞鶴市 60 89 33 18 6
 02 関西地区 03 京都府 @@ @@@@@@@@@@ 112 180 77 27 6
+$
 
 $ sm4 1 2 3 6 7 11 data2
 01 関東地区 01 埼玉県 01 さいたま市 91 59 20 76 54
@@ -125,9 +136,12 @@ $ sm4 1 2 3 6 7 11 data2
 02 関西地区 03 京都府 10 舞鶴市 60 89 33 18 6
 02 関西地区 03 京都府 @@ @@@@@@@@@@ 112 180 77 27 6
 02 関西地区 @@ @@@@@@ @@ @@@@@@@@@@ 629 493 312 302 320
+$
 
-<例３>
-特殊な場合(サブキーが無い場合)
+【例3】
+
+サブキーがない場合には次のような実行結果が得られる。
+
 $ cat data
 埼玉県 91 59 20 76 54
 埼玉県 46 39 8 5 21
@@ -143,6 +157,7 @@ $ cat data
 神奈川県 92 56 83 96 75
 神奈川県 30 12 32 44 19
 神奈川県 48 66 23 71 24
+$
 
 $ sm4 1 1 x x 2 6 data
 埼玉県 91 59 20 76 54
@@ -163,40 +178,13 @@ $ sm4 1 1 x x 2 6 data
 神奈川県 30 12 32 44 19
 神奈川県 48 66 23 71 24
 @@@@@@ 170 134 138 211 118
+$
 
-＜公開の経緯と商用利用について＞
+【関連項目】
 
-ユニバーサル・シェル・プログラミング研究所（USP研究所）では、弊社の哲学に基き
-コマンドとシェルスクリプトを利用した独自のシステム開発や
-シェルプログラミングの普及・教育活動を行っています。
+kasan(USP Lab(1))、plus(USP Lab(1))、ratio(USP Lab(1))、sm2(USP Lab(1))、sm5
+(USP Lab(1))、ysum(USP Lab(1))
 
-Open usp Tukubaiは、シェルを利用したデータ処理の可能性を体感していただくために、
-商用版Tsukubai（有償）から利用頻度の高いものを厳選し、
-一部の機能をオープンソースソフトウェアとして公開したものです。
-
-Open usp Tukubaiのサポート（有償）や、商用版Tukubaiにご興味のある方は、
-以下のメールアドレスまでお問い合わせください。
-info@usp-lab.com
-
-
-# The MIT License
-#
-# Copyright (c) 2011 Universal Shell Programming Laboratory
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-# THE SOFTWARE.
+last modified: 2012-04-12 20:25:55
+Contact us: uecinfo@usp-lab.com
+Copyright (c) 2012 Universal Shell Programming Laboratory All Rights Reserved.

@@ -1,26 +1,31 @@
-sm5(USP)
+Tukubaiオンラインコマンドマニュアル
 
-＜名前＞
-sm5 : 大計を出す。
+sm5(USP Lab(1))
 
-＜書式＞
-Usage   : sm5 [+h] <d1> <d2> <s1> <s2> <file>
+【名前】
+
+sm5 : 大計
+
+【書式】
+
+Usage   : sm5 [+h] <k1> <k2> <s1> <s2> <file>
 Version : Thu Dec 15 13:46:38 JST 2011
-          UTF-8
+        : UTF-8
 
-＜説明＞
-<input> ファイルの、大計(全行トータル)レコードを追加するツールです。
-"k1"で指定したフィールドから"k2"で指定したフィールドまでをキー、"f1"から"f2"まで
-のフィールドまでのフィールドを集計フィールドとして、キー以外の集計各フィールドの
-全合計のレコードを最終行に挿入します。このレコードのキーフィールドは"@"文字で補
-完されています。
-またsm4で小計、中計を付与されているファイルを処理する場合は、sm4で付与した"@"の
-小計、中計行は無視して大計を計算します。
+【説明】
 
-＜例１＞
-各都市での調査データ
-(元データ：data)
-01 埼玉県 01 さいたま市 91 59 20 76 54
+<input>ファイルに大計(全行の合計値)行を追加する。k1で指定したフィールドからk2で
+指定したフィールドまでをキー、s1からs2までのフィールドを集計フィールドとして、
+キー以外の集計各フィールドの全合計の行を最終行に挿入する。この行のキーフィール
+ドは@で補完される。
+
+sm4で小計、中計を付与されているファイルを処理する場合は、sm4で付与した"@"の小計
+および中計行は無視して大計を計算する。
+
+【例1】
+
+$ cat data
+01 埼玉県 01 さいたま市 91 59 20 76 54          ←各都市での調査データ
 01 埼玉県 02 川越市 46 39 8 5 21
 01 埼玉県 03 熊谷市 82 0 23 84 10
 02 東京都 04 新宿区 30 50 71 36 30
@@ -34,10 +39,11 @@ Version : Thu Dec 15 13:46:38 JST 2011
 04 神奈川県 12 横浜市 92 56 83 96 75
 04 神奈川県 13 川崎市 30 12 32 44 19
 04 神奈川県 14 厚木市 48 66 23 71 24
+$
 
-大計を出します。
-$ sm5 1 4 5 NF data > data2
-(data2)
+大計を出する。
+
+$ sm5 1 4 5 NF data
 01 埼玉県 01 さいたま市 91 59 20 76 54
 01 埼玉県 02 川越市 46 39 8 5 21
 01 埼玉県 03 熊谷市 82 0 23 84 10
@@ -53,10 +59,13 @@ $ sm5 1 4 5 NF data > data2
 04 神奈川県 13 川崎市 30 12 32 44 19
 04 神奈川県 14 厚木市 48 66 23 71 24
 @@ @@@@@@ @@ @@@@@@@@@@ 894 687 485 606 514
+$
 
-＜例２＞
-"sm4"で小計・中計を付与されたデータの場合
-(元データ：data)
+【例2】
+
+sm4で小計よび中計が追加されたデータを処理する場合は次のようになる。
+
+$ cat data
 01 埼玉県 01 さいたま市 91 59 20 76 54
 01 埼玉県 02 川越市 46 39 8 5 21
 01 埼玉県 03 熊谷市 82 0 23 84 10
@@ -75,9 +84,9 @@ $ sm5 1 4 5 NF data > data2
 04 神奈川県 13 川崎市 30 12 32 44 19
 04 神奈川県 14 厚木市 48 66 23 71 24
 04 神奈川県 @@ @@@@@@@@@@@@@@@@ 170 134 138 211 118
+$
 
-$ sm5 1 4 5 NF data > data2
-(data2)
+$ sm5 1 4 5 NF data
 01 埼玉県 01 さいたま市 91 59 20 76 54
 01 埼玉県 02 川越市 46 39 8 5 21
 01 埼玉県 03 熊谷市 82 0 23 84 10
@@ -97,52 +106,25 @@ $ sm5 1 4 5 NF data > data2
 04 神奈川県 14 厚木市 48 66 23 71 24
 04 神奈川県 @@ @@@@@@@@@@@@@@@@ 170 134 138 211 118
 @@ @@@@@@ @@ @@@@@@@@@@ 894 687 485 606 514
+$
 
-＜コラム＞
-smツールの合わせ技
-データを集計する帳票をシェルで書く場合に非常によくあるパターンとして
-"同じキーを集計して小計、中計を出して最後に大計(トータル)を出す。"
-というものがあります。
-この様な場合は"sm2""sm4""sm5"を多段に組み合わせて使用します。
-cat data                  |\
-sm2 1 6 7 NF              |\       <- 同一キーで集計
-sm4 1 4 5 6 7 NF          |\       <- 小計
-sm4 1 2 3 6 7 NF          |\       <- 中計
-sm5 1 6 7 NF              > result <- 大計を出しておわり
+【コラム】sm系コマンドの合わせ方
 
-＜公開の経緯と商用利用について＞
+データを集計する帳票をTukubaiで記述する場合、同じキーを集計して小計、中計を出し
+て最後に大計を出す、という処理が頻出する。こういった場合はsm2、sm4、sm5を次のよ
+うに多段に組み合わせて使用することが多い。
 
-ユニバーサル・シェル・プログラミング研究所（USP研究所）では、弊社の哲学に基き
-コマンドとシェルスクリプトを利用した独自のシステム開発や
-シェルプログラミングの普及・教育活動を行っています。
+cat data                |
+sm2 1 6 7 NF            |       ←同一キーで集計
+sm4 1 4 5 6 7 NF        |       ←小計
+sm4 1 2 3 6 7 NF        |       ←中計
+sm5 1 6 7 NF > result           ←大計を出力
 
-Open usp Tukubaiは、シェルを利用したデータ処理の可能性を体感していただくために、
-商用版Tsukubai（有償）から利用頻度の高いものを厳選し、
-一部の機能をオープンソースソフトウェアとして公開したものです。
+【関連項目】
 
-Open usp Tukubaiのサポート（有償）や、商用版Tukubaiにご興味のある方は、
-以下のメールアドレスまでお問い合わせください。
-info@usp-lab.com
+kasan(USP Lab(1))、plus(USP Lab(1))、ratio(USP Lab(1))、sm2(USP Lab(1))、sm4
+(USP Lab(1))、ysum(USP Lab(1))
 
-
-# The MIT License
-#
-# Copyright (c) 2011 Universal Shell Programming Laboratory
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-# THE SOFTWARE.
+last modified: 2012-04-12 20:26:31
+Contact us: uecinfo@usp-lab.com
+Copyright (c) 2012 Universal Shell Programming Laboratory All Rights Reserved.

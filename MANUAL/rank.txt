@@ -1,20 +1,26 @@
-rank(USP)
+Tukubaiオンラインコマンドマニュアル
 
-＜名前＞
-rank : ランクを付加する
+rank(USP Lab(1))
 
-＜書式＞
-Usage : rank ref=<ref> key=<key> <file>
+【名前】
+
+rank : 行に階数を追加
+
+【書式】
+
+Usage   : rank ref=<ref> key=<key> <file>
 Version : Thu Dec 15 13:46:38 JST 2011
 
-＜説明＞
-"file" の行番号を付加します。ref=<ref> で参照キーフィールドを指定した場合、
-参照キーフィールドが変化した位置で、行番号を１に初期化します。
-さらに、key=<key> で値フィールドを指定した場合、値が同じならば、同じ行番号
-をふります。
+【説明】
 
-＜例１＞ 基本パターン
-引数を何も指定しないときは、単純な行番号を付加します。
+fileの各行に階数を追加する。ref=<ref>で参照キーフィールドを指定した場合、参照キ
+ーフィールドが変化した段階で階数を1に初期化する。key=<key>で値フィールドを指定
+した場合、値が同じ間は同じ階数を追加する。
+
+【例1】基本パターン
+
+引数を何も指定しないときは、単純に行番号を追加する。
+
 $ cat data
 JPN 杉山______ 26
 JPN 崎村______ 27
@@ -24,6 +30,8 @@ USA BOB_______ 25
 USA GEROGE____ 29
 USA SAM_______ 29
 USA TOM_______ 35
+$
+
 $ rank data
 1 JPN 杉山______ 26
 2 JPN 崎村______ 27
@@ -33,11 +41,14 @@ $ rank data
 6 USA GEROGE____ 29
 7 USA SAM_______ 29
 8 USA TOM_______ 35
+$
 
-＜例２＞ ref 指定
-ref=<ref> で参照フィールドを指定したときは、参照フィールドが変化した
-行で、行番号を１に初期化します。ref=1/2 ref=3@2/5 などの連続・不連続
-のフィールドを指定することも可能です。
+【例2】ref指定
+
+ref=<ref>で参照フィールドを指定したときは、参照フィールドが変化した行で、階数を
+1に初期化する。ref=1/2 ref=3@2/5 などの連続・不連続のフィールドを指定することも
+可能。
+
 $ rank ref=1 data
 1 JPN 杉山______ 26
 2 JPN 崎村______ 27
@@ -47,11 +58,13 @@ $ rank ref=1 data
 2 USA GEROGE____ 29
 3 USA SAM_______ 29
 4 USA TOM_______ 35
+$
 
-＜例３＞ key 指定
-key=<key> で値フィールドを一つだけ指定することができます。
-この場合、値が同じフィールドを持つレコードには同じ行番号が付加されます。
-また、その次の行には、始めから数えた正しい行番号が再び付加されます。
+【例3】key指定
+
+key=<key>で値フィールドを1つだけ指定できる。この場合、値が同じフィールドを持つ
+行には同じ階数が追加される。次の行には、はじめから数えた階数が追加される。
+
 $ rank key=3 data
 1 JPN 杉山______ 26
 2 JPN 崎村______ 27
@@ -61,10 +74,13 @@ $ rank key=3 data
 6 USA GEROGE____ 29
 6 USA SAM_______ 29
 8 USA TOM_______ 35
+$
 
-＜例４＞ ref と key 指定
-参照キーが変化するところで、行番号が初期化され、かつ同じ値フィールドを
-持つレコードには同じ行番号が振られます。
+【例4】refとkey指定
+
+参照キーが変化するところで、行番号が初期化され、かつ同じ値フィールドを持つ行に
+は同じ階数が追加される。
+
 $ rank ref=1 key=3 data
 1 JPN 杉山______ 26
 2 JPN 崎村______ 27
@@ -74,46 +90,19 @@ $ rank ref=1 key=3 data
 2 USA GEROGE____ 29
 2 USA SAM_______ 29
 4 USA TOM_______ 35
+$
 
-＊入力ファイルが "-" あるいは無指定の場合は、標準入力ファイルが
-  入力ファイルとなります。
-＊同じ順位をふるかどうかは、値が文字列として同じかどうかで判断
-  しています。(数値としては見ていません)
+【注意】
 
+入力ファイルが-あるいは指定がない場合には、標準入力のデータが使用される。
 
-＜公開の経緯と商用利用について＞
+同じ階数を追加するかどうかは、値が文字列として同じかどうかで判断しており、数字
+としては判定していない。
 
-ユニバーサル・シェル・プログラミング研究所（USP研究所）では、弊社の哲学に基き
-コマンドとシェルスクリプトを利用した独自のシステム開発や
-シェルプログラミングの普及・教育活動を行っています。
+【関連項目】
 
-Open usp Tukubaiは、シェルを利用したデータ処理の可能性を体感していただくために、
-商用版Tsukubai（有償）から利用頻度の高いものを厳選し、
-一部の機能をオープンソースソフトウェアとして公開したものです。
+count(USP Lab(1))、gyo(USP Lab(1))、juni(USP Lab(1))、retu(USP Lab(1))
 
-Open usp Tukubaiのサポート（有償）や、商用版Tukubaiにご興味のある方は、
-以下のメールアドレスまでお問い合わせください。
-info@usp-lab.com
-
-
-# The MIT License
-#
-# Copyright (c) 2011 Universal Shell Programming Laboratory
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-# THE SOFTWARE.
+last modified: 2012-04-12 19:06:26
+Contact us: uecinfo@usp-lab.com
+Copyright (c) 2012 Universal Shell Programming Laboratory All Rights Reserved.

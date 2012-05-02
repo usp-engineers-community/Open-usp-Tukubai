@@ -1,99 +1,77 @@
-ysum(USP)
+Tukubaiオンラインコマンドマニュアル
 
-＜名前＞ 
-ysum : 横集計する。 
+ysum(USP Lab(1))
 
-＜書式＞
+【名前】
+
+ysum : 横集計
+
+【書式】
+
 Usage   : ysum [+h] num=<n> <file>
         : ysum [+h] <file>
 Version : Thu Dec 15 13:46:38 JST 2011
 
-＜説明＞
-<file>ファイルの、同一レコード内の各フィールドの合計をレコード末に追加する
-ツールです。"num=<n>"で指定したフィールドの次以降の全フィールドを
-集計して最終フィールドの後に追加します。
-"num=<n>" を省略した場合、"num=0" と同じ動作をします。
+【説明】
 
-＜例１＞
-(元データ：data) No 氏名 年齢 性別 教科別点数A B C D E
+<file>ファイルの、同一行内の各フィールドの合計を行末に追加する。num=<n>で指定し
+たフィールドの次以降の全フィールドを集計して最終フィールドの後に追加する。num=
+<n>を省略した場合、num=0と同じ動作をする。
+
+【例1】
+
 $ cat data
-0000000 浜地______ 50 F 91 59 20 76 54
+0000000 浜地______ 50 F 91 59 20 76 54  ←番号 氏名 年齢 性別 教科別点数A B C D E
 0000001 鈴田______ 50 F 46 39 8  5  21
 0000003 杉山______ 26 F 30 50 71 36 30
 0000004 白土______ 40 M 58 71 20 10 6
 0000005 崎村______ 50 F 82 79 16 21 80
 0000007 梶川______ 42 F 50 2  33 15 62
+$
 
-教科別の点数(5フィールド目以降)を集計して最終フィールドの次に追加します。
-$ ysum num=4 data > data2
-$ cat data2
+教科別の点数(5フィールド目以降)を集計して最終フィールドの次に追加する。
+
+$ ysum num=4 data
 0000000 浜地______ 50 F 91 59 20 76 54 300
 0000001 鈴田______ 50 F 46 39 8  5  21 119
 0000003 杉山______ 26 F 30 50 71 36 30 217
 0000004 白土______ 40 M 58 71 20 10 6 165
 0000005 崎村______ 50 F 82 79 16 21 80 278
 0000007 梶川______ 42 F 50 2  33 15 62 162
-                                       ↑5〜9フィールドの値の集計
+$
 
-＜例２＞
-"+h" オプション
-先頭レコード(行)以外のレコードを集計します。先頭行が項目名などのヘッダーのデータ
-などに使用します。このとき先頭行の集計値フィールドには "@" が追加されます。
-(元データ：data) No 氏名 年齢 性別 A B C D E
+【例2】
+
++hオプションを指定すると先頭行以外の行を集計する。先頭行が項目名などのヘッダー
+のデータなどに使用する。このとき先頭行の集計値フィールドには@が追加される。
+
+先頭行を飛ばして教科別の点数(5フィールド目以降)を集計して最終フィールドの次に追
+加するには次のようにコマンドを実行する。
+
 $ cat data
-0000000 浜地______ 50 F 91 59 20 76 54
+0000000 浜地______ 50 F 91 59 20 76 54  ←番号 氏名 年齢 性別 教科別点数A B C D
 0000001 鈴田______ 50 F 46 39 8  5  21
 0000003 杉山______ 26 F 30 50 71 36 30
 0000004 白土______ 40 M 58 71 20 10 6
 0000005 崎村______ 50 F 82 79 16 21 80
 0000007 梶川______ 42 F 50 2  33 15 62
+$
 
-先頭行を飛ばして教科別の点数(5フィールド目以降)を集計して最終フィールドの次に
-追加します。
-$ ysum +h num=4 data | keta > data2
-$ cat data2
-     No       氏名 年齢 性別  A  B  C  D  E   @   <- 先頭行には"@"がつく
+$ ysum +h num=4 data | keta
+     No       氏名 年齢 性別  A  B  C  D  E   @ ←先頭行には@がつく
 0000000 浜地______   50    F 91 59 20 76 54 300
 0000001 鈴田______   50    F 46 39  8  5 21 119
 0000003 杉山______   26    F 30 50 71 36 30 217
 0000004 白土______   40    M 58 71 20 10  6 165
 0000005 崎村______   50    F 82 79 16 21 80 278
 0000007 梶川______   42    F 50  2 33 15 62 162
-                                            ↑ 5〜9フィールドの値の集計
+$
 
-＜公開の経緯と商用利用について＞
+【関連項目】
 
-ユニバーサル・シェル・プログラミング研究所（USP研究所）では、弊社の哲学に基き
-コマンドとシェルスクリプトを利用した独自のシステム開発や
-シェルプログラミングの普及・教育活動を行っています。
+kasan(USP Lab(1))、plus(USP Lab(1))、ratio(USP Lab(1))、sm2(USP Lab(1))、sm4
+(USP Lab(1))、sm5(USP Lab(1))
 
-Open usp Tukubaiは、シェルを利用したデータ処理の可能性を体感していただくために、
-商用版Tsukubai（有償）から利用頻度の高いものを厳選し、
-一部の機能をオープンソースソフトウェアとして公開したものです。
-
-Open usp Tukubaiのサポート（有償）や、商用版Tukubaiにご興味のある方は、
-以下のメールアドレスまでお問い合わせください。
-info@usp-lab.com
-
-
-# The MIT License
-#
-# Copyright (c) 2011 Universal Shell Programming Laboratory
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-# THE SOFTWARE.
+last modified: 2012-04-12 20:27:03
+Contact us: uecinfo@usp-lab.com
+Copyright (c) 2012 Universal Shell Programming Laboratory All Rights Reserved.
