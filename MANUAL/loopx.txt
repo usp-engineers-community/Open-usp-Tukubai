@@ -1,33 +1,40 @@
-loopx(USP)
+Tukubaiオンラインコマンドマニュアル
 
-＜名前＞
-loopx  : 総掛けで連結する。
+loopx(USP Lab(1))
 
-＜書式＞
+【名前】
+
+loopx : 総掛けで連結
+
+【書式】
+
 Usage   : loopx <file1> <file2> ...
 Version : Thu Jan 12 18:35:55 JST 2012
 
-＜説明＞ 
-複数のファイルの各レコードを、総てのパターンの掛けあわせを作り連結して
-出力します。出力は指定ファイル順にレコードが総掛けされます。
-つまり、<file1> の各レコードに対し、<file2> のレコードが総掛けされ、
-その結果の各レコードに対し、<file3> のレコードが総掛けされるという
-順番に出力されます。
+【説明】
 
-＜例１＞
-ファイル data1 data2 data3 を総掛けする
+複数のファイルの各行に対して、総てのパターンの掛けあわせを作り連結して出力する
+。出力は指定ファイル順に行が総掛けされる。<file1>の各行に対し<file2>の行が総掛
+けされ、その結果の各行に対し<file3>の行が総掛けされるという順番に出力される。
+
+【例1】
+
+ファイルdata1、data2、data3を総掛けすると、例えば次のようになる。
 
 $ cat data1
 1 農業
 2 工業
+$
 
 $ cat data2
 A 東京
 B 大阪
+$
 
 $ cat data3
 晴
 雨
+$
 
 $ loopx data1 data2 data3
 1 農業 A 東京 晴
@@ -38,41 +45,12 @@ $ loopx data1 data2 data3
 2 工業 A 東京 雨
 2 工業 B 大阪 晴
 2 工業 B 大阪 雨
+$
 
+【関連項目】
 
-＜公開の経緯と商用利用について＞
+loopj(USP Lab(1))
 
-ユニバーサル・シェル・プログラミング研究所（USP研究所）では、弊社の哲学に基き
-コマンドとシェルスクリプトを利用した独自のシステム開発や
-シェルプログラミングの普及・教育活動を行っています。
-
-Open usp Tukubaiは、シェルを利用したデータ処理の可能性を体感していただくために、
-商用版Tsukubai（有償）から利用頻度の高いものを厳選し、
-一部の機能をオープンソースソフトウェアとして公開したものです。
-
-Open usp Tukubaiのサポート（有償）や、商用版Tukubaiにご興味のある方は、
-以下のメールアドレスまでお問い合わせください。
-info@usp-lab.com
-
-
-# The MIT License
-#
-# Copyright (c) 2011 Universal Shell Programming Laboratory
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-# THE SOFTWARE.
+last modified: 2012-04-12 20:28:55
+Contact us: uecinfo@usp-lab.com
+Copyright (c) 2012 Universal Shell Programming Laboratory All Rights Reserved.

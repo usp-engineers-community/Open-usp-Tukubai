@@ -1,87 +1,73 @@
-zen(USP)
+Tukubaiオンラインコマンドマニュアル
 
-＜名前＞
-zen : 全角にする。
+zen(USP Lab(1))
 
-＜書式＞
+【名前】
+
+zen : 全角へ変換
+
+【書式】
+
 Usage   : zen <f1> <f2> .. <file>
         : zen [-k] <file>
         : zen -d <string>
 Version : Fri Oct 21 11:26:06 JST 2011
-          Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)
+          OpenUSP (LINUX+FREEBSD/PYTHON2.4/UTF-8)
 
-＜説明＞
-引数のファイル又は標準入力のテキストデータ・文字列の、半角英数・カタカナの部分を
-全て全角に変換して出力するツールです。
+【説明】
 
-＜例１＞
-引数のファイルの指定したフィールドの中身を全角に変換します。
+引数のファイルまたは標準入力におけるテキストデータの半角英数およびカタカナをす
+べて全角に変換して出力する(han)。
+
+【例1】
+
+引数のファイルの指定したフィールドの中身を全角に変換する。
 
 $ cat data
 これは ﾃﾞｰﾀ です。
 This is data
 123 456 7890
+$
 
 $ zen 1 2 3 data
 これは データ です。
 Ｔｈｉｓ ｉｓ ｄａｔａ
 １２３ ４５６ ７８９０
+$
 
-＜例２＞
-フィールドを指定しない場合は、レコード全体を全角にします。
-とくに半角空白も全角空白に変換します。
+【例2】
+
+フィールドを指定しない場合は行全体を全角にする。半角空白も全角空白に変換する。
+
 $ cat data
 1 2 3
 $ cat data | zen
 １　２　３
+$
 
-＜例３＞
-zen -k <file> の場合、<file>の半角カタカナだけ全角にします。
-メールの表題や本文には半角カナは使えないため、このフィルタを
-使用して前処理を行います。
+【例3】
+
+zen -k <file>の場合、<file>の半角カタカナだけ全角にする。メールの表題や本文には
+半角カナは使えないため、このフィルタを使用して前処理を実施する。
+
 $ cat data2
 123ｱｲｳｴｵ
 $ cat data2 | zen -k
 123アイウエオ
+$
 
-＜例４＞
-"-d" オプション  引数の文字列の半角の部分を全角に変えて出力します。
-$ zen -d ｶﾀｶﾅABC123     <- 半角文字を引数で渡す。
-カタカナＡＢＣ１２３    <- 全て全角にして出力
+【例4】
 
-＜公開の経緯と商用利用について＞
+"-d"オプションは引数で指定された文字列の半角の部分を全角に変えて出力する。
 
-ユニバーサル・シェル・プログラミング研究所（USP研究所）では、弊社の哲学に基き
-コマンドとシェルスクリプトを利用した独自のシステム開発や
-シェルプログラミングの普及・教育活動を行っています。
+$ zen -d ｶﾀｶﾅABC123             ←半角文字を引数で渡す。
+カタカナＡＢＣ１２３            ←すべて全角にして出力
+$
 
-Open usp Tukubaiは、シェルを利用したデータ処理の可能性を体感していただくために、
-商用版Tsukubai（有償）から利用頻度の高いものを厳選し、
-一部の機能をオープンソースソフトウェアとして公開したものです。
+【関連項目】
 
-Open usp Tukubaiのサポート（有償）や、商用版Tukubaiにご興味のある方は、
-以下のメールアドレスまでお問い合わせください。
-info@usp-lab.com
+han(USP Lab(1))
 
-
-# The MIT License
-#
-# Copyright (c) 2011 Universal Shell Programming Laboratory
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-# THE SOFTWARE.
+last modified: 2012-04-12 19:46:56
+Contact us: uecinfo@usp-lab.com
+Copyright (c) 2012 Universal Shell Programming Laboratory All Rights Reserved.

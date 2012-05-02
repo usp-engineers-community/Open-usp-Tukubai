@@ -1,38 +1,43 @@
-map(USP)
+Tukubaiオンラインコマンドマニュアル
 
-＜名前＞
-map : 縦キー/横キー形式のマトリクス型ファイルを縦型ファイルに変換
+unmap(USP Lab(1))
 
-＜書式＞
+【名前】
+
+unmap : 縦キー/横キー形式の表データを縦型ファイルに変換
+
+【書式】
+
 Usage   : map       [-<l>] num=<n>x<m> <file>
         : map +yarr [-<l>] num=<n>x<m> <file>
         : map +arr  [-<l>] num=<n>x<m> <file>
 Version : Sat Dec 10 21:04:17 JST 2011
-          Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)
+        : OpenUSP (LINUX+FREEBSD/PYTHON2.4/UTF-8)
 
-＜説明＞
-mapコマンドの逆の働きをします。
+【説明】
 
-＜例１＞
-横型データを unmap する。num=<n> の値は縦キーのフィールド数を表す。
+map(USP Lab(1))コマンドと逆の動作をする。
+
+【例1】
+
+表データを縦型ファイルに変換する。num=<n>の値は縦キーのフィールド数を表す。
+
 $ cat data
-  *   * 01/01 01/02  ← 横KEY
+  *   * 01/01 01/02
 001 a店   103   157
 002 b店   210   237
-↑ 
-縦KEY
+$
 
-$ unmap num=2 data | keta 
+$ unmap num=2 data | keta
 001 a店 01/01 103
 001 a店 01/02 157
 002 b店 01/01 210
 002 b店 01/02 237
-↑       ↑     ↑
-縦KEY   横KEY データ部 
-num=2  必ず幅１
+$
 
-＜例２＞
-データ部が複数種ある場合は、複数列にマッピングします。
+【例2】
+
+データ部が複数種ある場合は、複数列にマッピングする。
 
 $ cat data
   * * 1日目 2日目 3日目 4日目 5日目 6日目 7日目
@@ -44,8 +49,9 @@ c店 A    81    76    38    81    98   109   136
 c店 B    52    49    21    48    61    91   110
 d店 A    75    72    34    74    91    98   101
 d店 B    48    42    19    43    51    69    90
+$
 
-$ unmap num=1 data | keta 
+$ unmap num=1 data | keta
 a店 1日目 103 62
 a店 2日目 157 94
 a店 3日目 62 30
@@ -54,40 +60,12 @@ a店 4日目 131 84
        ・
 d店 6日目 98 69
 d店 7日目 101 90
+$
 
-＜公開の経緯と商用利用について＞
+【関連項目】
 
-ユニバーサル・シェル・プログラミング研究所（USP研究所）では、弊社の哲学に基き
-コマンドとシェルスクリプトを利用した独自のシステム開発や
-シェルプログラミングの普及・教育活動を行っています。
+map(USP Lab(1))、tateyoko(USP Lab(1))
 
-Open usp Tukubaiは、シェルを利用したデータ処理の可能性を体感していただくために、
-商用版Tsukubai（有償）から利用頻度の高いものを厳選し、
-一部の機能をオープンソースソフトウェアとして公開したものです。
-
-Open usp Tukubaiのサポート（有償）や、商用版Tukubaiにご興味のある方は、
-以下のメールアドレスまでお問い合わせください。
-info@usp-lab.com
-
-
-# The MIT License
-#
-# Copyright (c) 2011 Universal Shell Programming Laboratory
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-# THE SOFTWARE.
+last modified: 2012-04-12 20:31:22
+Contact us: uecinfo@usp-lab.com
+Copyright (c) 2012 Universal Shell Programming Laboratory All Rights Reserved.

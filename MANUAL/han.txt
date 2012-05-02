@@ -1,80 +1,67 @@
-han(USP)
+Tukubaiオンラインコマンドマニュアル
 
-＜名前＞
-han : 半角にする。
+han(USP Lab(1))
 
-＜書式＞
+【名前】
+
+han : 半角へ変換
+
+【書式】
+
 Usage   : han f1 f2 .. file
-          han -d string
+        : han -d string
 Version : Thu Dec 15 13:46:38 JST 2011
-          UTF-8
+        : UTF-8
 
-＜説明＞
-引数のファイル又は標準入力のテキストデータ・文字列の、全角英数・カタカナの部分を
-すべて半角に変換して出力するツールです。(⇔ zen)
+【説明】
 
-＜例１＞
-引数のファイルの指定したフィールドの中身を半角に変換します。
-(元データ)
+引数のファイルまたは標準入力のテキストデータの、全角スペース、全角英数およびカ
+タカナの部分をすべて半角に変換して出力する。
+
+【例1】
+
+引数のファイルの指定したフィールドの中身を半角に変換する。
+
 $ cat data
-これは データ です。
+これは データ である。
 Ｔｈｉｓ ｉｓ ｄａｔａ
 １２３４ ５６７ ８９０
+$
+
 $ han 1 2 3 data
-これは ﾃﾞｰﾀ です｡
+これは ﾃﾞｰﾀ である｡
 This is data
 1234 567 890
+$
 
-＜例２＞
-フィールドを指定しないとレコード全体を半角にします。
-特に全角空白は半角空白になります。
+【例2】
+
+フィールドを指定しないと行全体を半角にする。全角スペースは半角スペースになる。
+
 $ cat data2
-これはデータです。
-全角　空白　データも変換します。
+これはデータである。
+全角　スペース　データも変換する。
 １２３456７８９
+$
+
 $ han data2
-これはﾃﾞｰﾀです｡
-全角 空白 ﾃﾞｰﾀも変換します。
+これはﾃﾞｰﾀである｡
+全角 スペース ﾃﾞｰﾀも変換する。
 123456789
 
-＜例３＞
-"-d" オプション  引数の文字列の全角の部分を半角に変えて出力します。
+【例3】
+
+-dオプションを使用すると、引数で指定した文字列の全角部分を半角に変えて出力させ
+ることができる。
+
 $ han -d カタカナＡＢＣ１２３
 ｶﾀｶﾅABC123
+$
 
-＜公開の経緯と商用利用について＞
+【関連項目】
 
-ユニバーサル・シェル・プログラミング研究所（USP研究所）では、弊社の哲学に基き
-コマンドとシェルスクリプトを利用した独自のシステム開発や
-シェルプログラミングの普及・教育活動を行っています。
+zen(USP Lab(1))
 
-Open usp Tukubaiは、シェルを利用したデータ処理の可能性を体感していただくために、
-商用版Tsukubai（有償）から利用頻度の高いものを厳選し、
-一部の機能をオープンソースソフトウェアとして公開したものです。
-
-Open usp Tukubaiのサポート（有償）や、商用版Tukubaiにご興味のある方は、
-以下のメールアドレスまでお問い合わせください。
-info@usp-lab.com
-
-
-# The MIT License
-#
-# Copyright (c) 2011 Universal Shell Programming Laboratory
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-# THE SOFTWARE.
+last modified: 2012-04-12 19:46:33
+Contact us: uecinfo@usp-lab.com
+Copyright (c) 2012 Universal Shell Programming Laboratory All Rights Reserved.

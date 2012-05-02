@@ -1,29 +1,36 @@
-kasan(USP)
+Tukubaiオンラインコマンドマニュアル
 
-＜名前＞
-kasan : 累計を求める。
+kasan(USP Lab(1))
 
-＜書式＞
+【名前】
+
+kasan : 累計
+
+【書式】
+
 Usage   : kasan [+r] [ref=<ref>] key=<n> <file>
-Version : Thu Dec 15 13:46:38 JST 2011 
+Version : Thu Dec 15 13:46:38 JST 2011
 
-＜説明＞
-引数のファイル又は標準入力のテキストデータの指定したフィールド(key=)の値を、各行
-ごとに加算して指定したフィールドの次のフィールドに挿入します。累計値を求める場合
-などに使用します。
+【説明】
 
-＜例１＞
-店別の累計の仕入れ値を算出します。
-(４フィールド目の値を加算して５フィールド目に挿入します。)
-(元データ：data) 店名 日付 売れ数 仕入数
+引数のファイルまたは標準入力のテキストデータの指定したフィールドの値を、各行ご
+とに加算して指定したフィールドの次のフィールドに挿入する。累計値を求める場合な
+どに使用する。
+
+【例1】
+
+店別の累計の仕入れ値を算出する。ここでは4フィールド目の値を加算して5フィールド
+目に挿入する。
+
 $ cat data
-a店 1日目 103 62
+a店 1日目 103 62                ←店名 日付 売れ数 仕入数
 a店 2日目 157 94
 a店 3日目 62 30
 a店 4日目 131 84
 a店 5日目 189 111
 a店 6日目 350 20
 a店 7日目 412 301
+$
 
 $ kasan key=4 data
 a店 1日目 103 62 62
@@ -33,17 +40,16 @@ a店 4日目 131 84 270
 a店 5日目 189 111 381
 a店 6日目 350 20 401
 a店 7日目 412 301 702
-                  ↑各行の4フィールド目の値の加算値(累計)
+$
 
-＜例２＞
+【例2】
+
 あるフィールドの値が変わった場所で加算をリセットする場合は、そのリセットのキー
-となるフィールドを"ref="で指定します。
+となるフィールドをref=で指定する。たとえば店別の累計仕入数を算出する場合には、
+次のように1フィールド目が変更されるごとに加算をリセットする。
 
-店別の累計仕入数を算出します。
-(１フィールド目が変わるごとに加算をリセットします)
-(元データ：data) 店名 日付 売れ数 仕入数
 $ cat data
-a店 1日目 103 62
+a店 1日目 103 62                ←店名 日付 売れ数 仕入数
 a店 2日目 157 94
 a店 3日目 62 30
 a店 4日目 131 84
@@ -55,30 +61,30 @@ c店 1日目 81 52
 c店 2日目 76 49
 c店 3日目 38 21
 c店 4日目 81 48
+$
 
-$ kasan ref=1 key=4 data 
+$ kasan ref=1 key=4 data
 a店 1日目 103 62 62
 a店 2日目 157 94 156
 a店 3日目 62 30 186
 a店 4日目 131 84 270
-b店 1日目 210 113 113  <- 累計加算をリセット
+b店 1日目 210 113 113           ←累計加算をリセット
 b店 2日目 237 121 234
 b店 3日目 150 82 316
 b店 4日目 198 105 421
-c店 1日目 81 52 52     <- 累計加算をリセット
+c店 1日目 81 52 52              ←累計加算をリセット
 c店 2日目 76 49 101
 c店 3日目 38 21 122
-c店 4日目 81 48 170
+c店 4日目 81 48 17
+$
 
+【例3】
 
-＜例３＞
-元のデータのフィールドをその加算値と置き換えて出力する場合は
-"+r"オプションを使用します。
+元データのフィールドをその加算値と置き換えて出力する場合は+rオプションを使用す
+る。たとえば仕入れ数を累計仕入れ数に置き換えるのであれば、この場合であれば4フィ
+ールド目の加算値を4フィールド目に出力するようにすれば良い。
 
-仕入れ数を累計仕入れ数に置き換えます。
-(４フィールド目の加算値を４フィールド目に出力します。)
-(元データ：data) 店名 日付 売れ数 仕入数
-$ cat data
+$ cat data              ←店名 日付 売れ数 仕入数
 a店 1日目 103 62
 a店 2日目 157 94
 a店 3日目 62 30
@@ -86,8 +92,9 @@ a店 4日目 131 84
 a店 5日目 189 111
 a店 6日目 350 20
 a店 7日目 412 301
+$
 
-$ kasan +r key=4 data 
+$ kasan +r key=4 data
 a店 1日目 103 62
 a店 2日目 157 156
 a店 3日目 62 186
@@ -95,11 +102,13 @@ a店 4日目 131 270
 a店 5日目 189 381
 a店 6日目 350 401
 a店 7日目 412 702
-              ↑加算(累計)値と置き換え
+$
 
-＜例４＞
-小数点のあるデータを加算するばあい、それまでの行にある
-最大小数桁数に合わせて出力します。
+【例4】
+
+小数点のあるデータを加算する場合、それまでの行にある最大小数桁数に合わせて出力
+するようになる。
+
 $ cat data
 A 1
 A 1.2
@@ -107,6 +116,7 @@ A 1.23
 B 2
 B 2.34
 B 3
+$
 
 $ kasan ref=1 key=2 data
 A 1 1
@@ -115,63 +125,45 @@ A 1.23 3.43
 B 2 2
 B 2.34 4.34
 B 3 7.34
+$
 
-＜例５＞
-key=<pos> で指定できるのは、数値、範囲(/)、列挙(@)、NF NF-<n> です。
+【例5】
+
+key=<pos>で指定できるのは数値、範囲(/)、列挙(@)、NF NF-<n>である。
+
 $ kasan key=1 data
-$ kasan key=2/4 data <-- 第２〜第４フィールドの各フィールドを
-                         加算し、加算値をそれぞれのフィールド
-                         の直後に挿入します。
-$ kasan key=2@4 data <-- 第２フィールドと第４フィールドの
-                         各フィールドを加算し、加算値を
-                         それぞれのフィールドの直後に挿入します。
-$ kasan key=NF data  <-- NF も指定できます。
-$ kasan key=NF-2 data
+
+第2から第3フィールドの各フィールドを加算し、加算値をそれぞれのフィールドの直後
+に挿入するには次のようにコマンドを実行する。
 
 $ cat data
 A 1 2
-A 3 4 
+A 3 4
 A 5 6
+$
+
 $ kasan key=2/3 data
 A 1 1 2 2
 A 3 4 4 6
 A 5 9 6 12
+$
 
+第2フィールドと第4フィールドの各フィールドを加算し、加算値をそれぞれのフィール
+ドの直後に挿入するには次のようにコマンドを実行する。
 
+$ kasan key=2@4 data
 
-＜公開の経緯と商用利用について＞
+次のようにNFも指定できる。
 
-ユニバーサル・シェル・プログラミング研究所（USP研究所）では、弊社の哲学に基き
-コマンドとシェルスクリプトを利用した独自のシステム開発や
-シェルプログラミングの普及・教育活動を行っています。
+$ kasan key=NF data
 
-Open usp Tukubaiは、シェルを利用したデータ処理の可能性を体感していただくために、
-商用版Tsukubai（有償）から利用頻度の高いものを厳選し、
-一部の機能をオープンソースソフトウェアとして公開したものです。
+$ kasan key=NF-2 data
 
-Open usp Tukubaiのサポート（有償）や、商用版Tukubaiにご興味のある方は、
-以下のメールアドレスまでお問い合わせください。
-info@usp-lab.com
+【関連項目】
 
+plus(USP Lab(1))、ratio(USP Lab(1))、sm2(USP Lab(1))、sm4(USP Lab(1))、sm5(USP
+Lab(1))、ysum(USP Lab(1))
 
-# The MIT License
-#
-# Copyright (c) 2011 Universal Shell Programming Laboratory
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-# THE SOFTWARE.
+last modified: 2012-04-12 20:23:30
+Contact us: uecinfo@usp-lab.com
+Copyright (c) 2012 Universal Shell Programming Laboratory All Rights Reserved.

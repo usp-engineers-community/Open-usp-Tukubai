@@ -1,21 +1,26 @@
-up3(USP)
+Tukubaiオンラインコマンドマニュアル
 
-＜名前＞
-up3 : 二つのファイルを同一キーフィールドでマージする。
+up3(USP Lab(1))
 
-＜書式＞
-Usage   : up3 key=<key> <master_file> <tran_file>
+【名前】
+
+up3 : 2つのファイルを同一キーフィールドでマージ
+
+【書式】
+
+Usage   : up3 key=<key> <master> <tran>
 Version : Thu Dec 15 13:46:38 JST 2011
 
-＜説明＞
-引数のファイル又は標準入力のテキストデータ"tran"の各レコードを、"key="で指定した
-フィールドの値をマスターファイル"master"の同一キーフィールドの値と比較し、値が同
-じ"master"ファイルのレコードの下に挿入、マージをするツールです。"master""tran"と
-もキーとなるフィールドはソートされている必要があります。
+【説明】
 
-＜例１＞
-(マスター：master)   1日目〜3日目までのデータ
-a店 1日目 103 62
+masterファイルとtranファイルの各行をkey=で指定されたフィールド値で比較し、同じ
+キーフィールドを持つ行をmasterの該当行の下に挿入して出力する。masterもtranもキ
+ーとなるフィールドは整列されている必要がある。
+
+【例1】
+
+$ cat master
+a店 1日目 103 62                ←1日目から3日目までのデータ
 a店 2日目 157 94
 a店 3日目 62 30
 b店 1日目 210 113
@@ -24,69 +29,37 @@ b店 3日目 150 82
 c店 1日目 81 52
 c店 2日目 76 49
 c店 3日目 38 21
+$
 
-(トランザクション：tran) 4日目〜5日目までのデータ
+$cat tran               ← 4日目から5日目までのデータ
 a店 4日目 131 84
 a店 5日目 189 111
 b店 4日目 198 105
 b店 5日目 259 189
 c店 4日目 81 48
 c店 5日目 98 61
+$
 
-$ up3 key=1 master tran > data
-(data)              <- 1日目〜5日目までマージされている。
+$ up3 key=1 master tran
 a店 1日目 103 62
 a店 2日目 157 94
 a店 3日目 62 30
-a店 4日目 131 84    <-"master"の"a店"のレコードの下に"tran"の同じ"a店"のレコード
-a店 5日目 189 111   <- が挿入される。
+a店 4日目 131 84                ←masterのa店の下にtranのa店がきている
+a店 5日目 189 111
 b店 1日目 210 113
 b店 2日目 237 121
 b店 3日目 150 82
-b店 4日目 198 105   <-
-b店 5日目 259 189   <-
+b店 4日目 198 105
+b店 5日目 259 189
 c店 1日目 81 52
 c店 2日目 76 49
 c店 3日目 38 21
-c店 4日目 81 48     <-
-c店 5日目 98 61     <-
+c店 4日目 81 48
+c店 5日目 98 61
+$
 
-尚、複数のキーフィールドを指定する場合は"key=2@1"の様に
-"@"でつないで指定します。
+複数のキーフィールドを指定する場合はkey=2@1のように@でつないで指定する。
 
-＜公開の経緯と商用利用について＞
-
-ユニバーサル・シェル・プログラミング研究所（USP研究所）では、弊社の哲学に基き
-コマンドとシェルスクリプトを利用した独自のシステム開発や
-シェルプログラミングの普及・教育活動を行っています。
-
-Open usp Tukubaiは、シェルを利用したデータ処理の可能性を体感していただくために、
-商用版Tsukubai（有償）から利用頻度の高いものを厳選し、
-一部の機能をオープンソースソフトウェアとして公開したものです。
-
-Open usp Tukubaiのサポート（有償）や、商用版Tukubaiにご興味のある方は、
-以下のメールアドレスまでお問い合わせください。
-info@usp-lab.com
-
-
-# The MIT License
-#
-# Copyright (c) 2011 Universal Shell Programming Laboratory
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-# THE SOFTWARE.
+last modified: 2012-04-11 13:22:14
+Contact us: uecinfo@usp-lab.com
+Copyright (c) 2012 Universal Shell Programming Laboratory All Rights Reserved.

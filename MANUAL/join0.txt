@@ -1,43 +1,44 @@
-join0(USP)
+Tukubaiオンラインコマンドマニュアル
 
-＜名前＞
-join0 : マスターにキーフィールドがマッチする行を抽出する
+join0(USP Lab(1))
 
-＜書式＞
+【名前】
+
+join0 : マスターにキーフィールドが一致する行を抽出
+
+【書式】
+
 Usage   : join0 [+ng[<fd>]] key=<n> <master> <tran>
 Version : Thu Dec 15 13:46:38 JST 2011
 
-＜説明＞
-テキストファイル "tran" の "key=<n>" で指定したキーフィールドが
-マスターファイル "master" の第１フィールド（キーフィールド）と
-マッチした行のみ "tran" から抽出して出力します。
+【説明】
 
-"master" の第１フィールドおよび "tran" の 第<n>フィールドは
-必ず昇順でソートされていることが条件になります。
-さらに "master" についてはキーフィールド(第１フィールド)について、
-各レコードがユニークでなければなりません。(第１フィールドが同じ値を
-もつレコードが複数あってはならない)  "tran" についてはこの制約は無く、
-キーフィールド(第<n>フィールド)が同じ値をレコードはいくつあっても
-構いません。
+テキストファイルtranのkey=<n>で指定したキーフィールドがマスターファイルmasterの
+第1フィールド(キーフィールド)と一致した行のみtranから抽出して出力する。
 
-キーに選択するフィールドは複数指定することも可能です。
+masterの第1フィールドおよびtranの第<n>フィールドは必ず昇順で整列されていること
+が条件となる。さらに、masterについてはキーフィールド(第1フィールド)について、各
+行がユニークでなければならない(第1フィールドが同じ値をもつ行が複数あってはなら
+ない)。tranについてはこの制約はなく、キーフィールド(第<n>フィールド)が同じ値を
+行はいくつあっても構わない。
 
-+ng オプションをつけると、マッチした行を標準出力ファイルへ、
-マッチしなかった行をファイルデスクリプタ<fd>のファイルへ出力します。
-<fd>を省略した場合は標準エラー出力ファイルへ出力します。
+キーに選択するフィールドは複数指定することも可能。
 
-＜例１＞ 基本パターン
-成績ファイル "kekka" から "master" に登録されている４人の
-データを抽出します。
++ng オプションをつけると、一致した行を標準出力ファイルへ、一致しなかった行をフ
+ァイルデスクリプタ<fd>のファイルへ出力する。<fd>を省略した場合は標準エラー出力
+ファイルへ出力する。
 
-(マスターファイル：master)
+【例1】基本パターン
+
+成績ファイルkekkaからmasterに登録されている4人のデータを抽出する。
+
 $ cat master
 0000003 杉山______ 26 F
 0000005 崎村______ 50 F
 0000007 梶川______ 42 F
 0000010 柳本______ 50 F
+$
 
-(トランザクションファイル：kekka)
 $ cat kekka
 0000000 91 59 20 76 54
 0000001 46 39 8  5  21
@@ -49,25 +50,30 @@ $ cat kekka
 0000009 60 89 33 18 6
 0000010 95 60 35 93 76
 0000011 92 56 83 96 75
+$
 
-"kekka" の第１フィールドが "master" ファイルに存在する行のみ抽出
-$ join0 key=1 master kekka > data
-$ cat data
+kekkaの第1フィールドがmasterファイルに存在する行のみ抽出する。
+
+$ join0 key=1 master kekka
 0000003 30 50 71 36 30
 0000005 82 79 16 21 80
 0000007 50 2  33 15 62
 0000010 95 60 35 93 76
+$
 
-＜例２＞
-左から順に連続した複数のフィールドをキーに指定する場合です。
-(マスター：master)
+【例2】
+
+左から順に複数のフィールドに連続するキーを指定できる。例えばmasterファイルに第2
+フィールドと第3フィールドの順にフィールドキーが存在する行のみ抽出する場合、次の
+ようになる。
+
 $ cat master
 A 0000003 杉山______ 26 F
 A 0000005 崎村______ 50 F
 B 0000007 梶川______ 42 F
 C 0000010 柳本______ 50 F
+$
 
-(トランザクション：kekka)
 $ cat kekka
 1 A 0000000 91 59 20 76 54
 2 A 0000001 46 39 8  5  21
@@ -79,33 +85,32 @@ $ cat kekka
 8 C 0000009 60 89 33 18 6
 9 C 0000010 95 60 35 93 76
 10 C 0000011 92 56 83 96 75
+$
 
-第２フィールド、第３フィールドの順に "master" ファイルに
-存在する行のみ抽出
 $ join0 key=2/3 master kekka > data
 3 A 0000003 30 50 71 36 30
 5 A 0000005 82 79 16 21 80
 6 B 0000007 50 2  33 15 62
 9 C 0000010 95 60 35 93 76
+$
 
-※ 左から順に連続していない複数のフィールドをキーに指定することも
-可能です。この場合は複数のキーフィールドを@で繋げて指定します。
-$ join0 key=3@1 master tran > data
+左から順に連続していない複数のフィールドをキーに指定することも可能。この場合は
+複数のキーフィールドを@でつなげて指定する。
 
-＜例３＞ "+ng" オプション
-"master" とキーがマッチしない "tran" のレコードを抽出することも
-可能です。
-キーにマッチするレコードは標準出力に、マッチしないレコードは
-標準エラー出力に出力されます。
+$ join0 key=3@1 master tran
 
-(マスターファイル：master)
+【例3】+ngオプション
+
+masterとキーが一致しない"tran"の行を抽出することも可能。キーに一致する行は標準
+出力に、一致しない行は標準エラー出力に出力される。
+
 $ cat master
 0000003 杉山______ 26 F
 0000005 崎村______ 50 F
 0000007 梶川______ 42 F
 0000010 柳本______ 50 F
+$
 
-(トランザクションファイル：kekka)
 $ cat kekka
 0000000 91 59 20 76 54
 0000001 46 39 8  5  21
@@ -117,84 +122,65 @@ $ cat kekka
 0000009 60 89 33 18 6
 0000010 95 60 35 93 76
 0000011 92 56 83 96 75
+$
 
-成績ファイル "kekka" から "master" に存在する４人のデータと、
-その他のデータとをそれぞれ抽出します。
+成績ファイルkekkaからmasterに存在する4人のデータと、その他のデータとをそれぞれ
+抽出する。
+
 $ join0 +ng key=1 master kekka > ok-data 2> ng-data
-$ cat ok-data   # (マッチしたデータ)
+$ cat ok-data           ←一致したデータ
 0000003 30 50 71 36 30
 0000005 82 79 16 21 80
 0000007 50 2  33 15 62
 0000010 95 60 35 93 76
-$ cat ng-data   # (マッチしなかったデータ)
+$ cat ng-data           ←一致しなかったデータ
 0000000 91 59 20 76 54
 0000001 46 39 8  5  21
 0000004 58 71 20 10 6
 0000008 52 91 44 9  0
 0000009 60 89 33 18 6
 0000011 92 56 83 96 75
+$
 
-＜例４＞
-ファイル名を "-" にすることにより、標準入力から "master" や
-"tran" を読むことができます。(join1 join2 も同じです)
-"tran" の "-" を省略した場合も標準入力から "tran" を読みます。
+【例4】
+
+ファイル名を-にすることにより標準入力からmasterやtranを読むことができる。join1
+(USP Lab(1))やjoin2(USP Lab(1))も同様。tranの-を省略した場合も標準入力からtran
+を読み込む。
+
 $ cat master | join0 key=1 - tran
+
 $ cat tran | join0 key=1 master -
-$ cat tran | join0 key=1 master      # "-" を省略できます。
 
-＜コラム１＞ "+ng" オプションのコメント (join1も同様)
-アンマッチのデータをパイプで次のコマンドへつなぐ場合は
-次の様に記述します。
-$ join0 +ng key=1 master tran 2>&1 1> ok-data  |  次のコマンド
+$ cat tran | join0 key=1 master         ←-を省略可能
 
-また、アンマッチのデータのみ出力したい場合は、
-マッチデータは /dev/null へ出力します。
+【コラム1】+ngオプションのコメント - join1(USP Lab(1))も同様
+
+不一致のデータをパイプで次のコマンドへつなぐ場合は次のように記述する。
+
+$ join0 +ng key=1 master tran 2>&1 1> ok-data | 次のコマンド
+
+不一致のデータのみ出力したい場合には、一致データを/dev/nullへ出力させれば良い。
+
 $ join0 +ng key=1 master tran > /dev/null 2> ng-data
 
-＜コラム２＞
-join0 join1 は master と同じキーフィールドを持つ tran の
-レコードを出力しますが、master を読み終わったあと、読み残した
-tran についても最後まで読む(読み捨て)ので、パイプの目詰まりを
-起こさないよう作られています。
+【コラム2】
+
+join0(USP Lab(1))およびjoin1(USP Lab(1))はmasterと同じキーフィールドを持つtran
+の行を出力するが、パイプの目詰まりを起こさないようにmasterを読み終わったあと読
+み残したtranについても最後まで読むように動作する。
+
 $ cat bigfile | join0 key=1 master > ok-data
 
-＜備考＞
-key のフィールドは合わせて128フィールドが最大で、１キーフィールド
-あたり、MAX 256byte の制限があります。
+【備考】
 
-＜公開の経緯と商用利用について＞
+keyのフィールドは合わせて128フィールドが最大で、1キーフィールドあたり最大256
+[byte]まで指定できる。
 
-ユニバーサル・シェル・プログラミング研究所（USP研究所）では、弊社の哲学に基き
-コマンドとシェルスクリプトを利用した独自のシステム開発や
-シェルプログラミングの普及・教育活動を行っています。
+【関連項目】
 
-Open usp Tukubaiは、シェルを利用したデータ処理の可能性を体感していただくために、
-商用版Tsukubai（有償）から利用頻度の高いものを厳選し、
-一部の機能をオープンソースソフトウェアとして公開したものです。
+join1(USP Lab(1))、join2(USP Lab(1))
 
-Open usp Tukubaiのサポート（有償）や、商用版Tukubaiにご興味のある方は、
-以下のメールアドレスまでお問い合わせください。
-info@usp-lab.com
-
-
-# The MIT License
-#
-# Copyright (c) 2011 Universal Shell Programming Laboratory
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-# THE SOFTWARE.
+last modified: 2012-04-12 19:49:31
+Contact us: uecinfo@usp-lab.com
+Copyright (c) 2012 Universal Shell Programming Laboratory All Rights Reserved.

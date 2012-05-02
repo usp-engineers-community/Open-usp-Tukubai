@@ -1,145 +1,142 @@
-mdate(USP)
+Tukubaiオンラインコマンドマニュアル
 
-＜名前＞
+mdate(USP Lab(1))
+
+【名前】
+
 mdate : 日付、週、月の処理
 
-＜書式＞
-Usage :                                                                     
-                                                                             
- DIRECT-MODE
+【書式】
 
-   日付  mdate -y <yyyymmdd>               : 曜日
-         mdate -e <yyyywwdd>/±<dif>       : dif 日先までの日付を連続出力
-         mdate -e <yyyymmdd1> <yyyymmdd2>  : 日付の範囲を連続出力
-         mdate <yyyywwdd>/±<dif>          : dif 日先の日付
-         mdate <yyyymmdd1> <yyyymmdd2>     : 日付の差
-         mdate <yyyymm>m/±<dif>           : dif 月先の月
-         mdate -e <yyyymm>m/±<dif>        : dif 月先までの月を連続出力
-         mdate <yyyymm1>m <yyyymm2>m       : 月の差
-         mdate -ly <yyyymm>m               : 前年月
+Usage   :
+
+ DIRECT-MODE
+   日付 mdate -y <yyyymmdd>                     : 曜日
+        mdate -e <yyyywwdd>/±<dif>              : dif 日先までの日付を連続出力
+        mdate -e <yyyymmdd1> <yyyymmdd2>        : 日付の範囲を連続出力
+        mdate <yyyywwdd>/±<dif>                 : dif 日先の日付
+        mdate <yyyymmdd1> <yyyymmdd2>           : 日付の差
+        mdate <yyyymm>m/±<dif>                  : dif 月先の月
+        mdate -e <yyyymm>m/±<dif>               : dif 月先までの月を連続出力
+        mdate <yyyymm1>m <yyyymm2>m             : 月の差
+        mdate -ly <yyyymm>m                     : 前年月
 
  FILTER-MODE
-   日付  mdate -f -y <f>               : 曜日
-         mdate -f -e <f>/±<dif>       : dif 日先までの日付に展開
-         mdate -f -e <f1> <f2>         : 日付間の展開
-         mdate -f <f>/±<dif>          : dif 日先の日付
-         mdate -f <f1> <f2>            : 日付の差
-         mdate -f <f1> ±<f2>          : 日付の加算
-         mdate -f -e <f1> ±<f2>       : 日付の加算 展開
-         mdate -f -ly <f>              : 前年日
-   月次  mdate -f -d <f>m              : 日付を１カ月分出力
-         mdate -f <f>m/±<dif>         : dif 月先の月
-         mdate -f -e <f>m ±<dif>      : dif 月先の月まで展開
-         mdate -f <f1>m <f2>m          : 月の差
-         mdate -f -e <f1>m <f2>m       : 月の展開
-         mdate -f <f>m ±<dif>         : 月の加算
-         mdate -f -e <f>m ±<dif>      : 月の加算展開
-         mdate -f -ly <f>m             : 前年月
-                                                                             
+   日付 mdate -f -y <f>                         : 曜日
+        mdate -f -e <f>/±<dif>                  : dif 日先までの日付に展開
+        mdate -f -e <f1> <f2>                   : 日付間の展開
+        mdate -f <f>/±<dif>                     : dif 日先の日付
+        mdate -f <f1> <f2>                      : 日付の差
+        mdate -f <f1> ±<f2>                     : 日付の加算
+        mdate -f -e <f1> ±<f2>                  : 日付の加算または展開
+        mdate -f -ly <f>                        : 前年日
+   月次 mdate -f -d <f>m                        : 日付を1ヶ月分出力
+        mdate -f <f>m/±<dif>                    : dif 月先の月
+        mdate -f -e <f>m ±<dif>                 : dif 月先の月まで展開
+        mdate -f <f1>m <f2>m                    : 月の差
+        mdate -f -e <f1>m <f2>m                 : 月の展開
+        mdate -f <f>m ±<dif>                    : 月の加算
+        mdate -f -e <f>m ±<dif>                 : 月の加算展開
+        mdate -f -ly <f>m                       : 前年月
+
 Version : Wed Dec 28 15:32:10 JST 2011
 
-＜例１＞
-dif先の日付、月の情報を出力
+【例1】dif先の日付、月の情報を出力
+
 $ mdate 20090912/+5
 20090917
+$
+
 $ mdate 200909m/+5
 201002
+$
 
-＜例２＞
-dif先までの連続した日付、月の情報を出力
+【例2】dif先までの連続した日付、月の情報を出力
+
 $ mdate -e 20090912/+5
-20090912 20090913 20090914 20090915 20090916 20090917 
+20090912 20090913 20090914 20090915 20090916 20090917
+$
+
 $ mdate -e 200909m/+5
 200909 200910 200911 200912 201001 201002
+$
 
-＜例３＞
-日付、月の差を出力
+【例3】日付、月の差を出力
+
 $ mdate 20090917 20090912
 5
+$
+
 $ mdate 201002m 200909m
 5
+$
 
-＜例４＞
-日付、月の範囲を連続出力
+【例4】日付、月の範囲を連続出力
+
 $ mdate -e 20090912 20090917
-20090912 20090913 20090914 20090915 20090916 20090917 
-$ mdate -e 200909m 201002m
-200909 200910 200911 200912 201001 201002 
+20090912 20090913 20090914 20090915 20090916 20090917
+$
 
-＜例５＞ フィルターモード
-dif先の日付、月の情報を挿入
+$ mdate -e 200909m 201002m
+200909 200910 200911 200912 201001 201002
+$
+
+【例5】フィルターモード : dif先の日付、月の情報を挿入
+
 $ cat date_data
-A 20090901 B 
-A 20090902 B 
-A 20090903 B 
+A 20090901 B
+A 20090902 B
+A 20090903 B
+$
+
 $ mdate -f 2/+5 date_data
 A 20090901 20090906 B
 A 20090902 20090907 B
 A 20090903 20090908 B
+$
 
 $ cat month_data
 A 200909 B
 A 200910 B
 A 200911 B
+$
+
 $ mdate -f 2m/+5 month_data
 A 200909 201002 B
 A 200910 201003 B
 A 200911 201004 B
+$
 
-＜例６＞ フィルターモード
-dif 先までの連続した日付、週、月の情報を挿入
+【例6】フィルターモード : dif先までの連続した日付、週、月の情報を挿入
+
 $ cat date_data
-A 20090901 B 
-A 20090902 B 
-A 20090903 B 
+A 20090901 B
+A 20090902 B
+A 20090903 B
+$
+
 $ mdate -f -e 2/+5 date_data
 A 20090901 20090902 20090903 20090904 20090905 20090906 B
 A 20090902 20090903 20090904 20090905 20090906 20090907 B
 A 20090903 20090904 20090905 20090906 20090907 20090908 B
+$
 
 $ cat month_data
 A 200909 B
 A 200910 B
 A 200911 B
+$
+
 $ mdate -f -e 2m/+5 month_data
 A 200909 200910 200911 200912 201001 201002 B
 A 200910 200911 200912 201001 201002 201003 B
 A 200911 200912 201001 201002 201003 201004 B
+$
 
+【関連項目】
 
-＜公開の経緯と商用利用について＞
+yobi(USP Lab(1))
 
-ユニバーサル・シェル・プログラミング研究所（USP研究所）では、弊社の哲学に基き
-コマンドとシェルスクリプトを利用した独自のシステム開発や
-シェルプログラミングの普及・教育活動を行っています。
-
-Open usp Tukubaiは、シェルを利用したデータ処理の可能性を体感していただくために、
-商用版Tsukubai（有償）から利用頻度の高いものを厳選し、
-一部の機能をオープンソースソフトウェアとして公開したものです。
-
-Open usp Tukubaiのサポート（有償）や、商用版Tukubaiにご興味のある方は、
-以下のメールアドレスまでお問い合わせください。
-info@usp-lab.com
-
-
-# The MIT License
-#
-# Copyright (c) 2011 Universal Shell Programming Laboratory
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-# THE SOFTWARE.
+last modified: 2012-04-12 20:33:07
+Contact us: uecinfo@usp-lab.com
+Copyright (c) 2012 Universal Shell Programming Laboratory All Rights Reserved.
