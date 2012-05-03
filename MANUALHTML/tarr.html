@@ -1,0 +1,239 @@
+<!doctype html>
+
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <title>UEC - usp engineers' community - Tukubaiオンラインコマンドマニュアル</title>
+  <link rel="stylesheet" href="COMMON/CSS/MAIN.CSS" />
+  <link rel="stylesheet" href="COMMON/CSS/MENU.CSS" />
+  <!--[if lte IE 7]>
+  <link rel="stylesheet" href="COMMON/CSS/IE67HACK.CSS" />
+  <![endif]-->
+  <!--[if IE 8]>
+  <link rel="stylesheet" href="COMMON/CSS/IE8HACK.CSS" />
+  <![endif]-->
+  <!--[if IE 7]>
+  <link rel="stylesheet" href="COMMON/CSS/IE7HACK.CSS" />
+  <![endif]-->
+  <!--[if IE 6]>
+  <link rel="stylesheet" href="COMMON/CSS/IE6HACK.CSS" />
+  <![endif]-->
+  <script src="COMMON/JS/MENU.JS"></script>
+</head>
+<body>
+  <div id="container">
+    <div id="header">
+      <div id="logo">
+        <img id="logoimage" src="COMMON/IMG/TUKUBAI_LOGO.JPG" />
+      </div>
+      <div id="title">
+        <p id="slogan">UEC - UNIXを深く理解し、シェルプログラミングを極めるコミュニティサイト</p>
+        <ul id="megamenu">
+          <li id="tukubai_man"><a href="index.html" class="target">Tukubaiマニュアル</a>
+            <ul>
+              <li><a href="cgi-name.html">cgi-name(1)</a></li>
+              <li><a href="check_attr_name.html">check_attr_name(1)</a></li>
+              <li><a href="check_need_name.html">check_need_name(1)</a></li>
+              <li><a href="comma.html">comma(1)</a></li>
+              <li><a href="count.html">count(1)</a></li>
+              <li><a href="ctail.html">ctail(1)</a></li>
+              <li><a href="delf.html">delf(1)</a></li>
+              <li><a href="divsen.html">divsen(1)</a></li>
+              <li><a href="getfirst.html">getfirst(1)</a></li>
+              <li><a href="getlast.html">getlast(1)</a></li>
+              <li><a href="gyo.html">gyo(1)</a></li>
+              <li><a href="han.html">han(1)</a></li>
+              <li><a href="join0.html">join0(1)</a></li>
+              <li><a href="join1.html">join1(1)</a></li>
+              <li><a href="join2.html">join2(1)</a></li>
+              <li><a href="juni.html">juni(1)</a></li>
+              <li><a href="kasan.html">kasan(1)</a></li>
+              <li><a href="keta.html">keta(1)</a></li>
+              <li><a href="keycut.html">keycut(1)</a></li>
+              <li><a href="loopj.html">loopj(1)</a></li>
+              <li><a href="loopx.html">loopx(1)</a></li>
+              <li><a href="map.html">map(1)</a></li>
+              <li><a href="marume.html">marume(1)</a></li>
+              <li><a href="mdate.html">mdate(1)</a></li>
+              <li><a href="mime-read.html">mime-read(1)</a></li>
+              <li><a href="mojihame.html">mojihame(1)</a></li>
+              <li><a href="nameread.html">nameread(1)</a></li>
+              <li><a href="plus.html">plus(1)</a></li>
+              <li><a href="rank.html">rank(1)</a></li>
+              <li><a href="ratio.html">ratio(1)</a></li>
+              <li><a href="retu.html">retu(1)</a></li>
+              <li><a href="self.html">self(1)</a></li>
+              <li><a href="sm2.html">sm2(1)</a></li>
+              <li><a href="sm4.html">sm4(1)</a></li>
+              <li><a href="sm5.html">sm5(1)</a></li>
+              <li><a href="tarr.html">tarr(1)</a></li>
+              <li><a href="tateyoko.html">tateyoko(1)</a></li>
+              <li><a href="tcat.html">tcat(1)</a></li>
+              <li><a href="unmap.html">unmap(1)</a></li>
+              <li><a href="up3.html">up3(1)</a></li>
+              <li><a href="yarr.html">yarr(1)</a></li>
+              <li><a href="ycat.html">ycat(1)</a></li>
+              <li><a href="yobi.html">yobi(1)</a></li>
+              <li><a href="ysum.html">ysum(1)</a></li>
+              <li><a href="zen.html">zen(1)</a></li>
+              <li><a href="tag-format.html">タグ形式(5)</a></li>
+              <li><a href="name-format.html">ネーム形式(5)</a></li>
+              <li><a href="field-format.html">フィールド形式(5)</a></li>
+            </ul> 
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div id="main">
+      <h1>Tukubaiオンラインコマンドマニュアル</h1>
+
+<!-- CONTENTS_CONTENTS -->
+<h2>tarr(USP Lab(1))</h2>
+
+<h3>【名前】</h3>
+
+<p>tarr : 横型のデータを縦型に展開</p>
+
+<h3>【書式】</h3>
+
+<pre class="list">Usage	: tarr [-&lt;n&gt;][-d&lt;str&gt;] &lt;file&gt;
+	: tarr [-&lt;n&gt;][-d&lt;str&gt;] num=&lt;n&gt; &lt;file&gt;
+Version	: Thu Dec 15 13:46:38 JST 2011</pre>
+
+<h3>【説明】</h3>
+
+<p>指定したファイルの第1フィールドからnum=&lt;n&gt;で指定したフィールドまでのフィールドをキーとして、横に並んでいるフィールドデータを縦に展開して並べ直す。</p>
+
+<h3>【例1】基本的な使い方</h3>
+
+<pre class="cmd">$ cat data
+0000000 浜地______ 50 F 91 59 20 76
+0000001 鈴田______ 50 F 46 39 8 5
+0000003 杉山______ 26 F 30 50 71 36
+0000004 白土______ 40 M 58 71 20 10
+$ </pre>
+
+<pre class="cmd">$ tarr num=4 data		←第4フィールドまでをキーに縦に展開
+0000000 浜地______ 50 F 91
+0000000 浜地______ 50 F 59
+0000000 浜地______ 50 F 20
+0000000 浜地______ 50 F 76
+0000001 鈴田______ 50 F 46
+0000001 鈴田______ 50 F 39
+0000001 鈴田______ 50 F 8
+0000001 鈴田______ 50 F 5
+0000003 杉山______ 26 F 30
+0000003 杉山______ 26 F 50
+0000003 杉山______ 26 F 71
+0000003 杉山______ 26 F 36
+0000004 白土______ 40 M 58
+0000004 白土______ 40 M 71
+0000004 白土______ 40 M 20
+0000004 白土______ 40 M 10
+$ </pre>
+
+<h3>【例2】</h3>
+
+<p>-&lt;n&gt;オプションを使用すると&lt;n&gt;フィールドごとに縦展開する。</p>
+
+<pre class="cmd">$ tarr -2 num=4 data		←2フィールド毎に縦展開する。
+0000000 浜地______ 50 F 91 59
+0000000 浜地______ 50 F 20 76
+0000001 鈴田______ 50 F 46 39
+0000001 鈴田______ 50 F 8 5
+0000003 杉山______ 26 F 30 50
+0000003 杉山______ 26 F 71 36
+0000004 白土______ 40 M 58 71
+0000004 白土______ 40 M 20 10
+$ </pre>
+
+<h3>【例3】</h3>
+
+<p>num=&lt;n&gt;を指定しないと単純に縦展開する。</p>
+
+<pre class="cmd">$ cat data3
+1 2 3 4 
+5 6
+$ </pre>
+
+<pre class="cmd">$ tarr data3
+1
+2
+3
+4
+5
+6
+$ </pre>
+
+<h3>【例4】</h3>
+
+<p>-d&lt;str&gt;オプションを使うことで縦展開するフィールドのフィールドセパレータを指定できる。num=&lt;n&gt;で指定されるキーフィールドは空白区切りである必要がある。</p>
+
+<pre class="cmd">$ cat data
+0000000 浜地______ 50 F 91@59@20@76@54
+0000001 鈴田______ 50 F 46@39@8@5@21
+0000003 杉山______ 26 F 30@50@71@36@30
+0000004 白土______ 40 M 58@71@20@10@6
+$ </pre>
+
+<pre class="cmd">$ tarr -d@ num=4 data
+0000000 浜地______ 50 F 91
+0000000 浜地______ 50 F 59
+0000000 浜地______ 50 F 20
+0000000 浜地______ 50 F 76
+0000000 浜地______ 50 F 54
+0000001 鈴田______ 50 F 46
+0000001 鈴田______ 50 F 39
+0000001 鈴田______ 50 F 8
+0000001 鈴田______ 50 F 5
+0000001 鈴田______ 50 F 21
+0000003 杉山______ 26 F 30
+0000003 杉山______ 26 F 50
+0000003 杉山______ 26 F 71
+0000003 杉山______ 26 F 36
+0000003 杉山______ 26 F 30
+0000004 白土______ 40 M 58
+0000004 白土______ 40 M 71
+0000004 白土______ 40 M 20
+0000004 白土______ 40 M 10
+0000004 白土______ 40 M 6
+$ </pre>
+
+<pre class="cmd">$ cat data2
+0001 1n2n3
+0002 4n5n6
+$ </pre>
+
+<pre class="cmd">$ tarr -d'n' num=1 data2
+0001 1
+0001 2
+0001 3
+0002 4
+0002 5
+0002 6
+$ </pre>
+
+<h3>【関連項目】</h3>
+
+<p><a href="yarr.html">yarr(USP Lab(1))</a></p>
+
+<div id="pagenavigator">
+  <ul>
+    <li><a href="index.html">&and;</a></li>
+  </ul>
+</div>
+<!-- CONTENTS_CONTENTS -->
+    </div>
+
+    <div id="lastmodified">
+     last modified: 2012-04-13 17:13:27
+    </div>
+
+    <div id="footer">
+      Contact us: uecinfo@usp-lab.com<br>
+      Copyright (c) 2012 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.
+    </div>
+  </div>
+</body>
+</html>

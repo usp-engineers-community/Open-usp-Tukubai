@@ -1,0 +1,287 @@
+<!doctype html>
+
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <title>UEC - usp engineers' community - Tukubaiオンラインコマンドマニュアル</title>
+  <link rel="stylesheet" href="COMMON/CSS/MAIN.CSS" />
+  <link rel="stylesheet" href="COMMON/CSS/MENU.CSS" />
+  <!--[if lte IE 7]>
+  <link rel="stylesheet" href="COMMON/CSS/IE67HACK.CSS" />
+  <![endif]-->
+  <!--[if IE 8]>
+  <link rel="stylesheet" href="COMMON/CSS/IE8HACK.CSS" />
+  <![endif]-->
+  <!--[if IE 7]>
+  <link rel="stylesheet" href="COMMON/CSS/IE7HACK.CSS" />
+  <![endif]-->
+  <!--[if IE 6]>
+  <link rel="stylesheet" href="COMMON/CSS/IE6HACK.CSS" />
+  <![endif]-->
+  <script src="COMMON/JS/MENU.JS"></script>
+</head>
+<body>
+  <div id="container">
+    <div id="header">
+      <div id="logo">
+        <img id="logoimage" src="COMMON/IMG/TUKUBAI_LOGO.JPG" />
+      </div>
+      <div id="title">
+        <p id="slogan">UEC - UNIXを深く理解し、シェルプログラミングを極めるコミュニティサイト</p>
+        <ul id="megamenu">
+          <li id="tukubai_man"><a href="index.html" class="target">Tukubaiマニュアル</a>
+            <ul>
+              <li><a href="cgi-name.html">cgi-name(1)</a></li>
+              <li><a href="check_attr_name.html">check_attr_name(1)</a></li>
+              <li><a href="check_need_name.html">check_need_name(1)</a></li>
+              <li><a href="comma.html">comma(1)</a></li>
+              <li><a href="count.html">count(1)</a></li>
+              <li><a href="ctail.html">ctail(1)</a></li>
+              <li><a href="delf.html">delf(1)</a></li>
+              <li><a href="divsen.html">divsen(1)</a></li>
+              <li><a href="getfirst.html">getfirst(1)</a></li>
+              <li><a href="getlast.html">getlast(1)</a></li>
+              <li><a href="gyo.html">gyo(1)</a></li>
+              <li><a href="han.html">han(1)</a></li>
+              <li><a href="join0.html">join0(1)</a></li>
+              <li><a href="join1.html">join1(1)</a></li>
+              <li><a href="join2.html">join2(1)</a></li>
+              <li><a href="juni.html">juni(1)</a></li>
+              <li><a href="kasan.html">kasan(1)</a></li>
+              <li><a href="keta.html">keta(1)</a></li>
+              <li><a href="keycut.html">keycut(1)</a></li>
+              <li><a href="loopj.html">loopj(1)</a></li>
+              <li><a href="loopx.html">loopx(1)</a></li>
+              <li><a href="map.html">map(1)</a></li>
+              <li><a href="marume.html">marume(1)</a></li>
+              <li><a href="mdate.html">mdate(1)</a></li>
+              <li><a href="mime-read.html">mime-read(1)</a></li>
+              <li><a href="mojihame.html">mojihame(1)</a></li>
+              <li><a href="nameread.html">nameread(1)</a></li>
+              <li><a href="plus.html">plus(1)</a></li>
+              <li><a href="rank.html">rank(1)</a></li>
+              <li><a href="ratio.html">ratio(1)</a></li>
+              <li><a href="retu.html">retu(1)</a></li>
+              <li><a href="self.html">self(1)</a></li>
+              <li><a href="sm2.html">sm2(1)</a></li>
+              <li><a href="sm4.html">sm4(1)</a></li>
+              <li><a href="sm5.html">sm5(1)</a></li>
+              <li><a href="tarr.html">tarr(1)</a></li>
+              <li><a href="tateyoko.html">tateyoko(1)</a></li>
+              <li><a href="tcat.html">tcat(1)</a></li>
+              <li><a href="unmap.html">unmap(1)</a></li>
+              <li><a href="up3.html">up3(1)</a></li>
+              <li><a href="yarr.html">yarr(1)</a></li>
+              <li><a href="ycat.html">ycat(1)</a></li>
+              <li><a href="yobi.html">yobi(1)</a></li>
+              <li><a href="ysum.html">ysum(1)</a></li>
+              <li><a href="zen.html">zen(1)</a></li>
+              <li><a href="tag-format.html">タグ形式(5)</a></li>
+              <li><a href="name-format.html">ネーム形式(5)</a></li>
+              <li><a href="field-format.html">フィールド形式(5)</a></li>
+            </ul> 
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div id="main">
+      <h1>Tukubaiオンラインコマンドマニュアル</h1>
+
+<!-- CONTENTS_CONTENTS -->
+<h2>sm4(USP Lab(1))</h2>
+
+<h3>【名前】</h3>
+
+<p>sm4 : 小計、中計</p>
+
+<h3>【書式】</h3>
+
+<pre class="list">Usage	: sm4 [+h] &lt;k1&gt; &lt;k2&gt; &lt;d1&gt; &lt;d2&gt; &lt;s1&gt; &lt;s2&gt; &lt;file&gt;
+Version	: Thu Dec 15 13:46:38 JST 2011
+	: UTF-8</pre>
+
+<h3>【説明】</h3>
+
+<p>&lt;file&gt;ファイルにおけるサブキーによる小計や中計を計算する。k1で指定したフィールドからk2で指定したフィールドまでを主キー、d1からd2までのフィールドがサブキー、s1からs2までのフィールドまでのフィールドを集計フィールドとして、主キーの値が同じキーをサブキーのフィールドを飛ばして集計フィールドを集計して各主キーの行の最終行に挿入する。</p>
+
+<p>集計行におけるサブキーのフィールドは@で補完される。小計および中計を段階的に付与するためにsm4を複数回使用する場合には、 サブキーに@が含まれる行は集計から除外される。キーまたは集計フィールドいずれの範囲にも指定していないフィールドについては出力は実行されない。</p>
+
+<h3>【例1】</h3>
+
+<pre class="cmd">$ cat data
+01 埼玉県 01 さいたま市 91 59 20 76 54		←各都市での調査データ
+01 埼玉県 02 川越市 46 39 8 5 21
+01 埼玉県 03 熊谷市 82 0 23 84 10
+02 東京都 04 新宿区 30 50 71 36 30
+02 東京都 05 中央区 78 13 44 28 51
+02 東京都 06 港区 58 71 20 10 6
+02 東京都 07 八王子市 82 79 16 21 80
+02 東京都 08 立川市 50 2 33 15 62
+03 千葉県 09 千葉市 52 91 44 9 0
+03 千葉県 10 市川市 60 89 33 18 6
+03 千葉県 11 柏市 95 60 35 93 76
+04 神奈川県 12 横浜市 92 56 83 96 75
+04 神奈川県 13 川崎市 30 12 32 44 19
+04 神奈川県 14 厚木市 48 66 23 71 24
+$ </pre>
+
+<p>県別に小計を出する。</p>
+
+<pre class="cmd">$ sm4 1 2 3 4 5 NF data
+01 埼玉県 01 さいたま市 91 59 20 76 54
+01 埼玉県 02 川越市 46 39 8 5 21
+01 埼玉県 03 熊谷市 82 0 23 84 10
+01 埼玉県 @@ @@@@@@@@@@ 173 59 43 160 64
+02 東京都 04 新宿区 30 50 71 36 30
+02 東京都 05 中央区 78 13 44 28 51
+02 東京都 06 港区 58 71 20 10 6
+02 東京都 07 八王子市 82 79 16 21 80
+02 東京都 08 立川市 50 2 33 15 62
+02 東京都 @@ @@@@@@@@@@ 248 213 151 95 167
+03 千葉県 09 千葉市 52 91 44 9 0
+03 千葉県 10 市川市 60 89 33 18 6
+03 千葉県 11 柏市 95 60 35 93 76
+03 千葉県 @@ @@@@@@@@@@ 207 240 112 120 82
+04 神奈川県 12 横浜市 92 56 83 96 75
+04 神奈川県 13 川崎市 30 12 32 44 19
+04 神奈川県 14 厚木市 48 66 23 71 24
+04 神奈川県 @@ @@@@@@@@@ 170 134 138 211 118
+$ </pre>
+
+<h3>【例2】</h3>
+
+<p>小計と中計を出す。</p>
+
+<pre class="cmd">$ cat data
+01 関東地区 01 埼玉県 01 さいたま市 91 59 20 76 54
+01 関東地区 01 埼玉県 03 熊谷市 82 0 23 84 10
+01 関東地区 02 東京都 04 新宿区 30 50 71 36 30
+01 関東地区 02 東京都 05 中央区 78 13 44 28 51
+01 関東地区 02 東京都 07 八王子市 82 79 16 21 80
+02 関西地区 01 大阪府 01 大阪市 91 59 20 76 54
+02 関西地区 01 大阪府 02 八尾市 46 39 8 5 21
+02 関西地区 01 大阪府 03 川西市 82 0 23 84 10
+02 関西地区 02 兵庫県 04 神戸市 30 50 71 36 30
+02 関西地区 02 兵庫県 05 姫路市 78 13 44 28 51
+02 関西地区 02 兵庫県 06 明石市 58 71 20 10 6
+02 関西地区 02 兵庫県 07 加古川市 82 79 16 21 80
+02 関西地区 02 兵庫県 08 芦屋市 50 2 33 15 62
+02 関西地区 03 京都府 09 京都市 52 91 44 9 0
+02 関西地区 03 京都府 10 舞鶴市 60 89 33 18 6
+$ </pre>
+
+<pre class="cmd">$ sm4 1 4 5 6 7 11 data > data2
+$ cat data2
+01 関東地区 01 埼玉県 01 さいたま市 91 59 20 76 54
+01 関東地区 01 埼玉県 03 熊谷市 82 0 23 84 10
+01 関東地区 01 埼玉県 @@ @@@@@@@@@@ 173 59 43 160 64
+01 関東地区 02 東京都 04 新宿区 30 50 71 36 30
+01 関東地区 02 東京都 05 中央区 78 13 44 28 51
+01 関東地区 02 東京都 07 八王子市 82 79 16 21 80
+01 関東地区 02 東京都 @@ @@@@@@@@@@ 190 142 131 85 161
+02 関西地区 01 大阪府 01 大阪市 91 59 20 76 54
+02 関西地区 01 大阪府 02 八尾市 46 39 8 5 21
+02 関西地区 01 大阪府 03 川西市 82 0 23 84 10
+02 関西地区 01 大阪府 @@ @@@@@@@@@@ 219 98 51 165 85
+02 関西地区 02 兵庫県 04 神戸市 30 50 71 36 30
+02 関西地区 02 兵庫県 05 姫路市 78 13 44 28 51
+02 関西地区 02 兵庫県 06 明石市 58 71 20 10 6
+02 関西地区 02 兵庫県 07 加古川市 82 79 16 21 80
+02 関西地区 02 兵庫県 08 芦屋市 50 2 33 15 62
+02 関西地区 02 兵庫県 @@ @@@@@@@@@@ 298 215 184 110 229
+02 関西地区 03 京都府 09 京都市 52 91 44 9 0
+02 関西地区 03 京都府 10 舞鶴市 60 89 33 18 6
+02 関西地区 03 京都府 @@ @@@@@@@@@@ 112 180 77 27 6
+$ </pre>
+
+<pre class="cmd">$ sm4 1 2 3 6 7 11 data2
+01 関東地区 01 埼玉県 01 さいたま市 91 59 20 76 54
+01 関東地区 01 埼玉県 03 熊谷市 82 0 23 84 10
+01 関東地区 01 埼玉県 @@ @@@@@@@@@@ 173 59 43 160 64
+01 関東地区 02 東京都 04 新宿区 30 50 71 36 30
+01 関東地区 02 東京都 05 中央区 78 13 44 28 51
+01 関東地区 02 東京都 07 八王子市 82 79 16 21 80
+01 関東地区 02 東京都 @@ @@@@@@@@@@ 190 142 131 85 161
+01 関東地区 @@ @@@@@@ @@ @@@@@@@@@@ 363 201 174 245 225
+02 関西地区 01 大阪府 01 大阪市 91 59 20 76 54
+02 関西地区 01 大阪府 02 八尾市 46 39 8 5 21
+02 関西地区 01 大阪府 03 川西市 82 0 23 84 10
+02 関西地区 01 大阪府 @@ @@@@@@@@@@ 219 98 51 165 85
+02 関西地区 02 兵庫県 04 神戸市 30 50 71 36 30
+02 関西地区 02 兵庫県 05 姫路市 78 13 44 28 51
+02 関西地区 02 兵庫県 06 明石市 58 71 20 10 6
+02 関西地区 02 兵庫県 07 加古川市 82 79 16 21 80
+02 関西地区 02 兵庫県 08 芦屋市 50 2 33 15 62
+02 関西地区 02 兵庫県 @@ @@@@@@@@@@ 298 215 184 110 229
+02 関西地区 03 京都府 09 京都市 52 91 44 9 0
+02 関西地区 03 京都府 10 舞鶴市 60 89 33 18 6
+02 関西地区 03 京都府 @@ @@@@@@@@@@ 112 180 77 27 6
+02 関西地区 @@ @@@@@@ @@ @@@@@@@@@@ 629 493 312 302 320
+$ </pre>
+
+<h3>【例3】</h3>
+
+<p>サブキーがない場合には次のような実行結果が得られる。</p>
+
+<pre class="cmd">$ cat data
+埼玉県 91 59 20 76 54
+埼玉県 46 39 8 5 21
+埼玉県 82 0 23 84 10
+東京都 30 50 71 36 30
+東京都 78 13 44 28 51
+東京都 58 71 20 10 6
+東京都 82 79 16 21 80
+東京都 50 2 33 15 62
+千葉県 52 91 44 9 0
+千葉県 60 89 33 18 6
+千葉県 95 60 35 93 76
+神奈川県 92 56 83 96 75
+神奈川県 30 12 32 44 19
+神奈川県 48 66 23 71 24
+$ </pre>
+
+<pre class="cmd">$ sm4 1 1 x x 2 6 data
+埼玉県 91 59 20 76 54
+埼玉県 46 39 8 5 21
+埼玉県 82 0 23 84 10
+@@@@@@ 219 98 51 165 85
+東京都 30 50 71 36 30
+東京都 78 13 44 28 51
+東京都 58 71 20 10 6
+東京都 82 79 16 21 80
+東京都 50 2 33 15 62
+@@@@@@ 298 215 184 110 229
+千葉県 52 91 44 9 0
+千葉県 60 89 33 18 6
+千葉県 95 60 35 93 76
+@@@@@@ 207 240 112 120 82
+神奈川県 92 56 83 96 75
+神奈川県 30 12 32 44 19
+神奈川県 48 66 23 71 24
+@@@@@@ 170 134 138 211 118
+$ </pre>
+
+<h3>【関連項目】</h3>
+
+<p><a href="kasan.html">kasan(USP Lab(1))</a>、<a href="plus.html">plus(USP Lab(1))</a>、<a href="ratio.html">ratio(USP Lab(1))</a>、<a href="sm2.html">sm2(USP Lab(1))</a>、<a href="sm5.html">sm5(USP Lab(1))</a>、<a href="ysum.html">ysum(USP Lab(1))</a></p>
+
+<div id="pagenavigator">
+  <ul>
+    <li><a href="index.html">&and;</a></li>
+  </ul>
+</div>
+<!-- CONTENTS_CONTENTS -->
+    </div>
+
+    <div id="lastmodified">
+     last modified: 2012-04-12 20:25:55
+    </div>
+
+    <div id="footer">
+      Contact us: uecinfo@usp-lab.com<br>
+      Copyright (c) 2012 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.
+    </div>
+  </div>
+</body>
+</html>

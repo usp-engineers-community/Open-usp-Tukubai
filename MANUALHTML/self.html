@@ -1,0 +1,273 @@
+<!doctype html>
+
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <title>UEC - usp engineers' community - Tukubaiオンラインコマンドマニュアル</title>
+  <link rel="stylesheet" href="COMMON/CSS/MAIN.CSS" />
+  <link rel="stylesheet" href="COMMON/CSS/MENU.CSS" />
+  <!--[if lte IE 7]>
+  <link rel="stylesheet" href="COMMON/CSS/IE67HACK.CSS" />
+  <![endif]-->
+  <!--[if IE 8]>
+  <link rel="stylesheet" href="COMMON/CSS/IE8HACK.CSS" />
+  <![endif]-->
+  <!--[if IE 7]>
+  <link rel="stylesheet" href="COMMON/CSS/IE7HACK.CSS" />
+  <![endif]-->
+  <!--[if IE 6]>
+  <link rel="stylesheet" href="COMMON/CSS/IE6HACK.CSS" />
+  <![endif]-->
+  <script src="COMMON/JS/MENU.JS"></script>
+</head>
+<body>
+  <div id="container">
+    <div id="header">
+      <div id="logo">
+        <img id="logoimage" src="COMMON/IMG/TUKUBAI_LOGO.JPG" />
+      </div>
+      <div id="title">
+        <p id="slogan">UEC - UNIXを深く理解し、シェルプログラミングを極めるコミュニティサイト</p>
+        <ul id="megamenu">
+          <li id="tukubai_man"><a href="index.html" class="target">Tukubaiマニュアル</a>
+            <ul>
+              <li><a href="cgi-name.html">cgi-name(1)</a></li>
+              <li><a href="check_attr_name.html">check_attr_name(1)</a></li>
+              <li><a href="check_need_name.html">check_need_name(1)</a></li>
+              <li><a href="comma.html">comma(1)</a></li>
+              <li><a href="count.html">count(1)</a></li>
+              <li><a href="ctail.html">ctail(1)</a></li>
+              <li><a href="delf.html">delf(1)</a></li>
+              <li><a href="divsen.html">divsen(1)</a></li>
+              <li><a href="getfirst.html">getfirst(1)</a></li>
+              <li><a href="getlast.html">getlast(1)</a></li>
+              <li><a href="gyo.html">gyo(1)</a></li>
+              <li><a href="han.html">han(1)</a></li>
+              <li><a href="join0.html">join0(1)</a></li>
+              <li><a href="join1.html">join1(1)</a></li>
+              <li><a href="join2.html">join2(1)</a></li>
+              <li><a href="juni.html">juni(1)</a></li>
+              <li><a href="kasan.html">kasan(1)</a></li>
+              <li><a href="keta.html">keta(1)</a></li>
+              <li><a href="keycut.html">keycut(1)</a></li>
+              <li><a href="loopj.html">loopj(1)</a></li>
+              <li><a href="loopx.html">loopx(1)</a></li>
+              <li><a href="map.html">map(1)</a></li>
+              <li><a href="marume.html">marume(1)</a></li>
+              <li><a href="mdate.html">mdate(1)</a></li>
+              <li><a href="mime-read.html">mime-read(1)</a></li>
+              <li><a href="mojihame.html">mojihame(1)</a></li>
+              <li><a href="nameread.html">nameread(1)</a></li>
+              <li><a href="plus.html">plus(1)</a></li>
+              <li><a href="rank.html">rank(1)</a></li>
+              <li><a href="ratio.html">ratio(1)</a></li>
+              <li><a href="retu.html">retu(1)</a></li>
+              <li><a href="self.html">self(1)</a></li>
+              <li><a href="sm2.html">sm2(1)</a></li>
+              <li><a href="sm4.html">sm4(1)</a></li>
+              <li><a href="sm5.html">sm5(1)</a></li>
+              <li><a href="tarr.html">tarr(1)</a></li>
+              <li><a href="tateyoko.html">tateyoko(1)</a></li>
+              <li><a href="tcat.html">tcat(1)</a></li>
+              <li><a href="unmap.html">unmap(1)</a></li>
+              <li><a href="up3.html">up3(1)</a></li>
+              <li><a href="yarr.html">yarr(1)</a></li>
+              <li><a href="ycat.html">ycat(1)</a></li>
+              <li><a href="yobi.html">yobi(1)</a></li>
+              <li><a href="ysum.html">ysum(1)</a></li>
+              <li><a href="zen.html">zen(1)</a></li>
+              <li><a href="tag-format.html">タグ形式(5)</a></li>
+              <li><a href="name-format.html">ネーム形式(5)</a></li>
+              <li><a href="field-format.html">フィールド形式(5)</a></li>
+            </ul> 
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div id="main">
+      <h1>Tukubaiオンラインコマンドマニュアル</h1>
+
+<!-- CONTENTS_CONTENTS -->
+<h2>self(USP Lab(1))</h2>
+
+<h3>【名前】</h3>
+
+<p>self : 指定したフィールドのデータ取り出し</p>
+
+<h3>【書式】</h3>
+
+<pre class="list">Usage	: self f1 f2 ... file
+	: self -d f1 f2 ... string
+Version	: Wed Dec 14 15:20:01 JST 2011
+	: OpenUSP (LINUX+FREEBSD/PYTHON2.4/UTF-8)</pre>
+
+<h3>【説明】</h3>
+
+<p>&lt;file&gt;ファイルから指定したフィールドのデータだけを取り出して出力する(self=select field)。&lt;file&gt;ファイルの指定がないとき、あるいはファイル名が-の時は、標準入力よりデータを取り込む。-dオプションが指定された場合、引数の文字列に対して処理が適用される。</p>
+
+<h3>【例1】</h3>
+
+<p>テキストデータの第4フィールドと第2フィールドを取り出して出力する。</p>
+
+<pre class="cmd">$ cat data
+0000000 浜地______ 50 F 91 59 20 76 54
+0000001 鈴田______ 50 F 46 39 8  5  21
+0000003 杉山______ 26 F 30 50 71 36 30
+0000004 白土______ 40 M 58 71 20 10 6
+0000005 崎村______ 50 F 82 79 16 21 80
+$ </pre>
+
+<pre class="cmd">$ self 4 2 data
+F 浜地______
+F 鈴田______
+F 杉山______
+M 白土______
+F 崎村______
+$ </pre>
+
+<h3>【例2】</h3>
+
+<p>selfはフィールド中の部分を切り出して出力することもできる。処理としてはawk(1)のsubstr関数と同じ処理となる。</p>
+
+<p>たとえば第1フィールドの4文字目以降を出力するには次のようにコマンドを実行する。</p>
+
+<pre class="cmd">$ self 1.4 2 data
+0000 浜地______
+0001 鈴田______
+0003 杉山______
+0004 白土______
+0005 崎村______
+$ </pre>
+
+<p>第2フィールドの1文字目から半角4文字分(全角2文字分)出力する。</p>
+
+<pre class="cmd">$ self 2.1.4 3 data
+浜地 50
+鈴田 50
+杉山 26
+白土 40
+崎村 50
+$ </pre>
+
+<h3>【例3】</h3>
+
+<p>0で行全体を指定できる。</p>
+
+<pre class="cmd">$ self 0 data
+0000000 浜地______ 50 F 91 59 20 76 54
+0000001 鈴田______ 50 F 46 39 8  5  21
+0000003 杉山______ 26 F 30 50 71 36 30
+0000004 白土______ 40 M 58 71 20 10 6
+0000005 崎村______ 50 F 82 79 16 21 80
+$ </pre>
+
+<pre class="cmd">$ self 4 0 data
+F 0000000 浜地______ 50 F 91 59 20 76 54
+F 0000001 鈴田______ 50 F 46 39 8 5 21
+F 0000003 杉山______ 26 F 30 50 71 36 30
+M 0000004 白土______ 40 M 58 71 20 10 6
+F 0000005 崎村______ 50 F 82 79 16 21 80
+$ </pre>
+
+<h3>【例4】</h3>
+
+<p>連続したフィールドも記述できる。</p>
+
+<pre class="cmd">$ self 2/5 data
+浜地______ 50 F 91
+鈴田______ 50 F 46
+杉山______ 26 F 30
+白土______ 40 M 58
+崎村______ 50 F 82
+$ </pre>
+
+<h3>【例5】</h3>
+
+<p>NF(現在の行のフィールド数)を使用することができる。</p>
+
+<pre class="cmd">$ self 1 NF-3 NF data
+0000000 59 54
+0000001 39 21
+0000003 50 30
+0000004 71 6
+0000005 79 80
+$ </pre>
+
+<h3>【例6】</h3>
+
+<p>複数の空白があるフィールドを1つの空白にすることができる。</p>　
+
+<pre class="cmd">$ cat data2
+   a    b  
+c   d e
+$ </pre>
+
+<pre class="cmd">$ self 1/NF data2
+a b
+c d e
+$ </pre>
+
+<h3>【例7】</h3>
+
+<p>ダイレクトモードを使用して文字列を加工することができる。</p>
+
+<pre class="cmd">$ self -d 1.1.4 "20070401 12345"
+2007
+$ </pre>
+
+<h3>【例8】</h3>
+
+<p>selfの切り出し指定は画面表示長の半角文字分を1としてう。</p>
+
+<pre class="cmd">$ echo ｱｲｳｴｵｶｷｸｹｺ | self 1.3.4
+ｳｴｵｶ
+$ </pre>
+
+<h3>【注意】</h3>
+
+<p>入力ファイルが改行文字で終了していない場合、つまり行が尻切れになっている場合はファイル末尾に改行文字が追加されて完結した行になる。</p>
+
+<h3>【バグ】</h3>
+
+<p>数字名のファイルを使用してはならない。もし10という名前のファイルが存在するとself 1 10はファイル名が10であるファイルから第1フィールドを抽出するという動作をして、標準入力ファイルから第1および第10フィールドを抽出するという動作をしなくなる。ただし2のように数字1文字だけを指定した場合は、そのファ
+イルが存在しても、それは無視してフィールドとして扱う。</p>
+
+<h3>【バグ】</h3>
+
+<p>文字列切り出し指定において、切り取りや長さが文字の区切りに一致しないときにはエラーとなる。</p>
+
+<pre class="cmd">$ echo ＵＳＰ研究所 | self 1.2.4
+Error[self] : Rec 1. エラー
+$ </pre>
+
+<p>フィールドの幅より大きい開始位置を指定してもエラーとなる。</p>
+
+<pre class="cmd">$ echo ＵＳＰ研究所 | self 1.20
+Error[self] : Rec 1. エラー
+$ </pre>
+
+<h3>【関連項目】</h3>
+
+<p><a href="delf.html">delf(USP Lab(1))</a></p>
+
+
+<div id="pagenavigator">
+  <ul>
+    <li><a href="index.html">&and;</a></li>
+  </ul>
+</div>
+<!-- CONTENTS_CONTENTS -->
+    </div>
+
+    <div id="lastmodified">
+     last modified: 2012-04-12 19:30:44
+    </div>
+
+    <div id="footer">
+      Contact us: uecinfo@usp-lab.com<br>
+      Copyright (c) 2012 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.
+    </div>
+  </div>
+</body>
+</html>
