@@ -1,0 +1,210 @@
+<!doctype html>
+
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <title>UEC - usp engineers' community - Tukubaiオンラインコマンドマニュアル</title>
+  <link rel="stylesheet" href="COMMON/CSS/MAIN.CSS" />
+  <link rel="stylesheet" href="COMMON/CSS/MENU.CSS" />
+  <!--[if lte IE 7]>
+  <link rel="stylesheet" href="COMMON/CSS/IE67HACK.CSS" />
+  <![endif]-->
+  <!--[if IE 8]>
+  <link rel="stylesheet" href="COMMON/CSS/IE8HACK.CSS" />
+  <![endif]-->
+  <!--[if IE 7]>
+  <link rel="stylesheet" href="COMMON/CSS/IE7HACK.CSS" />
+  <![endif]-->
+  <!--[if IE 6]>
+  <link rel="stylesheet" href="COMMON/CSS/IE6HACK.CSS" />
+  <![endif]-->
+  <script src="COMMON/JS/MENU.JS"></script>
+</head>
+<body>
+  <div id="container">
+    <div id="header">
+      <div id="logo">
+        <img id="logoimage" src="COMMON/IMG/TUKUBAI_LOGO.JPG" />
+      </div>
+      <div id="title">
+        <p id="slogan">UEC - UNIXを深く理解し、シェルプログラミングを極めるコミュニティサイト</p>
+        <ul id="megamenu">
+          <li id="tukubai_man"><a href="index.html" class="target">Tukubaiマニュアル</a>
+            <ul>
+              <li><a href="cgi-name.html">cgi-name(1)</a></li>
+              <li><a href="check_attr_name.html">check_attr_name(1)</a></li>
+              <li><a href="check_need_name.html">check_need_name(1)</a></li>
+              <li><a href="comma.html">comma(1)</a></li>
+              <li><a href="count.html">count(1)</a></li>
+              <li><a href="ctail.html">ctail(1)</a></li>
+              <li><a href="delf.html">delf(1)</a></li>
+              <li><a href="divsen.html">divsen(1)</a></li>
+              <li><a href="getfirst.html">getfirst(1)</a></li>
+              <li><a href="getlast.html">getlast(1)</a></li>
+              <li><a href="gyo.html">gyo(1)</a></li>
+              <li><a href="han.html">han(1)</a></li>
+              <li><a href="join0.html">join0(1)</a></li>
+              <li><a href="join1.html">join1(1)</a></li>
+              <li><a href="join2.html">join2(1)</a></li>
+              <li><a href="juni.html">juni(1)</a></li>
+              <li><a href="kasan.html">kasan(1)</a></li>
+              <li><a href="keta.html">keta(1)</a></li>
+              <li><a href="keycut.html">keycut(1)</a></li>
+              <li><a href="loopj.html">loopj(1)</a></li>
+              <li><a href="loopx.html">loopx(1)</a></li>
+              <li><a href="map.html">map(1)</a></li>
+              <li><a href="marume.html">marume(1)</a></li>
+              <li><a href="mdate.html">mdate(1)</a></li>
+              <li><a href="mime-read.html">mime-read(1)</a></li>
+              <li><a href="mojihame.html">mojihame(1)</a></li>
+              <li><a href="nameread.html">nameread(1)</a></li>
+              <li><a href="plus.html">plus(1)</a></li>
+              <li><a href="rank.html">rank(1)</a></li>
+              <li><a href="ratio.html">ratio(1)</a></li>
+              <li><a href="retu.html">retu(1)</a></li>
+              <li><a href="self.html">self(1)</a></li>
+              <li><a href="sm2.html">sm2(1)</a></li>
+              <li><a href="sm4.html">sm4(1)</a></li>
+              <li><a href="sm5.html">sm5(1)</a></li>
+              <li><a href="tarr.html">tarr(1)</a></li>
+              <li><a href="tateyoko.html">tateyoko(1)</a></li>
+              <li><a href="tcat.html">tcat(1)</a></li>
+              <li><a href="unmap.html">unmap(1)</a></li>
+              <li><a href="up3.html">up3(1)</a></li>
+              <li><a href="yarr.html">yarr(1)</a></li>
+              <li><a href="ycat.html">ycat(1)</a></li>
+              <li><a href="yobi.html">yobi(1)</a></li>
+              <li><a href="ysum.html">ysum(1)</a></li>
+              <li><a href="zen.html">zen(1)</a></li>
+              <li><a href="tag-format.html">タグ形式(5)</a></li>
+              <li><a href="name-format.html">ネーム形式(5)</a></li>
+              <li><a href="field-format.html">フィールド形式(5)</a></li>
+            </ul> 
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div id="main">
+      <h1>Tukubaiオンラインコマンドマニュアル</h1>
+
+<!-- CONTENTS_CONTENTS -->
+<h2>nameread(USP Lab(1))</h2>
+
+<h3>【名前】</h3>
+
+<p>nameread : <a href="name-format.html">ネーム形式</a>のファイル読み込み</p>
+
+<h3>【書式】</h3>
+
+<pre class="list">Usage	: nameread [-el] &lt;name&gt; &lt;namefile&gt;
+Option	: -d&lt;c&gt;       空白を置換
+	: -i&lt;string&gt;  ヌルデータの初期化
+Version	: Thu Dec 15 13:46:38 JST 2011</pre>
+
+<h3>【説明】</h3>
+
+<p><a href="name-format.html">ネーム形式</a>ファイルからnameを指定して値を読みる。&lt;namefile&gt;が-あるいは指定がないときは標準入力よりデータを受け取る。</p>
+
+<p>-lオプションでnameも合わせて出力する。-eオプションで正規表現を指定でき、-dオプションで空白データを置換する文字を指定する(指定がない場合は空白データを削除する)。-iオプションでヌルデータの初期化を実施する。</pre>
+
+<h3>【例】</h3>
+
+<pre class="cmd">$ cat namefile
+A usp
+B usp laboratory
+C
+$ </pre>
+
+<p>通常の出力</p>
+
+<pre class="cmd">$ nameread A namefile
+usp
+$ </pre>
+
+<p><a href="name-format.html">ネーム形式</a>のデータは空白を含む</p>
+
+<pre class="cmd">$ nameread B namefile
+usp laboratory
+$ </pre>
+
+<p>空白を変換したいときは-dオプションを使用</p>
+
+<pre class="cmd">$ nameread -d_ B namefile
+usp_laboratory
+$ </pre>
+
+<p>空白を削除したいときは-dオプションを引数なしで指定</p>
+
+<pre class="cmd">$ nameread -d B namefile
+usplaboratory
+$ </pre>
+
+<p>名前のみ存在している場合には空行を出力</p>
+
+<pre class="cmd">$ nameread C namefile    
+
+$ </pre>
+
+<p>ヌルデータを初期化する場合は-iオプションを使用</p>
+
+<pre class="cmd">$ namread -i @@@ C namefile
+@@@
+$ </pre>
+
+<p>名前が存在しない場合には何も出力しない</p>
+
+<pre class="cmd">$ nameread D namefile    
+$ </pre>
+
+<p>名前も一緒に出力するには-lオプションを使用</p>
+
+<pre class="cmd">$ nameread -l A namefile
+A usp
+$ </pre>
+
+<p>-eオプションを指定することで正規表現を利用可能</p>
+
+<pre class="cmd">$ cat namefile2
+A01 1
+A02 2
+A03 3
+A10 5
+$ </pre>
+
+<pre class="cmd">$ nameread -e '^A0[0-9]$' namefile2
+1
+2
+3
+$ </pre>
+
+<pre class="cmd">$ nameread -el '^A0[0-9]$' namefile2
+A01 1
+A02 2
+A03 3
+$ </pre>
+
+<h3>【関連項目】</h3>
+
+<p><a href="cgi-name.html">cgi-name(USP Lab(1))</a>、<a href="mime-read.html">mime-read(USP Lab(1))</a>、<a href="name-format.html">ネーム形式(USP Lab(5))</a></p>
+
+
+<div id="pagenavigator">
+  <ul>
+    <li><a href="index.html">&and;</a></li>
+  </ul>
+</div>
+<!-- CONTENTS_CONTENTS -->
+    </div>
+
+    <div id="lastmodified">
+     last modified: 2012-04-13 17:10:04
+    </div>
+
+    <div id="footer">
+      Contact us: uecinfo@usp-lab.com<br>
+      Copyright (c) 2012 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.
+    </div>
+  </div>
+</body>
+</html>
