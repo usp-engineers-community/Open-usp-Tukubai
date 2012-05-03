@@ -22,8 +22,11 @@
 
 LOCALBASE?=	/usr/local
 BINDIR?=	${LOCALBASE}/bin
-DATDIR?=	${LOCALBASE}/share/open-usp-tukubai/devel
+TUKDIR?=	${LOCALBASE}/share/open-usp-tukubai
+DATDIR?=	${TUKDIR}/devel
 MANDIR=		${DATDIR}/man
+HTMDIR=		${DATDIR}/html
+PDFDIR=		${DATDIR}/pdf
 DOCDIR=		${DATDIR}/doc
 
 COMMANDS=	cgi-name check_attr_name check_need_name comma count ctail \
@@ -40,12 +43,21 @@ MANUAL=		cgi-name.txt check_attr_name.txt check_need_name.txt \
 		ratio.txt retu.txt self.txt sm2.txt sm4.txt sm5.txt \
 		tarr.txt tateyoko.txt tcat.txt unmap.txt up3.txt yarr.txt \
 		ycat.txt yobi.txt ysum.txt zen.txt
+HTML=		cgi-name.html check_attr_name.html check_need_name.html \
+		comma.html count.html ctail.html delf.html divsen.html \
+		getfirst.html getlast.html gyo.html han.html join0.html \
+		join1.html join2.html juni.html kasan.html keta.html keycut.html \
+		loopj.html loopx.html map.html marume.html mdate.html \
+		mime-read.html mojihame.html nameread.html plus.html rank.html \
+		ratio.html retu.html self.html sm2.html sm4.html sm5.html \
+		tarr.html tateyoko.html tcat.html unmap.html up3.html yarr.html \
+		ycat.html yobi.html ysum.html zen.html index.html
 DOC=		INSTALL LICENSE README
 
 INSTALL?=	/usr/bin/install
 MKDIR?=		/bin/mkdir -p
 RMDIR?=		/bin/rmdir
-RM?=		/bin/rm
+RM?=		/bin/rm -f
 
 INSTALL_PROGRAM=	${INSTALL} -m ${BINMODE}
 INSTALL_DOCS=		${INSTALL} -m ${DOCMODE}
@@ -59,18 +71,38 @@ install:
 		echo ${INSTALL_PROGRAM} COMMANDS/$${i} ${BINDIR}; \
 		${INSTALL_PROGRAM} COMMANDS/$${i} ${BINDIR}; \
 	done
-	${MKDIR} ${MANDIR}
-	@for i in ${MANUAL}; \
-	do \
-		echo ${INSTALL_DOCS} MANUAL/$${i} ${MANDIR}; \
-		${INSTALL_DOCS} MANUAL/$${i} ${MANDIR}; \
-	done
 	${MKDIR} ${DOCDIR}
 	@for i in ${DOC}; \
 	do \
 		echo ${INSTALL_DOCS} $${i} ${DOCDIR}; \
 		${INSTALL_DOCS} $${i} ${DOCDIR}; \
 	done
+	${MKDIR} ${MANDIR}
+	@for i in ${MANUAL}; \
+	do \
+		echo ${INSTALL_DOCS} MANUAL/$${i} ${MANDIR}; \
+		${INSTALL_DOCS} MANUAL/$${i} ${MANDIR}; \
+	done
+	${MKDIR} ${HTMDIR}
+	@for i in ${HTML}; \
+	do \
+		echo ${INSTALL_DOCS} MANUALHTML/$${i} ${HTMDIR}; \
+		${INSTALL_DOCS} MANUALHTML/$${i} ${HTMDIR}; \
+	done
+	${MKDIR} ${HTMDIR}/COMMON/CSS
+	${MKDIR} ${HTMDIR}/COMMON/IMG
+	${MKDIR} ${HTMDIR}/COMMON/JS
+	${INSTALL_DOCS} MANUALHTML/COMMON/CSS/MAIN.CSS ${HTMDIR}/COMMON/CSS/
+	${INSTALL_DOCS} MANUALHTML/COMMON/CSS/MENU.CSS ${HTMDIR}/COMMON/CSS/
+	${INSTALL_DOCS} MANUALHTML/COMMON/CSS/IE8HACK.CSS ${HTMDIR}/COMMON/CSS/
+	${INSTALL_DOCS} MANUALHTML/COMMON/CSS/IE7HACK.CSS ${HTMDIR}/COMMON/CSS/
+	${INSTALL_DOCS} MANUALHTML/COMMON/CSS/IE6HACK.CSS ${HTMDIR}/COMMON/CSS/
+	${INSTALL_DOCS} MANUALHTML/COMMON/CSS/IE67HACK.CSS ${HTMDIR}/COMMON/CSS/
+	${INSTALL_DOCS} MANUALHTML/COMMON/IMG/BACKGROUND.JPG ${HTMDIR}/COMMON/IMG/
+	${INSTALL_DOCS} MANUALHTML/COMMON/IMG/TUKUBAI_LOGO.JPG ${HTMDIR}/COMMON/IMG/
+	${INSTALL_DOCS} MANUALHTML/COMMON/JS/MENU.JS ${HTMDIR}/COMMON/JS/
+	${MKDIR} ${PDFDIR}
+	${INSTALL_DOCS} MANUALPDF/all.pdf ${PDFDIR}
 
 uninstall:
 	@for i in ${COMMANDS}; \
@@ -78,18 +110,40 @@ uninstall:
 		echo ${RM} ${BINDIR}/$${i}; \
 		${RM} ${BINDIR}/$${i}; \
 	done
-	@for i in ${MANUAL}; \
-	do \
-		echo ${RM} ${MANDIR}/$${i}; \
-		${RM} ${MANDIR}/$${i}; \
-	done
 	@for i in ${DOC}; \
 	do \
 		echo ${RM} ${DOCDIR}/$${i}; \
 		${RM} ${DOCDIR}/$${i}; \
 	done
+	@for i in ${MANUAL}; \
+	do \
+		echo ${RM} ${MANDIR}/$${i}; \
+		${RM} ${MANDIR}/$${i}; \
+	done
+	@for i in ${HTML}; \
+	do \
+		echo ${RM} ${HTMDIR}/$${i}; \
+		${RM} ${HTMDIR}/$${i}; \
+	done
+	${RM} ${HTMDIR}/COMMON/CSS/MAIN.CSS
+	${RM} ${HTMDIR}/COMMON/CSS/MENU.CSS
+	${RM} ${HTMDIR}/COMMON/CSS/IE8HACK.CSS
+	${RM} ${HTMDIR}/COMMON/CSS/IE7HACK.CSS
+	${RM} ${HTMDIR}/COMMON/CSS/IE6HACK.CSS
+	${RM} ${HTMDIR}/COMMON/CSS/IE67HACK.CSS
+	${RM} ${HTMDIR}/COMMON/IMG/BACKGROUND.JPG
+	${RM} ${HTMDIR}/COMMON/IMG/TUKUBAI_LOGO.JPG
+	${RM} ${HTMDIR}/COMMON/JS/MENU.JS
+	${RM} ${PDFDIR}/all.pdf
 	${RMDIR} ${DOCDIR}
 	${RMDIR} ${MANDIR}
+	${RMDIR} ${HTMDIR}/COMMON/CSS
+	${RMDIR} ${HTMDIR}/COMMON/IMG
+	${RMDIR} ${HTMDIR}/COMMON/JS
+	${RMDIR} ${HTMDIR}/COMMON
+	${RMDIR} ${HTMDIR}
+	${RMDIR} ${PDFDIR}
 	${RMDIR} ${DATDIR}
+	${RMDIR} ${TUKDIR}
 
 deinstall: uninstall
