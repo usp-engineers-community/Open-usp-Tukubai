@@ -1,6 +1,6 @@
                Universal Shell Programming Laboratory
                           info@usp-lab.com
-                    Wed Mar  7 15:20:54 JST 2012
+                    Thu May  3 15:08:58 JST 2012
 
 Open usp Tukubaiインストール : Makefile
 =======================================
@@ -12,9 +12,11 @@ Open usp Tukubaiインストール : Makefile
 
 デフォルトでは次のパスにインストールが実施される。
 
-  コマンド     /usr/local/bin
-  マニュアル   /usr/local/share/open-usp-tukubai/devel/man
-  ドキュメント /usr/local/share/open-usp-tukubai/devel/doc
+  コマンド         /usr/local/bin/
+  マニュアルPDF    /usr/local/share/open-usp-tukubai/devel/pdf/
+  マニュアルHTML   /usr/local/share/open-usp-tukubai/devel/html/
+  マニュアルTEXT   /usr/local/share/open-usp-tukubai/devel/man/
+  ドキュメント     /usr/local/share/open-usp-tukubai/devel/doc/
 
 インストールパスは環境変数またはmakeで指定する変数としてLOCALBASEを
 使うことで変更可能。LOCALBASEの値を/usr/local以外に変更するとほかの
