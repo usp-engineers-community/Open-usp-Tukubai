@@ -4,7 +4,7 @@ window.onload = function()
     'Info':                      {cols: 1, width: 20},
     'UECジャーナル':             {cols: 1, width: 25},
     'Tukubai':                   {cols: 1, width: 27},
-    'Tukubaiコマンドマニュアル': {cols: 4, width: 13},
+    'Tukubaiマニュアル': {cols: 4, width: 13},
     'コマンドTips':              {cols: 1, width: 23},
     'シェルプログラミングTips':  {cols: 1, width: 19}
   });
