@@ -1,0 +1,66 @@
+Tukubaiオンラインコマンドマニュアル
+
+cjoin1(USP Lab(1))
+
+【名前】
+cjoin1 : キーマッチングジョイン
+
+【書式】
+Usage   : cjoin1 [+ng] key=<n> <master> <transation>
+Version : Fri Jul 27 20:25:12 JST 2012
+
+【説明】
+<master> ファイルの第１フィールド(ソート済み、ユニーク)と、
+<tran> ファイルの第<n>フィールドをマッチングして、
+マッチした<tran>の行の第<n>フィールド以降に、<master>の
+第２フィールド以降を結合して、結果を標準出力ファイルに出力します。
+
++ng オプションをつけると、マッチした行の結合結果を標準出力ファイルへ、
+マッチしなかった行をファイルデスクリプタ<fd>のファイルへ出力します。
+<tran>の第<n>フィールドはソートされている必要はありません。
+
+<master>に - を指定すると標準入力ファイルを期待します。
+<tran> が無指定、あるいは - を指定すると、標準入力ファイルを
+期待します。
+
+<key>としては、
+key=3     トランザクションの第3フィールド
+key=3/5   トランザクションの第3,4,5フィールド(マスターは第1,2,3フィールド)
+が指定できます。いずれも、指定した key について、マスターはソートされている
+必要があります。(トランザクションは不要)
+
+cjoin1 は <master> を全部メモリーに読みこみますので、
+<master>が巨大だと、メモリー確保エラーが起きるので注意が
+必要です。
+
+【例１】 通常の使い方
+[usp@localhost usp]$ cat master
+0000003 杉山______ 26 F
+0000005 崎村______ 50 F
+0000007 梶川______ 42 F
+
+[usp@localhost usp]$ cat tran
+0000005 82 79 16 21 80
+0000001 46 39 8  5  21
+0000004 58 71 20 10 6
+0000009 60 89 33 18 6
+0000003 30 50 71 36 30
+0000007 50 2  33 15 62
+
+[usp@localhost usp]$ cjoin1 key=1 master tran > ok
+[usp@localhost usp]$ cat ok
+0000005 崎村______ 50 F 82 79 16 21 80
+0000003 杉山______ 26 F 30 50 71 36 30
+0000007 梶川______ 42 F 50 2  33 15 62
+
+【例２】 +ng オプションの使い方
+[usp@localhost usp]$ cjoin1 +ng key=1 master tran > ok 2> ng
+[usp@localhost usp]$ cat ng
+0000001 46 39 8  5  21
+0000004 58 71 20 10 6
+0000009 60 89 33 18 6
+
+【例３】 標準入力ファイルから読む
+[usp@localhost usp]$ cat tran | cjoin1 +ng key=1 master > ok 2> ng
+[usp@localhost usp]$ cat tran | cjoin1 +ng key=1 master - > ok 2> ng
+[usp@localhost usp]$ cat master | cjoin1 +ng key=1 - tran > ok 2> ng

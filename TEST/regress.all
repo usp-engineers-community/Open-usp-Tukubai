@@ -20,6 +20,9 @@ while read com ; do
 	./self.test $com
 	./nameread.test $com
 	./check_need_name.test $com
+	./cjoin0.test $com
+	./cjoin1.test $com
+	./cjoin2.test $com
 done
 
 #####################################
@@ -35,6 +38,9 @@ while read com ; do
 	./yarr.test $com
 	./self.test $com
 	./check_need_name.test $com
+	./cjoin0.test $com
+	./cjoin1.test $com
+	./cjoin2.test $com
 done
 
 rm -f $tmp-*
