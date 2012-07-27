@@ -1,0 +1,141 @@
+#!/usr/bin/env python
+#coding: utf-8
+#
+# cjoin0 マッチングセレクト（Open usp Tukubai版）
+# 
+# designed by Nobuaki Tounaka
+# written by Ryuichi Ueda
+#
+# The MIT License
+#
+# Copyright (C) 2011 Universal Shell Programming Laboratory
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+_usage = "cjoin0 [+ng] key=<n> <master> <tran>"
+_version = "Fri Jul 27 20:09:40 JST 2012"
+_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4+, 3.1, 3.2/UTF-8)"
+		# 1: 1st field
+		# 3: 2nd and later fields with separator
+
+import re
+import os
+import sys
+import codecs
+
+def die(msg):
+	sys.stderr.write( 'Error[cjoin0] : %s\n' % msg)
+	sys.exit(1)
+
+def usage():
+	sys.stderr.write( "Usage     :%s\n" % _usage );
+	sys.stderr.write( "Version   :%s\n" % _version );
+	sys.stderr.write( "	   %s\n" % _code );
+	sys.exit(1)
+
+
+def openReadFile(file_name):
+	if file_name != "-":
+		try:    return codecs.open(file_name,'r','utf-8')
+		except: die("ファイルを開けません。")
+
+	if sys.version_info[0] < 3:
+		return codecs.getreader('utf-8')(sys.stdin)
+
+	return codecs.getreader('utf-8')(sys.stdin.detach())
+
+def resetStdout():
+	if sys.version_info[0] < 3:
+		return codecs.getwriter('utf-8')(sys.stdout)
+
+	return codecs.getwriter('utf-8')(sys.stdout.detach())
+
+def resetStderr():
+	if sys.version_info[0] < 3:
+		return codecs.getwriter('utf-8')(sys.stderr)
+
+	return codecs.getwriter('utf-8')(sys.stderr.detach())
+
+def parseFieldNum(word):
+	#1, NF, NF-1 など 
+	#数字とNFの有無を返す
+	try:	
+		return int(word)
+	except:
+		die("フィールド指定が不正です。")
+
+def setMaster(master_file,key_num):
+	master = {}
+	for line in master_file:
+		tokens = line.rstrip("\n").split(" ")
+
+		key = " ".join(tokens[0:key_num])
+		values = " ".join(tokens[key_num:])
+
+		master[key] = values
+
+	return master
+
+#メイン関数
+if __name__ == '__main__':
+
+	if len(sys.argv) < 3 :		usage()
+	if sys.argv[1] == '--help' :	usage()
+	if sys.argv[1] == '--version':	usage()
+
+	# 標準入出力utf8化
+	sys.stdout = resetStdout()
+	sys.stderr = resetStderr()
+
+	# ngオプションのフラグ処理
+	ng_option = False
+	if sys.argv[1] == '+ng':
+		ng_option = True
+		del sys.argv[1]
+
+	# keyオプションを解析
+	if sys.argv[1][0:4] == 'key=':
+		num_str = sys.argv[1][4:]
+		if "/" in num_str:
+			tmp = num_str.split("/")
+			key_from = parseFieldNum(tmp[0]) - 1
+			key_to = parseFieldNum(tmp[1])
+
+		else:
+			key_from = parseFieldNum(num_str) - 1
+			key_to = key_from + 1
+
+		del sys.argv[1]
+
+	else:
+		die("invalid key position")
+
+	# マスタファイルの内容を移す
+	master = setMaster(openReadFile(sys.argv[1]),key_to - key_from)
+
+	#メイン処理：トランザクションとマスタのマッチング
+	for line in openReadFile(sys.argv[2]):
+		line = line.rstrip("\n")
+		tokens = line.split(" ")
+
+		key = " ".join(tokens[key_from:key_to])
+		if key in master:
+			print(line)
+		elif ng_option:
+			sys.stderr.write("%s\n" % line)

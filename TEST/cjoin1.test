@@ -1,0 +1,133 @@
+#!/usr/local/bin/bash -xv
+#
+# test script of cjoin1
+#
+# usage: ./cjoin1.test <python ver>
+
+tmp=/tmp/$$
+
+dir=$(dirname $0)/..
+cd $dir
+
+scr=./COMMANDS/cjoin1
+com="$1 ${scr}"
+[ "$1" = "" ] && com="./COMMANDS/cjoin1"
+
+ERROR_CHECK(){
+	[ "$(echo ${PIPESTATUS[@]} | tr -d ' 0')" = "" ] && return
+
+	echo $1
+	echo "$com" NG
+#	rm -f $tmp-*
+	exit 1
+}
+
+###########################################
+#TEST1
+
+cat << FIN > $tmp-tran
+0000000 浜地______ 50 F 91 59 20 76 54
+0000004 白土______ 40 M 58 71 20 10 6
+0000003 杉山______ 26 F 30 50 71 36 30
+0000001 鈴田______ 50 F 46 39 8  5  21
+0000005 崎村______ 50 F 82 79 16 21 80
+FIN
+
+cat << FIN > $tmp-master
+0000001 B
+0000004 A
+FIN
+
+cat << FIN > $tmp-out
+0000004 A 白土______ 40 M 58 71 20 10 6
+0000001 B 鈴田______ 50 F 46 39 8  5  21
+FIN
+
+${com} key=1 $tmp-master $tmp-tran > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1 error"
+
+###########################################
+#TEST2
+
+cat << FIN > $tmp-tran
+0000000 浜地______ 50 F 91 59 20 76 54
+0000004 白土______ 40 M 58 71 20 10 6
+0000005 崎村______ 50 F 82 79 16 21 80
+0000003 杉山______ 26 F 30 50 71 36 30
+0000001 鈴田______ 50 F 46 39 8  5  21
+FIN
+
+cat << FIN > $tmp-master
+0000001 A
+0000004 B
+FIN
+
+cat << FIN > $tmp-out
+0000004 B 白土______ 40 M 58 71 20 10 6
+0000001 A 鈴田______ 50 F 46 39 8  5  21
+FIN
+
+cat << FIN > $tmp-ng
+0000000 浜地______ 50 F 91 59 20 76 54
+0000005 崎村______ 50 F 82 79 16 21 80
+0000003 杉山______ 26 F 30 50 71 36 30
+FIN
+
+${com} +ng key=1 $tmp-master $tmp-tran > $tmp-ans 2> $tmp-ans2
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2-1 error"
+diff $tmp-ans2 $tmp-ng
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2-2 error"
+
+###########################################
+#TEST3
+
+cat << FIN > $tmp-tran
+CCC 003 太田
+AAA 001 山田 
+BBB 002 上田
+DDD 004 堅田
+FIN
+
+cat << FIN > $tmp-master
+002 上田 富山
+003 太田 石川
+FIN
+
+cat << FIN > $tmp-out
+CCC 003 太田 石川
+BBB 002 上田 富山
+FIN
+
+${com} key=2/3 $tmp-master $tmp-tran > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3 error"
+
+###########################################
+#TEST4
+
+cat << FIN > $tmp-tran
+DDD 004 堅田 へへへ
+AAA 001 山田 あはは
+CCC 003 太田 ふふふ
+BBB 002 上田 おほほ
+FIN
+
+cat << FIN > $tmp-master
+002 上田 富山
+003 太田 石川
+FIN
+
+cat << FIN > $tmp-out
+CCC 003 太田 石川 ふふふ
+BBB 002 上田 富山 おほほ
+FIN
+
+${com} key=2/3 $tmp-master $tmp-tran > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3 error"
+
+rm -f $tmp-*
+echo "${com}" OK
+exit 0
