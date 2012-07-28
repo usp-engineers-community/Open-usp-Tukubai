@@ -1,0 +1,48 @@
+Tukubaiオンラインコマンドマニュアル
+
+filehame(USP Lab(1))
+
+【書式】
+Usage   : filehame <-lSTRING> <file1> <file2>
+Version : Sat Jul 28 15:20:42 JST 2012
+
+【説明】
+　file1（テンプレートファイル）から文字列STRINGを探して、
+その位置にfile2を挿入します。STRINGのある行は削除されます。
+
+【例】
+　HTMLファイルに要素を埋め込む例です。
+
+$ cat template
+<html>
+<meta>
+<!-- label1 -->
+</meta>
+<body>
+<!-- label2 -->
+</body>
+</html>
+ 
+$ cat file1
+<script type="javascript/text">
+  function sb(i) {
+    submit(getElementById(i))
+  }
+</script>
+ 
+$ cat file2
+<input id="123" type="button" onclick=sb('123') value="push" />
+ 
+$ filehame -l label1 template file1 | filehame -l label2 - file2
+<html>
+<meta>
+<script type="javascript/text">
+  function sb(i) {
+    submit(getElementById(i))
+  }
+</script>
+</meta>
+<body>
+<input id="123" type="button" onclick=sb('123') value="push" />
+</body>
+</html>

@@ -23,6 +23,7 @@ while read com ; do
 	./cjoin0.test $com
 	./cjoin1.test $com
 	./cjoin2.test $com
+	./filehame.test $com
 done
 
 #####################################
@@ -41,6 +42,7 @@ while read com ; do
 	./cjoin0.test $com
 	./cjoin1.test $com
 	./cjoin2.test $com
+	./filehame.test $com
 done
 
 rm -f $tmp-*
