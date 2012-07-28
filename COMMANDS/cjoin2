@@ -72,14 +72,6 @@ def resetStderr():
 
 	return codecs.getwriter('utf-8')(sys.stderr.detach())
 
-def parseFieldNum(word):
-	#1, NF, NF-1 など 
-	#数字とNFの有無を返す
-	try:	
-		return int(word)
-	except:
-		die("フィールド指定が不正です。")
-
 def getStringLength(s):
 	widths = [ getCharLength(ch) for ch in s ]
 	return sum(widths)
@@ -170,11 +162,11 @@ if __name__ == '__main__':
 		num_str = sys.argv[1][4:]
 		if "/" in num_str:
 			tmp = num_str.split("/")
-			key_from = parseFieldNum(tmp[0]) - 1
-			key_to = parseFieldNum(tmp[1])
+			key_from = int(tmp[0]) - 1
+			key_to = int(tmp[1])
 
 		else:
-			key_from = parseFieldNum(num_str) - 1
+			key_from = int(num_str) - 1
 			key_to = key_from + 1
 
 		del sys.argv[1]
