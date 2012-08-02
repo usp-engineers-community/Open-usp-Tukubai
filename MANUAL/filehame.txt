@@ -4,7 +4,7 @@ filehame(USP Lab(1))
 
 【書式】
 Usage   : filehame <-lSTRING> <file1> <file2>
-Version : Sat Jul 28 15:20:42 JST 2012
+Version : Thu Aug  2 14:07:28 JST 2012
 
 【説明】
 　file1（テンプレートファイル）から文字列STRINGを探して、

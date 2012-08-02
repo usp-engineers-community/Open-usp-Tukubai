@@ -50,9 +50,9 @@ diff $tmp-ans $tmp-out
 
 cat << FIN > $tmp-file1
 あいうえお
-INSERT_FIRST
+<!-- INSERT_FIRST -->
 さしすせそ
-INSERT_NEXT
+###INSERT_NEXT###
 FIN
 
 cat << FIN > $tmp-file2
