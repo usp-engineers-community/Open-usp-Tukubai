@@ -27,7 +27,7 @@
         <img id="logoimage" src="COMMON/IMG/TUKUBAI_LOGO.JPG" />
       </div>
       <div id="title">
-        <p id="slogan">UEC - UNIXを深く理解し、シェルプログラミングを極めるコミュニティサイト</p>
+        <p id="slogan"></p>
         <ul id="megamenu">
           <li id="tukubai_man"><a href="index.html" class="target">Tukubaiマニュアル</a>
             <ul>
@@ -76,9 +76,15 @@
               <li><a href="yobi.html">yobi(1)</a></li>
               <li><a href="ysum.html">ysum(1)</a></li>
               <li><a href="zen.html">zen(1)</a></li>
+              <li class="separator"><hr/></li>
+              <li class="separator"><hr/></li>
+              <li class="separator"><hr/></li>
               <li><a href="tag-format.html">タグ形式(5)</a></li>
               <li><a href="name-format.html">ネーム形式(5)</a></li>
               <li><a href="field-format.html">フィールド形式(5)</a></li>
+              <li><a href="master-file.html">マスタファイル(5)</a></li>
+              <li><a href="name-file.html">ネームファイル(5)</a></li>
+              <li><a href="transaction-file.html" class="target">トランザクションファイル(5)</a></li>
             </ul> 
           </li>
         </ul>
@@ -88,29 +94,30 @@
     <div id="main">
       <h1>Tukubaiオンラインコマンドマニュアル</h1>
 
-<!-- CONTENTS_CONTENTS -->
-<h2>フィールド形式(USP Lab(5))</h2>
+      <h2>フィールド形式(5)</h2>
 
-<h3>【名前】</h3>
+      <h3>【名前】</h3>
 
-<p>フィールド形式 : 空白区切りのテキストファイル</p>
+      <p>フィールド形式 : 空白区切りのテキストデータ形式</p>
 
-<h3>【書式】</h3>
+      <h3>【書式】</h3>
 
-<pre class="list">第1フィールド 第2フィールド 第3フィールド ...
+      <pre class="list">第1フィールド 第2フィールド 第3フィールド ...
 ...</pre>
 
-<h3>【説明】</h3>
+      <h3>【説明】</h3>
 
-<p>1つの空白文字を区切り文字としたテキストファイル。フィールド形式では行をレコード、1行あたりのそれぞれ空白で区切られたものをフィールドと呼んでいる。行頭から順に第1フィールド、第2フィールド、第3フィールド...と呼ばれる。</p>
+      <p>1つの空白文字を区切り文字としたテキストデータ形式。フィールド形式では行をレコード、1行あたりのそれぞれ空白で区切られたものをフィールドと呼んでいる。行頭から順に第1フィールド、第2フィールド、第3フィールド...と呼ばれる。</p>
 
-<p>フィールド形式ではすべての行のフィールド数は同一である必要がある。フィールド形式は<a href="/TUKUBAI/CGI/TUKUBAI.CGI?POMPA=ABOUT">Open usp Tukubai</a>やusp Tukubaiにおける基本データ形式であり、<a href="tag-format.html">タグ形式(USP Lab(5))</a>や<a href="name-format.html">ネーム形式(USP Lab(5))</a>はフィールド形式の一種となる。</p>
+      <p>フィールド形式ではすべての行のフィールド数は同一である必要がある。フィールド形式は<a href="/TUKUBAI/CGI/TUKUBAI.CGI?POMPA=ABOUT">Open usp Tukubai</a>やusp Tukubaiにおける基本データ形式であり、<a href="tag-format.html">タグ形式(5)</a>や<a href="name-format.html">ネーム形式(5)</a>はフィールド形式の一種となる。</p>
 
-<h3>【例1】</h3>
+      <p>マスタの特性を満たした<a href="master-file.html">マスタファイル</a>やトランザクションの特性を満たした<a href="transaction-file.html">トランザクションファイル</a>もフィールド形式のファイルとなる。</p>
 
-<p>フィールド形式のファイル例は次のとおり。</p>
+      <h3>【例1】</h3>
 
-<pre class="source">0001 20111008 23 F 0.845814
+      <p>フィールド形式のファイル例は次のとおり。</p>
+
+      <pre class="source">0001 20111008 23 F 0.845814
 0002 20111009 15 M 0.193475
 0003 20111010 81 F 0.484983
 0004 20111011 15 F 0.491736
@@ -121,30 +128,21 @@
 0009 20111016 10 M 0.013111
 0010 20111017 72 F 0.482945</pre>
 
-<p>フィールド形式ではすべての行のフィールド数が同一である必要がある点に注意が必要。<a href="/INFO/CGI/INFO.CGI?POMPA=ABOUTUNICAGE">ユニケージ</a>のコマンド実装系である<a href="/TUKUBAI/CGI/TUKUBAI.CGI?POMPA=ABOUT">Open usp Tukubai</a>やusp Tukubaiは行ごとのフィールド数が異なるフィールド形式のファイルは動作を保証しない。</p>
+      <p>フィールド形式ではすべての行のフィールド数が同一である必要がある点に注意が必要。<a href="/INFO/CGI/INFO.CGI?POMPA=ABOUTUNICAGE">ユニケージ開発手法</a>のコマンド実装系である<a href="/TUKUBAI/CGI/TUKUBAI.CGI?POMPA=ABOUT">Open usp Tukubai</a>やusp Tukubaiは行ごとのフィールド数が異なるフィールド形式のファイルは動作を保証しない。</p>
 
-<h3>【関連項目】</h3>
+      <h3>【関連項目】</h3>
 
-<p><a href="tag-format.html">タグ形式(USP lab(5))</a>、<a href="name-format.html">ネーム形式(USP Lab(5))</a></p>
+      <p><a href="tag-format.html">タグ形式(5)</a>、<a href="name-format.html">ネーム形式(5)</a>、<a href="master-file.html">マスタファイル(5)</a>、<a href="name-file.html">ネームファイル(5)</a>、<a href="transaction-file.html">トランザクションファイル(5)</a></p>
 
-<p class="annotation">※ユニケージはユニバーサル・シェル・プログラミング研究所の登録商標。</p>
+      <p class="annotation">※ <a href="/INFO/CGI/INFO.CGI?POMPA=ABOUTUNICAGE">ユニケージ</a>は<a href="http://www.usp-lab.com/">ユニバーサル・シェル・プログラミング研究所</a>の登録商標。</p>
 
-<div id="pagenavigator">
-  <ul>
-    <li><a href="index.html">&and;</a></li>
-  </ul>
-</div>
-<!-- CONTENTS_CONTENTS -->
+      <p class="annotation">※ 2012年7月から始まる教育講座に合わせて、従来の「ユニケージ」または「ユニケージ方法論」は「<a href="/INFO/CGI/INFO.CGI?POMPA=ABOUTUNICAGE">ユニケージ開発手法</a>」へ名称を統一。</p>
+
     </div>
 
-    <div id="lastmodified">
-     last modified: 2012-04-11 13:22:45
-    </div>
+    <div id="lastmodified">last modified: 2012-08-01 16:19:55</div>
 
-    <div id="footer">
-      Contact us: uecinfo@usp-lab.com<br>
-      Copyright (c) 2012 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.
-    </div>
+    <div id="footer">Contact us: uecinfo@usp-lab.com<br/>Copyright (c) 2012 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
   </div>
 </body>
 </html>
