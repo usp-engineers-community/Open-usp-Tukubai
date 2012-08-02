@@ -94,46 +94,54 @@
     <div id="main">
       <h1>Tukubaiオンラインコマンドマニュアル</h1>
 
-      <h2>ネーム形式(5)</h2>
+      <h2>マスタファイル(5)</h2>
 
       <h3>【名前】</h3>
 
-      <p>ネーム形式 : 空白区切りの2フィールドテキストデータ形式</p>
+      <p>マスタファイル : マスタの性質を満たす<a href="field-format.html">フィールド形式</a>のファイル</p>
 
       <h3>【書式】</h3>
 
-      <pre class="list">第1フィールド 第2フィールド
+      <pre class="list">第1フィールド 第2フィールド 第3フィールド ...
 ...</pre>
 
       <h3>【説明】</h3>
 
-      <p>空白区切りの2フィールドテキストデータ形式。<a href="field-format.html">フィールド形式(5)</a>の特殊な形式の1つ。第2フィールドに含まれる空白は区切り文字としては解釈されない。ネーム形式のファイルは<a href="name-file.html">ネームファイル</a>と呼ばれる。</p>
+      <p>それぞれの行がIDなどで管理され重複する行がなく、データの更新もあらかじめ定められたタイミングでのみ実施され、随時データの変更が入ったり、逐次データが追加されるといったことがなく、商品や店、都道府県、市区町村などデータ処理中に主要なデータとして出現するようなデータを一般的にマスタと呼んでいる。</p>
 
-      <p><a href="name-file.html">ネームファイル</a>は主にWebフォームの入力内容を保存するために使われる。POSTデータは鍵と値が対になったデータになっており、<a href="cgi-name.html">cgi-name(1)</a>コマンドを使用することでネーム形式へ変換することができる。ネーム形式を使用するコマンドとしてはほかに<a href="check_attr_name.html">check_attr_name(1)</a>や<a href="check_need_name.html">check_need_name(1)</a>などがある。</p>
+      <p><a href="/INFO/CGI/INFO.CGI?POMPA=ABOUTUNICAGE">ユニケージ開発手法</a>では、マスタに該当する<a href="field-format.html">フィールド形式</a>のファイルをマスタファイルと呼んでいる。マスタの特性以外に、<a href="/INFO/CGI/INFO.CGI?POMPA=ABOUTUNICAGE">ユニケージ開発手法</a>におけるマスタファイルは次の特性を満たしている必要がある。</p>
+
+      <ul>
+      <li>第1フィールドまたは第1フィールドから連続するいくつかのフィールドがキーフィールドになっている。</li>
+      <li>それ以外のフィールドはキーフィールドに対応する値になっている。</li>
+      <li>キーフィールド同士は重複しない。</li>
+      <li>キーフィールドがLANG=C sortで整列されている。</li>
+      </ul>
+
+      <p>たとえば第1フィールドが店番号、第2フィールドが店名で構成される2フィールドの<a href="field-format.html">フィールド形式</a>のファイルで、第1フィールドの値がLANG=C sortで整列されたファイルはマスタファイルと呼ばれる。</p>
+
+      <p>マスタファイルは短縮してマスタと呼ばれることがあり、また、<a href="index.html">Tukubaiコマンドマニュアル</a>ではmasterと表記される。マスタファイルとは対照的に随時データが追加されるようなフィールド形式のファイルは<a href="transaction-file.html">トランザクションファイル</a>と呼ばれている。</p>
 
       <h3>【例1】</h3>
 
-      <pre class="source">ID 0001
-DATE 20111008
-AGE 23
-GENDER F
-VALUE 0.845814</pre>
+      <p>マスタファイルの例は次のとおり。</p>
 
-      <h3>【例2】</h3>
-
-      <p>ネーム形式では1つめの空白のみがフィールド区切り文字として認識され、2つめ以降の空白は通常の文字として認識される。</p>
-
-      <pre class="source">ID 0000 001
-DATE 2011 10/08
-AGE 23
-GENDER F
-VALUE 1 - 0.845814</pre>
-
-      <p>上記例であれば、1行目の第1フィールドはIDであり、第2フィールドは0000 001となる。</p>
+      <pre class="source">001 新橋店
+002 目黒店
+003 五反田店
+004 新宿店
+005 池袋店
+006 原宿店
+007 渋谷店
+008 吉祥寺店
+009 下北沢店
+010 品川店</pre>
 
       <h3>【関連項目】</h3>
 
-      <p><a href="cgi-name.html">cgi-name(1)</a>、<a href="check_attr_name.html">check_attr_name(1)</a>、<a href="check_need_name.html">check_need_name(1)</a>、<a href="tag-format.html">タグ形式(5)</a>、<a href="field-format.html">フィールド形式(5)</a>、<a href="name-file.html">ネームファイル(5)</a></p>
+      <p><a href="name-file.html">ネームファイル(5)</a>、<a href="transaction-file.html">トランザクションファイル(5)</a>、<a href="field-format.html">フィールド形式(5)</a>、<a href="tag-format.html">タグ形式(5)</a>、<a href="name-format.html">ネーム形式(5)</a></p>
+
+      <p class="annotation">※ <a href="/INFO/CGI/INFO.CGI?POMPA=ABOUTUNICAGE">ユニケージ</a>は<a href="http://www.usp-lab.com/">ユニバーサル・シェル・プログラミング研究所</a>の登録商標。</p>
 
     </div>
 

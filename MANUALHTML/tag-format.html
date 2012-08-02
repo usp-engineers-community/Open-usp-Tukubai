@@ -27,7 +27,7 @@
         <img id="logoimage" src="COMMON/IMG/TUKUBAI_LOGO.JPG" />
       </div>
       <div id="title">
-        <p id="slogan">UEC - UNIXを深く理解し、シェルプログラミングを極めるコミュニティサイト</p>
+        <p id="slogan"></p>
         <ul id="megamenu">
           <li id="tukubai_man"><a href="index.html" class="target">Tukubaiマニュアル</a>
             <ul>
@@ -76,9 +76,15 @@
               <li><a href="yobi.html">yobi(1)</a></li>
               <li><a href="ysum.html">ysum(1)</a></li>
               <li><a href="zen.html">zen(1)</a></li>
+              <li class="separator"><hr/></li>
+              <li class="separator"><hr/></li>
+              <li class="separator"><hr/></li>
               <li><a href="tag-format.html">タグ形式(5)</a></li>
               <li><a href="name-format.html">ネーム形式(5)</a></li>
               <li><a href="field-format.html">フィールド形式(5)</a></li>
+              <li><a href="master-file.html">マスタファイル(5)</a></li>
+              <li><a href="name-file.html">ネームファイル(5)</a></li>
+              <li><a href="transaction-file.html" class="target">トランザクションファイル(5)</a></li>
             </ul> 
           </li>
         </ul>
@@ -88,33 +94,32 @@
     <div id="main">
       <h1>Tukubaiオンラインコマンドマニュアル</h1>
 
-<!-- CONTENTS_CONTENTS -->
-<h2>タグ形式(USP Lab(5))</h2>
+      <h2>タグ形式(5)</h2>
 
-<h3>【名前】</h3>
+      <h3>【名前】</h3>
 
-<p>タグ形式 : 1行目にヘッダがついた<a href="field-format.html">フィールド形式</a></p>
+      <p>タグ形式 : 1行目にヘッダがついた<a href="field-format.html">フィールド形式</a></p>
 
-<h3>【書式】</h3>
+      <h3>【書式】</h3>
 
-<pre class="list">ヘッダ1 ヘッダ2 ヘッダ3...
+      <pre class="list">ヘッダ1 ヘッダ2 ヘッダ3...
 フィールド1 フィールド2 フィールド3...
 ...</pre>
 
-<h3>【説明】</h3>
+      <h3>【説明】</h3>
 
-<p>タグ形式はフィールド形式のデータの先頭行にヘッダが配置されたもの。主に次の用途で使用される。</p>
+      <p>タグ形式は<a href="field-format.html">フィールド形式</a>のデータの先頭行にヘッダが配置されたもの。主に次の用途で使用される。</p>
 
-<ul>
-  <li>複数の<a href="name-format.html">ネームファイル</a>を単一のファイルにまとめる</li>
-  <li>フィールド数がきわめて多い場合</li>
-</ul>
+      <ul>
+      <li>複数の<a href="name-file.html">ネームファイル</a>を単一のファイルにまとめる</li>
+      <li>フィールド数がきわめて多い場合</li>
+      </ul>
 
-<p><a href="name-format.html">ネームファイル</a>を使用することでフィールドに名前を与えることはできるが、1つの鍵にいくつもの値が存在するケースではファイル数が増えることになり扱いにくい面がある。タグ形式はこうした場合に単一ファイル化する方法として利用できる。</p>
+      <p><a href="name-file.html">ネームファイル</a>を使用することでフィールドに名前を与えることはできるが、1つの鍵にいくつもの値が存在するケースではファイル数が増えることになり扱いにくい面がある。タグ形式はこうした場合に単一ファイル化する方法として利用できる。</p>
 
-<h3>【例1】</h3>
+      <h3>【例1】</h3>
 
-<pre class="source">ID DATE AGE GENDER VALUE
+      <pre class="source">ID DATE AGE GENDER VALUE
 0001 20111008 23 F 0.845814
 0002 20111009 15 M 0.193475
 0003 20111010 81 F 0.484983
@@ -126,26 +131,15 @@
 0009 20111016 10 M 0.013111
 0010 20111017 72 F 0.482945 </pre>
 
-<h3>【関連項目】</h3>
+      <h3>【関連項目】</h3>
 
-<p><a href="field-format.html">フィールド形式(USP lab(5))</a>、<a href="name-format.html">ネーム形式(USP Lab(5))</a></p>
+      <p><a href="field-format.html">フィールド形式(5)</a>、<a href="name-format.html">ネーム形式(5)</a>、<a href="name-file.html">ネームファイル(5)</a></p>
 
-<div id="pagenavigator">
-  <ul>
-    <li><a href="index.html">&and;</a></li>
-  </ul>
-</div>
-<!-- CONTENTS_CONTENTS -->
     </div>
 
-    <div id="lastmodified">
-     last modified: 2012-04-11 13:22:55
-    </div>
+    <div id="lastmodified">last modified: 2012-08-01 16:19:55</div>
 
-    <div id="footer">
-      Contact us: uecinfo@usp-lab.com<br>
-      Copyright (c) 2012 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.
-    </div>
+    <div id="footer">Contact us: uecinfo@usp-lab.com<br/>Copyright (c) 2012 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
   </div>
 </body>
 </html>
