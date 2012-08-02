@@ -29,7 +29,7 @@
 # THE SOFTWARE.
 
 _usage = "filehame <-lSTRING> <file1> <file2>"
-_version = "Sat Jul 28 15:20:42 JST 2012"
+_version = "Thu Aug  2 14:07:28 JST 2012"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4+, 3.1, 3.2/UTF-8)"
 
 import re
