@@ -20,31 +20,36 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+NAME=		open-usp-tukubai
+
 LOCALBASE?=	/usr/local
 BINDIR?=	${LOCALBASE}/bin
-TUKDIR?=	${LOCALBASE}/share/open-usp-tukubai
+TUKDIR?=	${LOCALBASE}/share/${NAME}
 DATDIR?=	${TUKDIR}/devel
 MANDIR=		${DATDIR}/man
 HTMDIR=		${DATDIR}/html
 PDFDIR=		${DATDIR}/pdf
 DOCDIR=		${DATDIR}/doc
 
-COMMANDS=	cgi-name check_attr_name check_need_name comma count ctail \
-		delf divsen getfirst getlast gyo han join0 join1 join2 juni \
-		kasan keta keycut loopj loopx map marume mdate mime-read \
-		mojihame nameread plus rank ratio retu self sm2 sm4 sm5 \
-		tarr tateyoko tcat unmap up3 yarr ycat yobi ysum zen
+COMMANDS=	cgi-name check_attr_name check_need_name cjoin0 cjoin1 \
+		cjoin2 comma count ctail delf divsen filehame getfirst \
+		getlast gyo han join0 join1 join2 juni kasan keta keycut \
+		loopj loopx map marume mdate mime-read mojihame nameread \
+		plus rank ratio retu self sm2 sm4 sm5 tarr tateyoko tcat \
+		unmap up3 yarr ycat yobi ysum zen
 MANUAL=		cgi-name.txt check_attr_name.txt check_need_name.txt \
-		comma.txt count.txt ctail.txt delf.txt divsen.txt \
-		getfirst.txt getlast.txt gyo.txt han.txt join0.txt \
-		join1.txt join2.txt juni.txt kasan.txt keta.txt keycut.txt \
+		cjoin0.txt cjoin1.txt cjoin2.txt comma.txt count.txt \
+		ctail.txt delf.txt divsen.txt filehame.txt getfirst.txt \
+		getlast.txt gyo.txt han.txt join0.txt join1.txt \
+		join2.txt juni.txt kasan.txt keta.txt keycut.txt \
 		loopj.txt loopx.txt map.txt marume.txt mdate.txt \
 		mime-read.txt mojihame.txt nameread.txt plus.txt rank.txt \
 		ratio.txt retu.txt self.txt sm2.txt sm4.txt sm5.txt \
 		tarr.txt tateyoko.txt tcat.txt unmap.txt up3.txt yarr.txt \
 		ycat.txt yobi.txt ysum.txt zen.txt
 HTML=		cgi-name.html check_attr_name.html check_need_name.html \
-		comma.html count.html ctail.html delf.html divsen.html \
+		cjoin0.html cjoin1.html cjoin2.html comma.html count.html \
+		ctail.html delf.html divsen.html filehame.html \
 		getfirst.html getlast.html gyo.html han.html join0.html \
 		join1.html join2.html juni.html kasan.html keta.html keycut.html \
 		loopj.html loopx.html map.html marume.html mdate.html \
@@ -58,6 +63,8 @@ INSTALL?=	/usr/bin/install
 MKDIR?=		/bin/mkdir -p
 RMDIR?=		/bin/rmdir
 RM?=		/bin/rm -f
+
+TODAY!=		date "+%Y%m%d"
 
 INSTALL_PROGRAM=	${INSTALL} -m ${BINMODE}
 INSTALL_DOCS=		${INSTALL} -m ${DOCMODE}
@@ -147,3 +154,14 @@ uninstall:
 	${RMDIR} ${TUKDIR}
 
 deinstall: uninstall
+
+package: clean
+	${MKDIR} ${NAME}-${TODAY}
+	cp -Rp COMMANDS MANUAL MANUALHTML MANUALPDF \
+	   INSTALL LICENSE Makefile README \
+	   ${NAME}-${TODAY}
+	tar vcf ${NAME}-${TODAY}.tar ${NAME}-${TODAY}
+	bzip2 ${NAME}-${TODAY}.tar
+
+clean:
+	rm -rf ${NAME}-${TODAY}*
