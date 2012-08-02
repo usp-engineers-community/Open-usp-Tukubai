@@ -93,7 +93,7 @@ if __name__ == '__main__':
 
 	for line in template_file:
 		line = line.rstrip("\n")
-		if re.match(mark, line):
+		if re.search(mark, line):
 			sys.stdout.write(insert_file.read())
 		else:
 			print(line)
