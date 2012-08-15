@@ -1,0 +1,281 @@
+#! /bin/sh
+
+
+# print the usage and exit
+print_usage_and_exit () {
+	cat <<____USAGE > /dev/stderr
+Usage   : ${0##*/} n1 n2 .. <filename>
+        : ${0##*/} -v <filename>
+        : ${0##*/} [--] <filename>
+Version : Mon Aug 14 02:22:21 JST 2012
+        : UTF-8
+____USAGE
+	exit 1
+}
+
+
+# initialize
+widthes=''
+left_justification=0
+verbose=0
+file=''
+tmpfile=''
+mode=0 # 0->cnt&right-jst 1->manual-jst 2->cnt&left-jst 3->cnt&print
+
+
+# parse the arguments
+case "$1" in
+	--)
+		left_justification=1
+		mode=2
+		shift
+		lastarg=$1
+		;;
+	-v)
+		verbose=1
+		mode=3
+		shift
+		lastarg=$1
+		;;
+esac
+if [ $mode -eq 0 ]; then
+	while [ $# -gt 0 ]; do
+		test=$(echo "$1" | grep '^-\{0,1\}[0-9]\+\(x\([0-9]\+\|NF\(-[0-9]\+\)\{0,1\}*\)\)\{0,1\}$')
+		if [ -n "$test" ]; then
+			mode=1
+			widthes="$widthes $test"
+			shift
+		else
+			break
+		fi
+	done
+	widthes=${widthes# }
+fi
+if [ $# -gt 1 ]; then
+	print_usage_and_exit
+elif [ -z "$1" ]; then
+	file='/dev/stdin'
+elif [ \( -f "$1" \) -o \( -c "$1" \) ]; then
+	file="$1"
+elif [ "_$1" = '_-' ]; then
+	file='/dev/stdin'
+else
+	print_usage_and_exit
+fi
+
+
+# create a temporary file if the file is the stdin and mode==0|2
+if [ \( \( "_$file" = "_/dev/stdin" \) -o \( "_$file" = "_/dev/fd/0" \) \) -a \( \( $mode -eq 0 \) -o \( $mode -eq 2 \) \) ]; then
+	tmpfile=$(mktemp -t "${0##*/}.XXXXXXXX")
+	if [ $? -eq 0 ]; then
+		trap "rm -f $tmpfile" EXIT HUP INT QUIT ALRM SEGV TERM
+		cat "$file" > "$tmpfile"
+		file=$tmpfile
+	else
+		echo "${0##*/} : Cannot create a temporary file" > /dev/stderr
+		exit 1
+	fi
+fi
+
+
+# awkcode : get the length of the UTF-8 string (it is not a byte number)
+awkcode_func_utf8strlen='
+# strlen for UTF-8 (preparation : you must call this before using utf8strlen)
+function utf8strlen_prep() {
+	utf8strlen_80_1 = sprintf("\200");
+	utf8strlen_C0_X = sprintf("\300");
+	utf8strlen_E0_2 = sprintf("\340");
+	utf8strlen_F0_3 = sprintf("\360");
+	utf8strlen_F8_4 = sprintf("\370");
+	utf8strlen_FC_5 = sprintf("\374");
+	utf8strlen_FE_6 = sprintf("\376");
+}
+
+# strlen for UTF-8 (main)
+function utf8strlen(str) {
+	utf8strlen_ = 0;
+	for (utf8strlen_i = 1; utf8strlen_i <= length(str); utf8strlen_i++) {
+		utf8strlen_++;
+		utf8strlen_letter=substr(str, utf8strlen_i, 1);
+		if (utf8strlen_letter < utf8strlen_80_1) {
+			continue;
+		} else if (utf8strlen_letter < utf8strlen_C0_X) {
+			utf8strlen_--;
+			continue;
+		} else if (utf8strlen_letter < utf8strlen_E0_2) {
+			utf8strlen_i++;
+		} else if (utf8strlen_letter < utf8strlen_F0_3) {
+			utf8strlen_i += 2;
+		} else if (utf8strlen_letter < utf8strlen_F8_4) {
+			utf8strlen_i += 3;
+		} else if (utf8strlen_letter < utf8strlen_FC_5) {
+			utf8strlen_i += 4;
+		} else if (utf8strlen_letter < utf8strlen_FE_6) {
+			utf8strlen_i += 5;
+		} else {
+			utf8strlen_--;
+			continue;
+		}
+		utf8strlen_++;
+	}
+	return utf8strlen_;
+}
+'
+
+
+# count the max-widthes of the fields
+if [ \( $mode -eq 0 \) -o \( $mode -eq 2 \) -o \( $mode -eq 3 \) ]; then
+
+awkcode_main_width_counter='
+BEGIN {
+	utf8strlen_prep();
+	max_nf = 0;
+}
+
+{
+	if (NF >= max_nf) {
+		for (i = 1; i <= max_nf; i++) {
+			width = utf8strlen($i);
+			if (width > max_width[i]) {
+				max_width[i] = width;
+			}
+		}
+		for (i = max_nf + 1; i <= NF; i++) {
+			width = utf8strlen($i);
+			max_width[i] = width;
+		}
+		max_nf = NF;
+	} else {
+		for (i = 1; i <= NF; i++) {
+			width = utf8strlen($i);
+			if (width > max_width[i]) {
+				max_width[i] = width;
+			}
+		}
+	}
+}
+
+END {
+	widthes = "";
+	for (i = 1; i <= max_nf; i++) {
+		widthes = widthes max_width[i] FS;
+	}
+	print substr(widthes, 1, length(widthes) - 1);
+}
+'
+widthes=$(awk "$awkcode_main_width_counter$awkcode_func_utf8strlen" "$file")
+
+fi
+
+
+# print the max-widthes and exit normally when mode=3("-v" option)
+if [ $mode -eq 3 ]; then
+	echo "$widthes"
+	exit 0
+fi
+
+
+# *(-1) all the width numbers for left-justification when mode=2("--" option)
+if [ $mode -eq 2 ]; then
+	widthes=$(echo "$widthes" | sed 's/\([0-9]\{1,\}\)/-\1/g')
+fi
+
+
+# justificate the all fields
+if [ \( $mode -eq 0 \) -o \( $mode -eq 1 \) -o \( $mode -eq 2 \) ]; then
+
+awkcode_main_justificator='
+BEGIN {
+	utf8strlen_prep();
+	split(widthes_str, width_str);
+	varriable_widthes = (match(widthes_str, /NF/)) ? 1 : 0;
+	if (!varriable_widthes) {
+		decide_widthes();
+	}
+	last_nf = 0;
+}
+
+{
+	# re-decide width numbers when the number of the NF has changed
+	if (varriable_widthes && (NF != last_nf)) {
+		decide_widthes();
+		last_nf = NF;
+	}
+	# justificate the fields and concatinate them
+	line = "";
+	for (i = 1; i <= NF; i++) {
+		size = utf8strlen($i);
+		if ((i in width) && (width[i] > size)) {
+			# right-justification
+			for (j = 1; j <= width[i] - size; j++) {
+				line = line " ";
+			}
+			line = line $i FS;
+		} else if ((i in width) && (-width[i] > size)) {
+			# left-justification
+			line = line $i;
+			for (j = 1; j <= -width[i] - size; j++) {
+				line = line " ";
+			}
+			line = line FS;
+		} else {
+			# non-justification
+			line = line $i FS;
+		}
+	}
+	print substr(line, 1, length(line)-length(FS));
+}
+
+function decide_widthes() {
+	for (decide_widthes_j in width) {
+		delete width[decide_widthes_j];
+	}
+	decide_widthes_j = 0;
+	for (decide_widthes_i = 1; decide_widthes_i <= length(width_str); decide_widthes_i++) {
+		if (match(width_str[decide_widthes_i], /^-?[0-9]+$/)) {
+			decide_widthes_j++;
+			width[decide_widthes_j] = width_str[decide_widthes_i];
+			continue;
+		}
+		if (match(width_str[decide_widthes_i], /^-?[0-9]+x[0-9]+$/)) {
+			decide_widthes_multmode = 1;
+		} else if (match(width_str[decide_widthes_i], /^-?[0-9]+xNF$/)) {
+			decide_widthes_multmode = 2;
+		} else if (match(width_str[decide_widthes_i], /^-?[0-9]+xNF-[0-9]+$/)) {
+			decide_widthes_multmode = 3;
+		} else {
+			continue;
+		}
+		match(width_str[decide_widthes_i], /^-?[0-9]+/);
+		decide_widthes_str = substr(width_str[decide_widthes_i], RSTART, RLENGTH);
+		if (decide_widthes_multmode == 1) {
+			match(width_str[decide_widthes_i], /[0-9]+$/);
+			decide_widthes_n = substr(width_str[decide_widthes_i], RSTART, RLENGTH) + 0;
+			for (decide_widthes_k = 0; decide_widthes_k < decide_widthes_n; decide_widthes_k++) {
+				decide_widthes_j++;
+				width[decide_widthes_j] = decide_widthes_str;
+			}
+		} else if (decide_widthes_multmode == 2) {
+			decide_widthes_n = NF;
+			for (decide_widthes_k = 0; decide_widthes_k < decide_widthes_n; decide_widthes_k++) {
+				decide_widthes_j++;
+				width[decide_widthes_j] = decide_widthes_str;
+			}
+		} else if (decide_widthes_multmode == 3) {
+			match(width_str[decide_widthes_i], /[0-9]+$/);
+			decide_widthes_n = NF - substr(width_str[decide_widthes_i], RSTART, RLENGTH);
+			for (decide_widthes_k = 0; decide_widthes_k < decide_widthes_n; decide_widthes_k++) {
+				decide_widthes_j++;
+				width[decide_widthes_j] = decide_widthes_str;
+			}
+		}
+	}
+}
+'
+if [ -z "$tmpfile" ]; then
+  exec awk -v "widthes_str=$widthes" "$awkcode_main_justificator$awkcode_func_utf8strlen" "$file"
+else
+  awk -v "widthes_str=$widthes" "$awkcode_main_justificator$awkcode_func_utf8strlen" "$file"
+fi
+
+fi
