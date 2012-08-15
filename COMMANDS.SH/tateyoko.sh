@@ -1,0 +1,85 @@
+#! /bin/sh
+
+
+# print the usage and exit
+print_usage_and_exit () {
+	cat <<____USAGE > /dev/stderr
+Usage   : ${0##*/} [-d[<string>]] <file>
+Version : Sun Aug 12 23:54:00 JST 2012
+____USAGE
+	exit 1
+}
+
+# initialize
+dummy_fldstr=''
+file=''
+
+# parse the arguments
+case "$1" in
+	-d*)
+		dummy_fldstr=${1#-d}
+		if [ "_$dummy_fldstr" = '_' ]; then
+			dummy_fldstr='*'
+		fi
+		shift
+		;;
+esac
+if	 [ -z "$1" ]; then
+	file='/dev/stdin'
+elif [ \( -f "$1" \) -o \( -c "$1" = '/dev/stdin' \) ]; then
+	file="$1"
+elif [ "_$1" = '_-' ]; then
+	file='/dev/stdin'
+else
+	print_usage_and_exit
+fi
+
+# transfer the characters to octet escaped strings to import to AWK safely
+dummy_fldcd=$(echo -n "$dummy_fldstr" | od -A n -t o1 | tr -d '\n' | sed -e 's/[[:blank:]]*$//;' | sed -e 's/[[:blank:]]\{1,\}/\\/g' )
+
+# transpose the table
+exec awk '
+BEGIN {
+	max_nf = 0;
+	dummy_fldstr = sprintf("'$dummy_fldcd'");
+	_assert_exit = 0;
+}
+
+{
+	if (NF > max_nf) {
+		if ((NR > 1) && (length(dummy_fldstr) == 0)) {
+			print "フィールド数が異なります。" > "/dev/stderr";
+			_assert_exit = 1;
+			exit _assert_exit;
+		}
+		for (i = max_nf + 1; i <= NF; i++) {
+			tred_line[i] = "";
+			for (j = 1; j < NR; j++) {
+				tred_line[i] = tred_line[i] dummy_fldstr FS;
+			}
+		}
+		max_nf = NF;
+	}
+	for (i = 1; i <= NF; i++) {
+		tred_line[i] = tred_line[i] $i FS;
+	}
+	if (NF < max_nf) {
+		if (length(dummy_fldstr) == 0) {
+			print "フィールド数が異なります。" > "/dev/stderr";
+			_assert_exit = 1;
+			exit _assert_exit;
+		}
+		for (i = NF + 1; i <= max_nf; i++) {
+			tred_line[i] = tred_line[i] dummy_fldstr FS;
+		}
+	}
+}
+END {
+	if (_assert_exit) {
+		exit _assert_exit;
+	}
+	for (i = 1; i <= max_nf; i++) {
+		print substr(tred_line[i], 1, length(tred_line[i]) - length(FS));
+	}
+}
+' "$file"
