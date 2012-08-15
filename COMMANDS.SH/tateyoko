@@ -1,5 +1,7 @@
 #! /bin/sh
 
+# designed by Nobuaki Tounaka
+# written by 321516
 
 # print the usage and exit
 print_usage_and_exit () {
