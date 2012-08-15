@@ -4,14 +4,14 @@
 #
 # usage: ./yarr.test <python ver>
 
+name=yarr
+    
 tmp=/tmp/$$
-
 dir=$(dirname $0)/..
 cd $dir
-
-scr=./COMMANDS/yarr
-com="$1 ${scr}"
-[ "$1" = "" ] && com="./COMMANDS/yarr"
+    
+com="$2 ./$1/${name}"
+[ "$1" = "" ] && com="./$1/${name}"
 
 ERROR_CHECK(){
 	[ "$(echo ${PIPESTATUS[@]} | tr -d ' 0')" = "" ] && return

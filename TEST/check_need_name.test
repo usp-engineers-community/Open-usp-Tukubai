@@ -4,12 +4,14 @@
 #
 # usage: ./check_attr_name.bash <python ver>
 
+name=check_need_name
+
+tmp=/tmp/$$
 dir=$(dirname $0)/..
 cd $dir
 
-scr=./COMMANDS/check_need_name
-com="$1 ${scr}"
-[ "$1" = "" ] && com=./COMMANDS/check_need_name
+com="$2 ./$1/${name}"
+[ "$1" = "" ] && com="./$1/${name}"
 
 ERROR_CHECK(){
 	[ "$(echo ${PIPESTATUS[@]} | tr -d ' 0')" = "" ] && return

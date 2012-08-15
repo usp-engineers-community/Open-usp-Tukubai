@@ -4,14 +4,14 @@
 #
 # usage: ./cjoin2.test <python ver>
 
+name=cjoin2
+    
 tmp=/tmp/$$
-
 dir=$(dirname $0)/..
 cd $dir
-
-scr=./COMMANDS/cjoin2
-com="$1 ${scr}"
-[ "$1" = "" ] && com="./COMMANDS/cjoin2"
+    
+com="$2 ./$1/${name}"
+[ "$1" = "" ] && com="./$1/${name}"
 
 ERROR_CHECK(){
 	[ "$(echo ${PIPESTATUS[@]} | tr -d ' 0')" = "" ] && return
