@@ -7,6 +7,14 @@ tmp=/tmp/$$
 dir=$(dirname $0)
 cd $dir
 
+#####################################
+#support of haskell binary
+
+./gyo.test HASKELL ""
+
+#####################################
+#support of 2.x
+
 cat << FIN > $tmp-ver
 python2.7
 python2.6
@@ -16,14 +24,16 @@ FIN
 
 cat $tmp-ver	|
 while read com ; do
-	./yarr.test $com
-	./self.test $com
-	./nameread.test $com
-	./check_need_name.test $com
-	./cjoin0.test $com
-	./cjoin1.test $com
-	./cjoin2.test $com
-	./filehame.test $com
+	./yarr.test COMMANDS $com
+	./self.test COMMANDS $com
+	./nameread.test COMMANDS $com
+	./check_need_name.test COMMANDS $com
+	./join0.test COMMANDS $com
+	./cjoin0.test COMMANDS $com
+	./cjoin1.test COMMANDS $com
+	./cjoin2.test COMMANDS $com
+	./filehame.test COMMANDS $com
+	./gyo.test COMMANDS $com
 done
 
 #####################################
@@ -36,13 +46,13 @@ FIN
 
 cat $tmp-ver	|
 while read com ; do
-	./yarr.test $com
-	./self.test $com
-	./check_need_name.test $com
-	./cjoin0.test $com
-	./cjoin1.test $com
-	./cjoin2.test $com
-	./filehame.test $com
+	./yarr.test COMMANDS $com
+	./self.test COMMANDS $com
+	./check_need_name.test COMMANDS $com
+	./cjoin0.test COMMANDS $com
+	./cjoin1.test COMMANDS $com
+	./cjoin2.test COMMANDS $com
+	./filehame.test COMMANDS $com
 done
 
 rm -f $tmp-*

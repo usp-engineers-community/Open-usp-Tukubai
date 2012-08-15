@@ -1,5 +1,6 @@
 import qualified Data.ByteString.Lazy.Char8 as BS
 import System.Environment
+import System.IO
 
 {--
 gyo（Open usp Tukubai）
@@ -32,9 +33,10 @@ THE SOFTWARE.
 --}
 
 showUsage :: IO ()
-showUsage = do putStrLn ("Usage    : gyo [-f] <file>\n" ++ 
-			"Wed Aug 15 14:39:26 JST 2012\n" ++
-	           	"Open usp Tukubai (LINUX+FREEBSD), Haskell ver.")
+showUsage = do hPutStr stderr
+		("Usage    : gyo [-f] <file>\n" ++ 
+		"Wed Aug 15 19:29:08 JST 2012\n" ++
+		"Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
 
 main :: IO ()
 main = do

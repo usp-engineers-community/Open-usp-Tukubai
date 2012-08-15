@@ -4,14 +4,14 @@
 #
 # usage: ./join0.test <python ver>
 
+name=join0
+    
 tmp=/tmp/$$
-
 dir=$(dirname $0)/..
 cd $dir
-
-scr=./COMMANDS/join0
-com="$1 ${scr}"
-[ "$1" = "" ] && com="./COMMANDS/join0"
+    
+com="$2 ./$1/${name}"
+[ "$1" = "" ] && com="./$1/${name}"
 
 ERROR_CHECK(){
 	[ "$(echo ${PIPESTATUS[@]} | tr -d ' 0')" = "" ] && return
