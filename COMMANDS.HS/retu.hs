@@ -34,19 +34,27 @@ THE SOFTWARE.
 showUsage :: IO ()
 showUsage = do hPutStr stderr
 		("Usage    : retu [-f] <file>\n" ++ 
-		"Thu Aug 16 21:56:10 JST 2012\n" ++
+		"Thu Aug 16 22:23:09 JST 2012\n" ++
 		"Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
 
 main :: IO ()
 main = do
 	args <- getArgs
 	case args of
+		["-h"] -> showUsage
+		["--help"] -> showUsage
 		[] -> printCount
 		["-"] -> printCount
 		("-f":as) -> fmode as
-		["-h"] -> showUsage
-		["--help"] -> showUsage
 		_ -> mmode args
+	
+fmode :: [String] -> IO ()
+fmode [] = putStr ""
+fmode (arg:args) = do printCountF arg ; fmode args
+
+mmode :: [String] -> IO ()
+mmode [] = putStr ""
+mmode (arg:args) = do printCountM arg; mmode args
 	
 printCount :: IO ()
 printCount = BS.getContents >>= putStr . unlines . toStr . countFile
@@ -59,28 +67,15 @@ printCountF arg = do
 			bs <- BS.readFile arg 
 			putStr $ unlines $ countFileF arg bs
 	
-fmode :: [String] -> IO ()
-fmode [] = putStr ""
-fmode (arg:args) = do printCountF arg ; fmode args
-
 countFileF :: String -> BS.ByteString -> [String]
 countFileF arg bs = [ arg ++ " " ++ show(x) | x <- (countFile bs) ]
 
-mmode :: [String] -> IO ()
-mmode [] = putStr ""
-mmode (arg:args) = do printCountM arg; mmode args
-	
 countFile :: BS.ByteString -> [Int]
-countFile bs = unq ( countLine( BS.lines bs ) )
-
-countLine :: [BS.ByteString] -> [Int]
-countLine [] = []
-countLine (ln:lns) = length ( BS.split ' ' ln ) : countLine lns
+countFile bs = unq $ [ length ( BS.split ' ' ln ) | ln <- (BS.lines bs) ]
 
 unq :: [Int] -> [Int]
 unq [n] = [n]
 unq (n:ns) = if n == head ns then unq (ns) else n : unq (ns)
 
 toStr :: [Int] -> [String]
-toStr [] = []
-toStr (n:ns) = show n : toStr(ns)
+toStr ns = [ show n | n <- ns ]
