@@ -178,9 +178,10 @@ BEGIN {
 
 	split(max_widthes, max_width);
 
-	margin="";
-	for (i = 0; i < numoption; i++) {
-		margin = margin FS;
+	margin = "";
+	if (numoption > 0) {
+		margin = sprintf("%0" numoption "d", 0);
+		gsub("0", FS, margin);
 	}
 	while (1) {
 		line = "";
@@ -197,10 +198,13 @@ BEGIN {
 			} else {
 				str = "";
 			}
-			for (j = utf8strlen(str); j < max_width[i]; j++) {
-				str = str " ";
+			padding = "";
+			j = max_width[i] - utf8strlen(str);
+			if (j > 0) {
+				padding = sprintf("%0" j "d", 0);
+				gsub("0", " ", padding);
 			}
-			line = (i == 1) ? str : line margin str;
+			line = (i == 1) ? str padding : line margin str padding;
 		}
 		if (validlines) {
 			print line;

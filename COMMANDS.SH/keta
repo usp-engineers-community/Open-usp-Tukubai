@@ -209,17 +209,20 @@ BEGIN {
 		size = utf8strlen($i);
 		if ((i in width) && (width[i] > size)) {
 			# right-justification
-			for (j = 1; j <= width[i] - size; j++) {
-				line = line " ";
+			padding = "";
+			if (width[i] - size > 0) {
+				padding = sprintf("%0" (width[i] - size) "d", 0);
+				gsub("0", " ", padding);
 			}
-			line = line $i FS;
+			line = line padding $i FS;
 		} else if ((i in width) && (-width[i] > size)) {
 			# left-justification
-			line = line $i;
-			for (j = 1; j <= -width[i] - size; j++) {
-				line = line " ";
+			padding = "";
+			if (-width[i] - size > 0) {
+				padding = sprintf("%0" (-width[i] - size) "d", 0);
+				gsub("0", " ", padding);
 			}
-			line = line FS;
+			line = line $i padding FS;
 		} else {
 			# non-justification
 			line = line $i FS;
