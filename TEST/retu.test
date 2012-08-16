@@ -1,4 +1,5 @@
 #!/usr/local/bin/bash -xv
+#!/bin/bash -xv
 #
 # test script of retu 
 #
