@@ -51,10 +51,10 @@ makeOut :: [String] -> BS.ByteString -> [BS.ByteString]
 makeOut as cs = [ makeLine as c | c <- BS.lines (cs) ]
 
 makeLine :: [String] -> BS.ByteString -> BS.ByteString
-makeLine as ln = ln
+makeLine as ln = BS.unwords $ addOrder ([ w | w <- BS.words ln ] )
 
-
-
+addOrder :: [BS.ByteString] -> [BS.ByteString]
+addOrder wds = wds
 
 
 
