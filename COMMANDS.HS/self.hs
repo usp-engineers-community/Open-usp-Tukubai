@@ -2,12 +2,15 @@ import qualified Data.ByteString.Lazy.Char8 as BS
 import System.Environment
 import System.IO
 
+-- incomplete version
+-- cannot manipulate Japanese
+-- cannot execute sub string operation
+
 {--
 self（Open usp Tukubai）
 
 designed by Nobuaki Tounaka
 written by Ryuichi Ueda
-thanks to @master_q
 
 The MIT License
 
@@ -45,16 +48,38 @@ main = do
 		["-h"] -> showUsage
 		["--help"] -> showUsage
 		[] -> showUsage
-		_ -> BS.getContents >>= putStr . BS.unpack . BS.unlines . makeOut args 
+		_ -> BS.getContents >>= putStr . unlines . makeOut (parseOpts args )
+
+parseOpts :: [String] -> [(Int,(Int,Int))]
+parseOpts args = [ parseOpt a | a <- args ]
+
+parseOpt :: String -> (Int,(Int,Int))
+parseOpt a = ( toInt $ fst $ brk , subPart $ snd $ brk )
+		where
+			brk = break (== '.') a
+
+subPart :: String -> (Int,Int)
+subPart "" = (0, 0)
+subPart s = ( toInt $ fst $ b , subPart' $ snd $ b )
+	where
+		b = break (== '.') $ tail s
+		subPart' :: String -> Int
+		subPart' "" = 0
+		subPart' last = toInt $ tail last
+
+toInt :: String -> Int
+toInt "NF" = -1
+toInt n = read n::Int
 	
-makeOut :: [String] -> BS.ByteString -> [BS.ByteString]
-makeOut as cs = [ makeLine as c | c <- BS.lines (cs) ]
+makeOut :: [(Int,(Int,Int))] -> BS.ByteString -> [String]
+makeOut as cs = [ BS.unpack $ makeLine as (makeBaseStr c) | c <- BS.lines cs ]
 
-makeLine :: [String] -> BS.ByteString -> BS.ByteString
-makeLine as ln = BS.unwords $ addOrder ([ w | w <- BS.words ln ] )
+makeBaseStr :: BS.ByteString -> [BS.ByteString]
+makeBaseStr line = line : (BS.words line)
 
-addOrder :: [BS.ByteString] -> [BS.ByteString]
-addOrder wds = wds
+makeLine :: [(Int,(Int,Int))] -> [BS.ByteString] -> BS.ByteString
+makeLine as ws = BS.unwords [ choiceWord a ws | a <- as ]
 
-
-
+choiceWord :: (Int,(Int,Int)) -> [BS.ByteString] -> BS.ByteString
+choiceWord a ws =  if n == -1 then last ws else ws !! n
+			where n = fst a 
