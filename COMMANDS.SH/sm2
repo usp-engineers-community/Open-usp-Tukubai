@@ -8,6 +8,7 @@ print_usage_and_exit () {
 	cat <<____USAGE > /dev/stderr
 Usage   : ${0##*/} [+count] <k1> <k2> <s1> <s2> <file>
 Version : Sun Aug 12 21:10:12 JST 2012
+        : Open usp Tukubai (POSIX.1 Bourne Shell/POSIX.1 commands)
 ____USAGE
 	exit 1
 }

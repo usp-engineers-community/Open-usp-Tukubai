@@ -8,6 +8,7 @@ print_usage_and_exit () {
 	cat <<____USAGE > /dev/stderr
 Usage   : ${0##*/} [-d[<string>]] <file>
 Version : Sun Aug 12 23:54:00 JST 2012
+        : Open usp Tukubai (POSIX.1 Bourne Shell/POSIX.1 commands)
 ____USAGE
 	exit 1
 }
@@ -28,7 +29,7 @@ case "$1" in
 esac
 if	 [ -z "$1" ]; then
 	file='/dev/stdin'
-elif [ \( -f "$1" \) -o \( -c "$1" = '/dev/stdin' \) ]; then
+elif [ \( -f "$1" \) -o \( -c "$1" \) ]; then
 	file="$1"
 elif [ "_$1" = '_-' ]; then
 	file='/dev/stdin'
@@ -37,7 +38,7 @@ else
 fi
 
 # transfer the characters to octet escaped strings to import to AWK safely
-dummy_fldcd=$(echo -n "$dummy_fldstr" | od -A n -t o1 | tr -d '\n' | sed -e 's/[[:blank:]]*$//;' | sed -e 's/[[:blank:]]\{1,\}/\\/g' )
+dummy_fldcd=$(echo -n "_$dummy_fldstr" | od -A n -t o1 | tr -d '\n' | sed 's/^[[:blank:]]*137//' | sed 's/[[:blank:]]*$//' | sed 's/[[:blank:]]\{1,\}/\\/g')
 
 # transpose the table
 exec awk '

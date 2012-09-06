@@ -7,49 +7,88 @@
 print_usage_and_exit () {
 	cat <<____USAGE > /dev/stderr
 Usage   : ${0##*/} [-f] <file> ...
-Version : Sun Aug 14 17:45:00 JST 2012
+Version : Fri Sep 07 00:00:42 JST 2012
+        : Open usp Tukubai (POSIX.1 Bourne Shell/POSIX.1 commands)
 ____USAGE
 	exit 1
+}
+
+
+# function for processing a file
+proc_a_file () {
+	local gyo tmpfile reffile 
+
+	# count lines (not adjusted yet)
+	if [ $2 -eq 0 ]; then
+		gyo=$(wc -l "$1" | awk '{print $1}')
+		reffile=$1
+	else
+		tmpfile=$(mktemp -t "${name_of_me}.XXXXXXXX")
+		if [ $? -eq 0 ]; then
+			trap "rm -f $tmpfile; exit" 0 1 2 3 11 14 15
+		else
+			echo "${name_of_me}: Cannot create a temporary file" > /dev/stderr
+			exit 1
+		fi
+		gyo=$(tee "$tmpfile"  < /dev/stdin | wc -l | awk '{print $1}')
+		reffile=$tmpfile
+	fi
+	#
+	# adjust the number of lines
+	if [ $(tail -1 "$reffile" | wc -l | awk '{print $1}') -eq 0 ]; then
+		if [ $(ls -l "$reffile" | awk '{print $5}') -gt 0 ]; then
+			gyo=$((gyo+1))
+		fi
+	fi
+	if [ -n "$tmpfile" ]; then
+		rm -f "$tmpfile"
+		trap  0 1 2 3 11 14 15
+		tmpfile=''
+	fi
+	#
+	# print the number of lines
+	if [ $foption -eq 0 ]; then
+		echo $gyo
+	else
+		echo "$1" $gyo
+	fi
 }
 
 
 # initialize
 foption=0
 file=''
-use_stdin=0
-
+already_used_stdin=0
+name_of_me=${0##*/}
 
 # parse arguments and count lines
+i=0
 for arg in "$@"; do
-	case "$arg" in
-		-f)
-			foption=1
-			continue
-			;;
-		-)
-			[ $use_stdin -ne 0 ] && print_usage_and_exit
-			use_stdin=1
-			file='/dev/stdin'
-			;;
-		*)
-			if [ \( "_$arg" = '_/dev/stdin' \) -o  \( "_$arg" = '_/dev/fd/0' \) ]; then
-				[ $use_stdin -ne 0 ] && print_usage_and_exit
-				use_stdin=1
-			elif [ \( -f "$arg" \) -o \( -c "$arg" \) ]; then
-				file=$arg
-			else
-				print_usage_and_exit
-			fi
-			;;
-	esac
-	if [ $foption -ne 0 ]; then
-		printf '%s %s\n' "$arg" $(cat "$file" | wc -l)
+	i=$((i+1))
+	is_stdin=0
+	#
+	# parse argument
+	if [ \( $i -eq 1 \) -a \( "_$arg" = '_-f' \) ]; then
+		foption=1
+		continue
+	elif [ \( "_$arg" = '_-'          \) -o \
+	       \( "_$arg" = '_/dev/stdin' \) -o \
+	       \( "_$arg" = '_/dev/fd/0'  \)    ]; then
+		[ $already_used_stdin -ne 0 ] && print_usage_and_exit
+		already_used_stdin=1
+		is_stdin=1
+		file='-'
+	elif [ \( -f "$arg" \) -o \( -c "$arg" \) ]; then
+		file="$arg"
 	else
-		cat "$file" | wc -l | awk '{print $1}'
+		print_usage_and_exit
 	fi
+	#
+	# process a file
+	proc_a_file "$file" $is_stdin
 done
-if [ \( -z "$file" \) -a \( $foption -ne 0 \) ]; then
-	printf '\055 %s\n' $(cat /dev/stdin | wc -l)
-elif [ \( -z "$file" \) -a \( $foption -eq 0 \) ]; then
-	cat /dev/stdin | wc -l | awk '{print $1}'
+
+# process the stdin stream at this point when no filename was given
+if [ -z "$file" ]; then
+	proc_a_file '-' 1
 fi
