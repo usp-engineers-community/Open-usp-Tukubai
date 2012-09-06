@@ -36,7 +36,7 @@ proc_a_file () {
 	#
 	# adjust the number of lines
 	if [ $(tail -1 "$reffile" | wc -l | awk '{print $1}') -eq 0 ]; then
-		if [ $(ls -l "$reffile" | awk '{print $5}') -gt 0 ]; then
+		if [ -s "$reffile" ]; then
 			gyo=$((gyo+1))
 		fi
 	fi
