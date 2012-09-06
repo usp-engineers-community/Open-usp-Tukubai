@@ -7,7 +7,8 @@
 print_usage_and_exit () {
 	cat <<____USAGE > /dev/stderr
 Usage   : ${0##*/} [-<n>] <file1> <file2> ...
-Version : Sun Aug 14 17:45:00 JST 2012
+Version : Thu Sep 06 22:27:31 JST 2012
+        : Open usp Tukubai (POSIX.1 Bourne Shell/POSIX.1 commands/UTF-8)
 ____USAGE
 	exit 1
 }
@@ -27,7 +28,7 @@ mktemp_instead_of_stdin () {
 	tmpfile=$(mktemp -t "${0##*/}")
 	if [ $? -eq 0 ]; then
 		tmpfiles="$tmpfiles $tmpfile"
-		trap "rm -f $tmpfiles" EXIT HUP INT QUIT ALRM SEGV TERM
+		trap "rm -f $tmpfiles; exit" EXIT HUP INT QUIT ALRM SEGV TERM
 		cat /dev/stdin > "$tmpfile"
 	else
 		echo "${0##*/} : Cannot create a temporary file" > /dev/stderr
@@ -70,10 +71,10 @@ for arg in "$@"; do
 							ln -s "$arg" "$tmpfile" > /dev/null 2>&1
 							[ $? -ne 0 ] && continue
 							tmpfiles="$tmpfiles $tmpfile"
-							trap "rm -f $tmpfiles" EXIT HUP INT QUIT ALRM SEGV TERM
+							trap "rm -f $tmpfiles; exit" EXIT HUP INT QUIT ALRM SEGV TERM
 							break
 						else
-							echo "${0##*/} : Cannot create a temporary file" > /dev/stderr
+							echo "${0##*/}: Cannot create a temporary file" > /dev/stderr
 							exit 1
 						fi
 					done
@@ -85,7 +86,7 @@ for arg in "$@"; do
 			;;
 	esac
 	# transfer the characters to octet escaped strings to import to AWK safely
-	octed_filenames="$octed_filenames $(echo -n "$file" | od -A n -t o1 | tr -d '\n' | sed -e 's/[[:blank:]]*$//;' | sed -e 's/[[:blank:]]\{1,\}/\\/g' )"
+	octed_filenames="$octed_filenames $(echo -n "$file" | od -A n -t o1 | tr -d '\n' | sed 's/^[[:blank:]]*137//' | sed 's/[[:blank:]]*$//' | sed 's/[[:blank:]]\{1,\}/\\/g' )"
 done
 octed_filenames=${octed_filenames# }
 
@@ -101,6 +102,12 @@ function utf8strlen_prep() {
 	utf8strlen_F8_4 = sprintf("\370");
 	utf8strlen_FC_5 = sprintf("\374");
 	utf8strlen_FE_6 = sprintf("\376");
+	utf8strlen_K_EF = sprintf("\357");
+	utf8strlen_K_BD = sprintf("\275");
+	utf8strlen_K_BE = sprintf("\276");
+	utf8strlen_K_A0 = sprintf("\240");
+	utf8strlen_K_C0 = sprintf("\300");
+	utf8strlen_K_80 = sprintf("\200");
 }
 
 # strlen for UTF-8 (main)
@@ -117,6 +124,22 @@ function utf8strlen(str) {
 		} else if (utf8strlen_letter < utf8strlen_E0_2) {
 			utf8strlen_i++;
 		} else if (utf8strlen_letter < utf8strlen_F0_3) {
+			if (utf8strlen_letter == utf8strlen_K_EF) {
+				utf8strlen_letter2 = substr(str, utf8strlen_i+1, 1);
+				if (utf8strlen_letter2 == utf8strlen_K_BD) {
+					utf8strlen_letter3 = substr(str, utf8strlen_i+2, 1);
+					if ((utf8strlen_letter3 >= utf8strlen_K_A0) &&
+					    (utf8strlen_letter3 <  utf8strlen_K_C0)  ) {
+						utf8strlen_--;
+					}
+				} else if (utf8strlen_letter2 == utf8strlen_K_BE) {
+					utf8strlen_letter3 = substr(str, utf8strlen_i+2, 1);
+					if ((utf8strlen_letter3 >= utf8strlen_K_80) &&
+					    (utf8strlen_letter3 <  utf8strlen_K_A0)  ) {
+						utf8strlen_--;
+					}
+				}
+			}
 			utf8strlen_i += 2;
 		} else if (utf8strlen_letter < utf8strlen_F8_4) {
 			utf8strlen_i += 3;
