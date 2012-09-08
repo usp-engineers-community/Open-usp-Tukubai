@@ -8,7 +8,7 @@ print_usage_and_exit () {
 	cat <<____USAGE > /dev/stderr
 Usage   : ${0##*/} <f1> <f2> ... <file>
         : ${0##*/} -d <f1> <f2> ... <string>
-Version : Thu Sep 06 18:32:00 JST 2012
+Version : Sat Sep 08 21:29:35 JST 2012
         : Open usp Tukubai (POSIX.1 Bourne Shell/POSIX.1 commands/UTF-8)
 ____USAGE
 	exit 1
@@ -309,6 +309,8 @@ function getsubf(str, startpos, endpos) {
 				} else {
 					getsubf_pos += 2;
 				}
+			} else {
+				getsubf_pos += 2;
 			}
 			getsubf_i   += 3;
 		} else if (getsubf_letter < getsubf_F8_4) {
@@ -369,6 +371,16 @@ function getfldclstr2(fldnum1, fldnum2, stpos, edpos) {
 	return getfldclstr2_;
 }
 '
+if [ -z "$LC_ALL" ]; then
+	LC_CTYPE=C;          export LC_CTYPE
+else
+	LANG=$LC_ALL;        export LANG
+	LC_COLLATE=$LC_ALL;  export LC_COLLATE
+	LC_MESSAGES=$LC_ALL; export LC_MESSAGES
+	LC_NUMERIC=$LC_ALL;  export LC_NUMERIC
+	LC_CTYPE=C;          export LC_CTYPE
+	unset LC_ALL
+fi
 if [ $directmode -ne 0 ]; then
 	echo "_${directstr}_" | sed 's/^_\(.*\)_$/\1/' | awk "$awkcode"
 else
