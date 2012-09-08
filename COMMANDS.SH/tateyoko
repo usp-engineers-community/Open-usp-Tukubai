@@ -51,7 +51,7 @@ BEGIN {
 {
 	if (NF > max_nf) {
 		if ((NR > 1) && (length(dummy_fldstr) == 0)) {
-			print "フィールド数が異なります。" > "/dev/stderr";
+			print "${0##*/}: There is a line which has a differnt number of fields." > "/dev/stderr";
 			_assert_exit = 1;
 			exit _assert_exit;
 		}
