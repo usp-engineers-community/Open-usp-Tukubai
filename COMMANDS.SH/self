@@ -41,7 +41,7 @@ for arg in "$@"; do
 	     \( -n "$arg1" \) -a \( -n "$arg2" \)    ]
 	then
 		if echo "_$arg2" | grep '^_\(NF\|\(NF-\)\?[0-9]\{1,\}\)$' > /dev/null; then
-			# ok
+			:
 		else
 			break
 		fi
