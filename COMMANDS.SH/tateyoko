@@ -7,7 +7,7 @@
 print_usage_and_exit () {
 	cat <<____USAGE > /dev/stderr
 Usage   : ${0##*/} [-d[<string>]] <file>
-Version : Sun Aug 12 23:54:00 JST 2012
+Version : Sat Sep 08 22:07:41 JST 2012
         : Open usp Tukubai (POSIX.1 Bourne Shell/POSIX.1 commands)
 ____USAGE
 	exit 1
@@ -68,7 +68,7 @@ BEGIN {
 	}
 	if (NF < max_nf) {
 		if (length(dummy_fldstr) == 0) {
-			print "フィールド数が異なります。" > "/dev/stderr";
+			print "${0##*/}: There is a line which has a differnt number of fields." > "/dev/stderr";
 			_assert_exit = 1;
 			exit _assert_exit;
 		}
