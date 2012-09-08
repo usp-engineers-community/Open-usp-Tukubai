@@ -9,7 +9,7 @@ print_usage_and_exit () {
 Usage   : ${0##*/} n1 n2 .. <filename>
         : ${0##*/} -v <filename>
         : ${0##*/} [--] <filename>
-Version : Thu Sep 06 22:27:13 JST 2012
+Version : Sat Sep 08 21:28:54 JST 2012
         : Open usp Tukubai (POSIX.1 Bourne Shell/POSIX.1 commands/UTF-8)
 ____USAGE
 	exit 1
@@ -299,10 +299,20 @@ function decide_widthes() {
 	}
 }
 '
-if [ -z "$tmpfile" ]; then
-  exec awk -v "widthes_str=$widthes" "$awkcode_main_justificator$awkcode_func_utf8strlen" "$file"
+if [ -z "$LC_ALL" ]; then
+	LC_CTYPE=C;          export LC_CTYPE
 else
-  awk -v "widthes_str=$widthes" "$awkcode_main_justificator$awkcode_func_utf8strlen" "$file"
+	LANG=$LC_ALL;        export LANG
+	LC_COLLATE=$LC_ALL;  export LC_COLLATE
+	LC_MESSAGES=$LC_ALL; export LC_MESSAGES
+	LC_NUMERIC=$LC_ALL;  export LC_NUMERIC
+	LC_CTYPE=C;          export LC_CTYPE
+	unset LC_ALL
+fi
+if [ -z "$tmpfile" ]; then
+	exec awk -v "widthes_str=$widthes" "$awkcode_main_justificator$awkcode_func_utf8strlen" "$file"
+else
+	awk -v "widthes_str=$widthes" "$awkcode_main_justificator$awkcode_func_utf8strlen" "$file"
 fi
 
 fi

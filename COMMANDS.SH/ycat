@@ -7,7 +7,7 @@
 print_usage_and_exit () {
 	cat <<____USAGE > /dev/stderr
 Usage   : ${0##*/} [-<n>] <file1> <file2> ...
-Version : Thu Sep 06 22:27:31 JST 2012
+Version : Sat Sep 08 21:31:07 JST 2012
         : Open usp Tukubai (POSIX.1 Bourne Shell/POSIX.1 commands/UTF-8)
 ____USAGE
 	exit 1
@@ -239,6 +239,16 @@ BEGIN {
 	}
 }
 '
+if [ -z "$LC_ALL" ]; then
+	LC_CTYPE=C;          export LC_CTYPE
+else
+	LANG=$LC_ALL;        export LANG
+	LC_COLLATE=$LC_ALL;  export LC_COLLATE
+	LC_MESSAGES=$LC_ALL; export LC_MESSAGES
+	LC_NUMERIC=$LC_ALL;  export LC_NUMERIC
+	LC_CTYPE=C;          export LC_CTYPE
+	unset LC_ALL
+fi
 if [ -z "$tmpfiles" ]; then
 	exec awk -v numoption=$numoption -v "octed_filenames=$octed_filenames" -v "max_widthes=$max_widthes" "$awkcode_main2_ycat$awkcode_func_utf8strlen"
 else
