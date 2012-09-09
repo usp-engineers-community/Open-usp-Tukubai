@@ -94,11 +94,15 @@ subPart str = ( toNum f , subPart' s )
 		subPart' lst = read ( tail lst )::Int
 
 makeOut :: [(Int,Int)] -> BS.ByteString -> [BS.ByteString]
-makeOut as cs = [ makeLine as c | c <- BS.lines cs ]
+makeOut as cs = [ makeLine a c | c <- BS.lines cs ]
+		where
+			a = fixOpt as cs
 
-makeLine :: [(Int,Int)] -> BS.ByteString -> BS.ByteString
-makeLine as ln = selectWords (fieldList as fs) (BS.words ln)
-			where fs = length $ BS.words ln
+fixOpt :: [(Int,Int)] -> BS.ByteString -> [Int]
+fixOpt as cs = fieldList as (length $ BS.words $ head $ BS.lines cs)
+
+makeLine :: [Int] -> BS.ByteString -> BS.ByteString
+makeLine a ln = selectWords a (BS.words ln)
 
 selectWords :: [Int] -> [BS.ByteString] -> BS.ByteString
 selectWords fs ws = BS.unwords [ ws !! f | f <- fs ]
