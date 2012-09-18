@@ -1,0 +1,180 @@
+#! /bin/sh
+
+# designed by Nobuaki Tounaka
+# written by 321516
+
+# print the usage and exit
+print_usage_and_exit () {
+	cat <<____USAGE > /dev/stderr
+Usage   : ${0##*/} [-d<c>] [-i<string>] [--template <html>] <param_file>
+Version : Wed Sep 19 00:45:51 JST 2012
+        : Open usp Tukubai (POSIX.1 Bourne Shell/POSIX.1 commands/UTF-8)
+____USAGE
+	exit 1
+}
+
+# initialize
+dopt=''
+dopt_is_set=0
+iopt=''
+tmplfile=''
+tmplvars=''
+param_file=''
+use_stdin=0
+LF=$(printf '\134\n_'); LF=${LF%_}
+
+# parse arguments
+optmode=''
+i=0
+for arg in "$@"; do
+	i=$((i+1))
+	if [ -z "$optmode" ]; then
+		case "$arg" in
+			-d*)
+				dopt_is_set=1
+				optmode='d'
+				if [ -n "${arg#-d}" ]; then
+					arg=${arg#-d}
+				else
+					optmode=''
+					continue
+				fi
+				;;
+			-i*)
+				optmode='i'
+				if [ -n "${arg#-i}" ]; then
+					arg=${arg#-i}
+				else
+					continue
+				fi
+				;;
+			--template)
+				optmode='tmpl'
+				continue
+				;;
+			*)
+				[ $i -eq $# ] || print_usage_and_exit
+				optmode='param'
+				;;
+		esac
+	fi
+	case "$optmode" in
+		d)
+			dopt=$arg
+			optmode=''
+			;;
+		i)
+			iopt=$arg
+			optmode=''
+			;;
+		tmpl)
+			tmpl_file=$arg
+			optmode=''
+			;;
+		param)
+			param_file=$arg
+			optmode=''
+			;;
+	esac
+done
+if [ \( -z "$param_file" \) -o \( "_$param_file" = '_-' \) ]; then
+	param_file='/dev/stdin'
+fi
+if [ \( "_$param_file" = '_/dev/stdin' \) -o \
+     \( "_$param_file" = '_/dev/fd/0'  \)    ]
+then
+	use_stdin=$((use_stdin+1))
+fi
+if [ "_$tmpl_file" = '_-' ]; then
+	tmpl_file='/dev/stdin'
+fi
+if [ \( "_$tmpl_file" = '_/dev/stdin' \) -o \
+     \( "_$tmpl_file" = '_/dev/fd/0'  \)    ]
+then
+	use_stdin=$((use_stdin+1))
+fi
+if [ $use_stdin -gt 1 ]; then
+	print_usage_and_exit
+fi
+
+# operate the -template option
+if [ \( -f "$tmpl_file" \) -o \( -c "$tmpl_file" \) ]; then
+	tmplvars=$(tr '\r\n' '  ' < "$tmpl_file"                                   |
+	           sed 's/\(<[Ii][Nn][Pp][Uu][Tt] [^>]*>\)/'"$LF"'\1'"$LF"'</g'    |
+	           grep -i '<input '                                               |
+	           grep -i ' type=["'"'"']\{0,1\}\(radiobox\|checkbox\)'           |
+	           grep -i ' name="[^"]*"\| name='"'"'[^'"'"']*'"'"'\| name=[^ ] ' |
+	           sed 's/^.*[Nn][Aa][Mm][Ee]="\([^"]*\)".*$/\1/'                  |
+	           sed 's/^.*[Nn][Aa][Mm][Ee]='"'"'\([^'"'"']*\)'"'"'.*$/\1/'      |
+	           sed 's/^.*[Nn][Aa][Mm][Ee]=\([^ ]*\) .*$/\1/'                   |
+	           grep -v '[^][A-Za-z0-9_.:-]'                                    |
+	           sort                                                            |
+	           uniq                                                            |
+	           tr '\n' ' '                                                     |
+	           sed 's/ $//'                                                    )
+elif [ -n "$tmpl_file" ]; then
+	print_usage_and_exit
+fi
+
+# transfer the characters to octet escaped strings to import to AWK safely
+octed_dopt=$(echo -n "_$dopt" | od -A n -t o1 | tr -d '\n' | sed 's/^[[:blank:]]*137//' | sed 's/[[:blank:]]*$//' | sed 's/[[:blank:]]\{1,\}/\\/g')
+octed_iopt=$(echo -n "_$iopt" | od -A n -t o1 | tr -d '\n' | sed 's/^[[:blank:]]*137//' | sed 's/[[:blank:]]*$//' | sed 's/[[:blank:]]\{1,\}/\\/g')
+
+#
+sed 's/\(%[0-9A-Fa-f][0-9A-Fa-f]\)/'"$LF"'\1'"$LF"'/g' "$param_file" |
+sed '/^%/y/abcdef/ABCDEF/'                                           |
+tr -d '\n'                                                           |
+sed 's/%0D%0A/\\n/g'                                                 |
+sed 's/&/'"$LF"'/g'                                                  |
+sed 's/+/ /'                                                         |
+awk -v dopt_is_set=$dopt_is_set -v tmplvars="$tmplvars"              '
+BEGIN {
+	for (i = 0; i < 256; i++) {
+		s = sprintf("%02X",i);
+		chr[s] = sprintf("%c",i);
+	}
+	dopt = sprintf("'"$octed_dopt"'");
+	iopt = sprintf("'"$octed_iopt"'");
+	split(tmplvars, array0);
+	for (var in array0) {
+		tmplvar[array0[var]]="";
+		delete array0[var];
+	}
+	FS = "=";
+}
+{
+	str1 = substr($0, index($0,"=")+1);
+	str2 = "";
+	while (match(str1,/%[0-9A-F][0-9A-F]/)) {
+		hex  = substr(str1, RSTART+1, 2);
+		str2 = str2 substr(str1, 1, RSTART-1) chr[hex];
+		str1 = substr(str1, RSTART+3);
+	}
+	str2 = str2 str1;
+
+	if (length(str2) == 0 && length(iopt)) {
+		str2 = iopt;
+	} else if (dopt_is_set != 0)  {
+		gsub(/ /, dopt, str2);
+	}
+	if ($1 in tmplvar) {
+		delete tmplvar[$1];
+	}
+	if (length(str2) > 0) {
+		print $1, str2;
+	} else {
+		print $1;
+	}
+}
+END {
+	if (length(iopt) > 0) {
+		for (var in tmplvar) {
+			print var, iopt;
+		}
+	} else {
+		for (var in tmplvar) {
+			print var;
+		}
+	}
+}
+'

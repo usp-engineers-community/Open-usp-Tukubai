@@ -44,7 +44,7 @@ dummy_fldcd=$(echo -n "_$dummy_fldstr" | od -A n -t o1 | tr -d '\n' | sed 's/^[[
 exec awk '
 BEGIN {
 	max_nf = 0;
-	dummy_fldstr = sprintf("'$dummy_fldcd'");
+	dummy_fldstr = sprintf("'"$dummy_fldcd"'");
 	_assert_exit = 0;
 }
 
