@@ -96,8 +96,11 @@ fi
 if [ $use_stdin -gt 1 ]; then
 	print_usage_and_exit
 fi
+if [ \( ! -f "$param_file" \) -a \( ! -c "$param_file" \) ]; then
+	print_usage_and_exit
+fi
 
-# operate the -template option
+# operate the --template option
 if [ \( -f "$tmpl_file" \) -o \( -c "$tmpl_file" \) ]; then
 	tmplvars=$(tr '\r\n' '  ' < "$tmpl_file"                                   |
 	           sed 's/\(<[Ii][Nn][Pp][Uu][Tt] [^>]*>\)/'"$LF"'\1'"$LF"'</g'    |
