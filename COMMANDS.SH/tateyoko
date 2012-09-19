@@ -7,7 +7,7 @@
 print_usage_and_exit () {
 	cat <<____USAGE > /dev/stderr
 Usage   : ${0##*/} [-d[<string>]] <file>
-Version : Sat Sep 08 22:07:41 JST 2012
+Version : Thu Sep 20 02:08:00 JST 2012
         : Open usp Tukubai (POSIX.1 Bourne Shell/POSIX.1 commands)
 ____USAGE
 	exit 1
@@ -27,14 +27,16 @@ case "$1" in
 		shift
 		;;
 esac
-if	 [ -z "$1" ]; then
-	file='/dev/stdin'
-elif [ \( -f "$1" \) -o \( -c "$1" \) ]; then
+if [ \( -f "$1" \) -o \( -c "$1" \) ]; then
 	file="$1"
-elif [ "_$1" = '_-' ]; then
+elif [ \( -z "$1" \) -o \( "_$1" = '_-' \) ]; then
 	file='/dev/stdin'
 else
 	print_usage_and_exit
+fi
+if [ ! -r "$file" ]; then
+	echo "${0##*/}: Cannot open the file" > /dev/stderr
+	exit 1
 fi
 
 # transfer the characters to octet escaped strings to import to AWK safely
