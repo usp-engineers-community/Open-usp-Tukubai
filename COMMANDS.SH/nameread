@@ -34,28 +34,28 @@ for arg in "$@"; do
 			-[deil]*)
 				ret=$(echo "_${arg#-}" |
 				      awk '{
-				        d = "_";
-				        e = "_";
-				        i = "_";
-				        l = "_";
-				        opt_str = "";
-				        for (n=2;n<=length($0);n++) {
-				          s = substr($0,n,1);
-				          if (s == "d") {
-				            d = "d";
-				            opt_str = substr($0,n+1);
-				            break;
-				          } else if (s == "e") {
-				            e = "e";
-				          } else if (s == "i") {
-				            i = "i";
-				            opt_str = substr($0,n+1);
-				            break;
-				          } else if (s == "l") {
-				            l = "l";
-				          }
-				        }
-				        printf("%s%s%s%s %s",d,e,i,l,opt_str);
+				      	d = "_";
+				      	e = "_";
+				      	i = "_";
+				      	l = "_";
+				      	opt_str = "";
+				      	for (n=2;n<=length($0);n++) {
+				      		s = substr($0,n,1);
+				      		if (s == "d") {
+				      			d = "d";
+				      			opt_str = substr($0,n+1);
+				      			break;
+				      		} else if (s == "e") {
+				      			e = "e";
+				      		} else if (s == "i") {
+				      			i = "i";
+				      			opt_str = substr($0,n+1);
+				      			break;
+				      		} else if (s == "l") {
+				      			l = "l";
+				      		}
+				      	}
+				      	printf("%s%s%s%s %s",d,e,i,l,opt_str);
 				      }')
 				ret1=${ret%% *}
 				ret2=${ret#* }
