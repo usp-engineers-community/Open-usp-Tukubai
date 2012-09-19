@@ -7,7 +7,7 @@
 print_usage_and_exit () {
 	cat <<____USAGE > /dev/stderr
 Usage   : ${0##*/} [-d<c>] [-i<string>] [--template <html>] <param_file>
-Version : Wed Sep 19 00:45:51 JST 2012
+Version : Thu Sep 20 01:37:12 JST 2012
         : Open usp Tukubai (POSIX.1 Bourne Shell/POSIX.1 commands/UTF-8)
 ____USAGE
 	exit 1
@@ -99,9 +99,17 @@ fi
 if [ \( ! -f "$param_file" \) -a \( ! -c "$param_file" \) ]; then
 	print_usage_and_exit
 fi
+if [ ! -r "$param_file" ]; then
+	echo "${0##*/}: Cannot open the file as a param_file" > /dev/stderr
+	exit 1
+fi
 
 # operate the --template option
 if [ \( -f "$tmpl_file" \) -o \( -c "$tmpl_file" \) ]; then
+	if [ ! -r "$tmpl_file" ]; then
+		echo "${0##*/}: Cannot open the file as a template file" > /dev/stderr
+		exit 1
+	fi
 	tmplvars=$(tr '\r\n' '  ' < "$tmpl_file"                                   |
 	           sed 's/\(<[Ii][Nn][Pp][Uu][Tt] [^>]*>\)/'"$LF"'\1'"$LF"'</g'    |
 	           grep -i '<input '                                               |

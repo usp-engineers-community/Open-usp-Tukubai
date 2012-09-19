@@ -7,7 +7,7 @@
 print_usage_and_exit () {
 	cat <<____USAGE > /dev/stderr
 Usage   : ${0##*/} [-el] [-d<c>] [-i<string>] <name> <name_file>
-Version : Wed Sep 19 19:41:07 JST 2012
+Version : Thu Sep 20 01:37:40 JST 2012
         : Open usp Tukubai (POSIX.1 Bourne Shell/POSIX.1 commands/UTF-8)
 ____USAGE
 	exit 1
@@ -108,6 +108,10 @@ if [ \( -z "$name_file" \) -o \( "_$name_file" = '_-' \) ]; then
 fi
 if [ \( ! -f "$name_file" \) -a \( ! -c "$name_file" \) ]; then
 	print_usage_and_exit
+fi
+if [ ! -r "$name_file" ]; then
+	echo "${0##*/}: Cannot open the file" > /dev/stderr
+	exit 1
 fi
 
 # transfer the characters to octet escaped strings to import to AWK safely
