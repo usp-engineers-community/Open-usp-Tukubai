@@ -105,7 +105,7 @@ if [ \( -f "$tmpl_file" \) -o \( -c "$tmpl_file" \) ]; then
 	tmplvars=$(tr '\r\n' '  ' < "$tmpl_file"                                   |
 	           sed 's/\(<[Ii][Nn][Pp][Uu][Tt] [^>]*>\)/'"$LF"'\1'"$LF"'</g'    |
 	           grep -i '<input '                                               |
-	           grep -i ' type=["'"'"']\{0,1\}\(radiobox\|checkbox\)'           |
+	           grep -i ' type=["'"'"']\{0,1\}\(radiobox\>\|checkbox\>\)'       |
 	           grep -i ' name="[^"]*"\| name='"'"'[^'"'"']*'"'"'\| name=[^ ] ' |
 	           sed 's/^.*[Nn][Aa][Mm][Ee]="\([^"]*\)".*$/\1/'                  |
 	           sed 's/^.*[Nn][Aa][Mm][Ee]='"'"'\([^'"'"']*\)'"'"'.*$/\1/'      |
@@ -123,7 +123,7 @@ fi
 octed_dopt=$(echo -n "_$dopt" | od -A n -t o1 | tr -d '\n' | sed 's/^[[:blank:]]*137//' | sed 's/[[:blank:]]*$//' | sed 's/[[:blank:]]\{1,\}/\\/g')
 octed_iopt=$(echo -n "_$iopt" | od -A n -t o1 | tr -d '\n' | sed 's/^[[:blank:]]*137//' | sed 's/[[:blank:]]*$//' | sed 's/[[:blank:]]\{1,\}/\\/g')
 
-#
+# transfer the CGI variables string to the "cgi-name format"
 sed 's/\(%[0-9A-Fa-f][0-9A-Fa-f]\)/'"$LF"'\1'"$LF"'/g' "$param_file" |
 sed '/^%/y/abcdef/ABCDEF/'                                           |
 tr -d '\n'                                                           |
