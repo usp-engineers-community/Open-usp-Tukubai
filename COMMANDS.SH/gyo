@@ -7,7 +7,7 @@
 print_usage_and_exit () {
 	cat <<____USAGE > /dev/stderr
 Usage   : ${0##*/} [-f] <file> ...
-Version : Fri Sep 07 00:00:42 JST 2012
+Version : Thu Sep 20 02:08:00 JST 2012
         : Open usp Tukubai (POSIX.1 Bourne Shell/POSIX.1 commands)
 ____USAGE
 	exit 1
@@ -82,6 +82,10 @@ for arg in "$@"; do
 		file="$arg"
 	else
 		print_usage_and_exit
+	fi
+	if [ ! -r "$file" ]; then
+		echo "${0##*/}: Cannot open the file \"$arg\"" > /dev/stderr
+		exit 1
 	fi
 	#
 	# process a file

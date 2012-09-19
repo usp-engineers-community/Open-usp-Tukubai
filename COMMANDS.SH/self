@@ -8,7 +8,7 @@ print_usage_and_exit () {
 	cat <<____USAGE > /dev/stderr
 Usage   : ${0##*/} <f1> <f2> ... <file>
         : ${0##*/} -d <f1> <f2> ... <string>
-Version : Sat Sep 08 21:29:35 JST 2012
+Version : Thu Sep 20 02:08:00 JST 2012
         : Open usp Tukubai (POSIX.1 Bourne Shell/POSIX.1 commands/UTF-8)
 ____USAGE
 	exit 1
@@ -212,6 +212,10 @@ else
 	print_usage_and_exit
 fi
 [ $directmode -ne 0 ] && file=''
+if [ \( -n "$file" \) -a \( ! -r "$file" \) ]; then
+	echo "${0##*/}: Cannot open the file" > /dev/stderr
+	exit 1
+fi
 
 # select fields
 awkcode='

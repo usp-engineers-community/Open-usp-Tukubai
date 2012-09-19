@@ -7,7 +7,7 @@
 print_usage_and_exit () {
 	cat <<____USAGE > /dev/stderr
 Usage   : ${0##*/} [-<n>] <file1> <file2> ...
-Version : Sat Sep 08 21:31:07 JST 2012
+Version : Thu Sep 20 02:08:00 JST 2012
         : Open usp Tukubai (POSIX.1 Bourne Shell/POSIX.1 commands/UTF-8)
 ____USAGE
 	exit 1
@@ -35,15 +35,17 @@ mktemp_instead_of_stdin () {
 		exit 1
 	fi
 }
+i=0
 for arg in "$@"; do
-	case "$arg" in
-		-[0-9]*)
-			numoption=$(echo "${arg#-}" | grep '^[0-9]\+$')
-			if [ $? -ne 0 ]; then
-				print_usage_and_exit
-			fi
+	i=$((i+1))
+	if [ $i -eq 1 ]; then
+		echo "_$arg" | grep '^_-[0-9]\+$' > /dev/null
+		if [ $? -eq 0 ]; then
+			numoption=$(echo "_$arg" | sed 's/^_-//')
 			continue
-			;;
+		fi
+	fi
+	case "$arg" in
 		-)
 			[ $use_stdin -ne 0 ] && print_usage_and_exit
 			use_stdin=1
@@ -85,10 +87,17 @@ for arg in "$@"; do
 			fi
 			;;
 	esac
+	if [ ! -r "$file" ]; then
+		echo "${0##*/}: Cannot open the file \"$arg\"" > /dev/stderr
+		exit 1
+	fi
 	# transfer the characters to octet escaped strings to import to AWK safely
-	octed_filenames="$octed_filenames $(echo -n "$file" | od -A n -t o1 | tr -d '\n' | sed 's/^[[:blank:]]*137//' | sed 's/[[:blank:]]*$//' | sed 's/[[:blank:]]\{1,\}/\\/g' )"
+	octed_filenames="$octed_filenames $(echo -n "$file" | od -A n -t o1 | tr -d '\n' | sed 's/^[[:blank:]]*137//' | sed 's/[[:blank:]]*$//' | sed 's/[[:blank:]]\{1,\}/\\/g')"
 done
 octed_filenames=${octed_filenames# }
+if [ -z "$octed_filenames" ]: then
+	octed_filenames=$(echo -n /dev/stdin | od -A n -t o1 | tr -d '\n' | sed 's/[[:blank:]]*$//' | sed 's/[[:blank:]]\{1,\}/\\/g')
+fi
 
 
 # awkcode : get the length of the UTF-8 string (it is not a byte number)

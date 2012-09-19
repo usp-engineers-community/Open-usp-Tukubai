@@ -7,7 +7,7 @@
 print_usage_and_exit () {
 	cat <<____USAGE > /dev/stderr
 Usage   : ${0##*/} [+ng[<fd>]] key=<n> <master> <tran>
-Version : Sun Aug 12 17:34:00 JST 2012
+Version : Thu Sep 20 02:08:00 JST 2012
         : Open usp Tukubai (POSIX.1 Bourne Shell/POSIX.1 commands)
 ____USAGE
 	exit 1
@@ -71,7 +71,7 @@ for arg in "$@"; do
 			;;
 	esac
 done
-if [ -z $key_1 ]; then
+if [ -z "$key_1" ]; then
 	print_usage_and_exit
 fi
 if [ -z "$masterfile" ]; then
@@ -82,6 +82,20 @@ if [ -z "$tranfile" ]; then
 fi
 if [ \( \( "_$masterfile" = '_/dev/stdin' \) -o \( "_$masterfile" = '_/dev/fd/0' \) \) -a \( \( "_$tranfile" = '_/dev/stdin' \) -o \( "_$tranfile" = '_/dev/fd/0' \) \) ]; then
 	print_usage_and_exit
+fi
+if [ \( ! -f "$masterfile" \) -a \( ! -c "$masterfile" \) ]; then
+	print_usage_and_exit
+fi
+if [ ! -r "$masterfile" ]; then
+	echo "${0##*/}: Cannot open the master file" > /dev/stderr
+	exit 1
+fi
+if [ \( ! -f "$tranfile" \) -a \( ! -c "$tranfile" \) ]; then
+	print_usage_and_exit
+fi
+if [ ! -r "$tranfile" ]; then
+	echo "${0##*/}: Cannot open the transaction file" > /dev/stderr
+	exit 1
 fi
 
 
