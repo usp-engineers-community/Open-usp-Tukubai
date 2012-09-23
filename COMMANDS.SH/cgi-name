@@ -7,7 +7,7 @@
 print_usage_and_exit () {
 	cat <<____USAGE > /dev/stderr
 Usage   : ${0##*/} [-d<c>] [-i<string>] [--template <html>] <param_file>
-Version : Thu Sep 20 01:37:12 JST 2012
+Version : Mon Sep 24 00:59:50 JST 2012
         : Open usp Tukubai (POSIX.1 Bourne Shell/POSIX.1 commands/UTF-8)
 ____USAGE
 	exit 1
@@ -113,7 +113,7 @@ if [ \( -f "$tmpl_file" \) -o \( -c "$tmpl_file" \) ]; then
 	tmplvars=$(tr '\r\n' '  ' < "$tmpl_file"                                   |
 	           sed 's/\(<[Ii][Nn][Pp][Uu][Tt] [^>]*>\)/'"$LF"'\1'"$LF"'</g'    |
 	           grep -i '<input '                                               |
-	           grep -i ' type=["'"'"']\{0,1\}\(radiobox\>\|checkbox\>\)'       |
+	           grep -i ' type=["'"'"']\{0,1\}\(radio\>\|checkbox\>\)'          |
 	           grep -i ' name="[^"]*"\| name='"'"'[^'"'"']*'"'"'\| name=[^ ] ' |
 	           sed 's/^.*[Nn][Aa][Mm][Ee]="\([^"]*\)".*$/\1/'                  |
 	           sed 's/^.*[Nn][Aa][Mm][Ee]='"'"'\([^'"'"']*\)'"'"'.*$/\1/'      |
