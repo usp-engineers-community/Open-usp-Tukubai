@@ -7,7 +7,8 @@
 print_usage_and_exit () {
 	cat <<____USAGE > /dev/stderr
 Usage   : ${0##*/} [+ng[<fd>]] key=<n> <master> <tran>
-Version : Sun Aug 12 17:34:00 JST 2012
+Version : Tue Oct 02 02:48:00 JST 2012
+        : Open usp Tukubai (POSIX.1 Bourne Shell/POSIX.1 commands)
 ____USAGE
 	exit 1
 }
@@ -28,21 +29,37 @@ for arg in "$@"; do
 			key=${arg#key=}
 			key_1=''
 			key_2=''
-			$(echo "_$key" | grep '^_[0-9]\{1,\}$' > /dev/null)
-			if [ $? -eq 0 ]; then
-				key_1=$key
-				key_2=$key
-			fi
-			$(echo "_$key" | grep '^_[0-9]\{1,\}/[0-9]\{1,\}$' > /dev/null)
-			if [ $? -eq 0 ]; then
-				key_1="${key%/*}"
-				key_2="${key#*/}"
-			fi
-			if [ \( -n $key_1 \) -a \( -n $key_2 \) -a \( $key_2 -ge $key_1 \) ]; then
+			if echo "_$key" | grep '^_[0-9]\{1,\}$' > /dev/null; then
+				s=$(echo $key | sed 's/^0\{1,\}//')
+				[ -z "$s" ] && print_usage_and_exit
+				key_1=$s
+				key_2=$s
 				continue
-			else
-				print_usage_and_exit
+			elif echo "_$key" | grep '^_[0-9]\{1,\}/[0-9]\{1,\}$' > /dev/null; then
+				s=$(echo ${key%/*} | sed 's/^0\{1,\}//')
+				[ -z "$s" ] && print_usage_and_exit
+				s1=$(echo ${key#*/} | sed 's/^0\{1,\}//')
+				[ -z "$s1" ] && print_usage_and_exit
+				if [ $s -le $s1 ]; then
+					key_1=$s
+					key_2=$s1
+				else
+					key_1=$s1
+					key_2=$s
+				fi
+				continue
+			elif echo "_$key" | grep '^_[0-9][0-9@]\+[0-9]$' > /dev/null; then
+				echo $arg | grep '@@' > /dev/null && print_usage_and_exit
+				s=$(echo "${key}_" | tr '@' '\n' | sed 's/^0\{1,\}//')
+				echo "$s" | grep '^_*$' > /dev/null && print_usage_and_exit
+				s1=$(echo "${s%_}" | sort -k 1n,1)
+				s2=$(echo "$s1" | uniq)
+				[ "_$s1" != "_$s2" ] && print_usage_and_exit
+				key_1=$(echo "${s%_}" | tr '\n' '@' | sed 's/@$//')
+				key_2=''
+				continue
 			fi
+			print_usage_and_exit
 			;;
 		+ng*)
 			ng=${arg#+ng}
@@ -70,7 +87,7 @@ for arg in "$@"; do
 			;;
 	esac
 done
-if [ -z $key_1 ]; then
+if [ -z "$key_1" ]; then
 	print_usage_and_exit
 fi
 if [ -z "$masterfile" ]; then
@@ -82,6 +99,20 @@ fi
 if [ \( \( "_$masterfile" = '_/dev/stdin' \) -o \( "_$masterfile" = '_/dev/fd/0' \) \) -a \( \( "_$tranfile" = '_/dev/stdin' \) -o \( "_$tranfile" = '_/dev/fd/0' \) \) ]; then
 	print_usage_and_exit
 fi
+if [ \( ! -f "$masterfile" \) -a \( ! -c "$masterfile" \) ]; then
+	print_usage_and_exit
+fi
+if [ ! -r "$masterfile" ]; then
+	echo "${0##*/}: Cannot open the master file" > /dev/stderr
+	exit 1
+fi
+if [ \( ! -f "$tranfile" \) -a \( ! -c "$tranfile" \) ]; then
+	print_usage_and_exit
+fi
+if [ ! -r "$tranfile" ]; then
+	echo "${0##*/}: Cannot open the transaction file" > /dev/stderr
+	exit 1
+fi
 
 
 # join
@@ -90,25 +121,50 @@ exec awk -v key_1=$key_1 -v key_2=$key_2 -v ng=$ng \
 	# prepare
 	BEGIN {
 		fd = (ng != "") ? "/dev/fd/"ng : "";
+		if (key_1 == key_2) {
+			keytype = 1;
+			keynum_min = key_1;
+			keynum_max = key_2;
+		} else if (key_2 != "") {
+			keytype = 2;
+			keynum_min = key_1;
+			keynum_max = key_2;
+		} else {
+			keytype = 3;
+			split(key_1, keynum, "@");
+			keynum_min = keynum[1];
+			keynum_max = keynum[1];
+			for (i = 2; i <= length(keynum); i++) {
+				keynum_min = (keynum[i] < keynum_min) ? keynum[i] : keynum_min;
+				keynum_max = (keynum[i] > keynum_max) ? keynum[i] : keynum_max;
+			}
+		}
 	}
 
 	# print the records in tran which have the same key
 	FNR < NR {
-		if (key_1 == key_2) {
-			str = $key_1
-		} else {
+		if (keytype == 1) {
+			str = $key_1;
+		} else if (keytype == 2) {
 			str = "";
 			for (i = key_1; i <= key_2; i++) {
 				str = str $i;
 			}
+		} else if (keytype == 3) {
+			str = "";
+			for (i = 1; i <= length(keynum); i++) {
+				str = str $keynum[i];
+			}
+		} else {
+			str = "";
 		}
-		if (str in masterkeys) {
+		if (str in masterkey) {
 			str2 = "";
-			for (i = 1; i <= key_2; i++) {
+			for (i = 1; i < keynum_min; i++) {
 				str2 = str2 $i FS;
 			}
-			str2 = str2 masterkeys[str];
-			for (i = key_2 + 1; i <= NF; i++) {
+			str2 = str2 masterkey[str];
+			for (i = keynum_max + 1; i <= NF; i++) {
 				str2 = str2 FS $i;
 			}
 			print str2;
@@ -120,18 +176,22 @@ exec awk -v key_1=$key_1 -v key_2=$key_2 -v ng=$ng \
 
 	# load the keys in master
 	{
-		if (key_1 == key_2) {
-			str = $key_1
-		} else {
+		if (keytype == 1) {
+			str = $1;
+		} else if (keytype == 2) {
 			str = "";
-			for (i = key_1; i <= key_2; i++) {
+			for (i = 1; i <= (key_2 - key_1 + 1); i++) {
 				str = str $i;
 			}
+		} else if (keytype == 3) {
+			str = "";
+			for (i = 1; i <= length(keynum); i++) {
+				j = keynum[i] - keynum_min + 1;
+				str = str $j;
+			}
+		} else {
+			str = "";
 		}
-		str2 = "";
-		for (i = key_2 + 1; i <= NF; i++) {
-			str2 = str2 $i FS;
-		}
-		masterkeys[str] = substr(str2, 1, length(str2) - 1);
+		masterkey[str] = $0;
 	}
 ' "$masterfile" "$tranfile"
