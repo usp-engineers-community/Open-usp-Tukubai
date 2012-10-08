@@ -9,8 +9,8 @@ print_usage_and_exit () {
 Usage   : ${0##*/} n1 n2 .. <filename>
         : ${0##*/} -v <filename>
         : ${0##*/} [--] <filename>
-Version : Mon Aug 14 02:22:21 JST 2012
-        : UTF-8
+Version : Thu Sep 20 02:08:00 JST 2012
+        : Open usp Tukubai (POSIX.1 Bourne Shell/POSIX.1 commands/UTF-8)
 ____USAGE
 	exit 1
 }
@@ -64,17 +64,21 @@ elif [ "_$1" = '_-' ]; then
 else
 	print_usage_and_exit
 fi
+if [ ! -r "$file" ]; then
+	echo "${0##*/}: Cannot open the file" > /dev/stderr
+	exit 1
+fi
 
 
 # create a temporary file if the file is the stdin and mode==0|2
 if [ \( \( "_$file" = "_/dev/stdin" \) -o \( "_$file" = "_/dev/fd/0" \) \) -a \( \( $mode -eq 0 \) -o \( $mode -eq 2 \) \) ]; then
 	tmpfile=$(mktemp -t "${0##*/}.XXXXXXXX")
 	if [ $? -eq 0 ]; then
-		trap "rm -f $tmpfile" EXIT HUP INT QUIT ALRM SEGV TERM
+		trap "rm -f $tmpfile; exit" EXIT HUP INT QUIT ALRM SEGV TERM
 		cat "$file" > "$tmpfile"
 		file=$tmpfile
 	else
-		echo "${0##*/} : Cannot create a temporary file" > /dev/stderr
+		echo "${0##*/}: Cannot create a temporary file" > /dev/stderr
 		exit 1
 	fi
 fi
@@ -91,6 +95,12 @@ function utf8strlen_prep() {
 	utf8strlen_F8_4 = sprintf("\370");
 	utf8strlen_FC_5 = sprintf("\374");
 	utf8strlen_FE_6 = sprintf("\376");
+	utf8strlen_K_EF = sprintf("\357");
+	utf8strlen_K_BD = sprintf("\275");
+	utf8strlen_K_BE = sprintf("\276");
+	utf8strlen_K_A0 = sprintf("\240");
+	utf8strlen_K_C0 = sprintf("\300");
+	utf8strlen_K_80 = sprintf("\200");
 }
 
 # strlen for UTF-8 (main)
@@ -107,6 +117,22 @@ function utf8strlen(str) {
 		} else if (utf8strlen_letter < utf8strlen_E0_2) {
 			utf8strlen_i++;
 		} else if (utf8strlen_letter < utf8strlen_F0_3) {
+			if (utf8strlen_letter == utf8strlen_K_EF) {
+				utf8strlen_letter2 = substr(str, utf8strlen_i+1, 1);
+				if (utf8strlen_letter2 == utf8strlen_K_BD) {
+					utf8strlen_letter3 = substr(str, utf8strlen_i+2, 1);
+					if ((utf8strlen_letter3 >= utf8strlen_K_A0) &&
+					    (utf8strlen_letter3 <  utf8strlen_K_C0)  ) {
+						utf8strlen_--;
+					}
+				} else if (utf8strlen_letter2 == utf8strlen_K_BE) {
+					utf8strlen_letter3 = substr(str, utf8strlen_i+2, 1);
+					if ((utf8strlen_letter3 >= utf8strlen_K_80) &&
+					    (utf8strlen_letter3 <  utf8strlen_K_A0)  ) {
+						utf8strlen_--;
+					}
+				}
+			}
 			utf8strlen_i += 2;
 		} else if (utf8strlen_letter < utf8strlen_F8_4) {
 			utf8strlen_i += 3;
@@ -209,17 +235,20 @@ BEGIN {
 		size = utf8strlen($i);
 		if ((i in width) && (width[i] > size)) {
 			# right-justification
-			for (j = 1; j <= width[i] - size; j++) {
-				line = line " ";
+			padding = "";
+			if (width[i] - size > 0) {
+				padding = sprintf("%0" (width[i] - size) "d", 0);
+				gsub("0", " ", padding);
 			}
-			line = line $i FS;
+			line = line padding $i FS;
 		} else if ((i in width) && (-width[i] > size)) {
 			# left-justification
-			line = line $i;
-			for (j = 1; j <= -width[i] - size; j++) {
-				line = line " ";
+			padding = "";
+			if (-width[i] - size > 0) {
+				padding = sprintf("%0" (-width[i] - size) "d", 0);
+				gsub("0", " ", padding);
 			}
-			line = line FS;
+			line = line $i padding FS;
 		} else {
 			# non-justification
 			line = line $i FS;
@@ -274,10 +303,20 @@ function decide_widthes() {
 	}
 }
 '
-if [ -z "$tmpfile" ]; then
-  exec awk -v "widthes_str=$widthes" "$awkcode_main_justificator$awkcode_func_utf8strlen" "$file"
+if [ -z "$LC_ALL" ]; then
+	LC_CTYPE=C;          export LC_CTYPE
 else
-  awk -v "widthes_str=$widthes" "$awkcode_main_justificator$awkcode_func_utf8strlen" "$file"
+	LANG=$LC_ALL;        export LANG
+	LC_COLLATE=$LC_ALL;  export LC_COLLATE
+	LC_MESSAGES=$LC_ALL; export LC_MESSAGES
+	LC_NUMERIC=$LC_ALL;  export LC_NUMERIC
+	LC_CTYPE=C;          export LC_CTYPE
+	unset LC_ALL
+fi
+if [ -z "$tmpfile" ]; then
+	exec awk -v "widthes_str=$widthes" "$awkcode_main_justificator$awkcode_func_utf8strlen" "$file"
+else
+	awk -v "widthes_str=$widthes" "$awkcode_main_justificator$awkcode_func_utf8strlen" "$file"
 fi
 
 fi

@@ -7,7 +7,8 @@
 print_usage_and_exit () {
 	cat <<____USAGE > /dev/stderr
 Usage   : ${0##*/} [-<n>] <file1> <file2> ...
-Version : Sun Aug 14 17:45:00 JST 2012
+Version : Thu Sep 20 02:08:00 JST 2012
+        : Open usp Tukubai (POSIX.1 Bourne Shell/POSIX.1 commands/UTF-8)
 ____USAGE
 	exit 1
 }
@@ -27,22 +28,24 @@ mktemp_instead_of_stdin () {
 	tmpfile=$(mktemp -t "${0##*/}")
 	if [ $? -eq 0 ]; then
 		tmpfiles="$tmpfiles $tmpfile"
-		trap "rm -f $tmpfiles" EXIT HUP INT QUIT ALRM SEGV TERM
+		trap "rm -f $tmpfiles; exit" EXIT HUP INT QUIT ALRM SEGV TERM
 		cat /dev/stdin > "$tmpfile"
 	else
 		echo "${0##*/} : Cannot create a temporary file" > /dev/stderr
 		exit 1
 	fi
 }
+i=0
 for arg in "$@"; do
-	case "$arg" in
-		-[0-9]*)
-			numoption=$(echo "${arg#-}" | grep '^[0-9]\+$')
-			if [ $? -ne 0 ]; then
-				print_usage_and_exit
-			fi
+	i=$((i+1))
+	if [ $i -eq 1 ]; then
+		echo "_$arg" | grep '^_-[0-9]\+$' > /dev/null
+		if [ $? -eq 0 ]; then
+			numoption=$(echo "_$arg" | sed 's/^_-//')
 			continue
-			;;
+		fi
+	fi
+	case "$arg" in
 		-)
 			[ $use_stdin -ne 0 ] && print_usage_and_exit
 			use_stdin=1
@@ -70,10 +73,10 @@ for arg in "$@"; do
 							ln -s "$arg" "$tmpfile" > /dev/null 2>&1
 							[ $? -ne 0 ] && continue
 							tmpfiles="$tmpfiles $tmpfile"
-							trap "rm -f $tmpfiles" EXIT HUP INT QUIT ALRM SEGV TERM
+							trap "rm -f $tmpfiles; exit" EXIT HUP INT QUIT ALRM SEGV TERM
 							break
 						else
-							echo "${0##*/} : Cannot create a temporary file" > /dev/stderr
+							echo "${0##*/}: Cannot create a temporary file" > /dev/stderr
 							exit 1
 						fi
 					done
@@ -84,10 +87,17 @@ for arg in "$@"; do
 			fi
 			;;
 	esac
+	if [ ! -r "$file" ]; then
+		echo "${0##*/}: Cannot open the file \"$arg\"" > /dev/stderr
+		exit 1
+	fi
 	# transfer the characters to octet escaped strings to import to AWK safely
-	octed_filenames="$octed_filenames $(echo -n "$file" | od -A n -t o1 | tr -d '\n' | sed -e 's/[[:blank:]]*$//;' | sed -e 's/[[:blank:]]\{1,\}/\\/g' )"
+	octed_filenames="$octed_filenames $(echo -n "$file" | od -A n -t o1 | tr -d '\n' | sed 's/^[[:blank:]]*137//' | sed 's/[[:blank:]]*$//' | sed 's/[[:blank:]]\{1,\}/\\/g')"
 done
 octed_filenames=${octed_filenames# }
+if [ -z "$octed_filenames" ]: then
+	octed_filenames=$(echo -n /dev/stdin | od -A n -t o1 | tr -d '\n' | sed 's/[[:blank:]]*$//' | sed 's/[[:blank:]]\{1,\}/\\/g')
+fi
 
 
 # awkcode : get the length of the UTF-8 string (it is not a byte number)
@@ -101,6 +111,12 @@ function utf8strlen_prep() {
 	utf8strlen_F8_4 = sprintf("\370");
 	utf8strlen_FC_5 = sprintf("\374");
 	utf8strlen_FE_6 = sprintf("\376");
+	utf8strlen_K_EF = sprintf("\357");
+	utf8strlen_K_BD = sprintf("\275");
+	utf8strlen_K_BE = sprintf("\276");
+	utf8strlen_K_A0 = sprintf("\240");
+	utf8strlen_K_C0 = sprintf("\300");
+	utf8strlen_K_80 = sprintf("\200");
 }
 
 # strlen for UTF-8 (main)
@@ -117,6 +133,22 @@ function utf8strlen(str) {
 		} else if (utf8strlen_letter < utf8strlen_E0_2) {
 			utf8strlen_i++;
 		} else if (utf8strlen_letter < utf8strlen_F0_3) {
+			if (utf8strlen_letter == utf8strlen_K_EF) {
+				utf8strlen_letter2 = substr(str, utf8strlen_i+1, 1);
+				if (utf8strlen_letter2 == utf8strlen_K_BD) {
+					utf8strlen_letter3 = substr(str, utf8strlen_i+2, 1);
+					if ((utf8strlen_letter3 >= utf8strlen_K_A0) &&
+					    (utf8strlen_letter3 <  utf8strlen_K_C0)  ) {
+						utf8strlen_--;
+					}
+				} else if (utf8strlen_letter2 == utf8strlen_K_BE) {
+					utf8strlen_letter3 = substr(str, utf8strlen_i+2, 1);
+					if ((utf8strlen_letter3 >= utf8strlen_K_80) &&
+					    (utf8strlen_letter3 <  utf8strlen_K_A0)  ) {
+						utf8strlen_--;
+					}
+				}
+			}
 			utf8strlen_i += 2;
 		} else if (utf8strlen_letter < utf8strlen_F8_4) {
 			utf8strlen_i += 3;
@@ -178,9 +210,10 @@ BEGIN {
 
 	split(max_widthes, max_width);
 
-	margin="";
-	for (i = 0; i < numoption; i++) {
-		margin = margin FS;
+	margin = "";
+	if (numoption > 0) {
+		margin = sprintf("%0" numoption "d", 0);
+		gsub("0", FS, margin);
 	}
 	while (1) {
 		line = "";
@@ -197,10 +230,13 @@ BEGIN {
 			} else {
 				str = "";
 			}
-			for (j = utf8strlen(str); j < max_width[i]; j++) {
-				str = str " ";
+			padding = "";
+			j = max_width[i] - utf8strlen(str);
+			if (j > 0) {
+				padding = sprintf("%0" j "d", 0);
+				gsub("0", " ", padding);
 			}
-			line = (i == 1) ? str : line margin str;
+			line = (i == 1) ? str padding : line margin str padding;
 		}
 		if (validlines) {
 			print line;
@@ -212,6 +248,16 @@ BEGIN {
 	}
 }
 '
+if [ -z "$LC_ALL" ]; then
+	LC_CTYPE=C;          export LC_CTYPE
+else
+	LANG=$LC_ALL;        export LANG
+	LC_COLLATE=$LC_ALL;  export LC_COLLATE
+	LC_MESSAGES=$LC_ALL; export LC_MESSAGES
+	LC_NUMERIC=$LC_ALL;  export LC_NUMERIC
+	LC_CTYPE=C;          export LC_CTYPE
+	unset LC_ALL
+fi
 if [ -z "$tmpfiles" ]; then
 	exec awk -v numoption=$numoption -v "octed_filenames=$octed_filenames" -v "max_widthes=$max_widthes" "$awkcode_main2_ycat$awkcode_func_utf8strlen"
 else

@@ -1,0 +1,392 @@
+#! /bin/sh
+
+# designed by Nobuaki Tounaka
+# written by 321516
+
+# print the usage and exit
+print_usage_and_exit () {
+	cat <<____USAGE > /dev/stderr
+Usage   : ${0##*/} <f1> <f2> ... <file>
+        : ${0##*/} -d <f1> <f2> ... <string>
+Version : Thu Sep 20 02:08:00 JST 2012
+        : Open usp Tukubai (POSIX.1 Bourne Shell/POSIX.1 commands/UTF-8)
+____USAGE
+	exit 1
+}
+
+# initialize
+directmode=0
+directstr=''
+awkprstr=''
+file=''
+
+# parse the arguments
+i=0
+dlm=''
+for arg in "$@"; do
+	i=$((i+1))
+	# direct mode processing
+	if [ \( $i -eq 1 \) -a \( "_$arg" = "_-d" \) ]; then
+		directmode=1
+		continue
+	elif [ \( $i -eq $# \) -a \( $directmode -ne 0 \) ]; then
+		directstr=$arg
+		arg=''
+		break
+	fi
+	# "/" extraction mode (make arg2 if this mode)
+	arg1=${arg%%/*}
+	arg2=${arg##*/}
+	if [ \( "_${arg1}/${arg2}" = "_$arg"   \) -a \
+	     \( -n "$arg1" \) -a \( -n "$arg2" \)    ]
+	then
+		if echo "_$arg2" | grep '^_\(NF\|\(NF-\)\?[0-9]\{1,\}\)$' > /dev/null; then
+			:
+		else
+			break
+		fi
+	else
+		arg2=''
+	fi
+	# get substr parameters from arg1 if possible
+	stpos=0
+	edpos=0
+	arg1s=${arg1#*.}
+	arg1=${arg1%%.*}
+	if [ "_$arg1s" != "_$arg1" ]; then
+		if echo "_$arg1s" | grep '^_[0-9]\{1,\}$' > /dev/null; then
+			stpos=$arg1s
+			if [ $stpos -eq 0 ]; then
+				break
+			fi
+		elif echo "_$arg1s" | grep '^_[0-9]\{1,\}\.[0-9]\{1,\}$' > /dev/null; then
+			stpos=${arg1s%.*}
+			edpos=${arg1s#*.}
+			if [ \( $stpos -eq 0 \) -o \( $stpos -gt $edpos \) ]; then
+				break
+			fi
+		else
+			break
+		fi
+	fi
+	# judge the field number type of arg1 (also arg2 if possible)
+	if echo "_$arg1" | grep '^_[0-9]\{1,\}$' > /dev/null; then
+		arg1type=1
+	elif echo "_$arg1" | grep '^_\(NF\|NF-[0-9]\{1,\}\)$' > /dev/null; then
+		arg1type=2
+	else
+		arg1type=-1
+	fi
+	if [ -z "$arg2" ]; then
+		arg2type=0
+	elif echo "_$arg2" | grep '^_[0-9]\{1,\}$' > /dev/null; then
+		arg2type=1
+	elif echo "_$arg2" | grep '^_\(NF\|NF-[0-9]\{1,\}\)$' > /dev/null; then
+		arg2type=2
+	else
+		arg2type=-1
+	fi
+	if [ \( $arg1type -lt 0 \) -o \( $arg2type -lt 0 \) ]; then
+		break
+	fi
+	# generate the string for the AWK-print
+	if [ $arg2type -eq 0 ]; then
+		if [ $stpos -eq 0 ]; then
+			if [ $arg1type -eq 1 ]; then
+				awkprstr="$awkprstr$dlm\$$arg1"
+			else
+				awkprstr="$awkprstr$dlm\$($arg1)"
+			fi
+		else
+			if [ $arg1type -eq 1 ]; then
+				awkprstr="$awkprstr${dlm}getsubf(\$$arg1,$stpos,$edpos)"
+			else
+				awkprstr="$awkprstr${dlm}getsubf(\$($arg1),$stpos,$edpos)"
+			fi
+		fi
+	else
+		if [ \( $arg1type -eq 1 \) -a \( $arg2type -eq 1 \) ]; then
+			if [ \( $stpos -eq 0 \) -a \( $arg1 -le $arg2 \) ]; then
+				j=$arg1
+				while [ $j -le $arg2 ]; do
+					awkprstr="$awkprstr${dlm}\$$j"
+					dlm=','
+					j=$((j+1))
+				done
+			elif [ \( $stpos -eq 0 \) -a \( $arg1 -ge $arg2 \) ]; then
+				j=$arg1
+				while [ $j -ge $arg2 ]; do
+					awkprstr="$awkprstr${dlm}\$$j"
+					dlm=','
+					j=$((j-1))
+				done
+			elif [ \( $stpos -ne 0 \) -a \( $arg1 -le $arg2 \) ]; then
+				j=$arg1
+				while [ $j -le $arg2 ]; do
+					awkprstr="$awkprstr${dlm}getsubf(\$$j,$stpos,$edpos)"
+					dlm=','
+					j=$((j+1))
+				done
+			elif [ \( $stpos -ne 0 \) -a \( $arg1 -ge $arg2 \) ]; then
+				j=$arg1
+				while [ $j -ge $arg2 ]; do
+					awkprstr="$awkprstr${dlm}getsubf(\$$j,$stpos,$edpos)"
+					dlm=','
+					j=$((j-1))
+				done
+			fi
+		elif [ \( $arg1type -eq 2 \) -a \( $arg2type -eq 2 \) ]; then
+			[ "_$arg1" = '_NF' ] && arg1='NF-0'
+			[ "_$arg2" = '_NF' ] && arg2='NF-0'
+			arg1=${arg1#NF-}
+			arg2=${arg2#NF-}
+			if [ \( $stpos -eq 0 \) -a \( $arg1 -le $arg2 \) ]; then
+				j=$arg1
+				while [ $j -le $arg2 ]; do
+					if [ $j -eq 0 ]; then
+						awkprstr="$awkprstr${dlm}\$(NF)"
+					else
+						awkprstr="$awkprstr${dlm}\$(NF-$j)"
+					fi
+					dlm=','
+					j=$((j+1))
+				done
+			elif [ \( $stpos -eq 0 \) -a \( $arg1 -ge $arg2 \) ]; then
+				j=$arg1
+				while [ $j -ge $arg2 ]; do
+					if [ $j -eq 0 ]; then
+						awkprstr="$awkprstr${dlm}\$(NF)"
+					else
+						awkprstr="$awkprstr${dlm}\$(NF-$j)"
+					fi
+					dlm=','
+					j=$((j-1))
+				done
+			elif [ \( $stpos -ne 0 \) -a \( $arg1 -le $arg2 \) ]; then
+				j=$arg1
+				while [ $j -le $arg2 ]; do
+					if [ $j -eq 0 ]; then
+						awkprstr="$awkprstr${dlm}getsubf(\$(NF),$stpos,$edpos)"
+					else
+						awkprstr="$awkprstr${dlm}getsubf(\$(NF-$j),$stpos,$edpos)"
+					fi
+					dlm=','
+					j=$((j+1))
+				done
+			elif [ \( $stpos -ne 0 \) -a \( $arg1 -ge $arg2 \) ]; then
+				j=$arg1
+				while [ $j -ge $arg2 ]; do
+					if [ $j -eq 0 ]; then
+						awkprstr="$awkprstr${dlm}getsubf(\$(NF),$stpos,$edpos)"
+					else
+						awkprstr="$awkprstr${dlm}getsubf(\$(NF-$j),$stpos,$edpos)"
+					fi
+					dlm=','
+					j=$((j-1))
+				done
+			fi
+		else
+			if [ $stpos -eq 0 ]; then
+				awkprstr="$awkprstr${dlm}getfldclstr1($arg1,$arg2)"
+			else
+				awkprstr="$awkprstr${dlm}getfldclstr2($arg1,$arg2,$stpos,$edpos)"
+			fi
+		fi
+	fi
+	# loop
+	arg=''
+	dlm=','
+done
+if [ \( -n "$arg" \) -a \( $i -eq $# \) -a \( $directmode -eq 0 \) ]; then
+	file0=$arg
+else
+	file0=''
+fi
+if [ -z "$file0" ]; then
+	file='/dev/stdin'
+elif [ \( -f "$file0" \) -o \( -c "$file0" \) ]; then
+	file="$file0"
+elif [ "_$file0" = '_-' ]; then
+	file='/dev/stdin'
+else
+	print_usage_and_exit
+fi
+[ $directmode -ne 0 ] && file=''
+if [ \( -n "$file" \) -a \( ! -r "$file" \) ]; then
+	echo "${0##*/}: Cannot open the file" > /dev/stderr
+	exit 1
+fi
+
+# select fields
+awkcode='
+BEGIN {
+	getsubf_prep();
+	_assert_exit = 0;
+}
+
+{
+	print '"$awkprstr"';
+}
+
+END {
+	if (_assert_exit) {
+		print "'"${0##*/}"': Invalid string position for separating a field",
+		      "at line", NR > "/dev/stderr";
+		exit _assert_exit;
+	}
+}
+
+# getsubf (preparation : you must call this before using the "getsubf")
+function getsubf_prep() {
+	getsubf_80_1 = sprintf("\200");
+	getsubf_C0_X = sprintf("\300");
+	getsubf_E0_2 = sprintf("\340");
+	getsubf_F0_3 = sprintf("\360");
+	getsubf_F8_4 = sprintf("\370");
+	getsubf_FC_5 = sprintf("\374");
+	getsubf_FE_6 = sprintf("\376");
+	getsubf_K_EF = sprintf("\357");
+	getsubf_K_BD = sprintf("\275");
+	getsubf_K_BE = sprintf("\276");
+	getsubf_K_A0 = sprintf("\240");
+	getsubf_K_C0 = sprintf("\300");
+	getsubf_K_80 = sprintf("\200");
+}
+# return the substr in accordance with the counting rule of self command
+function getsubf(str, startpos, endpos) {
+	# - "getsubf_substr_s" is a byte offset (start from 1) which the
+	#   "startpos" suggests by the Japanese text position (zenkaku-hankaku;
+	#   start from 1)
+	# - "getsubf_substr_e" is a byte offset + 1 (start from 1) which the
+	#   "endpos" suggests by the Japanese text position (zenkaku-hankaku;
+	#   start from 1)
+	getsubf_substr_s = 0;
+	getsubf_substr_e = 0;
+	#
+	# - "getsubf"_i is a byte offset (start from 1) from which the function
+	#   will read now
+	# - "getsubf_pos" is a Japanese text position (zenkaku-hankaku; start
+	#   from 1) of the letter which the function will read
+	getsubf_i   = 1;
+	getsubf_pos = 1;
+	while (getsubf_i <= length(str)) {
+		if (getsubf_substr_s == 0) {
+			if (startpos == getsubf_pos) {
+				getsubf_substr_s = getsubf_i;
+				if (endpos == 0) {
+					break;
+				}
+			} else if (startpos < getsubf_pos) {
+				_assert_exit = 1;
+				exit _assert_exit;
+			}
+		}
+		getsubf_letter = substr(str, getsubf_i, 1);
+		if (getsubf_letter < getsubf_80_1) {
+			getsubf_i++;
+			getsubf_pos++;
+		} else if (getsubf_letter < getsubf_C0_X) {
+			# invalid UTF-8 character
+			getsubf_i++;
+		} else if (getsubf_letter < getsubf_E0_2) {
+			getsubf_i   += 2;
+			getsubf_pos += 2;
+		} else if (getsubf_letter < getsubf_F0_3) {
+			if (getsubf_letter == getsubf_K_EF) {
+				getsubf_letter2 = substr(str, getsubf_i+1, 1);
+				if (getsubf_letter2 == getsubf_K_BD) {
+					getsubf_letter3 = substr(str, getsubf_i+2, 1);
+					if ((getsubf_letter3 >= getsubf_K_A0) &&
+					    (getsubf_letter3 <  getsubf_K_C0)  ) {
+						getsubf_pos += 1;
+					} else {
+						getsubf_pos += 2;
+					}
+				} else if (getsubf_letter2 == getsubf_K_BE) {
+					getsubf_letter3 = substr(str, getsubf_i+2, 1);
+					if ((getsubf_letter3 >= getsubf_K_80) &&
+					    (getsubf_letter3 <  getsubf_K_A0)  ) {
+						getsubf_pos += 1;
+					} else {
+						getsubf_pos += 2;
+					}
+				} else {
+					getsubf_pos += 2;
+				}
+			} else {
+				getsubf_pos += 2;
+			}
+			getsubf_i   += 3;
+		} else if (getsubf_letter < getsubf_F8_4) {
+			getsubf_i   += 4;
+			getsubf_pos += 2;
+		} else if (getsubf_letter < getsubf_FC_5) {
+			getsubf_i   += 5;
+			getsubf_pos += 2;
+		} else if (getsubf_letter < getsubf_FE_6) {
+			getsubf_i   += 6;
+			getsubf_pos += 2;
+		} else {
+			# invalid UTF-8 character
+			getsubf_i++;
+		}
+		if (getsubf_substr_s > 0) {
+			if ((endpos + 1) == getsubf_pos) {
+				getsubf_substr_e = getsubf_i;
+				break;
+			} else if ((endpos + 1) < getsubf_pos) {
+				_assert_exit = 1;
+				exit _assert_exit;
+			}
+		}
+	}
+	return (getsubf_substr_e == 0)                                    \
+	  ? substr(str,getsubf_substr_s)                                  \
+	  : substr(str,getsubf_substr_s,getsubf_substr_e-getsubf_substr_s);
+}
+# generate the field cluster for the number and NF mixed arguments
+# with no substr part (e.g. 1/NF, NF/1, 3/NF-3)
+function getfldclstr1(fldnum1,fldnum2) {
+	getfldclstr1_ = $fldnum1;
+	if (fldnum1 <= fldnum2) {
+		for (getfldclstr1_i=fldnum1+1;getfldclstr1_i<=fldnum2;getfldclstr1_i++) {
+			getfldclstr1_ = getfldclstr1_ FS $getfldclstr1_i;
+		}
+	} else {
+		for (getfldclstr1_i=fldnum1-1;getfldclstr1_i>=fldnum2;getfldclstr1_i--) {
+			getfldclstr1_ = getfldclstr1_ FS $getfldclstr1_i;
+		}
+	}
+	return getfldclstr1_;
+}
+# generate the field cluster for the number and NF mixed arguments
+# with a substr part (e.g. 1.1/NF, NF.3.6/1, 3.1.5/NF-3)
+function getfldclstr2(fldnum1, fldnum2, stpos, edpos) {
+	getfldclstr2_ = getsubf($fldnum1,stpos,edpos);
+	if (fldnum1 <= fldnum2) {
+		for (getfldclstr2_i=fldnum1+1;getfldclstr2_i<=fldnum2;getfldclstr2_i++) {
+			getfldclstr2_ = getfldclstr2_ FS getsubf($getfldclstr2_i,stpos,edpos);
+		}
+	} else {
+		for (getfldclstr2_i=fldnum1-1;getfldclstr2_i>=fldnum2;getfldclstr2_i--) {
+			getfldclstr2_ = getfldclstr2_ FS getsubf($getfldclstr2_i,stpos,edpos);
+		}
+	}
+	return getfldclstr2_;
+}
+'
+if [ -z "$LC_ALL" ]; then
+	LC_CTYPE=C;          export LC_CTYPE
+else
+	LANG=$LC_ALL;        export LANG
+	LC_COLLATE=$LC_ALL;  export LC_COLLATE
+	LC_MESSAGES=$LC_ALL; export LC_MESSAGES
+	LC_NUMERIC=$LC_ALL;  export LC_NUMERIC
+	LC_CTYPE=C;          export LC_CTYPE
+	unset LC_ALL
+fi
+if [ $directmode -ne 0 ]; then
+	echo "_${directstr}_" | sed 's/^_\(.*\)_$/\1/' | awk "$awkcode"
+else
+	exec awk "$awkcode" "$file"
+fi

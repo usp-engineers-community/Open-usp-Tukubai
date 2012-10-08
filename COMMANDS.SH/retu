@@ -7,7 +7,8 @@
 print_usage_and_exit () {
 	cat <<____USAGE > /dev/stderr
 Usage   : ${0##*/} [-f] <file> ...
-Version : Sun Aug 14 19:06:00 JST 2012
+Version : Thu Sep 20 02:08:00 JST 2012
+        : Open usp Tukubai (POSIX.1 Bourne Shell/POSIX.1 commands)
 ____USAGE
 	exit 1
 }
@@ -38,12 +39,14 @@ BEGIN {
 '
 
 # parse arguments and count lines
+i=0
 for arg in "$@"; do
+	i=$((i+1))
+	if [ \( $i -eq 1 \) -a \( "_$arg" = '_-f' \) ]; then
+		foption=1
+		continue
+	fi
 	case "$arg" in
-		-f)
-			foption=1
-			continue
-			;;
 		-)
 			[ $use_stdin -ne 0 ] && print_usage_and_exit
 			file='/dev/stdin'
@@ -60,6 +63,10 @@ for arg in "$@"; do
 			fi
 			;;
 	esac
+	if [ ! -r "$file" ]; then
+		echo "${0##*/}: Cannot open the file \"$arg\"" > /dev/stderr
+		exit 1
+	fi
 	if [ $foption -ne 0 ]; then
 		filename=$arg
 	else
