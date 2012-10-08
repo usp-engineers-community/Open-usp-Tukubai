@@ -1,0 +1,170 @@
+#! /bin/sh
+
+# designed by Nobuaki Tounaka
+# written by 321516
+
+# print the usage and exit
+print_usage_and_exit () {
+	cat <<____USAGE > /dev/stderr
+Usage   : ${0##*/} [-el] [-d<c>] [-i<string>] <name> <name_file>
+Version : Thu Sep 20 01:37:40 JST 2012
+        : Open usp Tukubai (POSIX.1 Bourne Shell/POSIX.1 commands/UTF-8)
+____USAGE
+	exit 1
+}
+
+# initialize
+dopt=''
+dopt_is_set=0
+iopt=''
+eopt_is_set=0
+lopt_is_set=0
+name=''
+name_file=''
+LF=$(printf '\134\n_'); LF=${LF%_}
+
+# parse arguments
+[ $# -ge 1 ] || print_usage_and_exit
+optmode=''
+i=0
+for arg in "$@"; do
+	i=$((i+1))
+	if [ -z "$optmode" ]; then
+		case "$arg" in
+			-[deil]*)
+				ret=$(echo "_${arg#-}" |
+				      awk '{
+				      	d = "_";
+				      	e = "_";
+				      	i = "_";
+				      	l = "_";
+				      	opt_str = "";
+				      	for (n=2;n<=length($0);n++) {
+				      		s = substr($0,n,1);
+				      		if (s == "d") {
+				      			d = "d";
+				      			opt_str = substr($0,n+1);
+				      			break;
+				      		} else if (s == "e") {
+				      			e = "e";
+				      		} else if (s == "i") {
+				      			i = "i";
+				      			opt_str = substr($0,n+1);
+				      			break;
+				      		} else if (s == "l") {
+				      			l = "l";
+				      		}
+				      	}
+				      	printf("%s%s%s%s %s",d,e,i,l,opt_str);
+				      }')
+				ret1=${ret%% *}
+				ret2=${ret#* }
+				if [ "${ret1#*d}" != "$ret1" ]; then
+					dopt_is_set=1
+					if [ -n "$ret2" ]; then
+						dopt=$ret2
+					else
+						dopt=''
+					fi
+				fi
+				if [ "${ret1#*e}" != "$ret1" ]; then
+					eopt_is_set=1
+				fi
+				if [ "${ret1#*i}" != "$ret1" ]; then
+					if [ -n "$ret2" ]; then
+						iopt=$ret2
+					else
+						optmode='i'
+					fi
+				fi
+				if [ "${ret1#*l}" != "$ret1" ]; then
+					lopt_is_set=1
+				fi
+				;;
+			*)
+				if [ -z "$name" ]; then
+					[ $i -ge $(($#-1)) ] || print_usage_and_exit
+					name=$arg
+				elif [ -z "$name_file" ]; then
+					[ $i -eq $# ] || print_usage_and_exit
+					name_file=$arg
+				else
+					print_usage_and_exit
+				fi
+				;;
+		esac
+	elif [ "$optmode" = 'i' ]; then
+		iopt=$arg
+		optmode=''
+	else
+		print_usage_and_exit
+	fi
+done
+if [ -z "$name" ]; then
+	print_usage_and_exit
+fi
+if [ \( -z "$name_file" \) -o \( "_$name_file" = '_-' \) ]; then
+	name_file='/dev/stdin'
+fi
+if [ \( ! -f "$name_file" \) -a \( ! -c "$name_file" \) ]; then
+	print_usage_and_exit
+fi
+if [ ! -r "$name_file" ]; then
+	echo "${0##*/}: Cannot open the file" > /dev/stderr
+	exit 1
+fi
+
+# transfer the characters to octet escaped strings to import to AWK safely
+octed_dopt=$(echo -n "_$dopt" | od -A n -t o1 | tr -d '\n' | sed 's/^[[:blank:]]*137//' | sed 's/[[:blank:]]*$//' | sed 's/[[:blank:]]\{1,\}/\\/g')
+octed_iopt=$(echo -n "_$iopt" | od -A n -t o1 | tr -d '\n' | sed 's/^[[:blank:]]*137//' | sed 's/[[:blank:]]*$//' | sed 's/[[:blank:]]\{1,\}/\\/g')
+octed_name=$(echo -n "_$name" | od -A n -t o1 | tr -d '\n' | sed 's/^[[:blank:]]*137//' | sed 's/[[:blank:]]*$//' | sed 's/[[:blank:]]\{1,\}/\\/g')
+
+#
+awk_code='
+BEGIN {
+	dopt = sprintf("'"$octed_dopt"'");
+	iopt = sprintf("'"$octed_iopt"'");
+	target_name = sprintf("'"$octed_name"'");
+}
+{
+	i = index($0," ");
+	name = (i > 1) ? $1 : (length($0)>0) ? $0 : "";
+	if (eopt_is_set == 0 && name != target_name) {
+		next;
+	}
+	var = (i > 0) ? substr($0,i+1) : "";
+	if (length(var) == 0 && length(iopt)) {
+		var = iopt;
+	} else if (dopt_is_set != 0)  {
+		gsub(/ /, dopt, var);
+	}
+	if (lopt_is_set) {
+		print name, var;
+	} else {
+		print var;
+	}
+}
+'
+if [ $eopt_is_set -eq 0 ]; then
+	awk -v dopt_is_set=$dopt_is_set \
+	    -v lopt_is_set=$lopt_is_set \
+	    -v eopt_is_set=$eopt_is_set \
+	    "$awk_code"                 \
+	    "$name_file"
+else
+	if [ "_${name#^}" = "_$name" ]; then
+		name="[^[:blank:]]*${name}"
+	else
+		name="${name#^}"
+	fi
+	if [ "_${name%$}" = "_$name" ]; then
+		name="${name}[^[:blank:]]*"
+	else
+		name="${name%$}"
+	fi
+	grep -E "^${name}([[:blank:]]+.*|)$" "$name_file" |
+	awk -v dopt_is_set=$dopt_is_set \
+	    -v lopt_is_set=$lopt_is_set \
+	    -v eopt_is_set=$eopt_is_set \
+	    "$awk_code"
+fi
