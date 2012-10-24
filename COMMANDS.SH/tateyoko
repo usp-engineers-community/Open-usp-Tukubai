@@ -5,9 +5,9 @@
 
 # print the usage and exit
 print_usage_and_exit () {
-	cat <<____USAGE > /dev/stderr
+	cat <<____USAGE 1>&2
 Usage   : ${0##*/} [-d[<string>]] <file>
-Version : Thu Sep 20 02:08:00 JST 2012
+Version : Thu Oct 18 22:00:00 JST 2012
         : Open usp Tukubai (POSIX.1 Bourne Shell/POSIX.1 commands)
 ____USAGE
 	exit 1
@@ -27,15 +27,15 @@ case "$1" in
 		shift
 		;;
 esac
-if [ \( -f "$1" \) -o \( -c "$1" \) ]; then
+if [ \( -f "$1" \) -o \( -c "$1" \) -o \( "_$1" = '_-' \) ]; then
 	file="$1"
-elif [ \( -z "$1" \) -o \( "_$1" = '_-' \) ]; then
-	file='/dev/stdin'
+elif [ $# -lt 1 ]; then
+	file='-'
 else
 	print_usage_and_exit
 fi
-if [ ! -r "$file" ]; then
-	echo "${0##*/}: Cannot open the file" > /dev/stderr
+if [ \( ! -r "$file" \) -a \( "_$file" != '_-' \) ]; then
+	echo "${0##*/}: Cannot open the file" 1>&2
 	exit 1
 fi
 
@@ -53,7 +53,7 @@ BEGIN {
 {
 	if (NF > max_nf) {
 		if ((NR > 1) && (length(dummy_fldstr) == 0)) {
-			print "${0##*/}: There is a line which has a differnt number of fields." > "/dev/stderr";
+			print "'"${0##*/}"': There is a line which has a differnt number of fields." > "/dev/stderr";
 			_assert_exit = 1;
 			exit _assert_exit;
 		}
@@ -70,7 +70,7 @@ BEGIN {
 	}
 	if (NF < max_nf) {
 		if (length(dummy_fldstr) == 0) {
-			print "${0##*/}: There is a line which has a differnt number of fields." > "/dev/stderr";
+			print "'"${0##*/}"': There is a line which has a differnt number of fields." > "/dev/stderr";
 			_assert_exit = 1;
 			exit _assert_exit;
 		}

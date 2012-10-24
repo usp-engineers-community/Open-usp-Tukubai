@@ -1,0 +1,275 @@
+#! /bin/sh
+
+# designed by Nobuaki Tounaka
+# written by 321516
+
+# print the usage and exit
+print_usage_and_exit () {
+	cat <<____USAGE 1>&2
+Usage   : ${0##*/} [--fast] <f1> <f2> ... <file>
+        : ${0##*/} [--fast] -d <f1> <f2> ... <string>
+          o "--fast" is an original option of this clone.
+            This option makes me be faster by 20-30%. But, makes me omit to
+            shave the superfluous spaces at the head/tail of every line.
+            (Try to run "echo ' a b c ' | ${0##*/} 2" with/without the option)
+Version : Wed Oct 24 23:18:48 JST 2012
+        : Open usp Tukubai (POSIX.1 Bourne Shell/POSIX.1 commands)
+____USAGE
+	exit 1
+}
+
+# initialize
+directmode=0
+directstr=''
+awkc0=''
+file=''
+fldnums=''
+delete_all_field=0
+use_stdin=0
+fastopt=0
+
+# parse the arguments
+if [ \( $# -gt 0 \) -a \( "_$1" = '_--fast' \) ]; then
+	fastopt=1
+	shift
+fi
+i=0
+for arg in "$@"; do
+	i=$((i+1))
+	fldnum=''
+	# direct mode processing
+	if [ \( $i -eq 1 \) -a \( "_$arg" = "_-d" \) ]; then
+		directmode=1
+		continue
+	elif [ \( $i -eq $# \) -a \( $directmode -ne 0 \) ]; then
+		directstr=$arg
+		arg=''
+		break
+	fi
+	# separate arg to arg1, arg2
+	arg1=${arg%%/*}
+	arg2=${arg##*/}
+	if [ \( "_${arg1}/${arg2}" = "_$arg"   \) -a \
+	     \( -n "$arg1" \) -a \( -n "$arg2" \)    ]
+	then
+		:
+	else
+		arg1=$arg
+		arg2=''
+	fi
+	# check both
+	j=0
+	for s in $arg1 $arg2; do
+		if echo "_$s" | grep '^_[0-9]\+$' > /dev/null; then
+			j=$((j+1))
+			if [ "$s" -eq 0 ]; then
+				delete_all_field=1
+			fi
+		elif echo "_$s" | grep '^_\(NF\|NF-[0-9]\{1,\}\)$' > /dev/null; then
+			j=$((j+1))
+		elif [ \( -n "$arg1" \) -a \( -z "$arg2" \) ]; then
+			j=$((j+1))
+		fi
+	done
+	if [ \( $j -eq 2 \) -o \( \( $j -eq 1 \) -a \( -z "$arg2" \) \) ]; then
+		fldnums="$fldnums $arg"
+		continue
+	fi
+	# perhaps, this argument is a filename
+	if [ $# -eq $i ]; then
+		file=$arg
+	fi
+	# otherwise, it is a invalid argument
+	print_usage_and_exit
+done
+[ -n "$fldnums" ] || print_usage_and_exit
+if [ $directmode -ne 0 ]; then
+	[ -n "$directstr" ] || print_usage_and_exit
+	file=''
+else
+	[ -n "$file" ] || file='-'
+	if [ \( "_$file" = '_-'               \) -o \
+	     \( "_$file" = '_/dev/stdin'      \) -o \
+	     \( "_$file" = '_/dev/fd/0'       \) -o \
+	     \( "_$file" = '_/proc/self/fd/0' \)    ]
+	then
+		use_stdin=$((use_stdin+1))
+	fi
+	if [ \( ! -f "$file"     \) -a \
+	     \( ! -c "$file"     \) -a \
+	     \( "_$file" != '_-' \)    ]
+	then
+		print_usage_and_exit
+	elif [ \( ! -r "$file" \) -a \( "_$file" != '_-' \) ]; then
+		echo "${0##*/}: Cannot open the file" 1>&2
+		exit 1
+	fi
+fi
+
+# If 0 is set as field number, it should run out with 0 byte stream.
+if [ $delete_all_field -ne 0 ]; then
+	if [ $use_stdin -gt 0 ]; then
+		cat > /dev/null
+	fi
+	exit 0;
+fi
+
+
+# make the "awkc0"
+awkc0=$(echo "$fldnums"                           |
+        sed 's/^0\{1,\}\([0-9]\)/\1/'             |
+        sed 's/\([^0-9]\)0\{1,\}\([0-9]\)/\1\2/g' |
+        tr ' ' '\n'                               |
+        awk                                       '
+        	/^NF-[0-9]+\/NF-[0-9]+$/ {
+        		nfofs1 = substr($0,4,index($0,"/")-4) + 0;
+        		nfofs2 = substr($0,index($0,"/")+4) + 0;
+        		if (nfofs1 > nfofs2) {
+        			i = nfofs1;
+        			nfofs1 = nfofs2;
+        			nfofs2 = i;
+        		}
+        		for (i=nfofs1; i<=nfofs2; i++) {
+        			print "0 NF-" i;
+        		}
+        	}
+        	/^NF\/NF-[0-9]+$/ {
+        		nfofs2 = substr($0,index($0,"/")+4);
+        		print "0 NF";
+        		for (i=1; i<=nfofs2; i++) {
+        			print "0 NF-" i;
+        		}
+        	}
+        	/^NF-[0-9]+\/NF$/ {
+        		nfofs2 = substr($0,4,index($0,"/")-4) + 0;
+        		print "0 NF";
+        		for (i=1; i<=nfofs2; i++) {
+        			print "0 NF-" i;
+        		}
+        	}
+        	/^[0-9]+\/NF-[0-9]+$/ {
+        		printf("0 %s NF-%s\n",
+        		       substr($0,1,index($0,"/")-1),
+        		       substr($0,index($0,"/")+4)   );
+        	}
+        	/^NF-[0-9]+\/[0-9]+$/ {
+        		printf("0 %s NF-%s\n",
+        		       substr($0,index($0,"/")+1),
+        		       substr($0,4,index($0,"/")-4));
+        	}
+        	/^[0-9]+\/[0-9]+$/ {
+        		pos = index($0, "/");
+        		a = substr($0, 1, pos-1)+0;
+        		b = substr($0, pos+1)+0;
+        		if (a > b) {
+        			swp = a;
+        			a = b;
+        			b = swp;
+        		}
+        		for (i=a; i<=b; i++) {
+        			print 1, i;
+        		}
+        	}
+        	/^[0-9]+\/NF$/ {
+        		print 1, substr($0, 1, length($0)-3), "NF";
+        	}
+        	/^NF\/[0-9]+$/ {
+        		print 1, substr($0, index($0,"/")+1), "NF";
+        	}
+        	/^[0-9]+$/ {
+        		print 1, $0;
+        	}
+        	(($0 == "NF") || ($0 == "NF/NF")) {
+        		print 0, "NF";
+        	}
+        '                                         |
+        sort -k 1,1 -k 2n,2 -k 3n,3               |
+        uniq                                      |
+        sed -n '1,/1 [0-9]\{1,\} NF$/p'           |
+        awk                                       '
+        	BEGIN {
+        		f1_total  = 0;
+        		f2_max    = 0;
+        		f3_has_nf = 0;
+        	}
+        	{
+        		f1_total += $1; 
+        		if ($1 == 1) {
+        			f2_max = ($2 > f2_max) ? $2 : f2_max;
+        			f2_vals[$2] = 1;
+        		}
+        		f3_has_nf = ($3 == "NF") ? 1 : f3_has_nf;
+        		cell[NR,1] = $2;
+        		if (NF == 3) {
+        			cell[NR,2] = $3;
+        		}
+        	}
+        	END {
+        		if ((f1_total == NR) && (f3_has_nf)) {
+        			printf("print ");
+        			dlm="";
+        			for (i=1; i<f2_max; i++) {
+        				if (! (i in f2_vals)) {
+        					printf("%s$%d", dlm, i);
+        					dlm = ",";
+        				}
+        			}
+        			printf("; #light");
+        		} else {
+        			for (i=1; i<=NR; i++) {
+        				if (i SUBSEP 2 in cell) {
+        					printf("clear_fields(%s,%s);",
+        					       cell[i,1],
+        					       cell[i,2]);
+        				} else {
+        					if (match(cell[i,1],/^[0-9]+$/) || (cell[i,1] == "NF")) {
+        						printf("$%s=\"\";",cell[i,1]);
+        					} else {
+        						printf("$(%s)=\"\";",cell[i,1]);
+        					}
+        				}
+        			}
+        			printf("print;");
+        		}
+        	}
+        '                                         |
+        sed 's/print ;/print "";/'                )
+
+# make awk code
+awkcode='
+	{
+		'"$awkc0"'
+	}
+	function clear_fields(from, to, i) {
+		if (from > to) {
+			i = from;
+			from = to;
+			to = i;
+		}
+		for (i=from; i<to; i++) {
+			$i = "";
+		}
+	}
+'
+
+# delf
+s='s/^ \{1,\}//;s/ \{1,\}$//;'
+[ $fastopt -ne 0 ] && s=''
+if [ $directmode -ne 0 ]; then
+	str=$(echo "_${directstr}_"  |
+	      sed 's/^_\(.*\)_$/\1/' |
+	      awk "$awkcode"         )
+	ret=$?
+	if [ $ret -ne 0 ]; then
+		exit $ret
+	fi
+	echo "_${str}_" | sed 's/^_\(.*\)_$/\1/' | sed "$s"'s/ \{1,\}/ /g'
+elif echo "_$awkc0" | grep -F 'light' > /dev/null; then
+	exec awk "$awkcode" "$file"
+else
+	exec 3>&1
+	ret=$({ { awk "$awkcode" "$file" 3>&- 4>&-; echo $? 1>&4 3>&- 4>&-;} | sed "$s"'s/ \{1,\}/ /g' 1>&3 3>&- 4>&-;} 4>&1)
+	if [ $ret != 0 ]; then
+		exit 1
+	fi
+fi

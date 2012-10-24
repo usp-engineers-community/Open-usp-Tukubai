@@ -5,9 +5,9 @@
 
 # print the usage and exit
 print_usage_and_exit () {
-	cat <<____USAGE > /dev/stderr
+	cat <<____USAGE 1>&2
 Usage   : ${0##*/} [+count] <k1> <k2> <s1> <s2> <file>
-Version : Thu Sep 20 02:08:00 JST 2012
+Version : Thu Oct 18 22:00:00 JST 2012
         : Open usp Tukubai (POSIX.1 Bourne Shell/POSIX.1 commands)
 ____USAGE
 	exit 1
@@ -31,26 +31,25 @@ fi
 [ \( $1 -gt $2 \) ] && print_usage_and_exit
 [ \( $3 -gt $4 \) -o \( $3 -le $2 \) ] && print_usage_and_exit
 if [ $1 -gt 0 ]; then
-	keyfileds1=$(awk -v s=$1 -v e=$2 'BEGIN{for(i=s;i<=e;i++){printf("$%d",i)}}')
-	keyfileds2=$(echo $keyfileds1 | sed 's/\([0-9]\)\$/\1,$/g')
+	keyfileds=$(awk -v s=$1 -v e=$2 'BEGIN{for(i=s;i<=e;i++){printf("$%d",i)}}' |
+	            sed 's/\([0-9]\)\$/\1 FS $/g'                                   )
 elif [ $2 -eq 0 ]; then
-	keyfileds1='""'
-	keyfileds2='""'
+	keyfileds='""'
 else
 	print_usage_and_exit
 fi
 
-if [ $# -gt 4 ]; then
-	if [ \( -f "$5" \) -o \( -c "$5" \) ]; then
+if [ $# -eq 4 ]; then
+	file='-'
+elif [ $# -eq 5 ]; then
+	if [ \( -f "$5" \) -o \( -c "$5" \) -o \( "_$5" = '_-' \) ]; then
 		file=$5
-	elif [ \( "_$5" = '_-' \) -o \( -z "$5" \) ]; then
-		file=/dev/stdin
 	else
 		print_usage_and_exit
 	fi
 fi
-if [ ! -r "$file" ]; then
-	echo "${0##*/}: Cannot open the file" > /dev/stderr
+if [ \( ! -r "$file" \) -a \( "_$file" != '_-' \) ]; then
+	echo "${0##*/}: Cannot open the file" 1>&2
 	exit 1
 fi
 
@@ -58,23 +57,19 @@ fi
 # sum-up
 exec awk -F ' ' -v s=$3 -v e=$4 -v addcountfield=$count '
 BEGIN {
-	ORS = "";
 	key0 = "";
-	samekey = 0;
-	notprintedyet = 0;
 	_assert_exit = 0;
+	ORS="";
 }
 
 {
 	if (NF < e) {
-		printf("There is a record which does not have enough number of fields!\n") > "/dev/stderr";
+		printf("'"${0##*/}"': There is a record which does not have enough number of fields!\n") > "/dev/stderr";
 		_assert_exit = 1;
 		exit _assert_exit;
 	}
-	key = '$keyfileds1';
-	samekey = (key == key0) ? 1 : 0;
-	notprintedyet = 1;
-	if (samekey) {
+	key = "_" '"$keyfileds"';
+	if (key == key0) {
 		for (i = s; i <= e; i++) {
 			sum[i] += $i;
 		}
@@ -82,35 +77,33 @@ BEGIN {
 	} else {
 		if (NR > 1) {
 			print_smrecord();
-			notprintedyet=0;
 		}
 		for (i = s; i <= e; i++) {
 			sum[i] = $i;
 		}
 		samekeylines = 1;
+		key0 = key;
+		key0_for_print = '"$keyfileds"';
 	}
-	key0 = key;
 }
 
 END {
 	if (_assert_exit) {
 		exit _assert_exit;
 	}
-	if (notprintedyet) {
-		print_smrecord();
-	}
+	print_smrecord();
 }
 
 function print_smrecord() {
-	print '$keyfileds2';
-	space = (key == "") ? "" : " ";
+	printf("%s",key0_for_print);
+	dlm = (key == "_") ? "" : " ";
 	if (addcountfield) {
-		printf("%s%d", space, samekeylines);
-		space = " ";
+		printf("%s%d", dlm, samekeylines);
+		dlm = " ";
 	}
 	for (i = s; i <= e; i++) {
-		printf("%s%d", space, sum[i]);
-		space = " ";
+		print dlm sum[i];
+		dlm = " ";
 	}
 	printf("\n");
 }' "$file"
