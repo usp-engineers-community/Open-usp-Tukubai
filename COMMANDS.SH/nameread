@@ -5,9 +5,9 @@
 
 # print the usage and exit
 print_usage_and_exit () {
-	cat <<____USAGE > /dev/stderr
+	cat <<____USAGE 1>&2
 Usage   : ${0##*/} [-el] [-d<c>] [-i<string>] <name> <name_file>
-Version : Thu Sep 20 01:37:40 JST 2012
+Version : Thu Oct 18 22:00:00 JST 2012
         : Open usp Tukubai (POSIX.1 Bourne Shell/POSIX.1 commands/UTF-8)
 ____USAGE
 	exit 1
@@ -103,14 +103,16 @@ done
 if [ -z "$name" ]; then
 	print_usage_and_exit
 fi
-if [ \( -z "$name_file" \) -o \( "_$name_file" = '_-' \) ]; then
-	name_file='/dev/stdin'
-fi
-if [ \( ! -f "$name_file" \) -a \( ! -c "$name_file" \) ]; then
+if [ -z "$name_file" ]; then
+	name_file='-'
+elif [ \( ! -f "$name_file"     \) -a \
+       \( ! -c "$name_file"     \) -a \
+       \( "_$name_file" != '_-' \)    ]
+then
 	print_usage_and_exit
 fi
-if [ ! -r "$name_file" ]; then
-	echo "${0##*/}: Cannot open the file" > /dev/stderr
+if [ \( ! -r "$name_file" \) -a \( "_$name_file" != '_-' \) ]; then
+	echo "${0##*/}: Cannot open the file" 1>&2
 	exit 1
 fi
 
