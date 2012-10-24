@@ -7,7 +7,7 @@
 print_usage_and_exit () {
 	cat <<____USAGE 1>&2
 Usage   : ${0##*/} [-d<c>] [-i<string>] [--template <html>] <param_file>
-Version : Thu Oct 18 22:00:00 JST 2012
+Version : Thu Oct 25 01:00:32 JST 2012
         : Open usp Tukubai (POSIX.1 Bourne Shell/POSIX.1 commands/UTF-8)
 ____USAGE
 	exit 1
@@ -175,7 +175,12 @@ BEGIN {
 	if (length(str2) == 0 && length(iopt)) {
 		str2 = iopt;
 	} else if (dopt_is_set != 0)  {
-		gsub(/ /, dopt, str2);
+		s = "";
+		while (match(str2,/ /)) {
+			s = s substr(str2, 1, RSTART-1) dopt;
+			str2 = substr(str2, RSTART+1);
+		}
+		str2 = s str2;
 	}
 	if ($1 in tmplvar) {
 		delete tmplvar[$1];
