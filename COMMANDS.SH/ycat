@@ -7,7 +7,7 @@
 print_usage_and_exit () {
 	cat <<____USAGE 1>&2
 Usage   : ${0##*/} [-<n>] <file1> <file2> ...
-Version : Thu Oct 18 22:00:00 JST 2012
+Version : Thu Oct 25 01:12:07 JST 2012
         : Open usp Tukubai (POSIX.1 Bourne Shell/POSIX.1 commands/UTF-8)
 ____USAGE
 	exit 1
@@ -210,9 +210,8 @@ BEGIN {
 	split(max_widthes, max_width);
 
 	margin = "";
-	if (numoption > 0) {
-		margin = sprintf("%0" numoption "d", 0);
-		gsub("0", FS, margin);
+	for (i = 0; i < numoption; i++) {
+		margin = margin FS;
 	}
 	while (1) {
 		line = "";

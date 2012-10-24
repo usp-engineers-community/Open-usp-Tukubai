@@ -7,7 +7,7 @@
 print_usage_and_exit () {
 	cat <<____USAGE 1>&2
 Usage   : ${0##*/} [-el] [-d<c>] [-i<string>] <name> <name_file>
-Version : Thu Oct 18 22:00:00 JST 2012
+Version : Thu Oct 25 01:02:10 JST 2012
         : Open usp Tukubai (POSIX.1 Bourne Shell/POSIX.1 commands/UTF-8)
 ____USAGE
 	exit 1
@@ -138,7 +138,12 @@ BEGIN {
 	if (length(var) == 0 && length(iopt)) {
 		var = iopt;
 	} else if (dopt_is_set != 0)  {
-		gsub(/ /, dopt, var);
+		s = "";
+		while (match(var,/ /)) {
+			s = s substr(var, 1, RSTART-1) dopt;
+			var = substr(var, RSTART+1);
+		}
+		var = s var;
 	}
 	if (lopt_is_set) {
 		print name, var;
