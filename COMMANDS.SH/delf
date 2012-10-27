@@ -231,19 +231,19 @@ awkc0=$(echo "$fldnums"                           |
 
 # make awk code
 awkcode='
-	{
-		'"$awkc0"'
+{
+	'"$awkc0"'
+}
+function clear_fields(from, to, i) {
+	if (from > to) {
+		i = from;
+		from = to;
+		to = i;
 	}
-	function clear_fields(from, to, i) {
-		if (from > to) {
-			i = from;
-			from = to;
-			to = i;
-		}
-		for (i=from; i<to; i++) {
-			$i = "";
-		}
+	for (i=from; i<to; i++) {
+		$i = "";
 	}
+}
 '
 
 # delf

@@ -1,0 +1,46 @@
+#! /bin/sh
+
+# designed by Nobuaki Tounaka
+# written by 321516
+
+# print the usage and exit
+print_usage_and_exit () {
+	cat <<____USAGE 1>&2
+Usage   : ${0##*/} <n1> <n2> ...
+Version : Sun Oct 28 03:59:21 JST 2012
+        : Open usp Tukubai (POSIX.1 Bourne Shell/POSIX.1 commands)
+____USAGE
+	exit 1
+}
+
+
+# parse arguments
+if [ $# -eq 0 ]; then
+	print_usage_and_exit
+fi
+nums=''
+for arg in "$@"; do
+	if echo "_$arg" | grep '^_-\{0,1\}[0-9]\+\(\.[0-9]\+\)\{0,1\}$' > /dev/null
+	then
+		nums="$nums $arg"
+	else
+		echo "${0##*/}: Invalid argument" 2>&1
+		exit 1
+	fi
+done
+
+# plus
+awk '
+BEGIN {
+	split("'"${nums# }"'", num, " ");
+	total  = 0;
+	maxdigits = 0;
+	for (i=1; i<=length(num); i++) {
+		total += num[i];
+		j = index(num[i], ".");
+		digits = (j>0) ? length(num[i])-j : 0;
+		maxdigits = (digits > maxdigits) ? digits : maxdigits;
+	}
+	printf("%." maxdigits "f\n", total);
+}
+'

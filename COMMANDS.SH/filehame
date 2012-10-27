@@ -1,0 +1,115 @@
+#! /bin/sh
+
+# designed by Nobuaki Tounaka
+# written by 321516
+
+# print the usage and exit
+print_usage_and_exit () {
+	cat <<____USAGE 1>&2
+Usage   : ${0##*/} -l<string> <template> <data>
+Version : Sun Oct 28 03:23:45 JST 2012
+        : Open usp Tukubai (POSIX.1 Bourne Shell/POSIX.1 commands)
+____USAGE
+	exit 1
+}
+
+# initialize
+lopt=''
+tmplfile=''
+file=''
+use_stdin=0
+
+# parse arguments
+if [ $# -lt 2 ]; then
+	print_usage_and_exit
+fi
+if [ "_$1" = '_-l' ]; then
+	shift
+	lopt=$1
+elif [ \( -n "$1" \) -a \( "_${1#-l}" != "_$1" \) ]; then
+	lopt=${1#-l}
+else
+	print_usage_and_exit
+fi
+shift
+if [ \( $# -ne 1 \) -a \( $# -ne 2 \) ]; then
+	print_usage_and_exit
+fi
+if [ \( "_$1" = '_-'               \) -o \
+     \( "_$1" = '_/dev/stdin'      \) -o \
+     \( "_$1" = '_/dev/fd/0'       \) -o \
+     \( "_$1" = '_/proc/self/fd/0' \)    ]
+then
+	tmplfile='-'
+	use_stdin=$((use_stdin+1))
+elif [ \( -f "$1" \) -o \( -c "$1" \) ]; then
+	tmplfile=$1
+else
+	echo "${0##*/}: Invalid template file" 2>&1
+	exit 1
+fi
+if [ $# -eq 1 ]; then
+	file='-'
+	use_stdin=$((use_stdin+1))
+else
+	if [ \( "_$2" = '_-'               \) -o \
+	     \( "_$2" = '_/dev/stdin'      \) -o \
+	     \( "_$2" = '_/dev/fd/0'       \) -o \
+	     \( "_$2" = '_/proc/self/fd/0' \)    ]
+	then
+		file='-'
+		use_stdin=$((use_stdin+1))
+	elif [ \( -f "$2" \) -o \( -c "$2" \) ]; then
+		file=$2
+	else
+	echo "${0##*/}: Invalid data file" 2>&1
+	exit 1
+	fi
+fi
+if [ $use_stdin -gt 1 ]; then
+	echo "${0##*/}: Both template file and data file request stdin." 2>&1
+	exit 1
+fi
+if [ \( ! -r "$tmplfile" \) -a \( "_$tmplfile" != '_-' \) ]; then
+	echo "${0##*/}: Cannot open the file as the template file" 1>&2
+	exit 1
+fi
+if [ -r "$file" ]; then
+	:
+elif [ "_$file" = '_-' ]; then
+	s=$(mktemp -t "${0##*/}.XXXXXXXX")
+	if [ $? -eq 0 ]; then
+		file=$s
+		trap "rm -f $file; exit" EXIT HUP INT QUIT ALRM SEGV TERM
+		cat > "$file"
+	else
+		echo "${0##*/} : Cannot create a temporary file" 1>&2
+		exit 1
+	fi
+else
+	echo "${0##*/}: Cannot open the file as the data file" 1>&2
+	exit 1
+fi
+
+# transfer the characters to octet escaped strings to import to AWK safely
+octed_lopt=$(echo -n "_$lopt" | od -A n -t o1 | tr -d '\n' | sed 's/^[[:blank:]]*137//' | sed 's/[[:blank:]]*$//' | sed 's/[[:blank:]]\{1,\}/\\/g')
+octed_tmplfile=$(echo -n "_$tmplfile" | od -A n -t o1 | tr -d '\n' | sed 's/^[[:blank:]]*137//' | sed 's/[[:blank:]]*$//' | sed 's/[[:blank:]]\{1,\}/\\/g')
+octed_file=$(echo -n "_$file" | od -A n -t o1 | tr -d '\n' | sed 's/^[[:blank:]]*137//' | sed 's/[[:blank:]]*$//' | sed 's/[[:blank:]]\{1,\}/\\/g')
+
+# filehame
+awk '
+BEGIN {
+	lopt     = sprintf("'"$octed_lopt"'");
+	tmplfile = sprintf("'"$octed_tmplfile"'");
+	file     = sprintf("'"$octed_file"'");
+
+	matched = 0;
+	while (getline tmplline < tmplfile) {
+		if (index(tmplline, lopt)) {
+			system("cat " file);
+		} else {
+			print tmplline;
+		}
+	}
+}
+'
