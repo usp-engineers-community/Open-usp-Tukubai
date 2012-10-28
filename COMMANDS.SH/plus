@@ -7,7 +7,7 @@
 print_usage_and_exit () {
 	cat <<____USAGE 1>&2
 Usage   : ${0##*/} <n1> <n2> ...
-Version : Sun Oct 28 03:59:21 JST 2012
+Version : Sun Oct 28 13:27:41 JST 2012
         : Open usp Tukubai (POSIX.1 Bourne Shell/POSIX.1 commands)
 ____USAGE
 	exit 1
@@ -32,6 +32,11 @@ done
 result=$(echo "${formula# + }" | bc | tr -d '\\\n')
 if [ "${result#.}" != "$result" ]; then
 	echo -n '0'
+	echo $result
+elif [ "${result#-.}" != "$result" ]; then
+	echo -n '-0'
+	echo ${result#-}
+else
+	echo $result
 fi
-echo $result
 exit 0
