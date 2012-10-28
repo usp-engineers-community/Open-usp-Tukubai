@@ -1,0 +1,115 @@
+#!/usr/local/bin/bash -xv
+#!/bin/bash -xv
+#
+# test script of retu 
+#
+# usage: ./retu.test <dir> <interpreter>
+
+name=retu
+
+tmp=/tmp/$$
+dir=$(dirname $0)/..
+cd $dir
+
+com="$2 ./$1/${name}"
+[ "$1" = "" ] && com="./$1/${name}"
+
+ERROR_CHECK(){
+	[ "$(echo ${PIPESTATUS[@]} | tr -d ' 0')" = "" ] && return
+
+	echo $1
+	echo "$com" NG
+	rm -f $tmp-*
+	exit 1
+}
+
+###########################################
+#TEST1
+
+cat << FIN > $tmp-in
+山田
+
+田中
+FIN
+
+cat << FIN > $tmp-out
+1
+0
+1
+FIN
+
+${com} $tmp-in > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1 error"
+
+###########################################
+#TEST2
+
+cat << FIN > $tmp-out
+1
+FIN
+
+echo -n aaa | ${com}  > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2 error"
+
+###########################################
+#TEST3
+
+cat << FIN > $tmp-out
+1
+FIN
+
+echo aaa | ${com} - > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3 error"
+
+###########################################
+#TEST4
+
+cat << FIN > $tmp-in
+山田
+
+田中
+FIN
+
+cat << FIN > $tmp-out
+$tmp-in 1
+$tmp-in 0
+$tmp-in 1
+FIN
+
+${com} -f $tmp-in > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4 error"
+
+###########################################
+#TEST4
+
+cat << FIN > $tmp-in1
+山田
+
+田中
+FIN
+
+cat << FIN > $tmp-in2
+山田 aa 420402
+
+田中
+FIN
+
+cat << FIN > $tmp-out
+$tmp-in1 1
+$tmp-in1 0
+$tmp-in1 1
+$tmp-in2 3
+$tmp-in2 0
+$tmp-in2 1
+FIN
+
+${com} -f $tmp-in{1,2} > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5 error"
+rm -f $tmp-*
+echo "${com}" OK
+exit 0

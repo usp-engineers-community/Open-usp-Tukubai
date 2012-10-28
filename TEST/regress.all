@@ -10,7 +10,8 @@ cd $dir
 #####################################
 #support of haskell binary
 
-./gyo.test HASKELL ""
+./gyo.test COMMANDS.HS ""
+./retu.test COMMANDS.HS ""
 
 #####################################
 #support of 2.x
