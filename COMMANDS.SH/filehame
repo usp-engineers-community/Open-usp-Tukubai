@@ -103,10 +103,9 @@ BEGIN {
 	tmplfile = sprintf("'"$octed_tmplfile"'");
 	file     = sprintf("'"$octed_file"'");
 
-	matched = 0;
 	while (getline tmplline < tmplfile) {
 		if (index(tmplline, lopt)) {
-			system("cat " file);
+			system("cat \"" file "\"");
 		} else {
 			print tmplline;
 		}
