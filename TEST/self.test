@@ -2,7 +2,7 @@
 #
 # test script of self 
 #
-# usage: ./self.test <python ver>
+# usage: ./self.test <command dir> <python ver>
 
 name=self
     
@@ -224,6 +224,25 @@ FIN
 echo あ1い2 | ${com} 1.3 > $tmp-ans
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST15 error"
+
+###########################################
+#TEST16 relative path
+
+cat << FIN > ./tmp.$$
+1 2 3 4
+FIN
+
+cat << FIN > $tmp-out
+4
+FIN
+
+${com} 4 ./tmp.$$ > $tmp-ans
+rm -f ./tmp.$$
+
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST16 error"
+
+
 
 rm -f $tmp-*
 echo "${com}" OK
