@@ -70,7 +70,7 @@ def isFile(opt):
 	#絶対パス
 	if opt[0] == "/": return True
 	#相対パス
-	if opt[0:2] == "./": return True
+	if opt[0] == ".": return True
 
 	for tkn in opt.split("/"):
 		p = re.compile('^[0-9\.]+$')
