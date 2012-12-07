@@ -1,0 +1,16 @@
+# Example
+# dpkg -i open-usp-tukubai_20120802-1_i386.deb 
+
+# Files
+
+# i386 install to /usr/local/bin
+open-usp-tukubai_20120802-1_i386.deb
+
+# i386 install to /opt/usp/bin
+open-usp-tukubai_20120802-2_i386.deb
+
+# amd64 install to /opt/usp/bin
+open-usp-tukubai_20120802-1_amd64.deb
+
+# amd64 install to /opt/usp/bin
+open-usp-tukubai_20120802-2_amd64.deb
