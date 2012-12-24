@@ -5,10 +5,10 @@
 
 # print the usage and exit
 print_usage_and_exit () {
-	cat <<____USAGE > /dev/stderr
+	cat <<____USAGE 1>&2
 Usage   : ${0##*/} <f1> <f2> ... <file>
         : ${0##*/} -d <f1> <f2> ... <string>
-Version : Thu Sep 20 02:08:00 JST 2012
+Version : Thu Oct 21 02:32:54 JST 2012
         : Open usp Tukubai (POSIX.1 Bourne Shell/POSIX.1 commands/UTF-8)
 ____USAGE
 	exit 1
@@ -197,23 +197,25 @@ for arg in "$@"; do
 	arg=''
 	dlm=','
 done
+if [ -z "$awkprstr" ]; then
+	print_usage_and_exit
+fi
 if [ \( -n "$arg" \) -a \( $i -eq $# \) -a \( $directmode -eq 0 \) ]; then
 	file0=$arg
 else
 	file0=''
 fi
 if [ -z "$file0" ]; then
-	file='/dev/stdin'
-elif [ \( -f "$file0" \) -o \( -c "$file0" \) ]; then
+	file='-'
+elif [ \( -f "$file0" \) -o \( -c "$file0" \) -o \( "_$file0" = '_-' \) ]; then
 	file="$file0"
-elif [ "_$file0" = '_-' ]; then
-	file='/dev/stdin'
 else
 	print_usage_and_exit
 fi
-[ $directmode -ne 0 ] && file=''
-if [ \( -n "$file" \) -a \( ! -r "$file" \) ]; then
-	echo "${0##*/}: Cannot open the file" > /dev/stderr
+if [ $directmode -ne 0 ]; then
+  file=''
+elif [ \( ! -r "$file" \) -a \( "_$file" != '_-' \) ]; then
+	echo "${0##*/}: Cannot open the file" 1>&2
 	exit 1
 fi
 

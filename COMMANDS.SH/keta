@@ -5,11 +5,11 @@
 
 # print the usage and exit
 print_usage_and_exit () {
-	cat <<____USAGE > /dev/stderr
+	cat <<____USAGE 1>&2
 Usage   : ${0##*/} n1 n2 .. <filename>
         : ${0##*/} -v <filename>
         : ${0##*/} [--] <filename>
-Version : Thu Sep 20 02:08:00 JST 2012
+Version : Thu Oct 18 22:00:00 JST 2012
         : Open usp Tukubai (POSIX.1 Bourne Shell/POSIX.1 commands/UTF-8)
 ____USAGE
 	exit 1
@@ -20,10 +20,13 @@ ____USAGE
 widthes=''
 left_justification=0
 verbose=0
+use_stdin=0
 file=''
 tmpfile=''
-mode=0 # 0->cnt&right-jst 1->manual-jst 2->cnt&left-jst 3->cnt&print
-
+mode=0 # 0 ... count the max-widthes of all fields & auto-right-justification
+       # 1 ... right-justification with the specified widthes
+       # 2 ... count the max-widthes of all fields & auto-left-justification
+       # 3 ... count the max-widthes of all fields & print them
 
 # parse the arguments
 case "$1" in
@@ -56,29 +59,34 @@ fi
 if [ $# -gt 1 ]; then
 	print_usage_and_exit
 elif [ -z "$1" ]; then
-	file='/dev/stdin'
-elif [ \( -f "$1" \) -o \( -c "$1" \) ]; then
+	file='-'
+elif [ \( -f "$1" \) -o \( -c "$1" \) -o \( "_$1" = '_-' \) ]; then
 	file="$1"
-elif [ "_$1" = '_-' ]; then
-	file='/dev/stdin'
 else
 	print_usage_and_exit
 fi
-if [ ! -r "$file" ]; then
-	echo "${0##*/}: Cannot open the file" > /dev/stderr
+if [ \( ! -r "$file" \) -a \( "_$file" != '_-' \) ]; then
+	echo "${0##*/}: Cannot open the file" 1>&2
 	exit 1
 fi
 
 
 # create a temporary file if the file is the stdin and mode==0|2
-if [ \( \( "_$file" = "_/dev/stdin" \) -o \( "_$file" = "_/dev/fd/0" \) \) -a \( \( $mode -eq 0 \) -o \( $mode -eq 2 \) \) ]; then
+if [ \( "_$file" = '_-'               \) -o \
+     \( "_$file" = '_/dev/stdin'      \) -o \
+     \( "_$file" = '_/dev/fd/0'       \) -o \
+     \( "_$file" = '_/proc/self/fd/0' \)    ]
+then
+	use_stdin=$((use_stdin+1))
+fi
+if [ \( $use_stdin -gt 0 \) -a \( \( $mode -eq 0 \) -o \( $mode -eq 2 \) \) ]; then
 	tmpfile=$(mktemp -t "${0##*/}.XXXXXXXX")
 	if [ $? -eq 0 ]; then
 		trap "rm -f $tmpfile; exit" EXIT HUP INT QUIT ALRM SEGV TERM
-		cat "$file" > "$tmpfile"
+		cat > "$tmpfile"
 		file=$tmpfile
 	else
-		echo "${0##*/}: Cannot create a temporary file" > /dev/stderr
+		echo "${0##*/}: Cannot create a temporary file" 1>&2
 		exit 1
 	fi
 fi
