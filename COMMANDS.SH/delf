@@ -8,7 +8,7 @@ print_usage_and_exit () {
 	cat <<____USAGE 1>&2
 Usage   : ${0##*/} <f1> <f2> ... <file>
         : ${0##*/} -d <f1> <f2> ... <string>
-Version : Wed Oct 25 01:29:41 JST 2012
+Version : Mon Dec 24 22:19:31 JST 2012
         : Open usp Tukubai (POSIX.1 Bourne Shell/POSIX.1 commands)
 ____USAGE
 	exit 1
@@ -58,8 +58,6 @@ for arg in "$@"; do
 			fi
 		elif echo "_$s" | grep '^_\(NF\|NF-[0-9]\{1,\}\)$' > /dev/null; then
 			j=$((j+1))
-		elif [ \( -n "$arg1" \) -a \( -z "$arg2" \) ]; then
-			j=$((j+1))
 		fi
 	done
 	if [ \( $j -eq 2 \) -o \( \( $j -eq 1 \) -a \( -z "$arg2" \) \) ]; then
@@ -69,6 +67,7 @@ for arg in "$@"; do
 	# perhaps, this argument is a filename
 	if [ $# -eq $i ]; then
 		file=$arg
+		continue
 	fi
 	# otherwise, it is a invalid argument
 	print_usage_and_exit
