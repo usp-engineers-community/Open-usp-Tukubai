@@ -1,0 +1,67 @@
+#!/usr/local/bin/bash -xv
+#
+# test script of sm2 
+#
+# usage: ./sm2.test <command dir> <python ver>
+
+name=sm2
+    
+tmp=/tmp/$$
+dir=$(dirname $0)/..
+cd $dir
+    
+com="$2 ./$1/${name}"
+[ "$1" = "" ] && com="./$1/${name}"
+
+ERROR_CHECK(){
+	[ "$(echo ${PIPESTATUS[@]} | tr -d ' 0')" = "" ] && return
+
+	echo $1
+	echo "$com" NG
+	rm -f $tmp-*
+	exit 1
+}
+
+###########################################
+#TEST1
+
+cat << FIN > $tmp-in
+001 1
+001 1.11
+001 -2.1
+002 0.0
+002 1.101
+FIN
+
+cat << FIN > $tmp-out
+001 0.01
+002 1.101
+FIN
+
+${com} 1 1 2 2 $tmp-in > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1 error"
+
+###########################################
+#TEST2
+
+cat << FIN > $tmp-in
+001 1
+001 1.11
+001 -2.1
+002 0.0
+002 1.101
+FIN
+
+cat << FIN > $tmp-out
+1.111
+FIN
+
+${com} 0 0 2 2 $tmp-in > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2 error"
+
+
+rm -f $tmp-*
+echo "${com}" OK
+exit 0
