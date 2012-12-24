@@ -152,7 +152,11 @@ FIN
 
 ${com} +@@ key=2/3 $tmp-master $tmp-tran > $tmp-ans
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST5 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5.1 error"
+
+${com} -d@@ key=2/3 $tmp-master $tmp-tran > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5.2 error"
 
 rm -f $tmp-*
 echo "${com}" OK

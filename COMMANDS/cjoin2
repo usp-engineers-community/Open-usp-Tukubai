@@ -156,6 +156,9 @@ if __name__ == '__main__':
 	if sys.argv[1][0] == '+':
 		dummy_string = sys.argv[1][1:]
 		del sys.argv[1]
+	elif sys.argv[1][0] == '-' and sys.argv[1][1] == 'd':
+		dummy_string = sys.argv[1][2:]
+		del sys.argv[1]
 
 	# keyオプションを解析
 	if sys.argv[1][0:4] == 'key=':

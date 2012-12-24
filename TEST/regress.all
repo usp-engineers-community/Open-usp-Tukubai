@@ -1,4 +1,4 @@
-#!/usr/local/bin/bash -xv
+#!/usr/local/bin/bash -xve
 
 exec 2> /tmp/log.$(basename $0)
 
@@ -6,6 +6,31 @@ tmp=/tmp/$$
 
 dir=$(dirname $0)
 cd $dir
+
+#####################################
+#support of sh scripts
+
+# +ng test is not passed.
+#./cjoin0.test COMMANDS.SH ""
+#./cjoin1.test COMMANDS.SH ""
+
+# not passed
+#./delf.test COMMANDS.SH ""
+
+# 半角の部分文字列がうまくいかない
+#./self.test COMMANDS.SH ""
+
+# passed
+./tateyoko.test COMMANDS.SH ""
+./sm2.test COMMANDS.SH ""
+./plus.test COMMANDS.SH ""
+./nameread.test COMMANDS.SH ""
+./keta.test COMMANDS.SH ""
+./filehame.test COMMANDS.SH ""
+./cgi-name.test COMMANDS.SH ""
+./ycat.test COMMANDS.SH ""
+./gyo.test COMMANDS.SH ""
+./retu.test COMMANDS.SH ""
 
 #####################################
 #support of haskell binary
@@ -25,8 +50,14 @@ FIN
 
 cat $tmp-ver	|
 while read com ; do
+	./tateyoko.test COMMANDS $com
+	./sm2.test COMMANDS $com
+	./cgi-name.test COMMANDS $com
+	./ycat.test COMMANDS $com
 	./yarr.test COMMANDS $com
+	./plus.test COMMANDS $com
 	./self.test COMMANDS $com
+	./delf.test COMMANDS $com
 	./nameread.test COMMANDS $com
 	./check_need_name.test COMMANDS $com
 	./join0.test COMMANDS $com
@@ -35,6 +66,7 @@ while read com ; do
 	./cjoin2.test COMMANDS $com
 	./filehame.test COMMANDS $com
 	./gyo.test COMMANDS $com
+	./keta.test COMMANDS $com
 done
 
 #####################################
