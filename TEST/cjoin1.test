@@ -40,10 +40,11 @@ FIN
 
 cat << FIN > $tmp-out
 0000004 A 白土______ 40 M 58 71 20 10 6
-0000001 B 鈴田______ 50 F 46 39 8  5  21
+0000001 B 鈴田______ 50 F 46 39 8 5 21
 FIN
 
-${com} key=1 $tmp-master $tmp-tran > $tmp-ans
+${com} key=1 $tmp-master $tmp-tran 	|
+sed 's/  */ /g'				> $tmp-ans
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST1 error"
 
@@ -65,7 +66,7 @@ FIN
 
 cat << FIN > $tmp-out
 0000004 B 白土______ 40 M 58 71 20 10 6
-0000001 A 鈴田______ 50 F 46 39 8  5  21
+0000001 A 鈴田______ 50 F 46 39 8 5 21
 FIN
 
 cat << FIN > $tmp-ng
@@ -74,7 +75,8 @@ cat << FIN > $tmp-ng
 0000003 杉山______ 26 F 30 50 71 36 30
 FIN
 
-${com} +ng key=1 $tmp-master $tmp-tran > $tmp-ans 2> $tmp-ans2
+${com} +ng key=1 $tmp-master $tmp-tran 2> $tmp-ans2	|
+sed 's/  */ /g'	> $tmp-ans
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST2-1 error"
 diff $tmp-ans2 $tmp-ng

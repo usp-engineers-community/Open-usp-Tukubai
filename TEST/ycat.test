@@ -1,0 +1,53 @@
+#!/usr/local/bin/bash -xv
+#
+# test script of ycat
+#
+# usage: ./ycat.test <python ver>
+
+name=ycat
+    
+tmp=/tmp/$$
+dir=$(dirname $0)/..
+cd $dir
+    
+com="$2 ./$1/${name}"
+[ "$1" = "" ] && com="./$1/${name}"
+
+ERROR_CHECK(){
+	[ "$(echo ${PIPESTATUS[@]} | tr -d ' 0')" = "" ] && return
+
+	echo $1
+	echo "$com" NG
+	rm -f $tmp-*
+	exit 1
+}
+
+###########################################
+#TEST1
+
+cat << FIN > $tmp-file1
+あいうえお
+hoge
+さしすせそ
+FIN
+
+cat << FIN > $tmp-file2
+かきくけこ
+FIN
+
+cat << FIN > $tmp-out
+あいうえお かきくけこ
+hoge
+さしすせそ
+FIN
+
+${com} $tmp-file1 $tmp-file2	|
+sed 's/  */ /g'			|
+sed 's/  *$//'	 > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1 error"
+
+
+rm -f $tmp-*
+echo "${com}" OK
+exit 0
