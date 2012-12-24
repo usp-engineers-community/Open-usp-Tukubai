@@ -5,9 +5,9 @@
 
 # print the usage and exit
 print_usage_and_exit () {
-	cat <<____USAGE > /dev/stderr
+	cat <<____USAGE 1>&2
 Usage   : ${0##*/} [+ng[<fd>]] key=<n> <master> <tran>
-Version : Tue Oct 02 02:48:00 JST 2012
+Version : Thu Oct 18 22:00:00 JST 2012
         : Open usp Tukubai (POSIX.1 Bourne Shell/POSIX.1 commands)
 ____USAGE
 	exit 1
@@ -70,15 +70,11 @@ for arg in "$@"; do
 			;;
 		*)
 			if [ -z "$masterfile" ]; then
-				if [ "_$arg" = '_-' ]; then
-					masterfile='/dev/stdin'
-				elif [ \( -f "$arg" \) -o \( -c "$arg" \) ]; then
+				if [ \( -f "$arg" \) -o \( -c "$arg" \) -o \( "_$arg" = '_-' \) ]; then
 					masterfile=$arg
 				fi
 			elif [ -z "$tranfile" ]; then
-				if [ "_$arg" = '_-' ]; then
-					tranfile='/dev/stdin'
-				elif [ \( -f "$arg" \) -o \( -c "$arg" \) ]; then
+				if [ \( -f "$arg" \) -o \( -c "$arg" \) -o \( "_$arg" = '_-' \) ]; then
 					tranfile=$arg
 				fi
 			else
@@ -94,23 +90,27 @@ if [ -z "$masterfile" ]; then
 	print_usage_and_exit
 fi
 if [ -z "$tranfile" ]; then
-	tranfile='/dev/stdin'
+	tranfile='-'
 fi
-if [ \( \( "_$masterfile" = '_/dev/stdin' \) -o \( "_$masterfile" = '_/dev/fd/0' \) \) -a \( \( "_$tranfile" = '_/dev/stdin' \) -o \( "_$tranfile" = '_/dev/fd/0' \) \) ]; then
+use_stdin=0
+for file in "$masterfile" "$tranfile"; do
+	if [ \( "_$file" = '_-'               \) -o \
+	     \( "_$file" = '_/dev/stdin'      \) -o \
+	     \( "_$file" = '_/dev/fd/0'       \) -o \
+	     \( "_$file" = '_/proc/self/fd/0' \)    ]
+	then
+		use_stdin=$((use_stdin+1))
+	fi
+done
+if [ $use_stdin -gt 1 ]; then
 	print_usage_and_exit
 fi
-if [ \( ! -f "$masterfile" \) -a \( ! -c "$masterfile" \) ]; then
-	print_usage_and_exit
-fi
-if [ ! -r "$masterfile" ]; then
-	echo "${0##*/}: Cannot open the master file" > /dev/stderr
+if [ \( ! -r "$masterfile" \) -a \( "_$masterfile" != '_-' \) ]; then
+	echo "${0##*/}: Cannot open the master file" 1>&2
 	exit 1
 fi
-if [ \( ! -f "$tranfile" \) -a \( ! -c "$tranfile" \) ]; then
-	print_usage_and_exit
-fi
-if [ ! -r "$tranfile" ]; then
-	echo "${0##*/}: Cannot open the transaction file" > /dev/stderr
+if [ \( ! -r "$tranfile" \) -a \( "_$tranfile" != '_-' \) ]; then
+	echo "${0##*/}: Cannot open the transaction file" 1>&2
 	exit 1
 fi
 
@@ -140,19 +140,19 @@ exec awk -v key_1=$key_1 -v key_2=$key_2 -v ng=$ng \
 	# print the records in tran which have the same key
 	FNR < NR {
 		if (keytype == 1) {
-			str = $key_1;
+			str = "_" $key_1;
 		} else if (keytype == 2) {
-			str = "";
+			str = "_";
 			for (i = key_1; i <= key_2; i++) {
 				str = str $i;
 			}
 		} else if (keytype == 3) {
-			str = "";
+			str = "_";
 			for (i = 1; i <= length(keynum); i++) {
 				str = str $keynum[i];
 			}
 		} else {
-			str = "";
+			str = "_";
 		}
 		if (str in masterkey) {
 			print;
@@ -165,20 +165,20 @@ exec awk -v key_1=$key_1 -v key_2=$key_2 -v ng=$ng \
 	# load the keys in master
 	{
 		if (keytype == 1) {
-			str = $1;
+			str = "_" $1;
 		} else if (keytype == 2) {
-			str = "";
+			str = "_";
 			for (i = 1; i <= (key_2 - key_1 + 1); i++) {
 				str = str $i;
 			}
 		} else if (keytype == 3) {
-			str = "";
+			str = "_";
 			for (i = 1; i <= length(keynum); i++) {
 				j = keynum[i] - keynum_min + 1;
 				str = str $j;
 			}
 		} else {
-			str = "";
+			str = "_";
 		}
 		masterkey[str] = 1;
 	}
