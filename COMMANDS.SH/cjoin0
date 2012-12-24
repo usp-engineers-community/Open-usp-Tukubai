@@ -7,7 +7,7 @@
 print_usage_and_exit () {
 	cat <<____USAGE 1>&2
 Usage   : ${0##*/} [+ng[<fd>]] key=<n> <master> <tran>
-Version : Thu Oct 18 22:00:00 JST 2012
+Version : Thu Dec 25 01:02:01 JST 2012
         : Open usp Tukubai (POSIX.1 Bourne Shell/POSIX.1 commands)
 ____USAGE
 	exit 1
@@ -63,8 +63,11 @@ for arg in "$@"; do
 			;;
 		+ng*)
 			ng=${arg#+ng}
-			$(echo "_$ng" | grep '^_[0-9]\{1,\}$' > /dev/null)
-			if [ $? -ne 0 ]; then
+			if [ -z "$ng" ]; then
+				ng=2
+			elif echo "_$ng" | grep '^_[0-9]\{1,\}$' > /dev/null; then
+				:
+			else
 				print_usage_and_exit
 			fi
 			;;

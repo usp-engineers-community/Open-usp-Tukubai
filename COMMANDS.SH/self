@@ -8,7 +8,7 @@ print_usage_and_exit () {
 	cat <<____USAGE 1>&2
 Usage   : ${0##*/} <f1> <f2> ... <file>
         : ${0##*/} -d <f1> <f2> ... <string>
-Version : Thu Oct 21 02:32:54 JST 2012
+Version : Thu Dec 25 00:07:11 JST 2012
         : Open usp Tukubai (POSIX.1 Bourne Shell/POSIX.1 commands/UTF-8)
 ____USAGE
 	exit 1
@@ -50,7 +50,7 @@ for arg in "$@"; do
 	fi
 	# get substr parameters from arg1 if possible
 	stpos=0
-	edpos=0
+	edpos=-1
 	arg1s=${arg1#*.}
 	arg1=${arg1%%.*}
 	if [ "_$arg1s" != "_$arg1" ]; then
@@ -62,7 +62,7 @@ for arg in "$@"; do
 		elif echo "_$arg1s" | grep '^_[0-9]\{1,\}\.[0-9]\{1,\}$' > /dev/null; then
 			stpos=${arg1s%.*}
 			edpos=${arg1s#*.}
-			if [ \( $stpos -eq 0 \) -o \( $stpos -gt $edpos \) ]; then
+			if [ $stpos -eq 0 ]; then
 				break
 			fi
 		else
@@ -232,7 +232,7 @@ BEGIN {
 
 END {
 	if (_assert_exit) {
-		print "'"${0##*/}"': Invalid string position for separating a field",
+		print "'"${0##*/}"': Invalid string position for separating the field",
 		      "at line", NR > "/dev/stderr";
 		exit _assert_exit;
 	}
@@ -255,13 +255,13 @@ function getsubf_prep() {
 	getsubf_K_80 = sprintf("\200");
 }
 # return the substr in accordance with the counting rule of self command
-function getsubf(str, startpos, endpos) {
+function getsubf(str, startpos, len) {
 	# - "getsubf_substr_s" is a byte offset (start from 1) which the
 	#   "startpos" suggests by the Japanese text position (zenkaku-hankaku;
 	#   start from 1)
 	# - "getsubf_substr_e" is a byte offset + 1 (start from 1) which the
-	#   "endpos" suggests by the Japanese text position (zenkaku-hankaku;
-	#   start from 1)
+	#   "len" suggests by the Japanese text width (zenkaku-hankaku;
+	#   start from 1; -1 means "to the end")
 	getsubf_substr_s = 0;
 	getsubf_substr_e = 0;
 	#
@@ -275,7 +275,7 @@ function getsubf(str, startpos, endpos) {
 		if (getsubf_substr_s == 0) {
 			if (startpos == getsubf_pos) {
 				getsubf_substr_s = getsubf_i;
-				if (endpos == 0) {
+				if (len == -1) {
 					break;
 				}
 			} else if (startpos < getsubf_pos) {
@@ -333,14 +333,21 @@ function getsubf(str, startpos, endpos) {
 			getsubf_i++;
 		}
 		if (getsubf_substr_s > 0) {
-			if ((endpos + 1) == getsubf_pos) {
+			if ((startpos + len) == getsubf_pos) {
 				getsubf_substr_e = getsubf_i;
 				break;
-			} else if ((endpos + 1) < getsubf_pos) {
+			} else if (len == 0) {
+				getsubf_substr_e = getsubf_substr_s;
+				break;
+			} else if ((startpos + len) < getsubf_pos) {
 				_assert_exit = 1;
 				exit _assert_exit;
 			}
 		}
+	}
+	if (getsubf_substr_s == 0) {
+		_assert_exit = 1;
+		exit _assert_exit;
 	}
 	return (getsubf_substr_e == 0)                                    \
 	  ? substr(str,getsubf_substr_s)                                  \
@@ -363,15 +370,15 @@ function getfldclstr1(fldnum1,fldnum2) {
 }
 # generate the field cluster for the number and NF mixed arguments
 # with a substr part (e.g. 1.1/NF, NF.3.6/1, 3.1.5/NF-3)
-function getfldclstr2(fldnum1, fldnum2, stpos, edpos) {
-	getfldclstr2_ = getsubf($fldnum1,stpos,edpos);
+function getfldclstr2(fldnum1, fldnum2, stpos, len) {
+	getfldclstr2_ = getsubf($fldnum1,stpos,len);
 	if (fldnum1 <= fldnum2) {
 		for (getfldclstr2_i=fldnum1+1;getfldclstr2_i<=fldnum2;getfldclstr2_i++) {
-			getfldclstr2_ = getfldclstr2_ FS getsubf($getfldclstr2_i,stpos,edpos);
+			getfldclstr2_ = getfldclstr2_ FS getsubf($getfldclstr2_i,stpos,len);
 		}
 	} else {
 		for (getfldclstr2_i=fldnum1-1;getfldclstr2_i>=fldnum2;getfldclstr2_i--) {
-			getfldclstr2_ = getfldclstr2_ FS getsubf($getfldclstr2_i,stpos,edpos);
+			getfldclstr2_ = getfldclstr2_ FS getsubf($getfldclstr2_i,stpos,len);
 		}
 	}
 	return getfldclstr2_;
