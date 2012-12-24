@@ -5,9 +5,9 @@
 
 # print the usage and exit
 print_usage_and_exit () {
-	cat <<____USAGE > /dev/stderr
+	cat <<____USAGE 1>&2
 Usage   : ${0##*/} [-f] <file> ...
-Version : Thu Sep 20 02:08:00 JST 2012
+Version : Thu Oct 18 22:00:00 JST 2012
         : Open usp Tukubai (POSIX.1 Bourne Shell/POSIX.1 commands)
 ____USAGE
 	exit 1
@@ -27,15 +27,15 @@ proc_a_file () {
 		if [ $? -eq 0 ]; then
 			trap "rm -f $tmpfile; exit" 0 1 2 3 11 14 15
 		else
-			echo "${name_of_me}: Cannot create a temporary file" > /dev/stderr
+			echo "${name_of_me}: Cannot create a temporary file" 1>&2
 			exit 1
 		fi
-		gyo=$(tee "$tmpfile"  < /dev/stdin | wc -l | awk '{print $1}')
+		gyo=$(tee "$tmpfile" | wc -l | awk '{print $1}')
 		reffile=$tmpfile
 	fi
 	#
 	# adjust the number of lines
-	if [ $(tail -1 "$reffile" | wc -l | awk '{print $1}') -eq 0 ]; then
+	if [ $(tail -n 1 "$reffile" | wc -l | awk '{print $1}') -eq 0 ]; then
 		if [ -s "$reffile" ]; then
 			gyo=$((gyo+1))
 		fi
@@ -50,7 +50,7 @@ proc_a_file () {
 	if [ $foption -eq 0 ]; then
 		echo $gyo
 	else
-		echo "$1" $gyo
+		echo "_$1 $gyo" | sed 's/^_//'
 	fi
 }
 
@@ -58,7 +58,7 @@ proc_a_file () {
 # initialize
 foption=0
 file=''
-already_used_stdin=0
+use_stdin=0
 name_of_me=${0##*/}
 
 # parse arguments and count lines
@@ -71,22 +71,24 @@ for arg in "$@"; do
 	if [ \( $i -eq 1 \) -a \( "_$arg" = '_-f' \) ]; then
 		foption=1
 		continue
-	elif [ \( "_$arg" = '_-'          \) -o \
-	       \( "_$arg" = '_/dev/stdin' \) -o \
-	       \( "_$arg" = '_/dev/fd/0'  \)    ]; then
-		[ $already_used_stdin -ne 0 ] && print_usage_and_exit
-		already_used_stdin=1
+	elif [ \( "_$arg" = '_-'               \) -o \
+	       \( "_$arg" = '_/dev/stdin'      \) -o \
+	       \( "_$arg" = '_/dev/fd/0'       \) -o \
+	       \( "_$arg" = '_/proc/self/fd/0' \)    ]
+	then
+		[ $use_stdin -eq 0 ] || print_usage_and_exit
 		is_stdin=1
-		file='-'
+		file="$arg"
 	elif [ \( -f "$arg" \) -o \( -c "$arg" \) ]; then
 		file="$arg"
 	else
 		print_usage_and_exit
 	fi
-	if [ ! -r "$file" ]; then
-		echo "${0##*/}: Cannot open the file \"$arg\"" > /dev/stderr
+	if [ \( ! -r "$file" \) -a \( "_$file" != '_-' \) ]; then
+		echo "${0##*/}: Cannot open the file \"$arg\"" 1>&2
 		exit 1
 	fi
+	use_stdin=$((use_stdin+is_stdin))
 	#
 	# process a file
 	proc_a_file "$file" $is_stdin

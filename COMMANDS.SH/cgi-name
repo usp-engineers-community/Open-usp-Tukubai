@@ -5,9 +5,9 @@
 
 # print the usage and exit
 print_usage_and_exit () {
-	cat <<____USAGE > /dev/stderr
+	cat <<____USAGE 1>&2
 Usage   : ${0##*/} [-d<c>] [-i<string>] [--template <html>] <param_file>
-Version : Mon Sep 24 00:59:50 JST 2012
+Version : Thu Oct 25 01:00:32 JST 2012
         : Open usp Tukubai (POSIX.1 Bourne Shell/POSIX.1 commands/UTF-8)
 ____USAGE
 	exit 1
@@ -77,40 +77,48 @@ for arg in "$@"; do
 			;;
 	esac
 done
-if [ \( -z "$param_file" \) -o \( "_$param_file" = '_-' \) ]; then
-	param_file='/dev/stdin'
+if [ -z "$param_file" ]; then
+	param_file='-'
 fi
-if [ \( "_$param_file" = '_/dev/stdin' \) -o \
-     \( "_$param_file" = '_/dev/fd/0'  \)    ]
+if [ \( "_$param_file" = '_-'               \) -o \
+     \( "_$param_file" = '_/dev/stdin'      \) -o \
+     \( "_$param_file" = '_/dev/fd/0'       \) -o \
+     \( "_$param_file" = '_/proc/self/fd/0' \)    ]
 then
 	use_stdin=$((use_stdin+1))
 fi
-if [ "_$tmpl_file" = '_-' ]; then
-	tmpl_file='/dev/stdin'
-fi
-if [ \( "_$tmpl_file" = '_/dev/stdin' \) -o \
-     \( "_$tmpl_file" = '_/dev/fd/0'  \)    ]
+if [ \( "_$tmpl_file" = '_-'               \) -o \
+     \( "_$tmpl_file" = '_/dev/stdin'      \) -o \
+     \( "_$tmpl_file" = '_/dev/fd/0'       \) -o \
+     \( "_$tmpl_file" = '_/proc/self/fd/0' \)    ]
 then
 	use_stdin=$((use_stdin+1))
 fi
 if [ $use_stdin -gt 1 ]; then
 	print_usage_and_exit
 fi
-if [ \( ! -f "$param_file" \) -a \( ! -c "$param_file" \) ]; then
+if [ \( ! -f "$param_file"     \) -a \
+     \( ! -c "$param_file"     \) -a \
+     \( "_$param_file" != '_-' \)    ]
+then
 	print_usage_and_exit
 fi
-if [ ! -r "$param_file" ]; then
-	echo "${0##*/}: Cannot open the file as a param_file" > /dev/stderr
+if [ \( ! -r "$param_file" \) -a \( "_$param_file" != '_-' \) ]; then
+	echo "${0##*/}: Cannot open the file as a param_file" 1>&2
 	exit 1
 fi
 
 # operate the --template option
-if [ \( -f "$tmpl_file" \) -o \( -c "$tmpl_file" \) ]; then
-	if [ ! -r "$tmpl_file" ]; then
-		echo "${0##*/}: Cannot open the file as a template file" > /dev/stderr
+if [ \( -f "$tmpl_file"      \) -o \
+     \( -c "$tmpl_file"      \) -o \
+     \( "_$tmpl_file" = '_-' \)    ]
+then
+	if [ \( ! -r "$tmpl_file" \) -a \( "_$tmpl_file" != '_-' \) ]; then
+		echo "${0##*/}: Cannot open the file as a template file" 1>&2
 		exit 1
 	fi
-	tmplvars=$(tr '\r\n' '  ' < "$tmpl_file"                                   |
+	tmplvars=$(cat "$tmpl_file"                                                |
+	           tr '\r\n' '  '                                                  |
 	           sed 's/\(<[Ii][Nn][Pp][Uu][Tt] [^>]*>\)/'"$LF"'\1'"$LF"'</g'    |
 	           grep -i '<input '                                               |
 	           grep -i ' type=["'"'"']\{0,1\}\(radio\>\|checkbox\>\)'          |
@@ -132,13 +140,14 @@ octed_dopt=$(echo -n "_$dopt" | od -A n -t o1 | tr -d '\n' | sed 's/^[[:blank:]]
 octed_iopt=$(echo -n "_$iopt" | od -A n -t o1 | tr -d '\n' | sed 's/^[[:blank:]]*137//' | sed 's/[[:blank:]]*$//' | sed 's/[[:blank:]]\{1,\}/\\/g')
 
 # transfer the CGI variables string to the "cgi-name format"
-sed 's/\(%[0-9A-Fa-f][0-9A-Fa-f]\)/'"$LF"'\1'"$LF"'/g' "$param_file" |
-sed '/^%/y/abcdef/ABCDEF/'                                           |
-tr -d '\n'                                                           |
-sed 's/%0D%0A/\\n/g'                                                 |
-sed 's/&/'"$LF"'/g'                                                  |
-sed 's/+/ /'                                                         |
-awk -v dopt_is_set=$dopt_is_set -v tmplvars="$tmplvars"              '
+cat "$param_file"                                       |
+sed 's/\(%[0-9A-Fa-f][0-9A-Fa-f]\)/'"$LF"'\1'"$LF"'/g'  |
+sed '/^%/y/abcdef/ABCDEF/'                              |
+tr -d '\n'                                              |
+sed 's/%0D%0A/\\n/g'                                    |
+sed 's/&/'"$LF"'/g'                                     |
+sed 's/+/ /'                                            |
+awk -v dopt_is_set=$dopt_is_set -v tmplvars="$tmplvars" '
 BEGIN {
 	for (i = 0; i < 256; i++) {
 		s = sprintf("%02X",i);
@@ -166,7 +175,12 @@ BEGIN {
 	if (length(str2) == 0 && length(iopt)) {
 		str2 = iopt;
 	} else if (dopt_is_set != 0)  {
-		gsub(/ /, dopt, str2);
+		s = "";
+		while (match(str2,/ /)) {
+			s = s substr(str2, 1, RSTART-1) dopt;
+			str2 = substr(str2, RSTART+1);
+		}
+		str2 = s str2;
 	}
 	if ($1 in tmplvar) {
 		delete tmplvar[$1];

@@ -5,9 +5,9 @@
 
 # print the usage and exit
 print_usage_and_exit () {
-	cat <<____USAGE > /dev/stderr
+	cat <<____USAGE 1>&2
 Usage   : ${0##*/} [-<n>] <file1> <file2> ...
-Version : Thu Sep 20 02:08:00 JST 2012
+Version : Thu Oct 25 01:12:07 JST 2012
         : Open usp Tukubai (POSIX.1 Bourne Shell/POSIX.1 commands/UTF-8)
 ____USAGE
 	exit 1
@@ -25,13 +25,13 @@ LF=$(printf '\012_'); LF=${LF%_}
 
 # parse arguments
 mktemp_instead_of_stdin () {
-	tmpfile=$(mktemp -t "${0##*/}")
+	tmpfile=$(mktemp -t "${0##*/}.XXXXXXXX")
 	if [ $? -eq 0 ]; then
 		tmpfiles="$tmpfiles $tmpfile"
 		trap "rm -f $tmpfiles; exit" EXIT HUP INT QUIT ALRM SEGV TERM
-		cat /dev/stdin > "$tmpfile"
+		cat > "$tmpfile"
 	else
-		echo "${0##*/} : Cannot create a temporary file" > /dev/stderr
+		echo "${0##*/} : Cannot create a temporary file" 1>&2
 		exit 1
 	fi
 }
@@ -45,58 +45,57 @@ for arg in "$@"; do
 			continue
 		fi
 	fi
-	case "$arg" in
-		-)
-			[ $use_stdin -ne 0 ] && print_usage_and_exit
-			use_stdin=1
-			mktemp_instead_of_stdin
-			file=$tmpfile
-			;;
-		*)
-			if [ \( "_$arg" = '_/dev/stdin' \) -o \( "_$arg" = '_/dev/fd/0' \) ]; then
-				[ $use_stdin -ne 0 ] && print_usage_and_exit
-				use_stdin=1
-				mktemp_instead_of_stdin
-				file=$tmpfile
-			elif [ \( -f "$arg" \) -o \( -c "$arg" \) ]; then
-				str=$(echo -n "_$arg" | sed 's/^_//' | od -A n -t x1 | tr -d ' \n')
-				echo "$hexed_filelist" | grep -F " $str " > /dev/null
-				if [ $? -ne 0 ]; then
-					hexed_filelist="$hexed_filelist$str "
-					file=$arg
+	if [ \( "_$arg" = '_-'               \) -o \
+	     \( "_$arg" = '_/dev/stdin'      \) -o \
+	     \( "_$arg" = '_/dev/fd/0'       \) -o \
+	     \( "_$arg" = '_/proc/self/fd/0' \)    ]
+	then
+		[ $use_stdin -ne 0 ] && print_usage_and_exit
+		use_stdin=1
+		mktemp_instead_of_stdin
+		file=$tmpfile
+	elif [ \( -f "$arg" \) -o \( -c "$arg" \) ]; then
+		str=$(echo -n "_$arg" | sed 's/^_//' | od -A n -t x1 | tr -d ' \n')
+		if echo "$hexed_filelist" | grep -F " $str " > /dev/null; then
+			retry=100
+			while [ $retry -gt 0 ]; do
+				retry=$((retry-1))
+				tmpfile=$(mktemp -u -t "${0##*/}.XXXXXXXX")
+				if [ $? -eq 0 ]; then
+					ln -s "$arg" "$tmpfile" > /dev/null 2>&1
+					[ $? -ne 0 ] && continue
+					tmpfiles="$tmpfiles $tmpfile"
+					trap "rm -f $tmpfiles; exit" EXIT HUP INT QUIT ALRM SEGV TERM
+					break
 				else
-					retry=100
-					while [ $retry -gt 0 ]; do
-						retry=$((retry-1))
-						tmpfile=$(mktemp -u -t "${0##*/}.XXXXXXXX")
-						if [ $? -eq 0 ]; then
-							ln -s "$arg" "$tmpfile" > /dev/null 2>&1
-							[ $? -ne 0 ] && continue
-							tmpfiles="$tmpfiles $tmpfile"
-							trap "rm -f $tmpfiles; exit" EXIT HUP INT QUIT ALRM SEGV TERM
-							break
-						else
-							echo "${0##*/}: Cannot create a temporary file" > /dev/stderr
-							exit 1
-						fi
-					done
-					file=$tmpfile
+					echo "${0##*/}: Cannot create a temporary file" 1>&2
+					exit 1
 				fi
-			else
-				print_usage_and_exit
+			done
+			if [ $retry -eq 0 ]; then
+				echo "${0##*/}: Failed to create a temporary file" 1>&2
+				exit 1
 			fi
-			;;
-	esac
+			file=$tmpfile
+		else
+			hexed_filelist="$hexed_filelist$str "
+			file=$arg
+		fi
+	else
+		print_usage_and_exit
+	fi
 	if [ ! -r "$file" ]; then
-		echo "${0##*/}: Cannot open the file \"$arg\"" > /dev/stderr
+		echo "${0##*/}: Cannot open the file \"$arg\"" 1>&2
 		exit 1
 	fi
 	# transfer the characters to octet escaped strings to import to AWK safely
-	octed_filenames="$octed_filenames $(echo -n "$file" | od -A n -t o1 | tr -d '\n' | sed 's/^[[:blank:]]*137//' | sed 's/[[:blank:]]*$//' | sed 's/[[:blank:]]\{1,\}/\\/g')"
+	octed_filenames="$octed_filenames $(echo -n "_$file" | od -A n -t o1 | tr -d '\n' | sed 's/^[[:blank:]]*137//' | sed 's/[[:blank:]]*$//' | sed 's/[[:blank:]]\{1,\}/\\/g')"
 done
 octed_filenames=${octed_filenames# }
-if [ -z "$octed_filenames" ]: then
-	octed_filenames=$(echo -n /dev/stdin | od -A n -t o1 | tr -d '\n' | sed 's/[[:blank:]]*$//' | sed 's/[[:blank:]]\{1,\}/\\/g')
+if [ -z "$octed_filenames" ]; then
+	use_stdin=1
+	mktemp_instead_of_stdin
+	octed_filenames=$(echo -n "_$tmpfile" | od -A n -t o1 | tr -d '\n' | sed 's/^[[:blank:]]*137//' | sed 's/[[:blank:]]*$//' | sed 's/[[:blank:]]\{1,\}/\\/g')
 fi
 
 
@@ -211,9 +210,8 @@ BEGIN {
 	split(max_widthes, max_width);
 
 	margin = "";
-	if (numoption > 0) {
-		margin = sprintf("%0" numoption "d", 0);
-		gsub("0", FS, margin);
+	for (i = 0; i < numoption; i++) {
+		margin = margin FS;
 	}
 	while (1) {
 		line = "";
