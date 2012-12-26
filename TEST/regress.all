@@ -10,17 +10,11 @@ cd $dir
 #####################################
 #support of sh scripts
 
-# +ng test is not passed.
-#./cjoin0.test COMMANDS.SH ""
-#./cjoin1.test COMMANDS.SH ""
-
-# not passed
-#./delf.test COMMANDS.SH ""
-
-# 半角の部分文字列がうまくいかない
-#./self.test COMMANDS.SH ""
-
 # passed
+./cjoin0.test COMMANDS.SH ""
+./cjoin1.test COMMANDS.SH ""
+./delf.test COMMANDS.SH ""
+./self.test COMMANDS.SH ""
 ./tateyoko.test COMMANDS.SH ""
 ./sm2.test COMMANDS.SH ""
 ./plus.test COMMANDS.SH ""
