@@ -242,7 +242,26 @@ rm -f ./tmp.$$
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST16 error"
 
+###########################################
+#TEST17 NF.1.1
 
+cat << FIN > $tmp-in
+1 2 3 4567
+FIN
+
+cat << FIN > $tmp-out
+67
+FIN
+
+${com} NF.3.2 $tmp-in > $tmp-ans
+
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST17-1 error"
+
+${com} NF.3.2 < $tmp-in > $tmp-ans
+
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST17-2 error"
 
 rm -f $tmp-*
 echo "${com}" OK

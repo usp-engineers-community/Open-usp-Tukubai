@@ -1,0 +1,493 @@
+#!/usr/local/bin/bash -xv
+#
+# test script of self 
+#
+# usage: ./self.test <command dir> <python ver>
+
+name=self
++ name=self
+    
+tmp=/tmp/$$
++ tmp=/tmp/30882
+dir=$(dirname $0)/..
+dirname $0)/..
+dirname $0
+++ dirname ./self.test
++ dir=./..
+cd $dir
++ cd ./..
+    
+com="$2 ./$1/${name}"
++ com='python ./COMMANDS/self'
+[ "$1" = "" ] && com="./$1/${name}"
++ '[' COMMANDS = '' ']'
+
+ERROR_CHECK(){
+	[ "$(echo ${PIPESTATUS[@]} | tr -d ' 0')" = "" ] && return
+
+	echo $1
+	echo "$com" NG
+#	rm -f $tmp-*
+	exit 1
+}
+
+###########################################
+#TEST1
+
+cat << FIN > $tmp-in
+0000000 浜地______ 50 F 91 59 20 76 54
+0000001 鈴田______ 50 F 46 39 8  5  21
+0000003 杉山______ 26 F 30 50 71 36 30
+0000004 白土______ 40 M 58 71 20 10 6
+0000005 崎村______ 50 F 82 79 16 21 80
+FIN
++ cat
+
+cat << FIN > $tmp-out
+浜地______ F
+鈴田______ F
+杉山______ F
+白土______ M
+崎村______ F
+FIN
++ cat
+
+${com} 2 4 $tmp-in > $tmp-ans
++ python ./COMMANDS/self 2 4 /tmp/30882-in
+diff $tmp-ans $tmp-out
++ diff /tmp/30882-ans /tmp/30882-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1 error"
++ '[' 0 -eq 0 ']'
++ ERROR_CHECK 'TEST1 error'
+echo ${PIPESTATUS[@]} | tr -d ' 0')"
+echo ${PIPESTATUS[@]} | tr -d ' 0')
+echo ${PIPESTATUS[@]} | tr -d ' 0'
+++ echo 0
+++ tr -d ' 0'
++ '[' '' = '' ']'
++ return
+
+###########################################
+#TEST2
+
+cat << FIN > $tmp-out
+0000 浜地______
+0001 鈴田______
+0003 杉山______
+0004 白土______
+0005 崎村______
+FIN
++ cat
+
+${com} 1.4 2 $tmp-in > $tmp-ans
++ python ./COMMANDS/self 1.4 2 /tmp/30882-in
+diff $tmp-ans $tmp-out
++ diff /tmp/30882-ans /tmp/30882-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2 error"
++ '[' 0 -eq 0 ']'
++ ERROR_CHECK 'TEST2 error'
+echo ${PIPESTATUS[@]} | tr -d ' 0')"
+echo ${PIPESTATUS[@]} | tr -d ' 0')
+echo ${PIPESTATUS[@]} | tr -d ' 0'
+++ echo 0
+++ tr -d ' 0'
++ '[' '' = '' ']'
++ return
+
+###########################################
+#TEST3
+
+cat << FIN > $tmp-out
+浜地 50
+鈴田 50
+杉山 26
+白土 40
+崎村 50
+FIN
++ cat
+
+${com} 2.1.4 3 $tmp-in > $tmp-ans
++ python ./COMMANDS/self 2.1.4 3 /tmp/30882-in
+diff $tmp-ans $tmp-out
++ diff /tmp/30882-ans /tmp/30882-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3 error"
++ '[' 0 -eq 0 ']'
++ ERROR_CHECK 'TEST3 error'
+echo ${PIPESTATUS[@]} | tr -d ' 0')"
+echo ${PIPESTATUS[@]} | tr -d ' 0')
+echo ${PIPESTATUS[@]} | tr -d ' 0'
+++ echo 0
+++ tr -d ' 0'
++ '[' '' = '' ']'
++ return
+
+###########################################
+#TEST4
+
+cat << FIN > $tmp-out
+0000000 浜地______ 50 F 91 59 20 76 54
+0000001 鈴田______ 50 F 46 39 8  5  21
+0000003 杉山______ 26 F 30 50 71 36 30
+0000004 白土______ 40 M 58 71 20 10 6
+0000005 崎村______ 50 F 82 79 16 21 80
+FIN
++ cat
+
+${com} 0 $tmp-in > $tmp-ans
++ python ./COMMANDS/self 0 /tmp/30882-in
+diff $tmp-ans $tmp-out
++ diff /tmp/30882-ans /tmp/30882-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4 error"
++ '[' 0 -eq 0 ']'
++ ERROR_CHECK 'TEST4 error'
+echo ${PIPESTATUS[@]} | tr -d ' 0')"
+echo ${PIPESTATUS[@]} | tr -d ' 0')
+echo ${PIPESTATUS[@]} | tr -d ' 0'
+++ tr -d ' 0'
+++ echo 0
++ '[' '' = '' ']'
++ return
+
+###########################################
+#TEST5
+
+cat << FIN > $tmp-out
+F 0000000 浜地______ 50 F 91 59 20 76 54
+F 0000001 鈴田______ 50 F 46 39 8  5  21
+F 0000003 杉山______ 26 F 30 50 71 36 30
+M 0000004 白土______ 40 M 58 71 20 10 6
+F 0000005 崎村______ 50 F 82 79 16 21 80
+FIN
++ cat
+
+${com} 4 0 $tmp-in > $tmp-ans
++ python ./COMMANDS/self 4 0 /tmp/30882-in
+diff $tmp-ans $tmp-out
++ diff /tmp/30882-ans /tmp/30882-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5 error"
++ '[' 0 -eq 0 ']'
++ ERROR_CHECK 'TEST5 error'
+echo ${PIPESTATUS[@]} | tr -d ' 0')"
+echo ${PIPESTATUS[@]} | tr -d ' 0')
+echo ${PIPESTATUS[@]} | tr -d ' 0'
+++ echo 0
+++ tr -d ' 0'
++ '[' '' = '' ']'
++ return
+
+###########################################
+#TEST6
+
+cat << FIN > $tmp-out
+浜地______ 50 F 91
+鈴田______ 50 F 46
+杉山______ 26 F 30
+白土______ 40 M 58
+崎村______ 50 F 82
+FIN
++ cat
+
+${com} 2/5 $tmp-in > $tmp-ans
++ python ./COMMANDS/self 2/5 /tmp/30882-in
+diff $tmp-ans $tmp-out
++ diff /tmp/30882-ans /tmp/30882-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST6 error"
++ '[' 0 -eq 0 ']'
++ ERROR_CHECK 'TEST6 error'
+echo ${PIPESTATUS[@]} | tr -d ' 0')"
+echo ${PIPESTATUS[@]} | tr -d ' 0')
+echo ${PIPESTATUS[@]} | tr -d ' 0'
+++ echo 0
+++ tr -d ' 0'
++ '[' '' = '' ']'
++ return
+
+###########################################
+#TEST7
+
+cat << FIN > $tmp-out
+0000000 59 54
+0000001 39 21
+0000003 50 30
+0000004 71 6
+0000005 79 80
+FIN
++ cat
+
+${com} 1 NF-3 NF $tmp-in > $tmp-ans
++ python ./COMMANDS/self 1 NF-3 NF /tmp/30882-in
+diff $tmp-ans $tmp-out
++ diff /tmp/30882-ans /tmp/30882-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST7 error"
++ '[' 0 -eq 0 ']'
++ ERROR_CHECK 'TEST7 error'
+echo ${PIPESTATUS[@]} | tr -d ' 0')"
+echo ${PIPESTATUS[@]} | tr -d ' 0')
+echo ${PIPESTATUS[@]} | tr -d ' 0'
+++ tr -d ' 0'
+++ echo 0
++ '[' '' = '' ']'
++ return
+
+###########################################
+#TEST7-2
+
+cat << FIN > $tmp-out
+0000000 59 20 76 54
+0000001 39 8 5 21
+0000003 50 71 36 30
+0000004 71 20 10 6
+0000005 79 16 21 80
+FIN
++ cat
+
+${com} 1 NF-3/NF $tmp-in > $tmp-ans
++ python ./COMMANDS/self 1 NF-3/NF /tmp/30882-in
+diff $tmp-ans $tmp-out
++ diff /tmp/30882-ans /tmp/30882-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST7-2 error"
++ '[' 0 -eq 0 ']'
++ ERROR_CHECK 'TEST7-2 error'
+echo ${PIPESTATUS[@]} | tr -d ' 0')"
+echo ${PIPESTATUS[@]} | tr -d ' 0')
+echo ${PIPESTATUS[@]} | tr -d ' 0'
+++ echo 0
+++ tr -d ' 0'
++ '[' '' = '' ']'
++ return
+
+
+###########################################
+#TEST8
+
+cat << FIN > $tmp-in
+   a    b  
+c   d e
+FIN
++ cat
+
+cat << FIN > $tmp-out
+a b
+c d e
+FIN
++ cat
+
+${com} 1/NF $tmp-in > $tmp-ans
++ python ./COMMANDS/self 1/NF /tmp/30882-in
+diff $tmp-ans $tmp-out
++ diff /tmp/30882-ans /tmp/30882-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST8 error"
++ '[' 0 -eq 0 ']'
++ ERROR_CHECK 'TEST8 error'
+echo ${PIPESTATUS[@]} | tr -d ' 0')"
+echo ${PIPESTATUS[@]} | tr -d ' 0')
+echo ${PIPESTATUS[@]} | tr -d ' 0'
+++ echo 0
+++ tr -d ' 0'
++ '[' '' = '' ']'
++ return
+
+###########################################
+#TEST9
+
+cat << FIN > $tmp-out
+2007
+FIN
++ cat
+
+${com} -d 1.1.4 "20070401 12345" > $tmp-ans
++ python ./COMMANDS/self -d 1.1.4 '20070401 12345'
+diff $tmp-ans $tmp-out
++ diff /tmp/30882-ans /tmp/30882-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST9 error"
++ '[' 0 -eq 0 ']'
++ ERROR_CHECK 'TEST9 error'
+echo ${PIPESTATUS[@]} | tr -d ' 0')"
+echo ${PIPESTATUS[@]} | tr -d ' 0')
+echo ${PIPESTATUS[@]} | tr -d ' 0'
+++ echo 0
+++ tr -d ' 0'
++ '[' '' = '' ']'
++ return
+
+###########################################
+#TEST10
+
+cat << FIN > $tmp-out
+ｳｴｵｶ
+FIN
++ cat
+
+echo ｱｲｳｴｵｶｷｸｹｵ | ${com} 1.3.4 > $tmp-ans
++ python ./COMMANDS/self 1.3.4
++ echo $'\357\275\261\357\275\262\357\275\263\357\275\264\357\275\265\357\275\266\357\275\267\357\275\270\357\275\271\357\275\265'
+diff $tmp-ans $tmp-out
++ diff /tmp/30882-ans /tmp/30882-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST10 error"
++ '[' 0 -eq 0 ']'
++ ERROR_CHECK 'TEST10 error'
+echo ${PIPESTATUS[@]} | tr -d ' 0')"
+echo ${PIPESTATUS[@]} | tr -d ' 0')
+echo ${PIPESTATUS[@]} | tr -d ' 0'
+++ tr -d ' 0'
+++ echo 0
++ '[' '' = '' ']'
++ return
+
+###########################################
+#TEST11
+
+echo ＵＳＰ研究所 | ${com} 1.2.4 > $tmp-ans
++ python ./COMMANDS/self 1.2.4
++ echo $'\357\274\265\357\274\263\357\274\260\347\240\224\347\251\266\346\211\200'
+Error[self] : 不正な分割位置です。
+[ $? -eq 1 ] ; ERROR_CHECK "TEST11 error"
++ '[' 1 -eq 1 ']'
++ ERROR_CHECK 'TEST11 error'
+echo ${PIPESTATUS[@]} | tr -d ' 0')"
+echo ${PIPESTATUS[@]} | tr -d ' 0')
+echo ${PIPESTATUS[@]} | tr -d ' 0'
+++ tr -d ' 0'
+++ echo 0
++ '[' '' = '' ']'
++ return
+
+###########################################
+#TEST12
+
+echo ＵＳＰ研究所 | ${com} 1.20 > $tmp-ans
++ echo $'\357\274\265\357\274\263\357\274\260\347\240\224\347\251\266\346\211\200'
++ python ./COMMANDS/self 1.20
+Error[self] : 分割位置が後ろすぎます。
+[ $? -eq 1 ] ; ERROR_CHECK "TEST12 error"
++ '[' 1 -eq 1 ']'
++ ERROR_CHECK 'TEST12 error'
+echo ${PIPESTATUS[@]} | tr -d ' 0')"
+echo ${PIPESTATUS[@]} | tr -d ' 0')
+echo ${PIPESTATUS[@]} | tr -d ' 0'
+++ echo 0
+++ tr -d ' 0'
++ '[' '' = '' ']'
++ return
+
+###########################################
+#TEST13
+
+echo ＵＳＰ研究所 | ${com} 1.2 > $tmp-ans
++ echo $'\357\274\265\357\274\263\357\274\260\347\240\224\347\251\266\346\211\200'
++ python ./COMMANDS/self 1.2
+Error[self] : 不正な分割位置です。
+[ $? -eq 1 ] ; ERROR_CHECK "TEST13 error"
++ '[' 1 -eq 1 ']'
++ ERROR_CHECK 'TEST13 error'
+echo ${PIPESTATUS[@]} | tr -d ' 0')"
+echo ${PIPESTATUS[@]} | tr -d ' 0')
+echo ${PIPESTATUS[@]} | tr -d ' 0'
+++ tr -d ' 0'
+++ echo 0
++ '[' '' = '' ']'
++ return
+
+###########################################
+#TEST14
+
+echo 123 | ${com} 1.4 > $tmp-ans
++ echo 123
++ python ./COMMANDS/self 1.4
+Error[self] : 分割位置が後ろすぎます。
+[ $? -eq 1 ] ; ERROR_CHECK "TEST14 error"
++ '[' 1 -eq 1 ']'
++ ERROR_CHECK 'TEST14 error'
+echo ${PIPESTATUS[@]} | tr -d ' 0')"
+echo ${PIPESTATUS[@]} | tr -d ' 0')
+echo ${PIPESTATUS[@]} | tr -d ' 0'
+++ echo 0
+++ tr -d ' 0'
++ '[' '' = '' ']'
++ return
+
+###########################################
+#TEST15
+
+cat << FIN > $tmp-out
+1い2
+FIN
++ cat
+
+echo あ1い2 | ${com} 1.3 > $tmp-ans
++ echo $'\343\201\2021\343\201\2042'
++ python ./COMMANDS/self 1.3
+diff $tmp-ans $tmp-out
++ diff /tmp/30882-ans /tmp/30882-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST15 error"
++ '[' 0 -eq 0 ']'
++ ERROR_CHECK 'TEST15 error'
+echo ${PIPESTATUS[@]} | tr -d ' 0')"
+echo ${PIPESTATUS[@]} | tr -d ' 0')
+echo ${PIPESTATUS[@]} | tr -d ' 0'
+++ echo 0
+++ tr -d ' 0'
++ '[' '' = '' ']'
++ return
+
+###########################################
+#TEST16 relative path
+
+cat << FIN > ./tmp.$$
+1 2 3 4
+FIN
++ cat
+
+cat << FIN > $tmp-out
+4
+FIN
++ cat
+
+${com} 4 ./tmp.$$ > $tmp-ans
++ python ./COMMANDS/self 4 ./tmp.30882
+rm -f ./tmp.$$
++ rm -f ./tmp.30882
+
+diff $tmp-ans $tmp-out
++ diff /tmp/30882-ans /tmp/30882-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST16 error"
++ '[' 0 -eq 0 ']'
++ ERROR_CHECK 'TEST16 error'
+echo ${PIPESTATUS[@]} | tr -d ' 0')"
+echo ${PIPESTATUS[@]} | tr -d ' 0')
+echo ${PIPESTATUS[@]} | tr -d ' 0'
+++ echo 0
+++ tr -d ' 0'
++ '[' '' = '' ']'
++ return
+
+###########################################
+#TEST17 NF.1.1
+
+cat << FIN > $tmp-in
+1 2 3 4567
+FIN
++ cat
+
+cat << FIN > $tmp-out
+67
+FIN
++ cat
+
+${com} NF.3.2 $tmp-in > $tmp-ans
++ python ./COMMANDS/self NF.3.2 /tmp/30882-in
+
+diff $tmp-ans $tmp-out
++ diff /tmp/30882-ans /tmp/30882-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST16 error"
++ '[' 1 -eq 0 ']'
++ ERROR_CHECK 'TEST16 error'
+echo ${PIPESTATUS[@]} | tr -d ' 0')"
+echo ${PIPESTATUS[@]} | tr -d ' 0')
+echo ${PIPESTATUS[@]} | tr -d ' 0'
+++ echo 1
+++ tr -d ' 0'
++ '[' 1 = '' ']'
++ echo TEST16 error
++ echo 'python ./COMMANDS/self' NG
++ exit 1
