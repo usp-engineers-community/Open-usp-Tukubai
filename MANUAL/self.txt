@@ -10,7 +10,7 @@ self : 指定したフィールドのデータ取り出し
 
 Usage   : self f1 f2 ... file
         : self -d f1 f2 ... string
-Version : Wed Dec 14 15:20:01 JST 2011
+Version : Wed Dec 26 15:36:09 JST 2012
         : OpenUSP (LINUX+FREEBSD/PYTHON2.4/UTF-8)
 
 【説明】
