@@ -1,16 +1,16 @@
-# Example
-# dpkg -i open-usp-tukubai_20120802-1_i386.deb 
-
-# Files
-
-# i386 install to /usr/local/bin
-open-usp-tukubai_20120802-1_i386.deb
-
-# i386 install to /opt/usp/bin
-open-usp-tukubai_20120802-2_i386.deb
-
-# amd64 install to /usr/local/bin
-open-usp-tukubai_20120802-1_amd64.deb
-
-# amd64 install to /opt/usp/bin
-open-usp-tukubai_20120802-2_amd64.deb
+# Last Update	:	2013/01/02
+# Author	:	labunix
+#
+# Install	:	dpkg -i open-usp-tukubai-${release}_i386.deb 
+# 			dpkg -i open-usp-tukubai_${release}_amd64.deb
+#
+# 「/etc/profile.d/usp.sh」は設定ファイルとみなされます。
+# 設定ファイルを削除する際は「--purge」オプションを使ってください。
+#
+# Uninstall	:	dprg -r open-usp
+#		:	dpkg --purge open-usp
+#
+# 再パッケージ用
+#
+# Files		:	labunix.Makefile
+#
