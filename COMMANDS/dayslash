@@ -1,0 +1,277 @@
+#!/usr/bin/env python
+#coding: utf-8
+#
+# dayslash ファイルのはめこみ（Open usp Tukubai版）
+# 
+# designed by USP lab.
+# written by Ryuichi Ueda
+#
+# The MIT License
+#
+# Copyright (C) 2011 Universal Shell Programming Laboratory
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+_usage = "dayslash [-r] <format> <field> <file>"
+_version = "Fri Mar 15 09:51:05 JST 2013"
+_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4+, 3.1, 3.2/UTF-8)"
+
+import re
+import os
+import sys
+import codecs
+
+def die(msg):
+	sys.stderr.write( 'Error[dayslash] : %s\n' % msg)
+	sys.exit(1)
+
+def usage():
+	sys.stderr.write( "Usage     :%s\n" % _usage );
+	sys.stderr.write( "Version   :%s\n" % _version );
+	sys.stderr.write( "	   %s\n" % _code );
+	sys.exit(1)
+
+
+def openReadFile(file_name):
+	if file_name != "-":
+		try:    return codecs.open(file_name,'r','utf-8')
+		except: die("ファイルを開けません。")
+
+	if sys.version_info[0] < 3:
+		return codecs.getreader('utf-8')(sys.stdin)
+
+	return codecs.getreader('utf-8')(sys.stdin.detach())
+
+def resetStdout():
+	if sys.version_info[0] < 3:
+		return codecs.getwriter('utf-8')(sys.stdout)
+
+	return codecs.getwriter('utf-8')(sys.stdout.detach())
+
+def resetStderr():
+	if sys.version_info[0] < 3:
+		return codecs.getwriter('utf-8')(sys.stderr)
+
+	return codecs.getwriter('utf-8')(sys.stderr.detach())
+
+def conv8(s,fmt):
+	if "H" in fmt: return s
+	if "M" in fmt: return s
+	if "S" in fmt: return s
+
+	ymd = fmt.replace("yyyy",s[0:4])
+
+	#mmだったらゼロあり
+	ymd = ymd.replace("mm",s[4:6])
+	#mでs[4] = "0" だったら一桁
+	if s[4] == "0":
+		ymd = ymd.replace("m",s[5])
+	else:
+		ymd = ymd.replace("m",s[4:6])
+
+	ymd = ymd.replace("dd",s[6:])
+	if s[6] == "0":
+		ymd = ymd.replace("d",s[7])
+	else:
+		ymd = ymd.replace("d",s[6:8])
+
+	return ymd
+
+def conv6(s,fmt):
+	if "y" in fmt: return s
+	if "m" in fmt: return s
+	if "d" in fmt: return s
+
+	hms = fmt.replace("HH",s[0:2])
+	if s[0] == "0":
+		hms = hms.replace("H",s[1])
+	else:
+		hms = hms.replace("H",s[0:2])
+
+	hms = hms.replace("MM",s[2:4])
+	if s[2] == "0":
+		hms = hms.replace("M",s[3])
+	else:
+		hms = hms.replace("M",s[2:4])
+
+	hms = hms.replace("SS",s[4:6])
+	if s[4] == "0":
+		hms = hms.replace("S",s[5])
+	else:
+		hms = hms.replace("M",s[4:6])
+
+	return hms
+
+def conv14(s,fmt):
+
+	ymd_format = re.split("[HMS]",fmt)[0]
+	hms_format = fmt[len(ymd_format):]
+
+	if len(ymd_format) > 0:
+		ymd = conv8(s[0:8],ymd_format)
+	else:
+		ymd = ""
+
+	if len(hms_format) > 0:
+		hms = conv6(s[8:],hms_format)
+	else:
+		hms = ""
+
+	return ymd + hms
+
+def conv():
+	day_format = unicode(sys.argv[1],'utf-8')
+	field = int(sys.argv[2]) - 1
+
+	if len(sys.argv) == 3:
+		input_file = openReadFile("-")
+	else:
+		input_file = openReadFile(sys.argv[3])
+
+	for line in input_file:
+		words = line.rstrip().split()
+		day_str = words[field]
+
+		str_len = len(day_str)
+		if str_len == 8:
+			ans = conv8(day_str,day_format)
+		elif str_len == 6:
+			ans = conv6(day_str,day_format)
+		elif str_len == 14:
+			ans = conv14(day_str,day_format)
+		else:
+			ans = day_str
+
+		words[field] = ans 
+
+		print(" ".join(words))
+
+def addZero(s):
+	n = len(s)
+	if n == 1: return "0" + s
+	elif n == 2: return s
+	elif n == 0: return "00"
+	else: die("不正な数字")
+
+def revYmd(nums):
+	if "yyyy" in nums:	y_str = nums["yyyy"]
+	else:			y_str = ""
+
+	#月
+	if "m" in nums: m_str = addZero(nums["m"])
+	elif "mm" in nums: m_str = addZero(nums["mm"])
+	else: m_str = "00"
+
+	#日
+	if "d" in nums: d_str = addZero(nums["d"])
+	elif "dd" in nums: d_str = addZero(nums["dd"])
+	else: d_str = "00"
+
+	return "".join([y_str,m_str,d_str])
+
+
+def revHms(nums):
+	if "H" in nums: h_str = addZero(nums["H"])
+	elif "HH" in nums: h_str = addZero(nums["HH"])
+	else: h_str = "00"
+
+	if "M" in nums: m_str = addZero(nums["M"])
+	elif "MM" in nums: m_str = addZero(nums["MM"])
+	else: m_str = "00"
+
+	if "S" in nums: s_str = addZero(nums["S"])
+	elif "SS" in nums: s_str = addZero(nums["SS"])
+	else: s_str = "00"
+
+	return "".join([h_str,m_str,s_str])
+
+def rev():
+	day_format = unicode(sys.argv[2],'utf-8')
+	field = int(sys.argv[3]) - 1
+
+	if len(sys.argv) == 4:
+		input_file = openReadFile("-")
+	else:
+		input_file = openReadFile(sys.argv[4])
+
+	#何番目にどの種類の数字が入っているか配列に記録
+	re_num = re.compile('[^ymdHMS]')
+	format_tokens = re.sub(re_num,".",day_format).rstrip(".").split(".")
+
+	#数字を取り去ったときに何が残るか記録
+	re_residual = re.compile('[ymdHMS]')
+	format_residual = re.sub(re_residual,"",day_format)
+
+	re_num = re.compile('[^0-9]')
+	re_residual = re.compile('[0-9]')
+
+	hms = False
+	ymd = False
+	if "H" in format_tokens or "HH" in format_tokens:
+		hms = True
+	elif "M" in format_tokens or "MM" in format_tokens:
+		hms = True
+	elif "S" in format_tokens or "SS" in format_tokens:
+		hms = True
+
+	if "y" in format_tokens or "yy" in format_tokens:
+		ymd = True
+	elif "m" in format_tokens or "mm" in format_tokens:
+		ymd = True
+	elif "d" in format_tokens or "dd" in format_tokens:
+		ymd = True
+
+
+	for line in input_file:
+		words = line.rstrip().split()
+		day_str = words[field]
+
+		tokens = re.sub(re_num,".",day_str).rstrip(".").split(".")
+		residual = re.sub(re_residual,"",day_str)
+
+		if format_residual != residual:
+			die("フォーマット不整合")
+
+		nums = dict(zip(format_tokens, tokens))
+
+		if ymd:	ans_ymd = revYmd(nums)
+		else:	ans_ymd = ""
+
+		if hms:	ans_hms = revHms(nums)
+		else:	ans_hms = ""
+
+		words[field] = ans_ymd + ans_hms
+
+		print(" ".join(words))
+
+#メイン関数
+if __name__ == '__main__':
+	if len(sys.argv) < 2 :		usage()
+	if sys.argv[1] == '--help' :	usage()
+	if sys.argv[1] == '--version':	usage()
+
+	# 標準入出力utf8化
+	sys.stdout = resetStdout()
+	sys.stderr = resetStderr()
+
+	# リバースモード（未実装）
+	if sys.argv[1] == '-r':
+		rev()
+	else:
+		conv()
