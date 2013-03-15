@@ -1,0 +1,265 @@
+#!/usr/local/bin/bash -xv
+#
+# test script of dayslash 
+#
+# usage: ./dayslash.test <command dir> <python ver>
+
+name=dayslash
+    
+tmp=/tmp/$$
+dir=$(dirname $0)/..
+cd $dir
+    
+com="$2 ./$1/${name}"
+[ "$1" = "" ] && com="./$1/${name}"
+
+ERROR_CHECK(){
+	[ "$(echo ${PIPESTATUS[@]} | tr -d ' 0')" = "" ] && return
+
+	echo $1
+	echo "$com" NG
+	rm -f $tmp-*
+	exit 1
+}
+
+###########################################
+#TEST1: 日付
+
+cat << FIN > $tmp-in
+20120101
+20130201
+123456
+hoge
+-
+20131231
+FIN
+
+cat << FIN > $tmp-ans
+2012/1/1
+2013/2/1
+123456
+hoge
+-
+2013/12/31
+FIN
+
+${com} yyyy/m/d 1 $tmp-in > $tmp-out
+diff $tmp-ans $tmp-out ; ERROR_CHECK "TEST1.1 error"
+
+cat << FIN > $tmp-ans
+2012/01/01
+2013/02/01
+123456
+hoge
+-
+2013/12/31
+FIN
+
+cat $tmp-in		|
+${com} yyyy/mm/dd 1 - > $tmp-out
+diff $tmp-ans $tmp-out ; ERROR_CHECK "TEST1.2 error"
+
+cat << FIN > $tmp-ans
+1/1
+2/1
+123456
+hoge
+-
+12/31
+FIN
+
+cat $tmp-in	|
+${com} m/d 1 - > $tmp-out
+diff $tmp-ans $tmp-out ; ERROR_CHECK "TEST1.3 error"
+
+cat << FIN > $tmp-ans
+01月2012年
+02月2013年
+123456
+hoge
+-
+12月2013年
+FIN
+
+cat $tmp-in		|
+${com} mm月yyyy年 1 - > $tmp-out
+diff $tmp-ans $tmp-out ; ERROR_CHECK "TEST1.4 error"
+
+###########################################
+#TEST2: 時刻
+
+cat << FIN > $tmp-in
+121212
+020212
+hoge
+-
+20131231
+FIN
+
+cat << FIN > $tmp-ans
+12時12分12秒
+02時02分12秒
+hoge
+-
+20131231
+FIN
+
+cat $tmp-in		|
+${com} HH時MM分SS秒 1 > $tmp-out
+diff $tmp-ans $tmp-out ; ERROR_CHECK "TEST2.1 error"
+
+cat << FIN > $tmp-ans
+12:12
+02:02
+hoge
+-
+20131231
+FIN
+
+cat $tmp-in		|
+${com} HH:MM 1 > $tmp-out
+diff $tmp-ans $tmp-out ; ERROR_CHECK "TEST2.2 error"
+
+###########################################
+#TEST3: 年月日時分秒
+
+cat << FIN > $tmp-in
+19430103121212
+20011231020212
+hoge
+-
+20131231
+121212
+FIN
+
+cat << FIN > $tmp-ans
+1943年01月03日12時12分12秒
+2001年12月31日02時02分12秒
+hoge
+-
+20131231
+121212
+FIN
+
+cat $tmp-in		|
+${com} yyyy年mm月dd日HH時MM分SS秒 1 > $tmp-out
+diff $tmp-ans $tmp-out ; ERROR_CHECK "TEST3.1 error"
+
+#----------------------------------
+
+cat << FIN > $tmp-ans
+1943/1/3_12:12
+2001/12/31_02:02
+hoge
+-
+20131231
+121212
+FIN
+
+cat $tmp-in		|
+${com} yyyy/m/d_HH:MM 1 > $tmp-out
+diff $tmp-ans $tmp-out ; ERROR_CHECK "TEST3.2 error"
+
+#----------------------------------
+
+cat << FIN > $tmp-ans
+1943/1/3
+2001/12/31
+hoge
+-
+2013/12/31
+121212
+FIN
+
+cat $tmp-in		|
+${com} yyyy/m/d 1 > $tmp-out
+diff $tmp-ans $tmp-out ; ERROR_CHECK "TEST3.3 error"
+
+###########################################
+#TEST4: 複数フィールド
+
+cat << FIN > $tmp-in
+あいう 20120101 えお
+かきく 20130201 けこ
+さしす 123456 せそ
+たちつ hoge てと
+なにぬ - ねの
+はひふ 20131231 へほ
+FIN
+
+cat << FIN > $tmp-ans
+あいう 2012/1/1 えお
+かきく 2013/2/1 けこ
+さしす 123456 せそ
+たちつ hoge てと
+なにぬ - ねの
+はひふ 2013/12/31 へほ
+FIN
+
+${com} yyyy/m/d 2 $tmp-in > $tmp-out
+diff $tmp-ans $tmp-out ; ERROR_CHECK "TEST4.1 error"
+
+#----------------------------------
+
+cat << FIN > $tmp-ans
+あいう 2012/1/1
+かきく 2013/2/1
+さしす 123456
+たちつ hoge
+なにぬ -
+はひふ 2013/12/31
+FIN
+
+awk '{print $1,$2}' $tmp-in	|
+${com} yyyy/m/d 2 > $tmp-out
+diff $tmp-ans $tmp-out ; ERROR_CHECK "TEST4.2 error"
+
+###########################################
+#TEST5: リバースモード
+
+cat << FIN > $tmp-in
+あいう 2012年1月1日 えお
+かきく 2013年2月1日 けこ
+FIN
+
+cat << FIN > $tmp-ans
+あいう 20120101 えお
+かきく 20130201 けこ
+FIN
+
+${com} -r yyyy年m月d日 2 $tmp-in > $tmp-out
+diff $tmp-ans $tmp-out ; ERROR_CHECK "TEST5.1 error"
+
+#----------------------------------
+
+cat << FIN > $tmp-in
+あいう 2時1分
+かきく 13時12分
+FIN
+
+cat << FIN > $tmp-ans
+あいう 020100
+かきく 131200
+FIN
+
+${com} -r H時M分 2 $tmp-in > $tmp-out
+diff $tmp-ans $tmp-out ; ERROR_CHECK "TEST5.2 error"
+
+#----------------------------------
+
+cat << FIN > $tmp-in
+あいう 1234年12月3日2時1分12秒
+かきく 2001年4月31日13時12分3秒
+FIN
+
+cat << FIN > $tmp-ans
+あいう 12341203020112
+かきく 20010431131203
+FIN
+
+${com} -r yyyy年m月d日H時M分S秒 2 $tmp-in > $tmp-out
+diff $tmp-ans $tmp-out ; ERROR_CHECK "TEST5.3 error"
+
+rm -f $tmp-*
+echo "${com}" OK
+exit 0
