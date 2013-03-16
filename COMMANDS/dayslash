@@ -136,7 +136,7 @@ def conv14(s,fmt):
 	return ymd + hms
 
 def conv():
-	day_format = unicode(sys.argv[1],'utf-8')
+	day_format = to_unicode(sys.argv[1])
 	field = int(sys.argv[2]) - 1
 
 	if len(sys.argv) == 3:
@@ -201,8 +201,14 @@ def revHms(nums):
 
 	return "".join([h_str,m_str,s_str])
 
+def to_unicode(s):
+	if sys.version_info >= (3, 0):
+		return s
+
+	return unicode(s,'utf-8')
+
 def rev():
-	day_format = unicode(sys.argv[2],'utf-8')
+	day_format = to_unicode(sys.argv[2])
 	field = int(sys.argv[3]) - 1
 
 	if len(sys.argv) == 4:
