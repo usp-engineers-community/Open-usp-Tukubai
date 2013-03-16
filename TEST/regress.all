@@ -47,6 +47,7 @@ while read com ; do
 	./tateyoko.test COMMANDS $com
 	./sm2.test COMMANDS $com
 	./cgi-name.test COMMANDS $com
+	./dayslash.test COMMANDS $com
 	./ycat.test COMMANDS $com
 	./yarr.test COMMANDS $com
 	./plus.test COMMANDS $com
@@ -73,13 +74,14 @@ FIN
 
 cat $tmp-ver	|
 while read com ; do
-	./yarr.test COMMANDS $com
-	./self.test COMMANDS $com
 	./check_need_name.test COMMANDS $com
 	./cjoin0.test COMMANDS $com
 	./cjoin1.test COMMANDS $com
 	./cjoin2.test COMMANDS $com
+	./dayslash.test COMMANDS $com
 	./filehame.test COMMANDS $com
+	./self.test COMMANDS $com
+	./yarr.test COMMANDS $com
 done
 
 rm -f $tmp-*
