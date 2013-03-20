@@ -152,7 +152,7 @@ def setRadioValue(input_elem,namelist):
 		else:
 			ans = input_elem
 
-	print ans.replace("  />"," />")
+	print(ans.replace("  />"," />"))
 
 def setTextValue(input_elem,namelist):
 	name = getAttr(input_elem,"name")
@@ -169,13 +169,13 @@ def setTextValue(input_elem,namelist):
 	else:
 		ans = re.sub('value="[^"]*"',new_value,input_elem)
 
-	print ans.replace('  value="',' value="')
+	print(ans.replace('  value="',' value="'))
 
 def setTextAreaValue(input_elem,namelist):
 	name = getAttr(input_elem,"name")
-	print input_elem.split(">")[0] + ">"
-	print getANameValue(namelist,name).replace("\\n","\n")
-	print "</textarea>"
+	print(input_elem.split(">")[0] + ">")
+	print(getANameValue(namelist,name).replace("\\n","\n"))
+	print("</textarea>")
 
 
 def setSelectValue(input_elem,namelist):
@@ -184,7 +184,7 @@ def setSelectValue(input_elem,namelist):
 	new_values = getNameValues(namelist,name)
 	if new_values == None:
 		tmp = input_elem.replace('selected="selected"',"")
-		print tmp.replace('selected',"")
+		print(tmp.replace('selected',""))
 		return
 
 	#valueがある場合
@@ -199,7 +199,7 @@ def setSelectValue(input_elem,namelist):
 				line = line.replace('selected="selected"',"")
 				line = line.replace('selected',"")
 
-		print line
+		print(line)
 		
 
 def setValue(input_elem,namelist):
@@ -214,7 +214,7 @@ def setValue(input_elem,namelist):
 	elif 'type="checkbox"' in input_elem:
 		setRadioValue(input_elem,namelist)
 	else:
-		print input_elem
+		print(input_elem)
 
 
 #メイン関数
@@ -254,7 +254,7 @@ if __name__ == '__main__':
 			input_elem,residual = getBlock(line,html_file,"textarea")
 			setTextAreaValue(input_elem,namelist)
 		else:
-			print line
+			print(line)
 
 		if residual:
 			line = residual

@@ -60,6 +60,7 @@ while read com ; do
 	./cjoin1.test COMMANDS $com
 	./cjoin2.test COMMANDS $com
 	./filehame.test COMMANDS $com
+	./formhame.test COMMANDS $com
 	./gyo.test COMMANDS $com
 	./keta.test COMMANDS $com
 done
@@ -80,6 +81,7 @@ while read com ; do
 	./cjoin2.test COMMANDS $com
 	./dayslash.test COMMANDS $com
 	./filehame.test COMMANDS $com
+	./formhame.test COMMANDS $com
 	./self.test COMMANDS $com
 	./yarr.test COMMANDS $com
 done
