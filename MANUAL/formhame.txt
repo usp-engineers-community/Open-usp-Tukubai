@@ -1,0 +1,103 @@
+Tukubaiオンラインコマンドマニュアル
+
+formhame(1)
+
+【名前】
+formhame : HTML テンプレートに文字をはめ込む
+
+【書式】
+Usage   : formhame <html_template> <data>
+Option  : --form <formname>
+        : -i<c>
+        : -d<c>
+Version : Sun Mar 17 12:51:52 JST 2013
+
+【説明】
+<HTML_template> ファイルの各種inputタグ(text radio checkbox hidden)と
+textareaタグ selectタグの部分に <data>ファイル 
+(第１フィールド:タグ名 第２フィールド以降:値)で指定される値を挿入します。
+
+【例】
+$ cat html
+<html><body>
+<form name="name_form">
+<input type="text" name="name_text1" />
+<input type="text" name="name_text2" />
+<input type="radio" name="name_radio" value="a"/>
+<input type="radio" name="name_radio" value="b"/>
+<input type="checkbox" name="name_checkbox" value="x"/>
+<input type="checkbox" name="name_checkbox" value="y"/>
+<textarea name="name_textarea">
+</textarea>
+<select name="name_pulldown">
+<option value="pd1">pd1</option>
+<option value="pd2">pd2</option>
+<option value="pd3">pd3</option>
+</select>
+<input type="submit" name="submit" />
+</form>
+</body></html>
+
+$ cat data
+name_text1 hello
+name_text2          
+name_radio b
+name_checkbox y
+name_textarea usp\nlaboratory
+name_pulldown pd3
+
+$ formhame html data 
+<html><body>
+<form name="name_form">
+<input type="text" name="name_text1"  value="hello" />
+<input type="text" name="name_text2" />
+<input type="radio" name="name_radio" value="a"/>
+<input type="radio" name="name_radio" value="b" checked="checked" />
+<input type="checkbox" name="name_checkbox" value="x"/>
+<input type="checkbox" name="name_checkbox" value="y" checked="checked" />
+<textarea name="name_textarea">
+usp
+laboratory
+</textarea>
+<select name="name_pulldown">
+<option value="pd1">pd1</option>
+<option value="pd2">pd2</option>
+<option value="pd3" selected="selected" >pd3</option>
+</select>
+<input type="submit" name="submit" />
+</form>
+</body></html>
+
+【備考】
+1. input タグの場合、すでに value="" とテンプレートに記述している場合は、
+   値を置換します。同様に textareaタグの場合も値を置換します。
+   select タグの場合は、すでに selected="selected" とテンプレートに指定
+   されている場合、指定場所を移動します。
+
+2. textarea の場合、すでにある値を置換します。
+   また、値 "\n" は改行に置換します。
+
+3. 値が無い場合、値は挿入されません。
+
+4. -i オプションで文字列を指定すると、その文字列に等しい値はヌル文字列
+   にして挿入します。
+
+5. -d オプションで文字を指定すると、その文字に等しい値は半角空白文字に
+   置換して挿入します。
+   但し \指定文字 というデータは半角空白に変換しません。
+
+6. HTML は正しく記述されている必要があります。
+   例えば、タグはすべて小文字であり、<タグ  /> あるいは、
+   <タグ></タグ> と記述される必要があります。
+   変数は必ず " " で囲むこと。(value="1" など)
+   input type="checkbox" のときは、必ず value="XXX" をセットすること。 
+
+7. checkbox radiobox selectbox の複数選択の場合は、name 形式データは
+   次のように一つのタグに対して複行となります。
+
+   name_radio a
+   name_radio b
+   name_checkbox x
+   name_checkbox y
+   name_pulldown pd1
+   name_pulldown pd2
