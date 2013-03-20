@@ -1,0 +1,263 @@
+#!/usr/bin/env python
+#coding: utf-8
+#
+# formhame フォームへのデータのはめこみ（Open usp Tukubai版）
+# 
+# designed by Nobuaki Tounaka
+# written by Ryuichi Ueda
+#
+# The MIT License
+#
+# Copyright (C) 2011 Universal Shell Programming Laboratory
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+_usage = "formhame <html_template> <data>"
+_version = "Sun Mar 17 12:51:52 JST 2013"
+_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4+, 3.1, 3.2/UTF-8)"
+_option = ''': --form <formname>
+	  : -i<c>
+	  : -d<c>'''
+
+
+import re
+import os
+import sys
+import codecs
+
+def die(msg):
+	sys.stderr.write( 'Error[formhame] : %s\n' % msg)
+	sys.exit(1)
+
+def usage():
+	sys.stderr.write( "Usage     :%s\n" % _usage );
+	sys.stderr.write( "Option    %s\n" % _option );
+	sys.stderr.write( "Version   :%s\n" % _version );
+	sys.stderr.write( "	   %s\n" % _code );
+	sys.exit(1)
+
+
+def openReadFile(file_name):
+	if file_name != "-":
+		try:    return codecs.open(file_name,'r','utf-8')
+		except: die("ファイルを開けません。")
+
+	if sys.version_info[0] < 3:
+		return codecs.getreader('utf-8')(sys.stdin)
+
+	return codecs.getreader('utf-8')(sys.stdin.detach())
+
+def resetStdout():
+	if sys.version_info[0] < 3:
+		return codecs.getwriter('utf-8')(sys.stdout)
+
+	return codecs.getwriter('utf-8')(sys.stdout.detach())
+
+def resetStderr():
+	if sys.version_info[0] < 3:
+		return codecs.getwriter('utf-8')(sys.stderr)
+
+	return codecs.getwriter('utf-8')(sys.stderr.detach())
+
+def getAttr(elem,attr):
+	tmp = elem.split(attr + '="')
+	if len(tmp) < 2:
+		return None
+
+	return tmp[1].split('"')[0]
+
+def getInputBlock(line,html_file):
+	if line[-2:] == "/>":
+		return line,None
+
+	if "/>" in line:
+		i = line.index(">")
+		return line[0:i+1],line[i+1:]
+
+	lines = [ line ]
+	for line in html_file:
+		if line[-2:] == "/>":
+			lines.append(line)
+			return "\n".join(lines),None
+
+		if "/>" in line:
+			i = line.index(">")
+			lines.append(line[0:i+1])
+			return "\n".join(lines),line[i+1:]
+
+def getBlock(line,html_file,tagname):
+	endtag = "</" + tagname + ">"
+	lines = [ line ]
+	for line in html_file:
+		line = line.rstrip()
+		if line[-len(endtag):] == endtag:
+			lines.append(line)
+			return "\n".join(lines),None
+
+		if endtag in line:
+			tmp = line.split(endtag)
+			lines.append(tmp[0] + endtag)
+			return "\n".join(lines),endtag.join(tmp[1:])
+
+		lines.append(line)
+
+def getANameValue(namelist,name):
+	tmp = [ v[1] for v in namelist if v[0] == name ]
+
+	if len(tmp) == 0:
+		return None
+
+	return tmp[-1]
+
+def getNameValues(namelist,name):
+	tmp = [ v[1] for v in namelist if v[0] == name ]
+
+	if len(tmp) == 0:
+		return None
+
+	return tmp
+
+def setRadioValue(input_elem,namelist):
+	name = getAttr(input_elem,"name")
+	value = getAttr(input_elem,"value")
+
+	new_value = getANameValue(namelist,name)
+
+	if value == new_value:
+		if "checked" not in input_elem:
+			tmp = input_elem.replace("/>",' checked="checked" />')
+			ans = tmp.replace("  value="," value=")
+		else:
+			ans = input_elem
+	else:
+		if "checked" in input_elem:
+			tmp = input_elem.replace('checked="checked"',"")
+			ans = tmp.replace('checked',"")
+		else:
+			ans = input_elem
+
+	print ans.replace("  />"," />")
+
+def setTextValue(input_elem,namelist):
+	name = getAttr(input_elem,"name")
+	value = getAttr(input_elem,"value")
+
+	new_value = getANameValue(namelist,name)
+	if new_value == None:
+		new_value = ""
+	else:
+		new_value = ' value="' + new_value + '"'
+
+	if value == None:
+		ans = input_elem.replace("/>",new_value + "/>")
+	else:
+		ans = re.sub('value="[^"]*"',new_value,input_elem)
+
+	print ans.replace('  value="',' value="')
+
+def setTextAreaValue(input_elem,namelist):
+	name = getAttr(input_elem,"name")
+	print input_elem.split(">")[0] + ">"
+	print getANameValue(namelist,name).replace("\\n","\n")
+	print "</textarea>"
+
+
+def setSelectValue(input_elem,namelist):
+	name = getAttr(input_elem,"name")
+
+	new_values = getNameValues(namelist,name)
+	if new_values == None:
+		tmp = input_elem.replace('selected="selected"',"")
+		print tmp.replace('selected',"")
+		return
+
+	#valueがある場合
+	#optionは一列で書いてあること
+	for line in input_elem.split("\n"):
+		value = getAttr(line,"value")
+		if value in new_values:
+			if "selected" not in line:
+				line = line.replace('>',' selected="selected">',1)
+		else:
+			if "selected" in line:
+				line = line.replace('selected="selected"',"")
+				line = line.replace('selected',"")
+
+		print line
+		
+
+def setValue(input_elem,namelist):
+	if 'type="text"' in input_elem:
+		setTextValue(input_elem,namelist)
+	elif 'type="hidden"' in input_elem:
+		setTextValue(input_elem,namelist)
+	elif 'type="submit"' in input_elem:
+		setTextValue(input_elem,namelist)
+	elif 'type="radio"' in input_elem:
+		setRadioValue(input_elem,namelist)
+	elif 'type="checkbox"' in input_elem:
+		setRadioValue(input_elem,namelist)
+	else:
+		print input_elem
+
+
+#メイン関数
+if __name__ == '__main__':
+
+	if len(sys.argv) < 3 :		usage()
+	if sys.argv[1] == '--help' :	usage()
+	if sys.argv[1] == '--version':	usage()
+
+	# 標準入出力utf8化
+	sys.stdout = resetStdout()
+	sys.stderr = resetStderr()
+
+	html_file = openReadFile(sys.argv[1])
+	name_file = openReadFile(sys.argv[2])
+
+	namelist = []
+	
+	for line in name_file:
+		tokens = line.rstrip().split()
+
+		if len(tokens) >= 2: 	v = tokens[1]
+		else:			v = None
+
+		namelist.append((tokens[0], v))
+
+	line = html_file.readline().rstrip()
+	residual = None
+	while line or residual:
+		if "<input " in line:
+			input_elem,residual = getInputBlock(line,html_file)
+			setValue(input_elem,namelist)
+		elif "<select" in line:
+			input_elem,residual = getBlock(line,html_file,"select")
+			setSelectValue(input_elem,namelist)
+		elif "<textarea" in line:
+			input_elem,residual = getBlock(line,html_file,"textarea")
+			setTextAreaValue(input_elem,namelist)
+		else:
+			print line
+
+		if residual:
+			line = residual
+			residual = None
+		else:
+			line = html_file.readline().rstrip()
