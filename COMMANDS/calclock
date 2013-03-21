@@ -29,12 +29,13 @@
 # THE SOFTWARE.
 
 _usage = "[-r] <f1> <f2> <f3> ... filename"
-_version = "Thu Mar 21 16:54:23 JST 2013"
+_version = "Thu Mar 21 21:57:55 JST 2013"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4+, 3.1, 3.2/UTF-8)"
 
 import os
 import sys
 import time
+import calendar
 import codecs
 
 def die(msg):
@@ -71,7 +72,8 @@ def resetStderr():
 	return codecs.getwriter('utf-8')(sys.stderr.detach())
 
 def revConv(field):
-	tm = time.localtime(float(field))
+	#tm = time.localtime(float(field))
+	tm = time.gmtime(float(field))
 
 	return '%04d%02d%02d%02d%02d%02d' % (tm.tm_year, tm.tm_mon, tm.tm_mday,tm.tm_hour,tm.tm_min,tm.tm_sec)
 
@@ -89,7 +91,7 @@ def conv(field,length):
 		S = int(field[12:14])
 
 	if length == 8 or length == 12 or length == 14:
-		return str(int(time.mktime((y, m, s, H, M, S, 0, 0, 0))))
+		return str(int(calendar.timegm((y, m, s, H, M, S, 0, 0, 0))))
 
 	die("日付の指定が不正です。")
 
