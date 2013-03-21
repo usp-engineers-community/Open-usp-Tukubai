@@ -44,6 +44,7 @@ FIN
 
 cat $tmp-ver	|
 while read com ; do
+	./calclock.test COMMANDS $com
 	./tateyoko.test COMMANDS $com
 	./sm2.test COMMANDS $com
 	./cgi-name.test COMMANDS $com
@@ -75,6 +76,7 @@ FIN
 
 cat $tmp-ver	|
 while read com ; do
+	./calclock.test COMMANDS $com
 	./check_need_name.test COMMANDS $com
 	./cjoin0.test COMMANDS $com
 	./cjoin1.test COMMANDS $com
