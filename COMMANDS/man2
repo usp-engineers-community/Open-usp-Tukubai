@@ -1,0 +1,2 @@
+dir=/usr/local/share/open-usp-tukubai/devel/man
+less $dir/$1.txt
