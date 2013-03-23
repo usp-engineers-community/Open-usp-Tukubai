@@ -54,29 +54,34 @@ main = do
 					then BS.getContents >>= mainProc (parseArgs args)
 					else BS.readFile (fileName args) >>= mainProc (parseArgs args)
 
+--単語ごとに全部改行して出力
 foldAll = BS.getContents >>= putBSLines . fold
+	where fold cs = BS.unlines $ concat [ BS.words c | c <- BS.lines cs ]
 
+--UTF-8の出力のお約束
 putBSLines :: BS.ByteString -> IO ()
 putBSLines = putStr . CBUS.decodeString . BS.unpack 
 
+--tarr実行
 mainProc :: (Int,Int) -> BS.ByteString -> IO()
-mainProc (num,m) cs = if num == 0 then putBSLines $ mFold m cs
-				  else putBSLines $ keyFold num m ( BS.lines cs )
+mainProc (  0,m) cs = putBSLines $ mFold m cs
+mainProc (num,m) cs = putBSLines $ keyFold num m $ BS.lines cs
 
+-- -<m> オプションのときに1行をm単語ずつ折り返し
 mFold :: Int -> BS.ByteString -> BS.ByteString
 mFold m cs = BS.unlines $ concat [ mSet m ( BS.words c ) | c <- BS.lines cs ]
 
+-- 単語のリストから単語をm個ずつまとめたリストへ
 mSet :: Int -> [ BS.ByteString ] -> [ BS.ByteString ]
 mSet m [] = []
 mSet m ws = (BS.unwords $ fst s) : mSet m (snd s)
 		where s = splitAt m ws 
 
+-- キー(num=<n>)への対応
 keyFold :: Int -> Int -> [ BS.ByteString ] -> BS.ByteString
 keyFold num m cs = BS.unlines $ concat [ keyExpand num m ( BS.words c ) | c <- cs ]
 
-fold :: BS.ByteString -> BS.ByteString
-fold cs = BS.unlines $ concat [ BS.words c | c <- BS.lines cs ]
-
+-- オプションからファイル名取り出し
 fileName :: [String] -> String
 fileName as = if "num=" `isPrefixOf` lst || "-" `isPrefixOf` lst then "-" else lst
 	where lst = last as
@@ -87,17 +92,18 @@ keyExpand num m ws = [ BS.unwords [ k , v ] | v <- vs ]
 		where k = BS.unwords $ take num ws
 		      vs = mSet m (drop num ws)
 
+-- オプションからパラメータ取り出し
 parseArgs :: [String] -> (Int,Int)
 parseArgs as = (getNum $ head0 $ filter findNum as, getM $ head1 $ filter findM as)
 	where
-		findNum as = "num=" `isPrefixOf` as
-		findM as = "-" `isPrefixOf` as && length as > 1
+		findNum a = "num=" `isPrefixOf` a
 		getNum a = read (drop 4 a)::Int
-		getM a = read (drop 1 a)::Int
-
 		head0 :: [String] -> String
 		head0 [] = "00000"
 		head0 as = head as
+
+		findM a = "-" `isPrefixOf` a && length a > 1
+		getM a = read (drop 1 a)::Int
 		head1 :: [String] -> String
-		head1 [] = "00001"
+		head1 [] = "01"
 		head1 as = head as
