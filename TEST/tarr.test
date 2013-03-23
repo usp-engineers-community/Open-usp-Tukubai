@@ -1,0 +1,112 @@
+#!/usr/local/bin/bash -xv
+#!/bin/bash -xv
+#
+# test script of tarr 
+#
+# usage: ./tarr.test <dir> <interpreter>
+
+name=tarr
+
+tmp=/tmp/$$
+dir=$(dirname $0)/..
+cd $dir
+
+com="$2 ./$1/${name}"
+[ "$1" = "" ] && com="./$1/${name}"
+
+ERROR_CHECK(){
+	[ "$(echo ${PIPESTATUS[@]} | tr -d ' 0')" = "" ] && return
+
+	echo $1
+	echo "$com" NG
+	rm -f $tmp-*
+	exit 1
+}
+
+###########################################
+#TEST1
+
+cat << FIN > $tmp-in
+あ 1 い 2 う
+FIN
+
+cat << FIN > $tmp-ans
+あ
+1
+い
+2
+う
+FIN
+
+${com} $tmp-in > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1.1 error"
+
+cat $tmp-in		|
+${com} > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1.2 error"
+
+###########################################
+#TEST2
+
+cat << FIN > $tmp-in
+001 あ 1 い 2 う
+001 123 345
+002 1 2
+002 1 2 3
+FIN
+
+cat << FIN > $tmp-ans
+001 あ
+001 1
+001 い
+001 2
+001 う
+001 123
+001 345
+002 1
+002 2
+002 1
+002 2
+002 3
+FIN
+
+${com} num=1 $tmp-in > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2.1 error"
+
+cat $tmp-in	|
+${com} num=1 -	> $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2.2 error"
+
+###########################################
+#TEST3
+
+cat << FIN > $tmp-in
+001 あ 1 い 2 う
+001 2
+001 123 345
+002 1 2
+002 1 2 3
+FIN
+
+cat << FIN > $tmp-ans
+001 あ 1
+001 い 2
+001 う
+001 2
+001 123 345
+002 1 2
+002 1 2
+002 3
+FIN
+
+${com} num=1 -2 $tmp-in > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3 error"
+
+rm -f $tmp-*
+echo "${com}" OK
+exit 0

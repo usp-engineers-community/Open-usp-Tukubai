@@ -31,6 +31,7 @@ cd $dir
 
 ./gyo.test COMMANDS.HS ""
 ./retu.test COMMANDS.HS ""
+./tarr.test COMMANDS.HS ""
 
 #####################################
 #support of 2.x
@@ -53,6 +54,7 @@ while read com ; do
 	./yarr.test COMMANDS $com
 	./plus.test COMMANDS $com
 	./self.test COMMANDS $com
+	./tarr.test COMMANDS $com
 	./delf.test COMMANDS $com
 	./nameread.test COMMANDS $com
 	./check_need_name.test COMMANDS $com
