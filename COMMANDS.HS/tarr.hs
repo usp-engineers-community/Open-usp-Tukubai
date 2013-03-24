@@ -4,9 +4,6 @@ import Codec.Binary.UTF8.String as CBUS
 import System.Environment
 import System.IO
 
--- incomplete version
--- cannot manipulate Japanese
-
 {--
 tarr（Open usp Tukubai）
 
