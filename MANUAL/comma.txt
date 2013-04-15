@@ -1,6 +1,6 @@
 Tukubaiオンラインコマンドマニュアル
 
-comma(USP Lab(1))
+comma(1)
 
 【名前】
 
@@ -86,9 +86,9 @@ $
 
 【ワンポイント】
 
-データファイルの数値にcommaでカンマを追加してしまうと、それ以降はsm2(USP Lab
-(1))やdivsen(USP Lab(1))などでの数値計算はできなくなる。カンマの追加はすべての
-計算を終えた最終成形の段階で使用する。
+データファイルの数値にcomma(1)でカンマを追加してしまうと、それ以降は
+sm2(1)やdivsen(1)などでの数値計算はできなくなる。カンマの追加はすべ
+ての計算を終えた最終成形の段階で使用する。
 
 【ワンポイント】
 
@@ -96,8 +96,8 @@ $
 
 【関連項目】
 
-keta(USP Lab(1))
+keta(1)
 
-last modified: 2012-04-12 18:47:48
+last modified: 2013-04-15 19:24:26
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012 Universal Shell Programming Laboratory All Rights Reserved.
+Copyright (c) 2012,2013 Universal Shell Programming Laboratory All Rights Reserved.

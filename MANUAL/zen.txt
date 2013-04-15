@@ -1,6 +1,6 @@
 Tukubaiオンラインコマンドマニュアル
 
-zen(USP Lab(1))
+zen(1)
 
 【名前】
 
@@ -17,7 +17,7 @@ Version : Fri Oct 21 11:26:06 JST 2011
 【説明】
 
 引数のファイルまたは標準入力におけるテキストデータの半角英数およびカタカナをす
-べて全角に変換して出力する(han)。
+べて全角に変換して出力する。
 
 【例1】
 
@@ -58,7 +58,7 @@ $
 
 【例4】
 
-"-d"オプションは引数で指定された文字列の半角の部分を全角に変えて出力する。
+-dオプションは引数で指定された文字列の半角の部分を全角に変えて出力する。
 
 $ zen -d ｶﾀｶﾅABC123             ←半角文字を引数で渡す。
 カタカナＡＢＣ１２３            ←すべて全角にして出力
@@ -66,8 +66,8 @@ $
 
 【関連項目】
 
-han(USP Lab(1))
+han(1)
 
-last modified: 2012-04-12 19:46:56
+last modified: 2013-04-15 20:33:10
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012 Universal Shell Programming Laboratory All Rights Reserved.
+Copyright (c) 2012,2013 Universal Shell Programming Laboratory All Rights Reserved.

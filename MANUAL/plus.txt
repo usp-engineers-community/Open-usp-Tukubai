@@ -1,6 +1,6 @@
 Tukubaiオンラインコマンドマニュアル
 
-plus(USP Lab(1))
+plus(1)
 
 【名前】
 
@@ -37,9 +37,8 @@ $ [ $(plus ${PIPESTATUS[@]}) -ne 0 ] && exit
 
 【関連項目】
 
-kasan(USP Lab(1))、ratio(USP Lab(1))、sm2(USP Lab(1))、sm4(USP Lab(1))、sm5(USP
-Lab(1))、ysum(USP Lab(1))
+kasan(1)、ratio(1)、sm2(1)、sm4(1)、sm5(1)、ysum(1)
 
-last modified: 2012-04-12 20:24:03
+last modified: 2013-04-15 20:06:36
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012 Universal Shell Programming Laboratory All Rights Reserved.
+Copyright (c) 2012,2013 Universal Shell Programming Laboratory All Rights Reserved.

@@ -1,10 +1,10 @@
 Tukubaiオンラインコマンドマニュアル
 
-nameread(USP Lab(1))
+nameread(1)
 
 【名前】
 
-nameread : ネーム形式のファイル読み込み
+nameread : ネーム形式(5)のファイル読み込み
 
 【書式】
 
@@ -15,7 +15,7 @@ Version : Thu Dec 15 13:46:38 JST 2011
 
 【説明】
 
-ネーム形式ファイルからnameを指定して値を読みる。<namefile>が-あるいは指定がない
+ネームファイル(5)からnameを指定して値を読みる。<namefile>が-あるいは指定がない
 ときは標準入力よりデータを受け取る。
 
 -lオプションでnameも合わせて出力する。-eオプションで正規表現を指定でき、-dオプ
@@ -36,7 +36,7 @@ $ nameread A namefile
 usp
 $
 
-ネーム形式のデータは空白を含む
+ネーム形式(5)のデータは空白を含む
 
 $ nameread B namefile
 usp laboratory
@@ -100,8 +100,8 @@ $
 
 【関連項目】
 
-cgi-name(USP Lab(1))、mime-read(USP Lab(1))、ネーム形式(USP Lab(5))
+cgi-name(1)、mime-read(1)、ネーム形式(5)
 
-last modified: 2012-04-13 17:10:04
+last modified: 2013-04-15 20:06:02
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012 Universal Shell Programming Laboratory All Rights Reserved.
+Copyright (c) 2012,2013 Universal Shell Programming Laboratory All Rights Reserved.

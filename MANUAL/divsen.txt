@@ -1,6 +1,6 @@
 Tukubaiオンラインコマンドマニュアル
 
-divsen(USP Lab(1))
+divsen(1)
 
 【名前】
 
@@ -38,7 +38,7 @@ $ divsen 2 3 data               ←2フィールドと3フィールドを1,000�
 20060206 771 400
 $
 
--sを指定して小数点まで表示させる。こうしたデータは以降でmarume(USP Lab(1))など
+-sを指定して小数点まで表示させる。こうしたデータは以降でmarume(1)など
 を使って加工する。　
 
 $ divsen -s 2 3 data            ←小数点まで表示
@@ -52,13 +52,13 @@ $
 
 【ワンポイント】
 
-divsenされた結果をさらにパイプでつないでdivsenを実行すると、100万単位のデータを
-作成することができる。
+divsen(1)された結果をさらにパイプでつないでdivsen(1)を実行すると、100万
+単位のデータを作成することができる。
 
 【関連項目】
 
-marume(USP Lab(1))
+marume(1)
 
-last modified: 2012-04-12 19:32:04
+last modified: 2013-04-15 19:26:05
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012 Universal Shell Programming Laboratory All Rights Reserved.
+Copyright (c) 2012,2013 Universal Shell Programming Laboratory All Rights Reserved.

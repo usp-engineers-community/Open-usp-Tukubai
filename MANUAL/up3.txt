@@ -1,6 +1,6 @@
 Tukubaiオンラインコマンドマニュアル
 
-up3(USP Lab(1))
+up3(1)
 
 【名前】
 
@@ -13,9 +13,9 @@ Version : Thu Dec 15 13:46:38 JST 2011
 
 【説明】
 
-masterファイルとtranファイルの各行をkey=で指定されたフィールド値で比較し、同じ
-キーフィールドを持つ行をmasterの該当行の下に挿入して出力する。masterもtranもキ
-ーとなるフィールドは整列されている必要がある。
+masterとtranの各行をkey=で指定されたフィールド値で比較し、同じキーフィールドを
+持つ行をmasterの該当行の下に挿入して出力する。masterもtranもキーとなるフィー
+ルドは整列されている必要がある。 
 
 【例1】
 
@@ -31,7 +31,7 @@ c店 2日目 76 49
 c店 3日目 38 21
 $
 
-$cat tran               ← 4日目から5日目までのデータ
+$ cat tran               ← 4日目から5日目までのデータ
 a店 4日目 131 84
 a店 5日目 189 111
 b店 4日目 198 105
@@ -60,6 +60,11 @@ $
 
 複数のキーフィールドを指定する場合はkey=2@1のように@でつないで指定する。
 
-last modified: 2012-04-11 13:22:14
+【関連項目】
+
+join0(1)、join1(1)、join2(1)、loopj(1)、loopx(1)、マスタファイル(5)、
+トランザクションファイル(5)
+
+last modified: 2013-04-15 20:29:06
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012 Universal Shell Programming Laboratory All Rights Reserved.
+Copyright (c) 2012,2013 Universal Shell Programming Laboratory All Rights Reserved.

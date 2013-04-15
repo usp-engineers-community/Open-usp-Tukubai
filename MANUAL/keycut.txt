@@ -1,6 +1,6 @@
 Tukubaiオンラインコマンドマニュアル
 
-keycut(USP Lab(1))
+keycut(1)
 
 【名前】
 
@@ -13,7 +13,6 @@ Options : -d : キーの削除
         : -a : ファイル追記
         : -z : 圧縮
 Version : Thu Dec 15 13:46:38 JST 2011
-(Version: zlib-1.2.3 )
 
 【説明】
 
@@ -142,19 +141,6 @@ $ gunzip < data.01.gz
 01 埼玉県 01 さいたま市 91 59 20 76 54
 $
 
-【備考1】
-
-keycut.cはzlibライブラリを使用している。コンパイル時は次のようにオプションが必
-要。
-
-$ cc keycut.c -lz -o /home/TOOL/keycut
-
-【備考2】
-
--aオプションと-zオプションを併用したときは、すでに存在する圧縮ファイルに圧縮フ
-ァイルが追記される。生成されるファイルはgunzip(1)コマンドで展開できるが、仕様的
-に正しい動作はどうかは未調査。
-
-last modified: 2012-04-11 13:20:15
+last modified: 2013-04-15 19:41:18
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012 Universal Shell Programming Laboratory All Rights Reserved.
+Copyright (c) 2012,2013 Universal Shell Programming Laboratory All Rights Reserved.

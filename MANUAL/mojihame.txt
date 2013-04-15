@@ -1,6 +1,6 @@
 Tukubaiオンラインコマンドマニュアル
 
-mojihame(USP Lab(1))
+mojihame(1)
 
 【名前】
 
@@ -8,7 +8,7 @@ mojihame : テンプレートに文字をはめ込み
 
 【書式】
 
-Usage   : mojihame <template> <data>                            (通常)
+Usage   : mojihame <template> <data>                    (通常)
         : mojihame -l <label> <template> <data>         (行単位)
         : mojihame -h <label> <template> <data>         (階層データ)
 Version : Sat Jan 24 11:09:49 JST 2009
@@ -86,8 +86,7 @@ $
 【例3】行単位
 
 dataは1行単位に読み込まれ、行の各フィールドが%1 %2 ...に対応する。次の行が読み
-込まれるときは再びtemplateが使用され、データがはめ込まれ出力される。この使い方
-は旧mojihameの-rと互換性がある。mojihame -rは将来廃止される。
+込まれるときは再びtemplateが使用され、データがはめ込まれ出力される。
 
 $ cat data
 a b c d
@@ -277,26 +276,18 @@ $ mojihame template data
 <input type="text" value="      __" />
 $
 
-【注意3】
+【備考】
 
-ファイル名に-を指定したときは標準入力からのデータを期待する。templateもdataのい
-ずれかを指定できる。
+1. ファイル名に-を指定したときは標準入力からのデータを期待する。templateも
+   dataのいずれかを指定できる。
 
-【注意4】
+2. -dオプションは文字列を指定しない場合にはdataの値をそのまますべてtemplateに
+   はめ込む。
 
-mojihameはシェルスクリプトである。オプションの指定によりmojihame-p(通常)、
-mojihame-l(行単位) 、mojihame-h(階層データ)を起動している。
+【関連項目】
 
-【注意5】
+filehame(1), formhame(1)
 
--dオプションは文字列を指定しない場合にはdataの値をそのまますべてtemplateにはめ
-込む。
-
-【注意6】
-
-変数の受け渡しがファイルにならず明示的になりにくいため、mojihame-eは廃止された
-。
-
-last modified: 2012-04-11 13:21:05
+last modified: 2013-04-15 19:58:57
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012 Universal Shell Programming Laboratory All Rights Reserved.
+Copyright (c) 2012,2013 Universal Shell Programming Laboratory All Rights Reserved.

@@ -1,6 +1,6 @@
 Tukubaiオンラインコマンドマニュアル
 
-tateyoko(USP Lab(1))
+tateyoko(1)
 
 【名前】
 
@@ -32,7 +32,7 @@ $
 
 【例2】
 
-map(USP Lab(1))コマンドの出力を縦横変換する。
+map(1)の出力を縦横変換する。
 
 $ cat data
 A 10/01 1
@@ -58,12 +58,12 @@ $
 
 【備考】
 
-tateyokoは指定ファイルを一旦すべてメモリへ展開する。
+tateyoko(1)は指定ファイルを一旦すべてメモリへ展開する。
 
 【関連項目】
 
-map(USP Lab(1))、unmap(USP Lab(1))
+map(1)、unmap(1)
 
-last modified: 2012-04-12 20:32:02
+last modified: 2013-04-15 20:22:43
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012 Universal Shell Programming Laboratory All Rights Reserved.
+Copyright (c) 2012,2013 Universal Shell Programming Laboratory All Rights Reserved.

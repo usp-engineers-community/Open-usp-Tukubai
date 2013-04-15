@@ -1,6 +1,6 @@
 Tukubaiオンラインコマンドマニュアル
 
-marume(USP Lab(1))
+marume(1)
 
 【名前】
 
@@ -68,8 +68,8 @@ $
 
 【関連項目】
 
-divsen(USP Lab(1))
+divsen(1)
 
-last modified: 2012-04-12 19:32:40
+last modified: 2013-04-15 19:47:03
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012 Universal Shell Programming Laboratory All Rights Reserved.
+Copyright (c) 2012,2013 Universal Shell Programming Laboratory All Rights Reserved.

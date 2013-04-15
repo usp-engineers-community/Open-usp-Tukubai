@@ -1,6 +1,6 @@
 Tukubaiオンラインコマンドマニュアル
 
-tcat(USP Lab(1))
+tcat(1)
 
 【名前】
 
@@ -64,8 +64,8 @@ $ cat file1 | tcat - file2
 
 【関連項目】
 
-ctail(USP Lab(1))、getfirst(USP Lab(1))、getlast(USP Lab(1))、ycat(USP Lab(1))
+ctail(1)、getfirst(1)、getlast(1)、ycat(1)
 
-last modified: 2012-04-12 19:26:08
+last modified: 2013-04-15 20:23:05
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012 Universal Shell Programming Laboratory All Rights Reserved.
+Copyright (c) 2012,2013 Universal Shell Programming Laboratory All Rights Reserved.
