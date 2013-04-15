@@ -1,6 +1,6 @@
 Tukubaiオンラインコマンドマニュアル
 
-getlast(USP Lab(1))
+getlast(1)
 
 【名前】
 
@@ -47,7 +47,7 @@ $
 
 【例2】
 
-"+ng"オプションを指定すると、同じキーフィールドの値を持つ行の最後の行以外を標準
++ngオプションを指定すると、同じキーフィールドの値を持つ行の最後の行以外を標準
 エラー出力に出力する。
 
 $ getlast +ng 1 2 data > /dev/null 2> data2
@@ -66,8 +66,8 @@ $
 
 【関連項目】
 
-ctail(USP Lab(1))、getfirst(USP Lab(1))、tcat(USP Lab(1))、ycat(USP Lab(1))
+ctail(1)、getfirst(1)、tcat(1)、ycat(1)
 
-last modified: 2012-04-12 19:25:54
+last modified: 2013-04-15 19:34:49
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012 Universal Shell Programming Laboratory All Rights Reserved.
+Copyright (c) 2012,2013 Universal Shell Programming Laboratory All Rights Reserved.

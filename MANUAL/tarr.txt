@@ -1,6 +1,6 @@
 Tukubaiオンラインコマンドマニュアル
 
-tarr(USP Lab(1))
+tarr(1)
 
 【名前】
 
@@ -129,8 +129,8 @@ $
 
 【関連項目】
 
-yarr(USP Lab(1))
+yarr(1)
 
-last modified: 2012-04-13 17:13:27
+last modified: 2013-04-15 20:21:34
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012 Universal Shell Programming Laboratory All Rights Reserved.
+Copyright (c) 2012,2013 Universal Shell Programming Laboratory All Rights Reserved.

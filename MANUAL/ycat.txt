@@ -1,6 +1,6 @@
 Tukubaiオンラインコマンドマニュアル
 
-ycat(USP Lab(1))
+ycat(1)
 
 【名前】
 
@@ -83,16 +83,16 @@ $ cat file2 | ycat file1 -
 
 【備考】
 
-ycatは連結後の各ファイルの形が崩れないように、はじめに各ファイルの最大幅を測っ
-ている。このため、単純に空白横連結したいだけなら次のようにpaste(1)コマンドを使
-う方が高速となる。
+ycat(1)は連結後の各ファイルの形が崩れないように、はじめに各ファイルの最大幅を
+測っている。このため、単純に空白横連結したいだけなら次のようにpaste(1)コマンド
+を使う方が高速となる。
 
 $ paste -d" " file1 file2 file3
 
 【関連項目】
 
-ctail(USP Lab(1))、getfirst(USP Lab(1))、getlast(USP Lab(1))、tcat(USP Lab(1))
+ctail(1)、getfirst(1)、getlast(1)、tcat(1)
 
-last modified: 2012-04-12 19:29:11
+last modified: 2013-04-15 20:30:39
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012 Universal Shell Programming Laboratory All Rights Reserved.
+Copyright (c) 2012,2013 Universal Shell Programming Laboratory All Rights Reserved.

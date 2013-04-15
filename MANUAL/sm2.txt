@@ -1,6 +1,6 @@
 Tukubaiオンラインコマンドマニュアル
 
-sm2(USP Lab(1))
+sm2(1)
 
 【名前】
 
@@ -73,8 +73,8 @@ $
 
 【例3】
 
-sm2は小数点がある場合、各キー、各フィールド毎に一番精度の高い数に合わせて出力す
-る。
+sm2(1)は小数点がある場合、各キー、各フィールド毎に一番精度の高い数に合わせて
+出力する。
 
 $ cat data3
 a 1.4 2.55
@@ -109,9 +109,8 @@ $ ls -l directory | sm2 0 0 5 5
 
 【関連項目】
 
-kasan(USP Lab(1))、plus(USP Lab(1))、ratio(USP Lab(1))、sm4(USP Lab(1))、sm5
-(USP Lab(1))、ysum(USP Lab(1))
+kasan(1)、plus(1)、ratio(1)、sm4(1)、sm5(1)、ysum(1)
 
-last modified: 2012-04-12 20:25:31
+last modified: 2013-04-15 20:13:18
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012 Universal Shell Programming Laboratory All Rights Reserved.
+Copyright (c) 2012,2013 Universal Shell Programming Laboratory All Rights Reserved.

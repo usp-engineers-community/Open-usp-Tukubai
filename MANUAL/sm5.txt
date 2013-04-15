@@ -1,6 +1,6 @@
 Tukubaiオンラインコマンドマニュアル
 
-sm5(USP Lab(1))
+sm5(1)
 
 【名前】
 
@@ -19,8 +19,8 @@ Version : Thu Dec 15 13:46:38 JST 2011
 キー以外の集計各フィールドの全合計の行を最終行に挿入する。この行のキーフィール
 ドは@で補完される。
 
-sm4で小計、中計を付与されているファイルを処理する場合は、sm4で付与した"@"の小計
-および中計行は無視して大計を計算する。
+sm4(1)で小計、中計を付与されているファイルを処理する場合は、sm4(1)で付与した
+@の小計および中計行は無視して大計を計算する。
 
 【例1】
 
@@ -63,7 +63,7 @@ $
 
 【例2】
 
-sm4で小計よび中計が追加されたデータを処理する場合は次のようになる。
+sm4(1)で小計よび中計が追加されたデータを処理する場合は次のようになる。
 
 $ cat data
 01 埼玉県 01 さいたま市 91 59 20 76 54
@@ -111,8 +111,8 @@ $
 【コラム】sm系コマンドの合わせ方
 
 データを集計する帳票をTukubaiで記述する場合、同じキーを集計して小計、中計を出し
-て最後に大計を出す、という処理が頻出する。こういった場合はsm2、sm4、sm5を次のよ
-うに多段に組み合わせて使用することが多い。
+て最後に大計を出す、という処理が頻出する。こういった場合はsm2(1)、sm4(1)、
+sm5(1)を次のように多段に組み合わせて使用することが多い。
 
 cat data                |
 sm2 1 6 7 NF            |       ←同一キーで集計
@@ -122,9 +122,8 @@ sm5 1 6 7 NF > result           ←大計を出力
 
 【関連項目】
 
-kasan(USP Lab(1))、plus(USP Lab(1))、ratio(USP Lab(1))、sm2(USP Lab(1))、sm4
-(USP Lab(1))、ysum(USP Lab(1))
+kasan(1)、plus(1)、ratio(1)、sm2(1)、sm4(1)、ysum(1)
 
-last modified: 2012-04-12 20:26:31
+last modified: 2013-04-15 20:16:45
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012 Universal Shell Programming Laboratory All Rights Reserved.
+Copyright (c) 2012,2013 Universal Shell Programming Laboratory All Rights Reserved.

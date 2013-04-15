@@ -3,9 +3,11 @@ Tukubaiオンラインコマンドマニュアル
 formhame(1)
 
 【名前】
+
 formhame : HTML テンプレートに文字をはめ込む
 
 【書式】
+
 Usage   : formhame <html_template> <data>
 Option  : --form <formname>
         : -i<c>
@@ -13,11 +15,13 @@ Option  : --form <formname>
 Version : Sun Mar 17 12:51:52 JST 2013
 
 【説明】
-<HTML_template> ファイルの各種inputタグ(text radio checkbox hidden)と
-textareaタグ selectタグの部分に <data>ファイル 
-(第１フィールド:タグ名 第２フィールド以降:値)で指定される値を挿入します。
+
+<html_template>ファイルの各種inputタグ(text、radio、checkbox、hidden)と
+textareaタグ、selectタグの部分に<data>ファイル(第1フィールド:タグ名、
+第2フィールド以降:値)で指定される値を挿入する。
 
 【例】
+
 $ cat html
 <html><body>
 <form name="name_form">
@@ -37,6 +41,7 @@ $ cat html
 <input type="submit" name="submit" />
 </form>
 </body></html>
+$ 
 
 $ cat data
 name_text1 hello
@@ -45,6 +50,7 @@ name_radio b
 name_checkbox y
 name_textarea usp\nlaboratory
 name_pulldown pd3
+$ 
 
 $ formhame html data 
 <html><body>
@@ -67,33 +73,32 @@ laboratory
 <input type="submit" name="submit" />
 </form>
 </body></html>
+$ 
 
 【備考】
+
 1. input タグの場合、すでに value="" とテンプレートに記述している場合は、
-   値を置換します。同様に textareaタグの場合も値を置換します。
-   select タグの場合は、すでに selected="selected" とテンプレートに指定
-   されている場合、指定場所を移動します。
+   値を置換する。同様に textareaタグの場合も値を置換する。select タグの
+   場合は、すでに selected="selected" とテンプレートに指定されている場合、
+   指定場所を移動する。
 
-2. textarea の場合、すでにある値を置換します。
-   また、値 "\n" は改行に置換します。
+2. textarea の場合、すでにある値を置換する。\nは改行に置換する。
 
-3. 値が無い場合、値は挿入されません。
+3. 値が無い場合、値は挿入されない。
 
-4. -i オプションで文字列を指定すると、その文字列に等しい値はヌル文字列
-   にして挿入します。
+4. -iオプションで文字列を指定すると、その文字列に等しい値はヌル文字列に
+   して挿入する。
 
-5. -d オプションで文字を指定すると、その文字に等しい値は半角空白文字に
-   置換して挿入します。
-   但し \指定文字 というデータは半角空白に変換しません。
+5. -dオプションで文字を指定すると、その文字に等しい値は半角空白文字に
+   置換して挿入する。 ただし、\指定文字というデータは半角空白に変換しない。
 
-6. HTML は正しく記述されている必要があります。
-   例えば、タグはすべて小文字であり、<タグ  /> あるいは、
-   <タグ></タグ> と記述される必要があります。
-   変数は必ず " " で囲むこと。(value="1" など)
-   input type="checkbox" のときは、必ず value="XXX" をセットすること。 
+6. HTMLは正しく記述されている必要がある。タグはすべて小文字であり、
+   <タグ  /> あるいは、<タグ></タグ> と記述される必要がある。
+   変数は必ず" "で囲まれている必要がある(value="1" など)。
+   input type="checkbox"のときは、必ずvalue="XXX"が指定されている必要がある。
 
-7. checkbox radiobox selectbox の複数選択の場合は、name 形式データは
-   次のように一つのタグに対して複行となります。
+7. checkbox、radiobox、selectboxの複数選択の場合は、ネーム形式データ(5)は
+   次のように1つのタグに対して複行となる。
 
    name_radio a
    name_radio b
@@ -101,3 +106,11 @@ laboratory
    name_checkbox y
    name_pulldown pd1
    name_pulldown pd2
+
+【関連項目】
+
+filehame(1), mojihame(1)
+
+last modified: 2013-04-15 19:34:09
+Contact us: uecinfo@usp-lab.com
+Copyright (c) 2013 Universal Shell Programming Laboratory All Rights Reserved.

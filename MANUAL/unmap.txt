@@ -1,6 +1,6 @@
 Tukubaiオンラインコマンドマニュアル
 
-unmap(USP Lab(1))
+unmap(1)
 
 【名前】
 
@@ -16,7 +16,7 @@ Version : Sat Dec 10 21:04:17 JST 2011
 
 【説明】
 
-map(USP Lab(1))コマンドと逆の動作をする。
+map(1)と逆の動作をする。
 
 【例1】
 
@@ -64,8 +64,8 @@ $
 
 【関連項目】
 
-map(USP Lab(1))、tateyoko(USP Lab(1))
+map(1)、tateyoko(1)
 
-last modified: 2012-04-12 20:31:22
+last modified: 2013-04-15 20:26:27
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012 Universal Shell Programming Laboratory All Rights Reserved.
+Copyright (c) 2012,2013 Universal Shell Programming Laboratory All Rights Reserved.

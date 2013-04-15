@@ -1,6 +1,6 @@
 Tukubaiオンラインコマンドマニュアル
 
-keta(USP Lab(1))
+keta(1)
 
 【名前】
 
@@ -108,8 +108,8 @@ $ keta $(keta -v data) data
 
 【関連項目】
 
-comma(USP Lab(1))
+comma(1)
 
-last modified: 2012-04-12 19:14:12
+last modified: 2013-04-15 19:39:05
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012 Universal Shell Programming Laboratory All Rights Reserved.
+Copyright (c) 2012,2013 Universal Shell Programming Laboratory All Rights Reserved.

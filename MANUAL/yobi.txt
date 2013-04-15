@@ -1,6 +1,6 @@
 Tukubaiオンラインコマンドマニュアル
 
-yobi(USP Lab(1))
+yobi(1)
 
 【名前】
 
@@ -91,8 +91,8 @@ $
 
 【関連項目】
 
-mdate(USP Lab(1))
+calclock(1), dayslash(1), mdate(1)
 
-last modified: 2012-04-12 20:33:33
+last modified: 2013-04-15 20:31:37
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012 Universal Shell Programming Laboratory All Rights Reserved.
+Copyright (c) 2012,2013 Universal Shell Programming Laboratory All Rights Reserved.
