@@ -6,11 +6,9 @@
   <title>UEC - usp engineers' community - Tukubaiオンラインコマンドマニュアル</title>
   <link rel="stylesheet" href="COMMON/CSS/MAIN.CSS" />
   <link rel="stylesheet" href="COMMON/CSS/MENU.CSS" />
-  <!--[if lte IE 7]>
+  <link rel="stylesheet" href="COMMON/CSS/PRINT.CSS" />
+  <!--[if lte IE 8]>
   <link rel="stylesheet" href="COMMON/CSS/IE67HACK.CSS" />
-  <![endif]-->
-  <!--[if IE 8]>
-  <link rel="stylesheet" href="COMMON/CSS/IE8HACK.CSS" />
   <![endif]-->
   <!--[if IE 7]>
   <link rel="stylesheet" href="COMMON/CSS/IE7HACK.CSS" />
@@ -27,18 +25,25 @@
         <img id="logoimage" src="COMMON/IMG/TUKUBAI_LOGO.JPG" />
       </div>
       <div id="title">
-        <p id="slogan">UEC - UNIXを深く理解し、シェルプログラミングを極めるコミュニティサイト</p>
+        <p id="slogan"></p>
         <ul id="megamenu">
           <li id="tukubai_man"><a href="index.html" class="target">Tukubaiマニュアル</a>
             <ul>
+              <li><a href="calclock.html">calclock(1)</a></li>
               <li><a href="cgi-name.html">cgi-name(1)</a></li>
               <li><a href="check_attr_name.html">check_attr_name(1)</a></li>
               <li><a href="check_need_name.html">check_need_name(1)</a></li>
+              <li><a href="cjoin0.html">cjoin0(1)</a></li>
+              <li><a href="cjoin1.html">cjoin1(1)</a></li>
+              <li><a href="cjoin2.html">cjoin2(1)</a></li>
               <li><a href="comma.html">comma(1)</a></li>
               <li><a href="count.html">count(1)</a></li>
               <li><a href="ctail.html">ctail(1)</a></li>
+              <li><a href="dayslash.html">dayslash(1)</a></li>
               <li><a href="delf.html">delf(1)</a></li>
               <li><a href="divsen.html">divsen(1)</a></li>
+              <li><a href="filehame.html">filehame(1)</a></li>
+              <li><a href="formhame.html">formhame(1)</a></li>
               <li><a href="getfirst.html">getfirst(1)</a></li>
               <li><a href="getlast.html">getlast(1)</a></li>
               <li><a href="gyo.html">gyo(1)</a></li>
@@ -76,9 +81,15 @@
               <li><a href="yobi.html">yobi(1)</a></li>
               <li><a href="ysum.html">ysum(1)</a></li>
               <li><a href="zen.html">zen(1)</a></li>
+              <li class="separator"><hr/></li>
+              <li class="separator"><hr/></li>
+              <li class="separator"><hr/></li>
               <li><a href="tag-format.html">タグ形式(5)</a></li>
               <li><a href="name-format.html">ネーム形式(5)</a></li>
               <li><a href="field-format.html">フィールド形式(5)</a></li>
+              <li><a href="master-file.html">マスタファイル(5)</a></li>
+              <li><a href="name-file.html">ネームファイル(5)</a></li>
+              <li><a href="transaction-file.html" class="target">トランザクションファイル(5)</a></li>
             </ul> 
           </li>
         </ul>
@@ -88,28 +99,27 @@
     <div id="main">
       <h1>Tukubaiオンラインコマンドマニュアル</h1>
 
-<!-- CONTENTS_CONTENTS -->
-<h2>ratio(USP Lab(1))</h2>
+      <h2>ratio(1)</h2>
 
-<h3>【名前】</h3>
+      <h3>【名前】</h3>
 
-<p>ratio : 構成比算出</p>
+      <p>ratio : 構成比算出</p>
 
-<h3>【書式】</h3>
+      <h3>【書式】</h3>
 
-<pre class="list">Usage	: ratio key=&lt;key&gt; &lt;file&gt;
+      <pre class="list">Usage	: ratio key=&lt;key&gt; &lt;file&gt;
 Option	: ref=&lt;ref&gt;		←参照キーの指定
 	: -&lt;s&gt;			←小数点以下の精度
 	: +&lt;n&gt;h			←先頭&lt;n&gt;行をヘッダーとみなす
 Version	: Thu Dec 15 13:46:38 JST 2011</pre>
 
-<h3>【説明】</h3>
+      <h3>【説明】</h3>
 
-<p>引数のファイルまたは標準入力のテキストデータに対し、key=で指定したフィールドに対して全行の合計に対する各フィールドの値の構成比を算出し、次のフィールドに挿入して出力する。</p>
+      <p>引数のファイルまたは標準入力のテキストデータに対し、key=で指定したフィールドに対して全行の合計に対する各フィールドの値の構成比を算出し、次のフィールドに挿入して出力する。</p>
 
-<h3>【例1】</h3>
+      <h3>【例1】</h3>
 
-<pre class="cmd">$ cat data
+      <pre class="cmd">$ cat data
 a店 1日目 103  62		←店名 日付 売数 客数
 b店 1日目 210 113
 c店 1日目 81   52
@@ -117,9 +127,9 @@ d店 1日目 75   48
 e店 1日目 211 140
 $ </pre>
 
-<p>売数(第3フィールド)の店別構成比を求めて売数の次のフィールドに挿入するには、次のようにコマンドを実行する。</p>
+      <p>売数(第3フィールド)の店別構成比を求めて売数の次のフィールドに挿入するには、次のようにコマンドを実行する。</p>
 
-<pre class="cmd">$ ratio key=3 data | keta 
+      <pre class="cmd">$ ratio key=3 data |  <a href="keta.html">keta</a>
 a店 1日目 103 15.1  62		←第4フィールドが構成比になっている
 b店 1日目 210 30.9 113
 c店 1日目  81 11.9  52
@@ -127,11 +137,11 @@ d店 1日目  75 11.0  48
 e店 1日目 211 31.0 140
 $ </pre>
 
-<h3>【例2】refオプション</h3>
+      <h3>【例2】refオプション</h3>
 
-<p>ref=で指定したフィールドをキーフィールドとし、キーフィールドの値が同じ行の中で構成比を計算して出力する。なお、キーフィールドはあらかじめ整列されていることが条件となる。</p>
+      <p>ref=で指定したフィールドをキーフィールドとし、キーフィールドの値が同じ行の中で構成比を計算して出力する。なお、キーフィールドはあらかじめ整列されていることが条件となる。</p>
 
-<pre class="cmd">$ cat data
+      <pre class="cmd">$ cat data
 a店 1日目 103  62		←店名 日付 売数 客数
 a店 2日目 157  94
 a店 3日目  62  30
@@ -149,9 +159,9 @@ e店 2日目 149  91
 e店 3日目 120  73
 $ </pre>
 
-<p>各日(第2フィールド)毎に店別の売数(第3フィールド)の構成比を求める。</p>
+      <p>各日(第2フィールド)毎に店別の売数(第3フィールド)の構成比を求める。</p>
 
-<pre class="cmd">$ sort -k2,2 -k1,1 data | ratio ref=2 key=3 | keta
+      <pre class="cmd">$ sort -k2,2 -k1,1 data | ratio ref=2 key=3 | <a href="keta.html">keta</a>
 a店 1日目 103 15.1  62		←第4フィールドが1日目における構成比
 b店 1日目 210 30.9 113
 c店 1日目  81 11.9  52
@@ -169,11 +179,11 @@ d店 3日目  34  8.4  19
 e店 3日目 120 29.7  73
 $ </pre>
 
-<h3>【例3】+hオプション</h3>
+      <h3>【例3】+hオプション</h3>
 
-<p>+&lt;n&gt;hオプションを付けると、先頭の&lt;n&gt;行を飛ばして構成比を計算する。先頭行に既に項目名などのヘッダーが付与されているデータを計算する場合などに使用する。新たに増える構成比のフィールドのヘッダーは@となる。</p>
+      <p>+&lt;n&gt;hオプションを付けると、先頭の&lt;n&gt;行を飛ばして構成比を計算する。先頭行に既に項目名などのヘッダーが付与されているデータを計算する場合などに使用する。新たに増える構成比のフィールドのヘッダーは@となる。</p>
 
-<pre class="cmd">$ cat data
+      <pre class="cmd">$ cat data
 店   日付 売数 客数		←項目名のヘッダー
 a店 1日目  103   62
 b店 1日目  210  113
@@ -182,9 +192,9 @@ d店 1日目   75   48
 e店 1日目  211  140
 $ </pre>
 
-<p>先頭行を飛ばして売数(第3フィールド)の店別構成比を求めて売数の次のフィールドに挿入する。</p>
+      <p>先頭行を飛ばして売数(第3フィールド)の店別構成比を求めて売数の次のフィールドに挿入する。</p>
 
-<pre class="cmd">$ ratio +h key=3 data | keta
+      <pre class="cmd">$ ratio +h key=3 data |  <a href="keta.html">keta</a>
 店   日付 売数    @ 客数		←先頭行はそのまま(計算しない)
 a店 1日目  103 15.1   62		←第4フィールドが構成比になっている
 b店 1日目  210 30.9  113
@@ -193,11 +203,11 @@ d店 1日目   75 11.0   48
 e店 1日目  211 31.0  140
 $ </pre>
 
-<h3>【例4】-&lt;s&gt;オプション</h3>
+      <h3>【例4】-&lt;s&gt;オプション</h3>
 
-<p>-&lt;数値&gt;で構成比の小数点以下の精度を指定できる。</p>
+      <p>-&lt;数値&gt;で構成比の小数点以下の精度を指定できる。</p>
 
-<pre class="cmd">$ cat data
+      <pre class="cmd">$ cat data
 a店 1日目 103  62		←店名 日付 売数 客数
 b店 1日目 210 113
 c店 1日目 81   52
@@ -205,9 +215,9 @@ d店 1日目 75   48
 e店 1日目 211 140
 $ </pre>
 
-<p>売数(第3フィールド)の店別構成比を小数点3桁まで求める。</p>
+      <p>売数(第3フィールド)の店別構成比を小数点3桁まで求める。</p>
 
-<pre class="cmd">$ ratio -3 key=3 data | keta 
+      <pre class="cmd">$ ratio -3 key=3 data |  <a href="keta.html">keta</a>
 a店 1日目 103 15.147  62
 b店 1日目 210 30.882 113
 c店 1日目  81 11.912  52
@@ -215,26 +225,15 @@ d店 1日目  75 11.029  48
 e店 1日目 211 31.029 140
 $ </pre>
 
-<h3>【関連項目】</h3>
+      <h3>【関連項目】</h3>
 
-<p><a href="kasan.html">kasan(USP Lab(1))</a>、<a href="plus.html">plus(USP Lab(1))</a>、<a href="sm2.html">sm2(USP Lab(1))</a>、<a href="sm4.html">sm4(USP Lab(1))</a>、<a href="sm5.html">sm5(USP Lab(1))</a>、<a href="ysum.html">ysum(USP Lab(1))</a></p>
+      <p><a href="kasan.html">kasan(1)</a>、<a href="plus.html">plus(1)</a>、<a href="sm2.html">sm2(1)</a>、<a href="sm4.html">sm4(1)</a>、<a href="sm5.html">sm5(1)</a>、<a href="ysum.html">ysum(1)</a></p>
 
-<div id="pagenavigator">
-  <ul>
-    <li><a href="index.html">&and;</a></li>
-  </ul>
-</div>
-<!-- CONTENTS_CONTENTS -->
     </div>
 
-    <div id="lastmodified">
-     last modified: 2012-04-12 20:24:42
-    </div>
+    <div id="lastmodified">last modified: 2012-19-01 16:08:01</div>
 
-    <div id="footer">
-      Contact us: uecinfo@usp-lab.com<br>
-      Copyright (c) 2012 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.
-    </div>
+    <div id="footer">Contact us: uecinfo@usp-lab.com<br/>Copyright (c) 2012,2013 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
   </div>
 </body>
 </html>

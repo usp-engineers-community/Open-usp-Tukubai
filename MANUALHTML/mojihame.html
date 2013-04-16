@@ -6,11 +6,9 @@
   <title>UEC - usp engineers' community - Tukubaiオンラインコマンドマニュアル</title>
   <link rel="stylesheet" href="COMMON/CSS/MAIN.CSS" />
   <link rel="stylesheet" href="COMMON/CSS/MENU.CSS" />
-  <!--[if lte IE 7]>
+  <link rel="stylesheet" href="COMMON/CSS/PRINT.CSS" />
+  <!--[if lte IE 8]>
   <link rel="stylesheet" href="COMMON/CSS/IE67HACK.CSS" />
-  <![endif]-->
-  <!--[if IE 8]>
-  <link rel="stylesheet" href="COMMON/CSS/IE8HACK.CSS" />
   <![endif]-->
   <!--[if IE 7]>
   <link rel="stylesheet" href="COMMON/CSS/IE7HACK.CSS" />
@@ -27,18 +25,25 @@
         <img id="logoimage" src="COMMON/IMG/TUKUBAI_LOGO.JPG" />
       </div>
       <div id="title">
-        <p id="slogan">UEC - UNIXを深く理解し、シェルプログラミングを極めるコミュニティサイト</p>
+        <p id="slogan"></p>
         <ul id="megamenu">
           <li id="tukubai_man"><a href="index.html" class="target">Tukubaiマニュアル</a>
             <ul>
+              <li><a href="calclock.html">calclock(1)</a></li>
               <li><a href="cgi-name.html">cgi-name(1)</a></li>
               <li><a href="check_attr_name.html">check_attr_name(1)</a></li>
               <li><a href="check_need_name.html">check_need_name(1)</a></li>
+              <li><a href="cjoin0.html">cjoin0(1)</a></li>
+              <li><a href="cjoin1.html">cjoin1(1)</a></li>
+              <li><a href="cjoin2.html">cjoin2(1)</a></li>
               <li><a href="comma.html">comma(1)</a></li>
               <li><a href="count.html">count(1)</a></li>
               <li><a href="ctail.html">ctail(1)</a></li>
+              <li><a href="dayslash.html">dayslash(1)</a></li>
               <li><a href="delf.html">delf(1)</a></li>
               <li><a href="divsen.html">divsen(1)</a></li>
+              <li><a href="filehame.html">filehame(1)</a></li>
+              <li><a href="formhame.html">formhame(1)</a></li>
               <li><a href="getfirst.html">getfirst(1)</a></li>
               <li><a href="getlast.html">getlast(1)</a></li>
               <li><a href="gyo.html">gyo(1)</a></li>
@@ -76,9 +81,15 @@
               <li><a href="yobi.html">yobi(1)</a></li>
               <li><a href="ysum.html">ysum(1)</a></li>
               <li><a href="zen.html">zen(1)</a></li>
+              <li class="separator"><hr/></li>
+              <li class="separator"><hr/></li>
+              <li class="separator"><hr/></li>
               <li><a href="tag-format.html">タグ形式(5)</a></li>
               <li><a href="name-format.html">ネーム形式(5)</a></li>
               <li><a href="field-format.html">フィールド形式(5)</a></li>
+              <li><a href="master-file.html">マスタファイル(5)</a></li>
+              <li><a href="name-file.html">ネームファイル(5)</a></li>
+              <li><a href="transaction-file.html" class="target">トランザクションファイル(5)</a></li>
             </ul> 
           </li>
         </ul>
@@ -88,19 +99,18 @@
     <div id="main">
       <h1>Tukubaiオンラインコマンドマニュアル</h1>
 
-<!-- CONTENTS_CONTENTS -->
-<h2>mojihame(USP Lab(1))</h2>
+      <h2>mojihame(1)</h2>
 
-<h3>【名前】</h3>
+      <h3>【名前】</h3>
 
-<p>mojihame : テンプレートに文字をはめ込み</p>
+      <p>mojihame : テンプレートに文字をはめ込み</p>
 
-<h3>【書式】</h3>
+      <h3>【書式】</h3>
 
-<pre class="list">Usage	: mojihame &lt;template&gt; &lt;data&gt;				(通常)
+      <pre class="list">Usage	: mojihame &lt;template&gt; &lt;data&gt;			(通常)
 	: mojihame -l &lt;label&gt; &lt;template&gt; &lt;data&gt;		(行単位)
 	: mojihame -h &lt;label&gt; &lt;template&gt; &lt;data&gt;		(階層データ)
-Version : Sat Jan 24 11:09:49 JST 2009         
+Version : Sat Jan 24 11:09:49 JST 2009
 
 Usage	: mojihame-l [-l&lt;label&gt;][-dlt;c&gt;] &lt;template&gt; &lt;data&gt;
 Version	: Sat Jan 24 13:31:13 JST 2009
@@ -111,137 +121,137 @@ Version	: Sat Jan 24 13:59:43 JST 2009
 Usage	: mojihame-p [-d&lt;c&gt;] &lt;template&gt; &lt;data&gt;
 Version	: Sat Jan 24 13:30:10 JST 2009</pre>
 
-<h3>【説明】</h3>
+      <h3>【説明】</h3>
 
-<p>引数に指定するtemplateファイルに、dataあるいは環境変数からデータを読んで値をはめ込む。次の3つの使い方がある。</p>
+      <p>引数に指定するtemplateファイルに、dataあるいは環境変数からデータを読んで値をはめ込む。次の3つの使い方がある。</p>
 
-<ol>
-  <li>dataのすべてのフィールドを順番にはめ込む(通常)</li>
-  <li>dataの行単位のフィールドをtemplateの指定ラベル間繰り返しはめ込む(行単位)</li>
-  <li>dataが階層データの場合、templateの指定ラベル間、階層的にはめ込む(階層データ)</li>
-</ol>
+      <ol>
+        <li>dataのすべてのフィールドを順番にはめ込む(通常)</li>
+        <li>dataの行単位のフィールドをtemplateの指定ラベル間繰り返しはめ込む(行単位)</li>
+        <li>dataが階層データの場合、templateの指定ラベル間、階層的にはめ込む(階層データ)</li>
+      </ol>
 
-<h3>【例1】通常</h3>
+      <h3>【例1】通常</h3>
 
-<p>templateの中にある%1 %2 %3 ...の部分に、dataのフィールド(左上から右下に順番に%1 %2 %3 ...に対応)を読んで置換する。</p>
+      <p>templateの中にある%1 %2 %3 ...の部分に、dataのフィールド(左上から右下に順番に%1 %2 %3 ...に対応)を読んで置換する。</p>
 
-<pre class="cmd">$ cat data
+      <pre class="cmd">$ cat data
 a b
 c d
 $ </pre>
 
-<pre class="cmd">$ cat template
-1st=%1 
+      <pre class="cmd">$ cat template
+1st=%1
 2nd=%2
 3rd=%3 4th=%4
 $ </pre>
 
-<pre class="cmd">$ mojihame template data
-1st=a 
+      <pre class="cmd">$ mojihame template data
+1st=a
 2nd=b
 3rd=c 4th=d
 $ </pre>
 
-<h3>【例2】通常その2</h3>
+      <h3>【例2】通常その2</h3>
 
-<p>デフォルトでは@というデータはヌル文字列として置換される。このデフォルトを変更するには-dオプションを使用する。-dオプションを単独で使用した場合には、ヌル文字列に置換する機能は無効になる。</p>
+      <p>デフォルトでは@というデータはヌル文字列として置換される。このデフォルトを変更するには-dオプションを使用する。-dオプションを単独で使用した場合には、ヌル文字列に置換する機能は無効になる。</p>
 
-<pre class="cmd">$ cat data
+      <pre class="cmd">$ cat data
 a @
 @ d
 $ </pre>
 
-<pre class="cmd">$ cat template
-1st=%1 
+      <pre class="cmd">$ cat template
+1st=%1
 2nd=%2
 3rd=%3 4th=%4
 $ </pre>
 
-<pre class="cmd">$ mojihame template data
-1st=a  
+      <pre class="cmd">$ mojihame template data
+1st=a
 2nd=
 3rd= 4th=d
 $ </pre>
 
-<pre class="cmd">$ mojihame -da template data
-1st=  
+      <pre class="cmd">$ mojihame -da template data
+1st=
 2nd=@
 3rd=@ 4th=d
 $ </pre>
 
-<h3>【例3】行単位</h3>
+      <h3>【例3】行単位</h3>
 
-<p>dataは1行単位に読み込まれ、行の各フィールドが%1 %2 ...に対応する。次の行が読み込まれるときは再びtemplateが使用され、データがはめ込まれ出力される。この使い方は旧mojihameの-rと互換性がある。mojihame -rは将来廃止される。</p>
+      <p>dataは1行単位に読み込まれ、行の各フィールドが%1 %2 ...に対応する。次の行が読み込まれるときは再びtemplateが使用され、データがはめ込まれ出力される。この使い方は旧mojihameの-rと互換性がある。mojihame -rは将来廃止される。</p>
 
-<pre class="cmd">$ cat data
+      <pre class="cmd">$ cat data
 a b c d
 w x y z
 $ </pre>
 
-<pre class="cmd">$ cat template
-1st=%1 2nd=%2 
+      <pre class="cmd">$ cat template
+1st=%1 2nd=%2
 3rd=%3 4th=%4
 $ </pre>
 
-<pre class="cmd">$ mojihame -l template data
+      <pre class="cmd">$ mojihame -l template data
 1st=a 2nd=b
 3rd=c 4th=d
 1st=w 2nd=x
 3rd=y 4th=z
 $ </pre>
 
-<pre class="cmd">$ mojihame -r template data
+      <pre class="cmd">$ mojihame -r template data
 1st=a 2nd=b
 3rd=c 4th=d
 1st=w 2nd=x
 3rd=y 4th=z
 $ </pre>
 
-<h3>【例4】行単位その2</h3>
+      <h3>【例4】行単位その2</h3>
 
-<p>-lオプションで引数(ラベル)を指定した場合、templateのラベルで囲まれた行のみにデータが繰り返しはめ込まれる。このときラベルを含む行は出力されない。また、ラベルにはさまれていない前後の部分は何も変換されず、そのまま出力される。ラベルはtemplate内部に2回だけ記述可能で、それぞれはめ込み対象の開始行と終了行とみなされる。指定ラベルは部分一致でラベル行と判断するので注意が必要。</p>
+      <p>-lオプションで引数(ラベル)を指定した場合、templateのラベルで囲まれた行のみにデータが繰り返しはめ込まれる。このときラベルを含む行は出力されない。また、ラベルにはさまれていない前後の部分は何も変換されず、そのまま出力される。ラベルはtemplate内部に2回だけ記述可能で、それぞれはめ込み対象の開始行と終了行とみなされる。指定ラベルは部分一致でラベル行と判断するので注意が必要。</p>
 
-<pre class="cmd">$ cat data
+      <pre class="cmd">$ cat data
 a b
 y z
 $ </pre>
 
-<pre class="cmd">$ cat template
+      <pre class="cmd">$ cat template
 header %1
 LABEL
-1st=%1 2nd=%2 
+1st=%1 2nd=%2
 LABEL
 footer %2
 $ </pre>
 
-<pre class="cmd">$ mojihame -lLABEL template data
+      <pre class="cmd">$ mojihame -lLABEL template data
 header %1
 1st=a 2nd=b
 1st=y 2nd=z
 footer %2
 $ </pre>
 
-<h3>【例5】行単位その3</h3>
+      <h3>【例5】行単位その3</h3>
 
-<p>-lオプションを繰り返し使用することにより、プルダウンなどのHTMLを簡易に生成することができる。指定ラベルはtemplateに1組しか認められていないので、次の例のように内側のラベルから順番に値をはめていくという手順でコマンドを実行する。</p>
+      <p>-lオプションを繰り返し使用することにより、プルダウンなどのHTMLを簡易に生成することができる。指定ラベルはtemplateに1組しか認められていないので、次の例のように内側のラベルから順番に値をはめていくという手順でコマンドを実行する。</p>
 
-<pre class="cmd">$ cat member
+      <pre class="cmd">$ cat member
 佐藤
 鈴木
 $ </pre>
 
-<pre class="cmd">$ cat kbn1
+      <pre class="cmd">$ cat kbn1
 東京
 大阪
 横浜
 $ </pre>
 
-<pre class="cmd">$ cat kbn2
+      <pre class="cmd">$ cat kbn2
 男
 女
 $ </pre>
 
-<pre class="cmd">$ cat template
+      <pre class="cmd">$ cat template
 MEMBER
 氏名＝%1
 K1
@@ -253,8 +263,7 @@ K2
 MEMBER
 $ </pre>
 
-<pre class="cmd">$ mojihame -lK1 template kbn1 | \
-  mojihame -lK2 - kbn2 | mojihame -lMEMBER - member
+      <pre class="cmd">$ mojihame -lK1 template kbn1 |   mojihame -lK2 - kbn2 | mojihame -lMEMBER - member
 氏名＝佐藤
 地名＝東京
 地名＝大阪
@@ -270,18 +279,18 @@ $ </pre>
 $ </pre>
 
 
-<h3>【例6】行単位その4</h3>
+      <h3>【例6】行単位その4</h3>
 
-<p>デフォルトでは@というデータはヌル文字列として置換される。このデフォルトを変更するには-d オプションを使用する。-d オプションは-lオプションの後に指定する必要がある。</p>
+      <p>デフォルトでは@というデータはヌル文字列として置換される。このデフォルトを変更するには-d オプションを使用する。-d オプションは-lオプションの後に指定する必要がある。</p>
 
-<pre class="cmd">$ mojihame -lLABEL -dx template data</pre>
+      <pre class="cmd">$ mojihame -lLABEL -dx template data</pre>
 
 
-<h3>【例7】階層データ</h3>
+      <h3>【例7】階層データ</h3>
 
-<p>-hオプションは階層的にデータのはめ込みを実施する。templateにおいて階層的ラベルに囲まれた部分に現れる%数字がdataの階層的キーフィールドに対応する。</p>
+      <p>-hオプションは階層的にデータのはめ込みを実施する。templateにおいて階層的ラベルに囲まれた部分に現れる%数字がdataの階層的キーフィールドに対応する。</p>
 
-<pre class="cmd">$ cat data
+      <pre class="cmd">$ cat data
 山田 東京 10:00
 山田 大阪 20:00
 山田 横浜 09:30
@@ -289,9 +298,9 @@ $ </pre>
 鈴木 神戸 15:30
 $ </pre>
 
-<p>次のtemplateの場合、LABEL-1に囲まれているのは%1、LABEL-1に囲まれている部分にさらにLABEL-2があり、LABEL-2で囲まれている部分に%2と%3がある。このとき、第1フィールドが変化する回数だけ、LABEL-1で囲まれている部分が繰り返し値がはめられ、LABEL-2で囲まれている部分は、同じ第1フィールドの値を持つ第2、第3フィールドの行の数だけ繰り返し値がはめられる。</p>
+      <p>次のtemplateの場合、LABEL-1に囲まれているのは%1、LABEL-1に囲まれている部分にさらにLABEL-2があり、LABEL-2で囲まれている部分に%2と%3がある。このとき、第1フィールドが変化する回数だけ、LABEL-1で囲まれている部分が繰り返し値がはめられ、LABEL-2で囲まれている部分は、同じ第1フィールドの値を持つ第2、第3フィールドの行の数だけ繰り返し値がはめられる。</p>
 
-<pre class="cmd">$ mojihame -hLABEL template dat
+      <pre class="cmd">$ mojihame -hLABEL template dat
 表題 %1
 氏名＝山田
 地名＝東京 時刻＝10:00
@@ -302,7 +311,7 @@ $ </pre>
 地名＝神戸 時刻＝15:30
 $ </pre>
 
-<pre class="cmd">$ cat template
+      <pre class="cmd">$ cat template
 表題 %1
 LABEL-1
 氏名＝%1
@@ -312,73 +321,56 @@ LABEL-2
 LABEL-1
 $ </pre>
 
-<p>階層の深さに制約はない。ラベルは部分一致でラベル行と判定される。コマンドライン上は-hLABELとし、templateでは階層にあわせてLABEL-1、LABEL-2とするのが有効。このような階層ラベルはtemplateの中でそれぞれ1組ずつのみ認められている。</p>
+      <p>階層の深さに制約はない。ラベルは部分一致でラベル行と判定される。コマンドライン上は-hLABELとし、templateでは階層にあわせてLABEL-1、LABEL-2とするのが有効。このような階層ラベルはtemplateの中でそれぞれ1組ずつのみ認められている。</p>
 
-<h3>【注意1】</h3>
+      <h3>【注意1】</h3>
 
-<p>デフォルトでは@はヌル文字列として置換される。文字を変更するには-dオプションを使う。-dオプションは-hや-lオプションの後に指定しなくてはならない。</p>
+      <p>デフォルトでは@はヌル文字列として置換される。文字を変更するには-dオプションを使う。-dオプションは-hや-lオプションの後に指定しなくてはならない。</p>
 
-<pre class="cmd">$ mojihame -dx template data</pre>
+      <pre class="cmd">$ mojihame -dx template data</pre>
 
-<pre class="cmd">$ mojihame -lLABEL -dx template data</pre>
+      <pre class="cmd">$ mojihame -lLABEL -dx template data</pre>
 
-<pre class="cmd">$ mojihame -hLABEL -dx template data</pre>
+      <pre class="cmd">$ mojihame -hLABEL -dx template data</pre>
 
-<h3>【注意2】アンダースコアデータの扱い</h3>
+      <h3>【注意2】アンダースコアデータの扱い</h3>
 
-<p>データの中の\_はmojihame実行後には_に置換される。 エスケープのない_は半角スペースに置換される。
+      <p>データの中の_mojihame実行後には_に置換される。 エスケープのない_は半角スペースに置換される。
 
-<pre class="cmd">$ cat template
+      <pre class="cmd">$ cat template
 &lt;input type="text" value="%1" /&gt;
 &lt;input type="text" value="%2" /&gt;
 &lt;input type="text" value="%3" /&gt;
 $ </pre>
 
-<pre class="cmd">$ cat data
+      <pre class="cmd">$ cat data
 usp_lab
-usp\_lab
-______\_\_
+usp_lab
+________
 $ </pre>
 
-<pre class="cmd">$ mojihame template data
+      <pre class="cmd">$ mojihame template data
 &lt;input type="text" value="usp lab" /&gt;
 &lt;input type="text" value="usp_lab" /&gt;
 &lt;input type="text" value="      __" /&gt;
 $ </pre>
 
-<h3>【注意3】</h3>
+      <h3>【備考】</h3>
 
-<p>ファイル名に-を指定したときは標準入力からのデータを期待する。templateもdataのいずれかを指定できる。</p>
+      <ol>
+        <li>ファイル名に-を指定したときは標準入力からのデータを期待する。templateもdataのいずれかを指定できる。</li>
+        <li>-dオプションは文字列を指定しない場合にはdataの値をそのまますべてtemplateにはめ込む。</li>
+      </ol>
 
-<h3>【注意4】</h3>
+      <h3>【関連項目】</h3>
 
-<p>mojihameはシェルスクリプトである。オプションの指定によりmojihame-p(通常)、mojihame-l(行単位)
-、mojihame-h(階層データ)を起動している。</p>
+      <p><a href="filehame.html">filehame(1)</a>、<a href="formhame.html">formhame(1)</a></p>
 
-<h3>【注意5】</h3>
-
-<p>-dオプションは文字列を指定しない場合にはdataの値をそのまますべてtemplateにはめ込む。</p> 
-
-<h3>【注意6】</h3>
-
-<p>変数の受け渡しがファイルにならず明示的になりにくいため、mojihame-eは廃止された。</p>
-
-<div id="pagenavigator">
-  <ul>
-    <li><a href="index.html">&and;</a></li>
-  </ul>
-</div>
-<!-- CONTENTS_CONTENTS -->
     </div>
 
-    <div id="lastmodified">
-     last modified: 2012-04-11 13:21:05
-    </div>
+    <div id="lastmodified">last modified: 2013-31-16 17:04:16</div>
 
-    <div id="footer">
-      Contact us: uecinfo@usp-lab.com<br>
-      Copyright (c) 2012 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.
-    </div>
+    <div id="footer">Contact us: uecinfo@usp-lab.com<br/>Copyright (c) 2012,2013 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
   </div>
 </body>
 </html>

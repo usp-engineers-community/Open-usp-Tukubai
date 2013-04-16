@@ -6,11 +6,9 @@
   <title>UEC - usp engineers' community - Tukubaiオンラインコマンドマニュアル</title>
   <link rel="stylesheet" href="COMMON/CSS/MAIN.CSS" />
   <link rel="stylesheet" href="COMMON/CSS/MENU.CSS" />
-  <!--[if lte IE 7]>
+  <link rel="stylesheet" href="COMMON/CSS/PRINT.CSS" />
+  <!--[if lte IE 8]>
   <link rel="stylesheet" href="COMMON/CSS/IE67HACK.CSS" />
-  <![endif]-->
-  <!--[if IE 8]>
-  <link rel="stylesheet" href="COMMON/CSS/IE8HACK.CSS" />
   <![endif]-->
   <!--[if IE 7]>
   <link rel="stylesheet" href="COMMON/CSS/IE7HACK.CSS" />
@@ -27,18 +25,25 @@
         <img id="logoimage" src="COMMON/IMG/TUKUBAI_LOGO.JPG" />
       </div>
       <div id="title">
-        <p id="slogan">UEC - UNIXを深く理解し、シェルプログラミングを極めるコミュニティサイト</p>
+        <p id="slogan"></p>
         <ul id="megamenu">
           <li id="tukubai_man"><a href="index.html" class="target">Tukubaiマニュアル</a>
             <ul>
+              <li><a href="calclock.html">calclock(1)</a></li>
               <li><a href="cgi-name.html">cgi-name(1)</a></li>
               <li><a href="check_attr_name.html">check_attr_name(1)</a></li>
               <li><a href="check_need_name.html">check_need_name(1)</a></li>
+              <li><a href="cjoin0.html">cjoin0(1)</a></li>
+              <li><a href="cjoin1.html">cjoin1(1)</a></li>
+              <li><a href="cjoin2.html">cjoin2(1)</a></li>
               <li><a href="comma.html">comma(1)</a></li>
               <li><a href="count.html">count(1)</a></li>
               <li><a href="ctail.html">ctail(1)</a></li>
+              <li><a href="dayslash.html">dayslash(1)</a></li>
               <li><a href="delf.html">delf(1)</a></li>
               <li><a href="divsen.html">divsen(1)</a></li>
+              <li><a href="filehame.html">filehame(1)</a></li>
+              <li><a href="formhame.html">formhame(1)</a></li>
               <li><a href="getfirst.html">getfirst(1)</a></li>
               <li><a href="getlast.html">getlast(1)</a></li>
               <li><a href="gyo.html">gyo(1)</a></li>
@@ -76,9 +81,15 @@
               <li><a href="yobi.html">yobi(1)</a></li>
               <li><a href="ysum.html">ysum(1)</a></li>
               <li><a href="zen.html">zen(1)</a></li>
+              <li class="separator"><hr/></li>
+              <li class="separator"><hr/></li>
+              <li class="separator"><hr/></li>
               <li><a href="tag-format.html">タグ形式(5)</a></li>
               <li><a href="name-format.html">ネーム形式(5)</a></li>
               <li><a href="field-format.html">フィールド形式(5)</a></li>
+              <li><a href="master-file.html">マスタファイル(5)</a></li>
+              <li><a href="name-file.html">ネームファイル(5)</a></li>
+              <li><a href="transaction-file.html" class="target">トランザクションファイル(5)</a></li>
             </ul> 
           </li>
         </ul>
@@ -88,16 +99,15 @@
     <div id="main">
       <h1>Tukubaiオンラインコマンドマニュアル</h1>
 
-<!-- CONTENTS_CONTENTS -->
-<h2>check_attr_name(USP Lab(1))</h2>
+      <h2>check_attr_name(1)</h2>
 
-<h3>【名前】</h3>
+      <h3>【名前】</h3>
 
-<p>check_attr_name : <a href="name-format.html">ネームファイル</a>のデータ種類を行ごとに判定</p>
+      <p>check_attr_name : <a href="name-file.html">ネームファイル</a>のデータ種類を行ごとに判定</p>
 
-<h3>【書式】</h3>
+      <h3>【書式】</h3>
 
-<pre class="list">Usage		: check_attr_name &lt;check_file&gt; &lt;name_file&gt;
+      <pre class="list">Usage		: check_attr_name &lt;check_file&gt; &lt;name_file&gt;
 Option		: --through &lt;string&gt; --ngword &lt;ng_file&gt;
 Attribute	: n N (0以上整数)
 		: s S (符号つき整数)
@@ -114,33 +124,33 @@ Attribute	: n N (0以上整数)
 Version		: Thu Dec 15 13:46:38 JST 2011
 		: UTF-8</pre>
 
-<h3>【説明】</h3>
+      <h3>【説明】</h3>
 
-<p>&lt;check_file&gt;に記述されているタグ名、桁数+属性の指定にしたがって&lt;name_file&gt;のデータを判定する。データが大文字なら桁数に等しい値を、小文字なら指定桁数以下の値を要求する。&lt;name_file&gt;のタグは、タグ名_数値であれば、_数値部分を取り除いたタグ名のみでチェックをする。エラーがあった場合は、コマンドはエラー終了し標準出力にタグ名と桁数+属性を出力する。</p>
+      <p>&lt;check_file&gt;に記述されているタグ名、桁数+属性の指定にしたがって&lt;name_file&gt;のデータを判定する。データが大文字なら桁数に等しい値を、小文字なら指定桁数以下の値を要求する。&lt;name_file&gt;のタグは、タグ名_数値であれば、_数値部分を取り除いたタグ名のみでチェックをする。エラーがあった場合は、コマンドはエラー終了し標準出力にタグ名と桁数+属性を出力する。</p>
 
-<p>--through &lt;string&gt;オプションは、&lt;name_file&gt;のデータが&lt;string&gt;のうちいずれかに等しい場合はチェックを実施しない。&lt;string&gt;のデフォルトは_となる。このオプションは繰り返し使って複数の&lt;string&gt;を指定することができる。</p>
+      <p>--through &lt;string&gt;オプションは、&lt;name_file&gt;のデータが&lt;string&gt;のうちいずれかに等しい場合はチェックを実施しない。&lt;string&gt;のデフォルトは_となる。このオプションは繰り返し使って複数の&lt;string&gt;を指定することができる。</p>
 
-<p>--ngword &lt;ng_file&gt;オプションは、Z X K などの日本語文字チェックのときに、&lt;ng_file&gt;に含まれてるマルチバイト文字をエラーとする。</p>
+      <p>--ngword &lt;ng_file&gt;オプションは、Z X K などの日本語文字チェックのときに、&lt;ng_file&gt;に含まれてるマルチバイト文字をエラーとする。</p>
 
-<h3>【例1】通常のチェック</h3>
+      <h3>【例1】通常のチェック</h3>
 
-<pre class="cmd">$ cat check
+      <pre class="cmd">$ cat check
 A N3            ←3桁整数
 B n4            ←4桁以下の整数
-C x3            ←3桁以下の文字
+C x3            ←5桁以下の文字
 D X6            ←6桁の文字
 $ </pre>
 
-<pre class="cmd">$ cat data
+      <pre class="cmd">$ cat data
 A 200
 B 12345
 C abcde
-D_001 xxxxxx    ←"D 6X" としてチェックされる 
+D_001 xxxxxx    ←"D 6X" としてチェックされる
 D_002 xxxxx
 D_003 xxxx
 $ </pre>
 
-<pre class="cmd">$ check_attr_name check data
+      <pre class="cmd">$ check_attr_name check data
 B n4
 C x3
 D_002 X6
@@ -149,9 +159,9 @@ $ echo $?
 1
 $ </pre>
 
-<h3>【例2】--through オプションでチェックしない値を指定する</h3>
+      <h3>【例2】--through オプションでチェックしない値を指定する</h3>
 
-<pre class="cmd">$ cat data2
+      <pre class="cmd">$ cat data2
 A 200
 B _
 C _
@@ -160,31 +170,19 @@ D_002 _
 D_003 _
 $ </pre>
 
-<pre class="cmd">$ check_attr_name --through _ check data2
+      <pre class="cmd">$ check_attr_name --through _ check data2
 $ echo $?
 0
 $ </pre>
 
-<h3>【関連項目】</h3>
+      <h3>【関連項目】</h3>
 
-<p><a href="name-format.html">ネーム形式(USP Lab(5))</a></p>
-
-<div id="pagenavigator">
-  <ul>
-    <li><a href="index.html">&and;</a></li>
-  </ul>
-</div>
-<!-- CONTENTS_CONTENTS -->
+      <p><a href="name-format.html">ネーム形式(5)</a></p>
     </div>
 
-    <div id="lastmodified">
-     last modified: 2012-04-11 13:18:28
-    </div>
+    <div id="lastmodified">last modified: 2012-19-01 16:08:01</div>
 
-    <div id="footer">
-      Contact us: uecinfo@usp-lab.com<br>
-      Copyright (c) 2012 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.
-    </div>
+    <div id="footer">Contact us: uecinfo@usp-lab.com<br/>Copyright (c) 2012,2013 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
   </div>
 </body>
 </html>

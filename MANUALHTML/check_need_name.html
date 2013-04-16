@@ -6,11 +6,9 @@
   <title>UEC - usp engineers' community - Tukubaiオンラインコマンドマニュアル</title>
   <link rel="stylesheet" href="COMMON/CSS/MAIN.CSS" />
   <link rel="stylesheet" href="COMMON/CSS/MENU.CSS" />
-  <!--[if lte IE 7]>
+  <link rel="stylesheet" href="COMMON/CSS/PRINT.CSS" />
+  <!--[if lte IE 8]>
   <link rel="stylesheet" href="COMMON/CSS/IE67HACK.CSS" />
-  <![endif]-->
-  <!--[if IE 8]>
-  <link rel="stylesheet" href="COMMON/CSS/IE8HACK.CSS" />
   <![endif]-->
   <!--[if IE 7]>
   <link rel="stylesheet" href="COMMON/CSS/IE7HACK.CSS" />
@@ -27,18 +25,25 @@
         <img id="logoimage" src="COMMON/IMG/TUKUBAI_LOGO.JPG" />
       </div>
       <div id="title">
-        <p id="slogan">UEC - UNIXを深く理解し、シェルプログラミングを極めるコミュニティサイト</p>
+        <p id="slogan"></p>
         <ul id="megamenu">
           <li id="tukubai_man"><a href="index.html" class="target">Tukubaiマニュアル</a>
             <ul>
+              <li><a href="calclock.html">calclock(1)</a></li>
               <li><a href="cgi-name.html">cgi-name(1)</a></li>
               <li><a href="check_attr_name.html">check_attr_name(1)</a></li>
               <li><a href="check_need_name.html">check_need_name(1)</a></li>
+              <li><a href="cjoin0.html">cjoin0(1)</a></li>
+              <li><a href="cjoin1.html">cjoin1(1)</a></li>
+              <li><a href="cjoin2.html">cjoin2(1)</a></li>
               <li><a href="comma.html">comma(1)</a></li>
               <li><a href="count.html">count(1)</a></li>
               <li><a href="ctail.html">ctail(1)</a></li>
+              <li><a href="dayslash.html">dayslash(1)</a></li>
               <li><a href="delf.html">delf(1)</a></li>
               <li><a href="divsen.html">divsen(1)</a></li>
+              <li><a href="filehame.html">filehame(1)</a></li>
+              <li><a href="formhame.html">formhame(1)</a></li>
               <li><a href="getfirst.html">getfirst(1)</a></li>
               <li><a href="getlast.html">getlast(1)</a></li>
               <li><a href="gyo.html">gyo(1)</a></li>
@@ -76,9 +81,15 @@
               <li><a href="yobi.html">yobi(1)</a></li>
               <li><a href="ysum.html">ysum(1)</a></li>
               <li><a href="zen.html">zen(1)</a></li>
+              <li class="separator"><hr/></li>
+              <li class="separator"><hr/></li>
+              <li class="separator"><hr/></li>
               <li><a href="tag-format.html">タグ形式(5)</a></li>
               <li><a href="name-format.html">ネーム形式(5)</a></li>
               <li><a href="field-format.html">フィールド形式(5)</a></li>
+              <li><a href="master-file.html">マスタファイル(5)</a></li>
+              <li><a href="name-file.html">ネームファイル(5)</a></li>
+              <li><a href="transaction-file.html" class="target">トランザクションファイル(5)</a></li>
             </ul> 
           </li>
         </ul>
@@ -88,46 +99,45 @@
     <div id="main">
       <h1>Tukubaiオンラインコマンドマニュアル</h1>
 
-<!-- CONTENTS_CONTENTS -->
-<h2>check_need_name(USP Lab(1))</h2>
+      <h2>check_need_name(1)</h2>
 
-<h3>【名前】</h3>
+      <h3>【名前】</h3>
 
-<p>check_need_name : <a href="name-format.html">ネームファイル</a>の整合性判定</p>
+      <p>check_need_name : <a href="name-file.html">ネームファイル</a>の整合性判定</p>
 
-<h3>【書式】</h3>
+      <h3>【書式】</h3>
 
-<pre class="list">Usage	: check_need_name &lt;check_file&gt; &lt;name_file&gt;
+      <pre class="list">Usage	: check_need_name &lt;check_file&gt; &lt;name_file&gt;
 Option	: --blank &lt;string&gt;
 Version	: Thu Dec 15 13:46:38 JST 2011</pre>
 
-<h3>【説明】</h3>
+      <h3>【説明】</h3>
 
-<p>&lt;check_file&gt;に記述されているフィールド値に基づいて、&lt;name_file&gt;ネームファイルの整合性を判断する。&lt;check_file&gt;に記述されている第1フィールドの値が&lt;name_file&gt;の第1フィールドのどこにも存在しなかったり、&lt;name_file&gt;の第2フィールドの値がない、または_だった場合にコマンドはエラー終了し、標準出力にそのフィールド値を出力する。</p>
+      <p>&lt;check_file&gt;に記述されているフィールド値に基づいて、&lt;name_file&gt;<a href="name-file.html">ネームファイル</a>の整合性を判断する。&lt;check_file&gt;に記述されている第1フィールドの値が&lt;name_file&gt;の第1フィールドのどこにも存在しなかったり、&lt;name_file&gt;の第2フィールドの値がない、または_だった場合にコマンドはエラー終了し、標準出力にそのフィールド値を出力する。</p>
 
-<p>&lt;check_file&gt;ファイルは2フィールドあっても動作する。詳しくは例1を参照のこと。&lt;check_file&gt;は、フィールド値+(_以外の文字列)でも正しく認識する。</p>
+      <p>&lt;check_file&gt;ファイルは2フィールドあっても動作する。詳しくは例1を参照のこと。&lt;check_file&gt;は、フィールド値+(_以外の文字列)でも正しく認識する。</p>
 
-<p>--blank &lt;string&gt;オプションは、&lt;name_file&gt;のデータの値が&lt;string&gt;の場合はデータがないとみなす。つまり、&lt;check_file&gt;に指定されていて値が&lt;string&gt;である行はエラーになる。&lt;string&gt;のデフォルトは_となる。</p>
+      <p>--blank &lt;string&gt;オプションは、&lt;name_file&gt;のデータの値が&lt;string&gt;の場合はデータがないとみなす。つまり、&lt;check_file&gt;に指定されていて値が&lt;string&gt;である行はエラーになる。&lt;string&gt;のデフォルトは_となる。</p>
 
-<h3>【例1】通常のチェック</h3>
+      <h3>【例1】通常のチェック</h3>
 
-<pre class="cmd">$ cat check_file
-A 
-B 
-C 
-D 
+      <pre class="cmd">$ cat check_file
+A
+B
+C
+D
 $ </pre>
 
-<pre class="cmd">$ cat check_file2		←checkとcheck2は同等
+      <pre class="cmd">$ cat check_file2		←checkとcheck2は同等
 A need
-B need 
+B need
 C need
 D need
 E _
 F _
 $ </pre>
 
-<pre class="cmd">$ cat name_file
+      <pre class="cmd">$ cat name_file
 A _
 B 12345
 C abcde
@@ -135,48 +145,36 @@ D_001 _
 D_002 xxx
 $ </pre>
 
-<pre class="cmd">$ check_need_name check_file name_file
-A 
+      <pre class="cmd">$ check_need_name check_file name_file
+A
 D_001
 $ echo $?
 1
 $ </pre>
 
-<h3>【例2】--blank オプションでヌルデータを指定する。</h3>
+      <h3>【例2】--blank オプションでヌルデータを指定する。</h3>
 
-<pre class="cmd">$ cat data2
+      <pre class="cmd">$ cat data2
 A @
 B 1
 C 2
 D 3
 $ </pre>
 
-<pre class="cmd">$ check_need_name --blank @ check data
+      <pre class="cmd">$ check_need_name --blank @ check data
 A
 $ echo $?
 1
 $ </pre>
 
-<h3>【関連項目】</h3>
+      <h3>【関連項目】</h3>
 
-<p><a href="name-format.html">ネーム形式(USP Lab(5))</a></p>
-
-<div id="pagenavigator">
-  <ul>
-    <li><a href="index.html">&and;</a></li>
-  </ul>
-</div>
-<!-- CONTENTS_CONTENTS -->
+      <p><a href="name-format.html">ネーム形式(5)</a></p>
     </div>
 
-    <div id="lastmodified">
-     last modified: 2012-05-02 13:51:19
-    </div>
+    <div id="lastmodified">last modified: 2012-19-01 16:08:01</div>
 
-    <div id="footer">
-      Contact us: uecinfo@usp-lab.com<br>
-      Copyright (c) 2012 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.
-    </div>
+    <div id="footer">Contact us: uecinfo@usp-lab.com<br/>Copyright (c) 2012,2013 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
   </div>
 </body>
 </html>

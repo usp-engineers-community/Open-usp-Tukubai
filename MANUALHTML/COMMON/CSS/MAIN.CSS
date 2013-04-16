@@ -1,3 +1,26 @@
+/*
+ * Copyright (c) 2012,2013 Universal Shell Programming Laboratoryratory
+ *
+ * Permission is hereby granted, free of charge, to any person 
+ * obtaining a copy of this software and associated documentation 
+ * files (the "Software"), to deal in the Software without restriction, 
+ * including without limitation the rights to use, copy, modify, merge, 
+ * publish, distribute, sublicense, and/or sell copies of the Software, 
+ * and to permit persons to whom the Software is furnished to do so, 
+ * subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be 
+ * included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, 
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
+ * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
+ * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+ * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 body {
   width: 750px;
   margin-top: 0px;
@@ -121,15 +144,47 @@ body {
   color: #222222;
 }
 
+#main blockquote {
+  text-indent: 1.0em;
+  line-height: 180%;
+  font-size: 90%;
+  font-style: oblique;
+  color: gray;
+}
+
 #main p {
   text-indent: 1.0em;
   line-height: 150%;
+}
+
+#main p.center {
+  text-align: center;
+}
+
+#main p.orderlink {
+  text-align: right; 
+  font-size: 80%;
+  font-weight: bold;
+  margin-top: 0px;
+  margin-right: 10px;
+}
+
+#main p.orderlinkinline {
+  font-size: 75%;
+  font-weight: bold;
+  display: inline;
+  margin-top: 0px;
+  margin-left: 10px;
 }
 
 #main p.vcenter {
   text-indent: 0em;
   padding-top: 145px;
   line-height: 100%;
+}
+
+#main p.abstract {
+  font-size: 90%;
 }
 
 #main p.annotation {
@@ -142,14 +197,57 @@ body {
   margin-bottom: 0px;
 }
 
+#main p.caption {
+  text-indent: 0px;
+  line-height: 100%;
+  font-size: 90%;
+  text-align: center;
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+#main p.right {
+  text-align: right;
+  float: right;
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+
+#main p.rightbold {
+  text-align: right;
+  float: right;
+  font-weight: bold;
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+
+#main p.toplink {
+  font-size: 90%;
+  text-indent: 0px;
+  line-height: 120%;
+  margin-left: 40px;
+  margin-right: 20px;
+}
+
+#main a.maplink {
+  font-size: 80%;
+  font-weight: bold;
+}
+
+#main a.annotation {
+  font-size: 60%;
+}
+
 #main pre {
   font-family: "Consolas", "Courier New", monospace;
   font-size: 90%;
   overflow: auto;
+  text-overflow: ellipsis;
 }
 
 #main pre.list {
   margin-left: 1.5em;
+  text-overflow: ellipsis;
 }
 
 #main pre.cmd {
@@ -160,36 +258,47 @@ body {
   padding-right: 6px;
   padding-bottom: 4px;
   padding-left: 6px;
+  text-overflow: ellipsis;
 }
 
 #main pre.source {
   margin-left: 2.0em;
-  font-size: 110%;
+  font-size: 90%;
   color: #FFFFFF;
   background-color: rgba(0, 0, 0, 0.9);
   padding-top: 4px;
   padding-right: 6px;
   padding-bottom: 4px;
   padding-left: 6px;
+  text-overflow: ellipsis;
 }
 
 #main pre.license {
   margin-left: 2.0em;
-  font-size: 90%;
+  font-size: 80%;
   color: gray;
+  text-overflow: ellipsis;
 }
+
+#main pre.cmd a 		{ color: #FFFFFF; text-decoration: none; }
+#main pre.cmd a:link 		{ color: #FFFFFF; }
+#main pre.cmd a:visited 	{ color: #FFFFFF; }
+
+#main pre.source a		{ color: #FFFFFF; text-decoration: none; }
+#main pre.source a:link 	{ color: #FFFFFF; }
+#main pre.source a:visited 	{ color: #FFFFFF; }
 
 #main dl dt {
   margin-left: 2.0em;
-  line-height: 2.0em;
-  font-size: 95%;
+  line-height: 1.8em;
+  font-size: 90%;
   font-weight: bold;
 }
 
 #main dl dd {
   margin-left: 4.0em;
   margin-right: 4.0em;
-  font-size: 95%;
+  font-size: 90%;
   margin-bottom: 10px;
 }
 
@@ -300,6 +409,194 @@ body {
   margin-left: 140px;
 }
 
+#main dl.list2 {
+  margin-left: 20px;
+}
+
+#main dl.list2 dt {
+  width: 50px;
+  line-height: 20px;
+  margin-left: 10px;
+  float: left;
+  font-size: 100%;
+  clear: both;
+}
+
+#main dl.list2 dd {
+  width: auto;
+  line-height: 20px;
+  margin-bottom: 0px;
+  margin-left: 60px;
+}
+
+#main dl.bookorderlist {
+  font-size: 90%;
+  margin-left: 1em;
+}
+
+#main dl.bookorderlist dt {
+  width: 120px;
+  line-height: 23px;
+  margin-left: 30px;
+  float: left;
+  font-size: 100%;
+  clear: both;
+}
+
+#main dl.bookorderlist dd {
+  width: auto;
+  line-height: 23px;
+  margin-bottom: 0px;
+  margin-left: 150px;
+}
+
+#main dl.bookorderlist input {
+  width: 430px;
+}
+
+#main dl.bookorderlist input.mini {
+  width: 100px;
+}
+
+#main dl.bookorderlist input.minimum {
+  width: 40px;
+}
+
+#main dl.bookorderlist textarea {
+  width: 430px;
+  height: 60px;
+}
+
+#main dl.registlist {
+  font-size: 90%;
+  margin-left: 1em;
+}
+
+#main dl.registlist dt {
+  width: 180px;
+  line-height: 23px;
+  margin-left: 30px;
+  float: left;
+  font-size: 100%;
+  clear: both;
+}
+
+#main dl.registlist dd {
+  width: auto;
+  line-height: 23px;
+  margin-bottom: 0px;
+  margin-left: 210px;
+}
+
+#main dl.registlist input {
+  width: 370px;
+}
+
+#main dl.registlist input.radio {
+  width: auto;
+  margin-left: 70px;
+}
+
+#main dl.registlist input.middle {
+  width: 200px;
+}
+
+#main dl.registlist input.mini {
+  width: 100px;
+}
+
+#main dl.registlist input.minimum {
+  width: 40px;
+}
+
+#main dl.registlist textarea {
+  width: 370px;
+  height: 60px;
+}
+
+#main dl.kouzalist {
+  font-size: 90%;
+  margin-left: 1em;
+}
+
+#main dl.kouzalist dt {
+  width: 180px;
+  line-height: 23px;
+  margin-left: 30px;
+  float: left;
+  font-size: 100%;
+  clear: both;
+}
+
+#main dl.kouzalist dd {
+  width: auto;
+  line-height: 23px;
+  margin-bottom: 0px;
+  margin-left: 210px;
+}
+
+#main dl.kouzalist input {
+  width: 310px;
+  margin-left: 10px;
+}
+
+#main dl.kouzalist input.checkbox {
+  width: 20px;
+}
+
+#main input.submit {
+  width: 150px;
+}
+
+
+
+
+
+#main dl.questionnairelist {
+  font-size: 90%;
+  margin-left: 1em;
+}
+
+#main dl.questionnairelist dt {
+  width: 180px;
+  line-height: 23px;
+  margin-top: 0px;
+  margin-bottom: 0px;
+  margin-left: 30px;
+  float: left;
+  font-size: 100%;
+  clear: both;
+}
+
+#main dl.questionnairelist dd {
+  width: auto;
+  line-height: 23px;
+  margin-left: 210px;
+  margin-top: 0px;
+  margin-bottom: 10px;
+}
+
+#main dl.questionnairelist input {
+  width: 360px;
+  margin-left: 0px;
+}
+
+#main dl.questionnairelist input.checkbox {
+  width: 20px;
+}
+
+#main dl.questionnairelist select {
+  width: 250px;
+  margin-left: 0px;
+}
+
+#main dl.questionnairelist textarea {
+  width: 360px;
+  height: 100px;
+  margin-top: 5px;
+  margin-left: 0px;
+}
+
 #main div.center {
   text-align: center;
 }
@@ -358,6 +655,52 @@ body {
   margin-bottom: 0px;
 }
 
+#main div.bookstore {
+  width: 612px;
+  margin-left: 10px;
+  margin-bottom: 10px;
+  padding-left: 8px;
+  padding-top: 6px;
+  padding-right: 8px;
+  padding-bottom: 10px;
+  background-color: #C0C0C0;
+  border: 1px dotted #000000;
+}
+
+#main div.bookstore iframe {
+  max-width: 270px;
+  margin-left: 10px;
+}
+
+#main div.bookstore dl {
+  margin-left: 150px;
+  margin-left: 0px;
+  margin-top: 0px;
+  width: 328px;
+float: left;
+}
+
+#main div.bookstore dl dt {
+  width: 75px;
+  line-height: 30px;
+  margin-left: 10px;
+  float: left;
+  font-size: 100%;
+}
+
+#main div.bookstore dl dd {
+  width: auto;
+  line-height: 30px;
+  margin-bottom: 0px;
+  margin-left: 85px;
+  margin-right: 0px;
+}
+
+#main div.bookstore p {
+  margin-left: 160px;
+  margin-bottom: 0px;
+}
+
 #main img {
   max-width: 610px;
 }
@@ -374,6 +717,17 @@ body {
   float: left;
 }
 
+#main ul li {
+  list-style: none;
+  font-size: 90%;
+  line-height: 1.3em;
+}
+
+#main ol li {
+  font-size: 90%;
+  line-height: 1.3em;
+}
+
 #main ul.tableofcontents {
   list-style: none;
   font-weight: bold;
@@ -382,7 +736,8 @@ body {
 }
 
 #main ul.tableofcontents > li {
-  margin-top: 20px;
+  margin-top: 18px;
+  margin-bottom: 3px;
 }
 
 #main ul.tableofcontents > li > ol {
@@ -394,8 +749,19 @@ body {
 #main ul.tableofcontents > li > ul {
   list-style: none;
   margin-top: 0px;
+  margin-bottom: 0px;
   padding-left: 40px;
   font-weight: normal;
+}
+
+#main ul.tableofcontents > li > ul > li {
+  margin-top: 7px;
+  margin-bottom: 8px;
+}
+
+#main ul.tableofcontents > li > ul > li > ul > li{
+  margin-top: 3px;
+  margin-bottom: 3px;
 }
 
 #main ul.tableofcontents > li > ol > li {
@@ -419,6 +785,44 @@ body {
 
 #main ul.silence {
   list-style: none;
+}
+
+#main ul.silence li {
+  line-height: 1.5em;
+}
+
+#main table {
+  margin-left: 100px;
+  font-size: 90%;
+}
+
+#main table th.kamoku {
+  min-width: 350px;
+}
+
+#main table th.nissu {
+  min-width: 28px;
+}
+
+#main table th.kakaku {
+  min-width: 60px;
+  text-align: right;
+}
+
+#main table td {
+  text-align: center;
+}
+
+#main table td.header {
+  text-align: left;
+}
+
+#main table td.rightheader {
+  text-align: right;
+}
+
+#main table td.kakaku {
+  text-align: right;
 }
 
 #main	a 		{ text-decoration: none; }
@@ -481,26 +885,3 @@ div#pagenavigator ul li a {
   color: #FFFFFF;
   background-color: rgba(0, 0, 0, 0.0);
 }
-
-/*
- * Copyright (c) 2012 Universal Shell Programming Laboratoryratory
- *
- * Permission is hereby granted, free of charge, to any person 
- * obtaining a copy of this software and associated documentation 
- * files (the "Software"), to deal in the Software without restriction, 
- * including without limitation the rights to use, copy, modify, merge, 
- * publish, distribute, sublicense, and/or sell copies of the Software, 
- * and to permit persons to whom the Software is furnished to do so, 
- * subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be 
- * included in all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, 
- * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
- * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
- * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
- * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */

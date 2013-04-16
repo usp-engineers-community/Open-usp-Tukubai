@@ -6,11 +6,9 @@
   <title>UEC - usp engineers' community - Tukubaiオンラインコマンドマニュアル</title>
   <link rel="stylesheet" href="COMMON/CSS/MAIN.CSS" />
   <link rel="stylesheet" href="COMMON/CSS/MENU.CSS" />
-  <!--[if lte IE 7]>
+  <link rel="stylesheet" href="COMMON/CSS/PRINT.CSS" />
+  <!--[if lte IE 8]>
   <link rel="stylesheet" href="COMMON/CSS/IE67HACK.CSS" />
-  <![endif]-->
-  <!--[if IE 8]>
-  <link rel="stylesheet" href="COMMON/CSS/IE8HACK.CSS" />
   <![endif]-->
   <!--[if IE 7]>
   <link rel="stylesheet" href="COMMON/CSS/IE7HACK.CSS" />
@@ -27,18 +25,25 @@
         <img id="logoimage" src="COMMON/IMG/TUKUBAI_LOGO.JPG" />
       </div>
       <div id="title">
-        <p id="slogan">UEC - UNIXを深く理解し、シェルプログラミングを極めるコミュニティサイト</p>
+        <p id="slogan"></p>
         <ul id="megamenu">
           <li id="tukubai_man"><a href="index.html" class="target">Tukubaiマニュアル</a>
             <ul>
+              <li><a href="calclock.html">calclock(1)</a></li>
               <li><a href="cgi-name.html">cgi-name(1)</a></li>
               <li><a href="check_attr_name.html">check_attr_name(1)</a></li>
               <li><a href="check_need_name.html">check_need_name(1)</a></li>
+              <li><a href="cjoin0.html">cjoin0(1)</a></li>
+              <li><a href="cjoin1.html">cjoin1(1)</a></li>
+              <li><a href="cjoin2.html">cjoin2(1)</a></li>
               <li><a href="comma.html">comma(1)</a></li>
               <li><a href="count.html">count(1)</a></li>
               <li><a href="ctail.html">ctail(1)</a></li>
+              <li><a href="dayslash.html">dayslash(1)</a></li>
               <li><a href="delf.html">delf(1)</a></li>
               <li><a href="divsen.html">divsen(1)</a></li>
+              <li><a href="filehame.html">filehame(1)</a></li>
+              <li><a href="formhame.html">formhame(1)</a></li>
               <li><a href="getfirst.html">getfirst(1)</a></li>
               <li><a href="getlast.html">getlast(1)</a></li>
               <li><a href="gyo.html">gyo(1)</a></li>
@@ -76,9 +81,15 @@
               <li><a href="yobi.html">yobi(1)</a></li>
               <li><a href="ysum.html">ysum(1)</a></li>
               <li><a href="zen.html">zen(1)</a></li>
+              <li class="separator"><hr/></li>
+              <li class="separator"><hr/></li>
+              <li class="separator"><hr/></li>
               <li><a href="tag-format.html">タグ形式(5)</a></li>
               <li><a href="name-format.html">ネーム形式(5)</a></li>
               <li><a href="field-format.html">フィールド形式(5)</a></li>
+              <li><a href="master-file.html">マスタファイル(5)</a></li>
+              <li><a href="name-file.html">ネームファイル(5)</a></li>
+              <li><a href="transaction-file.html" class="target">トランザクションファイル(5)</a></li>
             </ul> 
           </li>
         </ul>
@@ -88,26 +99,25 @@
     <div id="main">
       <h1>Tukubaiオンラインコマンドマニュアル</h1>
 
-<!-- CONTENTS_CONTENTS -->
-<h2>yarr(USP Lab(1))</h2>
+      <h2>yarr(1)</h2>
 
-<h3>【名前】</h3>
+      <h3>【名前】</h3>
 
-<p>yarr : 縦型のデータを横型に展開</p>
+      <p>yarr : 縦型のデータを横型に展開</p>
 
-<h3>【書式】</h3>
+      <h3>【書式】</h3>
 
-<pre class="list">Usage	: yarr [-&lt;n&gt;][-d&lt;str&gt;] &lt;file&gt;
+      <pre class="list">Usage	: yarr [-&lt;n&gt;][-d&lt;str&gt;] &lt;file&gt;
 	: yarr [-&lt;n&gt;][-d&lt;str&gt;] num=&lt;n&gt; &lt;file&gt;
 Version	: Thu Dec 15 13:46:38 JST 2011</pre>
 
-<h3>【説明】</h3>
+      <h3>【説明】</h3>
 
-<p>指定したファイルの第1フィールドからnum=&lt;n&gt;で指定したフィールド数までのフィールドをキーとし、キーが同一の行のフィールドを横に展開して1行として出力する。</p>
+      <p>指定したファイルの第1フィールドからnum=&lt;n&gt;で指定したフィールド数までのフィールドをキーとし、キーが同一の行のフィールドを横に展開して1行として出力する。</p>
 
-<h3>【例1】基本的な使い方</h3>
+      <h3>【例1】基本的な使い方</h3>
 
-<pre class="cmd">$ cat data
+      <pre class="cmd">$ cat data
 0000000 浜地______ 50 F 91
 0000000 浜地______ 50 F 59
 0000000 浜地______ 50 F 20
@@ -126,18 +136,18 @@ Version	: Thu Dec 15 13:46:38 JST 2011</pre>
 0000004 白土______ 40 M 10
 $ </pre>
 
-<pre class="cmd">$ yarr num=4 data
+      <pre class="cmd">$ yarr num=4 data
 0000000 浜地______ 50 F 91 59 20 76
 0000001 鈴田______ 50 F 46 39 8 5
 0000003 杉山______ 26 F 30 50 71 36
 0000004 白土______ 40 M 58 71 20 10
 $ </pre>
 
-<h3>【例2】</h3>
+      <h3>【例2】</h3>
 
-<p>-&lt;n&gt;オプションを使うことで&lt;n&gt;個ずつ横展開できる。</p>
+      <p>-&lt;n&gt;オプションを使うことで&lt;n&gt;個ずつ横展開できる。</p>
 
-<pre class="cmd">$ yarr -2 num=4 data &gt; data3
+      <pre class="cmd">$ yarr -2 num=4 data &gt; data3
 $ cat data3
 0000000 浜地______ 50 F 91 59
 0000000 浜地______ 50 F 20 76
@@ -149,26 +159,26 @@ $ cat data3
 0000004 白土______ 40 M 20 10
 $ </pre>
 
-<h3>【例3】</h3>
+      <h3>【例3】</h3>
 
-<p>num=&lt;n&gt;を指定しない場合単純に横展開する。</p>
+      <p>num=&lt;n&gt;を指定しない場合単純に横展開する。</p>
 
-<pre class="cmd">$ cat data4
+      <pre class="cmd">$ cat data4
 1
 2
 3
 4
 $ </pre>
 
-<pre class="cmd">$ yarr data4
- 1 2 3 4
+      <pre class="cmd">$ yarr data4
+1 2 3 4
 $ </pre>
 
-<h3>【例4】</h3>
+      <h3>【例4】</h3>
 
 -d&lt;str&gt; オプションは横展開するときのフィールドセパレータを指定する。
 
-<pre class="cmd">$ yarr -d@ num=4 data &gt; data2
+      <pre class="cmd">$ yarr -d@ num=4 data &gt; data2
 $ cat data2
 0000000 浜地______ 50 F 91@59@20@76
 0000001 鈴田______ 50 F 46@39@8@5
@@ -176,33 +186,22 @@ $ cat data2
 0000004 白土______ 40 M 58@71@20@10
 $ </pre>
 
-<pre class="cmd">$ yarr -d'n' num=4 data
+      <pre class="cmd">$ yarr -d'n' num=4 data
 0000000 浜地______ 50 F 91n59n20n76
 0000001 鈴田______ 50 F 46n39n8n5
 0000003 杉山______ 26 F 30n50n71n36
 0000004 白土______ 40 M 58n71n20n10
 $ </pre>
 
-<h3>【関連項目】</h3>
+      <h3>【関連項目】</h3>
 
-<p><a href="tarr.html">tarr(USP Lab(1))</a></p>
+      <p><a href="tarr.html">tarr(1)</a></p>
 
-<div id="pagenavigator">
-  <ul>
-    <li><a href="index.html">&and;</a></li>
-  </ul>
-</div>
-<!-- CONTENTS_CONTENTS -->
     </div>
 
-    <div id="lastmodified">
-     last modified: 2012-04-13 17:13:52
-    </div>
+    <div id="lastmodified">last modified: 2012-19-01 16:08:01</div>
 
-    <div id="footer">
-      Contact us: uecinfo@usp-lab.com<br>
-      Copyright (c) 2012 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.
-    </div>
+    <div id="footer">Contact us: uecinfo@usp-lab.com<br/>Copyright (c) 2012,2013 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
   </div>
 </body>
 </html>
