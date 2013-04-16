@@ -1,19 +1,5 @@
-#container {
-  background-color: #FFFFFF;
-  filter: alpha(opacity=90);
-  zoom: 1;
-}
-
-#main pre#cmd {
-  background-color: #000000;
-}
-
-#main pre#source {
-  background-color: #000000;
-}
-
 /*
- * Copyright (c) 2012 Universal Shell Programming Laboratoryratory
+ * Copyright (c) 2013 Universal Shell Programming Laboratoryratory
  *
  * Permission is hereby granted, free of charge, to any person 
  * obtaining a copy of this software and associated documentation 
@@ -34,3 +20,52 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+@media print {
+  body {
+    color: #000;
+    background: #fff;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+  h1, h2, h3, ul, ol, dl, img, pre {
+    page-break-after: avoid;
+    page-break-inside: avoid;
+  }
+  pre {
+    white-space: pre-wrap;
+  }
+  img {
+    max-width: 100% !important;
+  }
+  #main a {
+    font-weight: normal;
+    text-decoration: none;
+    color: #000000
+  }
+  #main a[href^=http]:after {
+    content:" (" attr(href) ") ";
+  }
+  #footer a {
+    font-weight: normal;
+    text-decoration: none;
+  }
+  #footer > a[href^=http]:after {
+    font-weight: normal;
+    text-decoration: none;
+  }
+
+  #lastmodified {
+    page-break-before: always;
+  }
+  #footer {
+    border-style: none;
+    margin-top: 120mm;
+  }
+  #header, #socialnetwork, #pagenavigator {
+    display: none;
+  }
+}
+
+@page {
+}

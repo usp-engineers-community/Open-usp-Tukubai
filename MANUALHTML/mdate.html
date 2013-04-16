@@ -6,11 +6,9 @@
   <title>UEC - usp engineers' community - Tukubaiオンラインコマンドマニュアル</title>
   <link rel="stylesheet" href="COMMON/CSS/MAIN.CSS" />
   <link rel="stylesheet" href="COMMON/CSS/MENU.CSS" />
-  <!--[if lte IE 7]>
+  <link rel="stylesheet" href="COMMON/CSS/PRINT.CSS" />
+  <!--[if lte IE 8]>
   <link rel="stylesheet" href="COMMON/CSS/IE67HACK.CSS" />
-  <![endif]-->
-  <!--[if IE 8]>
-  <link rel="stylesheet" href="COMMON/CSS/IE8HACK.CSS" />
   <![endif]-->
   <!--[if IE 7]>
   <link rel="stylesheet" href="COMMON/CSS/IE7HACK.CSS" />
@@ -27,18 +25,25 @@
         <img id="logoimage" src="COMMON/IMG/TUKUBAI_LOGO.JPG" />
       </div>
       <div id="title">
-        <p id="slogan">UEC - UNIXを深く理解し、シェルプログラミングを極めるコミュニティサイト</p>
+        <p id="slogan"></p>
         <ul id="megamenu">
           <li id="tukubai_man"><a href="index.html" class="target">Tukubaiマニュアル</a>
             <ul>
+              <li><a href="calclock.html">calclock(1)</a></li>
               <li><a href="cgi-name.html">cgi-name(1)</a></li>
               <li><a href="check_attr_name.html">check_attr_name(1)</a></li>
               <li><a href="check_need_name.html">check_need_name(1)</a></li>
+              <li><a href="cjoin0.html">cjoin0(1)</a></li>
+              <li><a href="cjoin1.html">cjoin1(1)</a></li>
+              <li><a href="cjoin2.html">cjoin2(1)</a></li>
               <li><a href="comma.html">comma(1)</a></li>
               <li><a href="count.html">count(1)</a></li>
               <li><a href="ctail.html">ctail(1)</a></li>
+              <li><a href="dayslash.html">dayslash(1)</a></li>
               <li><a href="delf.html">delf(1)</a></li>
               <li><a href="divsen.html">divsen(1)</a></li>
+              <li><a href="filehame.html">filehame(1)</a></li>
+              <li><a href="formhame.html">formhame(1)</a></li>
               <li><a href="getfirst.html">getfirst(1)</a></li>
               <li><a href="getlast.html">getlast(1)</a></li>
               <li><a href="gyo.html">gyo(1)</a></li>
@@ -76,9 +81,15 @@
               <li><a href="yobi.html">yobi(1)</a></li>
               <li><a href="ysum.html">ysum(1)</a></li>
               <li><a href="zen.html">zen(1)</a></li>
+              <li class="separator"><hr/></li>
+              <li class="separator"><hr/></li>
+              <li class="separator"><hr/></li>
               <li><a href="tag-format.html">タグ形式(5)</a></li>
               <li><a href="name-format.html">ネーム形式(5)</a></li>
               <li><a href="field-format.html">フィールド形式(5)</a></li>
+              <li><a href="master-file.html">マスタファイル(5)</a></li>
+              <li><a href="name-file.html">ネームファイル(5)</a></li>
+              <li><a href="transaction-file.html" class="target">トランザクションファイル(5)</a></li>
             </ul> 
           </li>
         </ul>
@@ -88,19 +99,18 @@
     <div id="main">
       <h1>Tukubaiオンラインコマンドマニュアル</h1>
 
-<!-- CONTENTS_CONTENTS -->
-<h2>mdate(USP Lab(1))</h2>
+      <h2>mdate(1)</h2>
 
-<h3>【名前】</h3>
+      <h3>【名前】</h3>
 
-<p>mdate : 日付、週、月の処理</p>
+      <p>mdate : 日付、週、月の処理</p>
 
-<h3>【書式】</h3>
+      <h3>【書式】</h3>
 
-<pre class="list">Usage	:                                                                     
+      <pre class="list">Usage	:
 
- DIRECT-MODE
-   日付	mdate -y &lt;yyyymmdd&gt;			: 曜日
+DIRECT-MODE
+日付	mdate -y &lt;yyyymmdd&gt;			: 曜日
 	mdate -e &lt;yyyywwdd&gt;/±&lt;dif&gt;		: dif 日先までの日付を連続出力
 	mdate -e &lt;yyyymmdd1&gt; &lt;yyyymmdd2&gt;	: 日付の範囲を連続出力
 	mdate &lt;yyyywwdd&gt;/±&lt;dif&gt;			: dif 日先の日付
@@ -110,8 +120,8 @@
 	mdate &lt;yyyymm1&gt;m &lt;yyyymm2&gt;m		: 月の差
 	mdate -ly &lt;yyyymm&gt;m			: 前年月
 
- FILTER-MODE
-   日付	mdate -f -y &lt;f&gt;				: 曜日
+FILTER-MODE
+日付	mdate -f -y &lt;f&gt;				: 曜日
 	mdate -f -e &lt;f&gt;/±&lt;dif&gt;			: dif 日先までの日付に展開
 	mdate -f -e &lt;f1&gt; &lt;f2&gt;			: 日付間の展開
 	mdate -f &lt;f&gt;/±&lt;dif&gt;			: dif 日先の日付
@@ -119,7 +129,7 @@
 	mdate -f &lt;f1&gt; ±&lt;f2&gt;			: 日付の加算
 	mdate -f -e &lt;f1&gt; ±&lt;f2&gt;			: 日付の加算または展開
 	mdate -f -ly &lt;f&gt;			: 前年日
-   月次	mdate -f -d &lt;f&gt;m			: 日付を1ヶ月分出力
+月次	mdate -f -d &lt;f&gt;m			: 日付を1ヶ月分出力
 	mdate -f &lt;f&gt;m/±&lt;dif&gt;			: dif 月先の月
 	mdate -f -e &lt;f&gt;m ±&lt;dif&gt;			: dif 月先の月まで展開
 	mdate -f &lt;f1&gt;m &lt;f2&gt;m			: 月の差
@@ -127,121 +137,110 @@
 	mdate -f &lt;f&gt;m ±&lt;dif&gt;			: 月の加算
 	mdate -f -e &lt;f&gt;m ±&lt;dif&gt;			: 月の加算展開
 	mdate -f -ly &lt;f&gt;m			: 前年月
-                                                                             
+
 Version : Wed Dec 28 15:32:10 JST 2011</pre>
 
-<h3>【例1】dif先の日付、月の情報を出力</h3>
+      <h3>【例1】dif先の日付、月の情報を出力</h3>
 
-<pre class="cmd">$ mdate 20090912/+5
+      <pre class="cmd">$ mdate 20090912/+5
 20090917
 $ </pre>
 
-<pre class="cmd">$ mdate 200909m/+5
+      <pre class="cmd">$ mdate 200909m/+5
 201002
 $ </pre>
 
-<h3>【例2】dif先までの連続した日付、月の情報を出力</h3>
+      <h3>【例2】dif先までの連続した日付、月の情報を出力</h3>
 
-<pre class="cmd">$ mdate -e 20090912/+5
-20090912 20090913 20090914 20090915 20090916 20090917 
+      <pre class="cmd">$ mdate -e 20090912/+5
+20090912 20090913 20090914 20090915 20090916 20090917
 $ </pre>
 
-<pre class="cmd">$ mdate -e 200909m/+5
+      <pre class="cmd">$ mdate -e 200909m/+5
 200909 200910 200911 200912 201001 201002
 $ </pre>
 
-<h3>【例3】日付、月の差を出力</h3>
+      <h3>【例3】日付、月の差を出力</h3>
 
-<pre class="cmd">$ mdate 20090917 20090912
+      <pre class="cmd">$ mdate 20090917 20090912
 5
 $ </pre>
 
-<pre class="cmd">$ mdate 201002m 200909m
+      <pre class="cmd">$ mdate 201002m 200909m
 5
 $ </pre>
 
-<h3>【例4】日付、月の範囲を連続出力</h3>
+      <h3>【例4】日付、月の範囲を連続出力</h3>
 
-<pre class="cmd">$ mdate -e 20090912 20090917
-20090912 20090913 20090914 20090915 20090916 20090917 
+      <pre class="cmd">$ mdate -e 20090912 20090917
+20090912 20090913 20090914 20090915 20090916 20090917
 $ </pre>
 
-<pre class="cmd">$ mdate -e 200909m 201002m
+      <pre class="cmd">$ mdate -e 200909m 201002m
 200909 200910 200911 200912 201001 201002
 $ </pre>
 
-<h3>【例5】フィルターモード : dif先の日付、月の情報を挿入</h3>
+      <h3>【例5】フィルターモード : dif先の日付、月の情報を挿入</h3>
 
-<pre class="cmd">$ cat date_data
-A 20090901 B 
-A 20090902 B 
-A 20090903 B 
+      <pre class="cmd">$ cat date_data
+A 20090901 B
+A 20090902 B
+A 20090903 B
 $ </pre>
 
-<pre class="cmd">$ mdate -f 2/+5 date_data
+      <pre class="cmd">$ mdate -f 2/+5 date_data
 A 20090901 20090906 B
 A 20090902 20090907 B
 A 20090903 20090908 B
 $ </pre>
 
-<pre class="cmd">$ cat month_data
+      <pre class="cmd">$ cat month_data
 A 200909 B
 A 200910 B
 A 200911 B
 $ </pre>
 
-<pre class="cmd">$ mdate -f 2m/+5 month_data
+      <pre class="cmd">$ mdate -f 2m/+5 month_data
 A 200909 201002 B
 A 200910 201003 B
 A 200911 201004 B
 $ </pre>
 
-<h3>【例6】フィルターモード : dif先までの連続した日付、週、月の情報を挿入</h3>
+      <h3>【例6】フィルターモード : dif先までの連続した日付、週、月の情報を挿入</h3>
 
-<pre class="cmd">$ cat date_data
-A 20090901 B 
-A 20090902 B 
-A 20090903 B 
+      <pre class="cmd">$ cat date_data
+A 20090901 B
+A 20090902 B
+A 20090903 B
 $ </pre>
 
-<pre class="cmd">$ mdate -f -e 2/+5 date_data
+      <pre class="cmd">$ mdate -f -e 2/+5 date_data
 A 20090901 20090902 20090903 20090904 20090905 20090906 B
 A 20090902 20090903 20090904 20090905 20090906 20090907 B
 A 20090903 20090904 20090905 20090906 20090907 20090908 B
 $ </pre>
 
-<pre class="cmd">$ cat month_data
+      <pre class="cmd">$ cat month_data
 A 200909 B
 A 200910 B
 A 200911 B
 $ </pre>
 
-<pre class="cmd">$ mdate -f -e 2m/+5 month_data
+      <pre class="cmd">$ mdate -f -e 2m/+5 month_data
 A 200909 200910 200911 200912 201001 201002 B
 A 200910 200911 200912 201001 201002 201003 B
 A 200911 200912 201001 201002 201003 201004 B
 $ </pre>
 
-<h3>【関連項目】</h3>
+      <h3>【関連項目】</h3>
 
-<p><a href="yobi.html">yobi(USP Lab(1))</a></p>
+      <p><a href="calclock.html">calclock(1)</a>、<a href="dayslash.html">dayslash(1)</a>、<a href="yobi.html">yobi(1)</a></p>
 
-<div id="pagenavigator">
-  <ul>
-    <li><a href="index.html">&and;</a></li>
-  </ul>
-</div>
-<!-- CONTENTS_CONTENTS -->
     </div>
 
-    <div id="lastmodified">
-     last modified: 2012-04-12 20:33:07
-    </div>
+    <div id="lastmodified">last modified: 2013-21-16 17:04:16</div>
 
-    <div id="footer">
-      Contact us: uecinfo@usp-lab.com<br>
-      Copyright (c) 2012 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.
-    </div>
+    <div id="footer">Contact us: uecinfo@usp-lab.com<br/>Copyright (c) 2012,2013 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
   </div>
 </body>
 </html>

@@ -6,11 +6,9 @@
   <title>UEC - usp engineers' community - Tukubaiオンラインコマンドマニュアル</title>
   <link rel="stylesheet" href="COMMON/CSS/MAIN.CSS" />
   <link rel="stylesheet" href="COMMON/CSS/MENU.CSS" />
-  <!--[if lte IE 7]>
+  <link rel="stylesheet" href="COMMON/CSS/PRINT.CSS" />
+  <!--[if lte IE 8]>
   <link rel="stylesheet" href="COMMON/CSS/IE67HACK.CSS" />
-  <![endif]-->
-  <!--[if IE 8]>
-  <link rel="stylesheet" href="COMMON/CSS/IE8HACK.CSS" />
   <![endif]-->
   <!--[if IE 7]>
   <link rel="stylesheet" href="COMMON/CSS/IE7HACK.CSS" />
@@ -27,18 +25,25 @@
         <img id="logoimage" src="COMMON/IMG/TUKUBAI_LOGO.JPG" />
       </div>
       <div id="title">
-        <p id="slogan">UEC - UNIXを深く理解し、シェルプログラミングを極めるコミュニティサイト</p>
+        <p id="slogan"></p>
         <ul id="megamenu">
           <li id="tukubai_man"><a href="index.html" class="target">Tukubaiマニュアル</a>
             <ul>
+              <li><a href="calclock.html">calclock(1)</a></li>
               <li><a href="cgi-name.html">cgi-name(1)</a></li>
               <li><a href="check_attr_name.html">check_attr_name(1)</a></li>
               <li><a href="check_need_name.html">check_need_name(1)</a></li>
+              <li><a href="cjoin0.html">cjoin0(1)</a></li>
+              <li><a href="cjoin1.html">cjoin1(1)</a></li>
+              <li><a href="cjoin2.html">cjoin2(1)</a></li>
               <li><a href="comma.html">comma(1)</a></li>
               <li><a href="count.html">count(1)</a></li>
               <li><a href="ctail.html">ctail(1)</a></li>
+              <li><a href="dayslash.html">dayslash(1)</a></li>
               <li><a href="delf.html">delf(1)</a></li>
               <li><a href="divsen.html">divsen(1)</a></li>
+              <li><a href="filehame.html">filehame(1)</a></li>
+              <li><a href="formhame.html">formhame(1)</a></li>
               <li><a href="getfirst.html">getfirst(1)</a></li>
               <li><a href="getlast.html">getlast(1)</a></li>
               <li><a href="gyo.html">gyo(1)</a></li>
@@ -76,9 +81,15 @@
               <li><a href="yobi.html">yobi(1)</a></li>
               <li><a href="ysum.html">ysum(1)</a></li>
               <li><a href="zen.html">zen(1)</a></li>
+              <li class="separator"><hr/></li>
+              <li class="separator"><hr/></li>
+              <li class="separator"><hr/></li>
               <li><a href="tag-format.html">タグ形式(5)</a></li>
               <li><a href="name-format.html">ネーム形式(5)</a></li>
               <li><a href="field-format.html">フィールド形式(5)</a></li>
+              <li><a href="master-file.html">マスタファイル(5)</a></li>
+              <li><a href="name-file.html">ネームファイル(5)</a></li>
+              <li><a href="transaction-file.html" class="target">トランザクションファイル(5)</a></li>
             </ul> 
           </li>
         </ul>
@@ -88,26 +99,25 @@
     <div id="main">
       <h1>Tukubaiオンラインコマンドマニュアル</h1>
 
-<!-- CONTENTS_CONTENTS -->
-<h2>ycat(USP Lab(1))</h2>
+      <h2>ycat(1)</h2>
 
-<h3>【名前】</h3>
+      <h3>【名前】</h3>
 
-<p>ycat : ファイルの横連結</p>
+      <p>ycat : ファイルの横連結</p>
 
-<h3>【書式】</h3>
+      <h3>【書式】</h3>
 
-<pre class="list">Usage	: ycat [-n] file1 file2 ....
-Version	: Thu Dec 15 13:46:38 JST 2011 
+      <pre class="list">Usage	: ycat [-n] file1 file2 ....
+Version	: Thu Dec 15 13:46:38 JST 2011
 	: UTF-8</pre>
 
-<h3>【説明】</h3>
+      <h3>【説明】</h3>
 
-<p>引数で指定した複数のファイルを横に並べて連結して出力する。各ファイルの形は崩れることはなく、ファイルの見た目そのままに横連結する。</p>
+      <p>引数で指定した複数のファイルを横に並べて連結して出力する。各ファイルの形は崩れることはなく、ファイルの見た目そのままに横連結する。</p>
 
-<h3>【例1】基本的な使い方</h3>
+      <h3>【例1】基本的な使い方</h3>
 
-<pre class="cmd">$ cat file1
+      <pre class="cmd">$ cat file1
 0000000 浜地______ 50 F
 0000001 鈴田______ 50 F
 0000003 杉山______ 26 F
@@ -116,7 +126,7 @@ Version	: Thu Dec 15 13:46:38 JST 2011
 0000007 梶川______ 42 F
 $ </pre>
 
-<pre class="cmd">$ cat file2
+      <pre class="cmd">$ cat file2
 0000000 91 59 20 76 54
 0000001 46 39 8  5  21
 0000003 30 50 71 36 30
@@ -125,7 +135,7 @@ $ </pre>
 0000007 50 2  33 15 62
 $ </pre>
 
-<pre class="cmd">$ ycat file1 file2
+      <pre class="cmd">$ ycat file1 file2
 0000000 浜地______ 50 F 0000000 91 59 20 76 54
 0000001 鈴田______ 50 F 0000001 46 39 8  5  21
 0000003 杉山______ 26 F 0000003 30 50 71 36 30
@@ -134,11 +144,11 @@ $ </pre>
 0000007 梶川______ 42 F 0000007 50 2  33 15 62
 $ </pre>
 
-<h3>【例2】</h3>
+      <h3>【例2】</h3>
 
-<p>-&lt;n&gt;オプションを使用すると、ファイルを&lt;n&gt;で指定した空白の分だけ間を空けることができる。</p>
+      <p>-&lt;n&gt;オプションを使用すると、ファイルを&lt;n&gt;で指定した空白の分だけ間を空けることができる。</p>
 
-<pre class="cmd">$ ycat -3 file1 file2
+      <pre class="cmd">$ ycat -3 file1 file2
 0000000 浜地______ 50 F   0000000 91 59 20 76 54
 0000001 鈴田______ 50 F   0000001 46 39 8  5  21
 0000003 杉山______ 26 F   0000003 30 50 71 36 30
@@ -147,11 +157,11 @@ $ </pre>
 0000007 梶川______ 42 F   0000007 50 2  33 15 62
 $ </pre>
 
-<h3>【例3】</h3>
+      <h3>【例3】</h3>
 
-<p>-0を指定した場合にはファイルの隙間は追加されない。</p>
+      <p>-0を指定した場合にはファイルの隙間は追加されない。</p>
 
-<pre class="cmd">ycat -0 file1 file2
+      <pre class="cmd">ycat -0 file1 file2
 0000000 浜地______ 50 F0000000 91 59 20 76 54
 0000001 鈴田______ 50 F0000001 46 39 8  5  21
 0000003 杉山______ 26 F0000003 30 50 71 36 30
@@ -160,40 +170,29 @@ $ </pre>
 0000007 梶川______ 42 F0000007 50 2  33 15 62
 $ </pre>
 
-<h3>【例4】</h3>
+      <h3>【例4】</h3>
 
-<p>テキストを標準入力から読み込む場合には-を記述する。</p>
+      <p>テキストを標準入力から読み込む場合には-を記述する。</p>
 
-<pre class="cmd">$ cat file1 | ycat - file2</pre>
+      <pre class="cmd">$ cat file1 | ycat - file2</pre>
 
-<pre class="cmd">$ cat file2 | ycat file1 -</pre>
+      <pre class="cmd">$ cat file2 | ycat file1 -</pre>
 
-<h3>【備考】</h3>
+      <h3>【備考】</h3>
 
-<p>ycatは連結後の各ファイルの形が崩れないように、はじめに各ファイルの最大幅を測っている。このため、単純に空白横連結したいだけなら次のようにpaste(1)コマンドを使う方が高速となる。</p>
+      <p>ycat(1)は連結後の各ファイルの形が崩れないように、はじめに各ファイルの最大幅を測っている。このため、単純に空白横連結したいだけなら次のようにpaste(1)コマンドを使う方が高速となる。</p>
 
-<pre class="cmd">$ paste -d" " file1 file2 file3</pre>
+      <pre class="cmd">$ paste -d" " file1 file2 file3</pre>
 
-<h3>【関連項目】</h3>
+      <h3>【関連項目】</h3>
 
-<p><a href="ctail.html">ctail(USP Lab(1))</a>、<a href="getfirst.html">getfirst(USP Lab(1))</a>、<a href="getlast.html">getlast(USP Lab(1))</a>、<a href="tcat.html">tcat(USP Lab(1))</a></p>
+      <p><a href="ctail.html">ctail(1)</a>、<a href="getfirst.html">getfirst(1)</a>、<a href="getlast.html">getlast(1)</a>、<a href="tcat.html">tcat(1)</a></p>
 
-<div id="pagenavigator">
-  <ul>
-    <li><a href="index.html">&and;</a></li>
-  </ul>
-</div>
-<!-- CONTENTS_CONTENTS -->
     </div>
 
-    <div id="lastmodified">
-     last modified: 2012-04-12 19:29:11
-    </div>
+    <div id="lastmodified">last modified: 2013-31-15 20:04:15</div>
 
-    <div id="footer">
-      Contact us: uecinfo@usp-lab.com<br>
-      Copyright (c) 2012 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.
-    </div>
+    <div id="footer">Contact us: uecinfo@usp-lab.com<br/>Copyright (c) 2012,2013 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
   </div>
 </body>
 </html>

@@ -6,11 +6,9 @@
   <title>UEC - usp engineers' community - Tukubaiオンラインコマンドマニュアル</title>
   <link rel="stylesheet" href="COMMON/CSS/MAIN.CSS" />
   <link rel="stylesheet" href="COMMON/CSS/MENU.CSS" />
-  <!--[if lte IE 7]>
+  <link rel="stylesheet" href="COMMON/CSS/PRINT.CSS" />
+  <!--[if lte IE 8]>
   <link rel="stylesheet" href="COMMON/CSS/IE67HACK.CSS" />
-  <![endif]-->
-  <!--[if IE 8]>
-  <link rel="stylesheet" href="COMMON/CSS/IE8HACK.CSS" />
   <![endif]-->
   <!--[if IE 7]>
   <link rel="stylesheet" href="COMMON/CSS/IE7HACK.CSS" />
@@ -27,18 +25,25 @@
         <img id="logoimage" src="COMMON/IMG/TUKUBAI_LOGO.JPG" />
       </div>
       <div id="title">
-        <p id="slogan">UEC - UNIXを深く理解し、シェルプログラミングを極めるコミュニティサイト</p>
+        <p id="slogan"></p>
         <ul id="megamenu">
           <li id="tukubai_man"><a href="index.html" class="target">Tukubaiマニュアル</a>
             <ul>
+              <li><a href="calclock.html">calclock(1)</a></li>
               <li><a href="cgi-name.html">cgi-name(1)</a></li>
               <li><a href="check_attr_name.html">check_attr_name(1)</a></li>
               <li><a href="check_need_name.html">check_need_name(1)</a></li>
+              <li><a href="cjoin0.html">cjoin0(1)</a></li>
+              <li><a href="cjoin1.html">cjoin1(1)</a></li>
+              <li><a href="cjoin2.html">cjoin2(1)</a></li>
               <li><a href="comma.html">comma(1)</a></li>
               <li><a href="count.html">count(1)</a></li>
               <li><a href="ctail.html">ctail(1)</a></li>
+              <li><a href="dayslash.html">dayslash(1)</a></li>
               <li><a href="delf.html">delf(1)</a></li>
               <li><a href="divsen.html">divsen(1)</a></li>
+              <li><a href="filehame.html">filehame(1)</a></li>
+              <li><a href="formhame.html">formhame(1)</a></li>
               <li><a href="getfirst.html">getfirst(1)</a></li>
               <li><a href="getlast.html">getlast(1)</a></li>
               <li><a href="gyo.html">gyo(1)</a></li>
@@ -76,9 +81,15 @@
               <li><a href="yobi.html">yobi(1)</a></li>
               <li><a href="ysum.html">ysum(1)</a></li>
               <li><a href="zen.html">zen(1)</a></li>
+              <li class="separator"><hr/></li>
+              <li class="separator"><hr/></li>
+              <li class="separator"><hr/></li>
               <li><a href="tag-format.html">タグ形式(5)</a></li>
               <li><a href="name-format.html">ネーム形式(5)</a></li>
               <li><a href="field-format.html">フィールド形式(5)</a></li>
+              <li><a href="master-file.html">マスタファイル(5)</a></li>
+              <li><a href="name-file.html">ネームファイル(5)</a></li>
+              <li><a href="transaction-file.html" class="target">トランザクションファイル(5)</a></li>
             </ul> 
           </li>
         </ul>
@@ -88,26 +99,25 @@
     <div id="main">
       <h1>Tukubaiオンラインコマンドマニュアル</h1>
 
-<!-- CONTENTS_CONTENTS -->
-<h2>yobi(USP Lab(1))</h2>
+      <h2>yobi(1)</h2>
 
-<h3>【名前】</h3>
+      <h3>【名前】</h3>
 
-<p>yobi : 曜日算出</p>
+      <p>yobi : 曜日算出</p>
 
-<h3>【書式】</h3>
+      <h3>【書式】</h3>
 
-<pre class="list">Usage	: yobi [-ej] &lt;field&gt; &lt;filename&gt;
+      <pre class="list">Usage	: yobi [-ej] &lt;field&gt; &lt;filename&gt;
 	: yobi -d[ej] $string
 Version	: Thu Dec 15 13:46:38 JST 2011</pre>
 
-<h3>【説明】</h3>
+      <h3>【説明】</h3>
 
-<p>引数や標準入力から読み込んだファイルの指定したフィールドの年月日の曜日のコードを指定したフィールドの次のフィールドに挿入して出力する。元ファイルの日付のフォーマットはYYYYMMDDの8桁である必要があり、曜日のコードは(日=0、月=1、火=2、水=3、木=4、金=5、土=6)で出力する。</p>
+      <p>引数や標準入力から読み込んだファイルの指定したフィールドの年月日の曜日のコードを指定したフィールドの次のフィールドに挿入して出力する。元ファイルの日付のフォーマットはYYYYMMDDの8桁である必要があり、曜日のコードは(日=0、月=1、火=2、水=3、木=4、金=5、土=6)で出力する。</p>
 
-<h3>【例1】</h3>
+      <h3>【例1】</h3>
 
-<pre class="cmd">$ cat data
+      <pre class="cmd">$ cat data
 0001 0000007 20060201 117 8335 -145
 0001 0000007 20060203 221 15470 0
 0001 0000007 20060205 85 5950 0
@@ -118,7 +128,7 @@ Version	: Thu Dec 15 13:46:38 JST 2011</pre>
 0002 0000007 20060210 444 31080 0
 $ </pre>
 
-<pre class="cmd">$ yobi 3 data
+      <pre class="cmd">$ yobi 3 data
 0001 0000007 20060201 3 117 8335 -145
 0001 0000007 20060203 5 221 15470 0
 0001 0000007 20060205 0 85 5950 0
@@ -129,11 +139,11 @@ $ </pre>
 0002 0000007 20060210 5 444 31080 0
 $ </pre>
 
-<h3>【例2】</h3>
+      <h3>【例2】</h3>
 
-<p>-eオプションを指定すると英語表記の曜日を挿入して出力する。</p>
+      <p>-eオプションを指定すると英語表記の曜日を挿入して出力する。</p>
 
-<pre class="cmd">$ yobi -e 3 data
+      <pre class="cmd">$ yobi -e 3 data
 0001 0000007 20060201 Wed 117 8335 -145
 0001 0000007 20060203 Fri 221 15470 0
 0001 0000007 20060205 Sun 85 5950 0
@@ -144,11 +154,11 @@ $ </pre>
 0002 0000007 20060210 Fri 444 31080 0
 $ </pre>
 
-<h3>【例3】</h3>
+      <h3>【例3】</h3>
 
-<p>-jオプションで日本語表記の曜日を挿入して出力する。</p>
+      <p>-jオプションで日本語表記の曜日を挿入して出力する。</p>
 
-<pre class="cmd">$ yobi -j 3 data
+      <pre class="cmd">$ yobi -j 3 data
 0001 0000007 20060201 水 117 8335 -145
 0001 0000007 20060203 金 221 15470 0
 0001 0000007 20060205 日 85 5950 0
@@ -159,42 +169,31 @@ $ </pre>
 0002 0000007 20060210 金 444 31080 0
 $ </pre>
 
-<h3>【例4】</h3>
+      <h3>【例4】</h3>
 
-<p>-dオプションで引数に指定した日付に対して曜日を算出する。</p>
+      <p>-dオプションで引数に指定した日付に対して曜日を算出する。</p>
 
-<pre class="cmd">$ yobi -d 20080112
+      <pre class="cmd">$ yobi -d 20080112
 6
 $ </pre>
 
-<pre class="cmd">$ yobi -de 20080112
+      <pre class="cmd">$ yobi -de 20080112
 Sat
 $ </pre>
 
-<pre class="cmd">$ yobi -dj 20080112
+      <pre class="cmd">$ yobi -dj 20080112
 土
 $ </pre>
 
-<h3>【関連項目】</h3>
+      <h3>【関連項目】</h3>
 
-<p><a href="mdate.html">mdate(USP Lab(1))</a></p>
+      <p><a href="calclock.html">calclock(1)</a>、<a href="dayslash.html">dayslash(1)</a>、<a href="mdate.html">mdate(1)</a></p>
 
-<div id="pagenavigator">
-  <ul>
-    <li><a href="index.html">&and;</a></li>
-  </ul>
-</div>
-<!-- CONTENTS_CONTENTS -->
     </div>
 
-    <div id="lastmodified">
-     last modified: 2012-04-12 20:33:33
-    </div>
+    <div id="lastmodified">last modified: 2013-22-16 17:04:16</div>
 
-    <div id="footer">
-      Contact us: uecinfo@usp-lab.com<br>
-      Copyright (c) 2012 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.
-    </div>
+    <div id="footer">Contact us: uecinfo@usp-lab.com<br/>Copyright (c) 2012,2013 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
   </div>
 </body>
 </html>
