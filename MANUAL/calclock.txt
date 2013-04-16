@@ -121,7 +121,7 @@ $
 
 【関連項目】
 
-calclock(1), mdate(1), yobi(1)                       
+calclock(1), dayslash(1), mdate(1), yobi(1)                       
 
 last modified: 2013-04-15 19:21:21
 Contact us: uecinfo@usp-lab.com
