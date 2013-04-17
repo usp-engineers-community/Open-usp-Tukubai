@@ -1,6 +1,6 @@
 # The MIT License
 #
-# Copyright (C) 2013 Universal Shell Programming Laboratory
+# Copyright (C) 2012, 2013 Universal Shell Programming Laboratory
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -31,15 +31,17 @@ HTMDIR=		${DATDIR}/html
 PDFDIR=		${DATDIR}/pdf
 DOCDIR=		${DATDIR}/doc
 
-COMMANDS=	cgi-name check_attr_name check_need_name cjoin0 cjoin1 \
-		cjoin2 comma count ctail delf divsen filehame getfirst \
-		getlast gyo han join0 join1 join2 juni kasan keta keycut \
+COMMANDS=	calclock cgi-name check_attr_name check_need_name \
+		cjoin0 cjoin1 cjoin2 comma count ctail dayslash \
+		delf divsen filehame formhame getfirst getlast gyo han \
+		join0 join1 join2 juni kasan keta keycut \
 		loopj loopx map marume mdate mime-read mojihame nameread \
 		plus rank ratio retu self sm2 sm4 sm5 tarr tateyoko tcat \
 		unmap up3 yarr ycat yobi ysum zen
-MANUAL=		cgi-name.txt check_attr_name.txt check_need_name.txt \
-		cjoin0.txt cjoin1.txt cjoin2.txt comma.txt count.txt \
-		ctail.txt delf.txt divsen.txt filehame.txt getfirst.txt \
+MANUAL=		calclock.txt cgi-name.txt check_attr_name.txt \
+		check_need_name.txt cjoin0.txt cjoin1.txt cjoin2.txt \
+		comma.txt count.txt ctail.txt dayslash.txt delf.txt \
+		divsen.txt filehame.txt formhame.txt getfirst.txt \
 		getlast.txt gyo.txt han.txt join0.txt join1.txt \
 		join2.txt juni.txt kasan.txt keta.txt keycut.txt \
 		loopj.txt loopx.txt map.txt marume.txt mdate.txt \
@@ -47,11 +49,12 @@ MANUAL=		cgi-name.txt check_attr_name.txt check_need_name.txt \
 		ratio.txt retu.txt self.txt sm2.txt sm4.txt sm5.txt \
 		tarr.txt tateyoko.txt tcat.txt unmap.txt up3.txt yarr.txt \
 		ycat.txt yobi.txt ysum.txt zen.txt
-HTML=		cgi-name.html check_attr_name.html check_need_name.html \
-		cjoin0.html cjoin1.html cjoin2.html comma.html count.html \
-		ctail.html delf.html divsen.html filehame.html \
-		getfirst.html getlast.html gyo.html han.html join0.html \
-		join1.html join2.html juni.html kasan.html keta.html keycut.html \
+HTML=		calclock.html cgi-name.html check_attr_name.html \
+		check_need_name.html cjoin0.html cjoin1.html cjoin2.html \
+		comma.html count.html ctail.html dayslash.html delf.html \
+		divsen.html filehame.html formhame.html getfirst.html \
+		getlast.html gyo.html han.html join0.html join1.html \
+		join2.html juni.html kasan.html keta.html keycut.html \
 		loopj.html loopx.html map.html marume.html mdate.html \
 		mime-read.html mojihame.html nameread.html plus.html rank.html \
 		ratio.html retu.html self.html sm2.html sm4.html sm5.html \
@@ -66,8 +69,8 @@ RM?=		/bin/rm -f
 
 TODAY!=		date "+%Y%m%d"
 
-INSTALL_PROGRAM=	${INSTALL} -m ${BINMODE}
-INSTALL_DOCS=		${INSTALL} -m ${DOCMODE}
+INSTALL_PROGRAM=${INSTALL} -m ${BINMODE}
+INSTALL_DOCS=	${INSTALL} -m ${DOCMODE}
 BINMODE=	555
 DOCMODE=	444
 
@@ -101,7 +104,7 @@ install:
 	${MKDIR} ${HTMDIR}/COMMON/JS
 	${INSTALL_DOCS} MANUALHTML/COMMON/CSS/MAIN.CSS ${HTMDIR}/COMMON/CSS/
 	${INSTALL_DOCS} MANUALHTML/COMMON/CSS/MENU.CSS ${HTMDIR}/COMMON/CSS/
-	${INSTALL_DOCS} MANUALHTML/COMMON/CSS/IE8HACK.CSS ${HTMDIR}/COMMON/CSS/
+	${INSTALL_DOCS} MANUALHTML/COMMON/CSS/PRINT.CSS ${HTMDIR}/COMMON/CSS/
 	${INSTALL_DOCS} MANUALHTML/COMMON/CSS/IE7HACK.CSS ${HTMDIR}/COMMON/CSS/
 	${INSTALL_DOCS} MANUALHTML/COMMON/CSS/IE6HACK.CSS ${HTMDIR}/COMMON/CSS/
 	${INSTALL_DOCS} MANUALHTML/COMMON/CSS/IE67HACK.CSS ${HTMDIR}/COMMON/CSS/
@@ -134,7 +137,7 @@ uninstall:
 	done
 	${RM} ${HTMDIR}/COMMON/CSS/MAIN.CSS
 	${RM} ${HTMDIR}/COMMON/CSS/MENU.CSS
-	${RM} ${HTMDIR}/COMMON/CSS/IE8HACK.CSS
+	${RM} ${HTMDIR}/COMMON/CSS/PRINT.CSS
 	${RM} ${HTMDIR}/COMMON/CSS/IE7HACK.CSS
 	${RM} ${HTMDIR}/COMMON/CSS/IE6HACK.CSS
 	${RM} ${HTMDIR}/COMMON/CSS/IE67HACK.CSS
