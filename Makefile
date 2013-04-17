@@ -37,7 +37,8 @@ COMMANDS=	calclock cgi-name check_attr_name check_need_name \
 		join0 join1 join2 juni kasan keta keycut \
 		loopj loopx map marume mdate mime-read mojihame nameread \
 		plus rank ratio retu self sm2 sm4 sm5 tarr tateyoko tcat \
-		unmap up3 yarr ycat yobi ysum zen
+		unmap up3 yarr ycat yobi ysum zen \
+		man2
 MANUAL=		calclock.txt cgi-name.txt check_attr_name.txt \
 		check_need_name.txt cjoin0.txt cjoin1.txt cjoin2.txt \
 		comma.txt count.txt ctail.txt dayslash.txt delf.txt \
