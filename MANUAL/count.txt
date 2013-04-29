@@ -1,6 +1,6 @@
 Tukubaiオンラインコマンドマニュアル
 
-count(USP Lab(1))
+count(1)
 
 【名前】
 
@@ -47,8 +47,8 @@ $
 
 【関連項目】
 
-gyo(USP Lab(1))、juni(USP Lab(1))、rank(USP Lab(1))、retu(USP Lab(1))
+gyo(1)、juni(1)、rank(1)、retu(1)
 
-last modified: 2012-04-12 19:03:32
+last modified: 2013-04-15 19:24:42
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012 Universal Shell Programming Laboratory All Rights Reserved.
+Copyright (c) 2012,2013 Universal Shell Programming Laboratory All Rights Reserved.

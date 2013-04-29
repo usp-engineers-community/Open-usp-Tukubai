@@ -6,11 +6,9 @@
   <title>UEC - usp engineers' community - Tukubaiオンラインコマンドマニュアル</title>
   <link rel="stylesheet" href="COMMON/CSS/MAIN.CSS" />
   <link rel="stylesheet" href="COMMON/CSS/MENU.CSS" />
-  <!--[if lte IE 7]>
+  <link rel="stylesheet" href="COMMON/CSS/PRINT.CSS" />
+  <!--[if lte IE 8]>
   <link rel="stylesheet" href="COMMON/CSS/IE67HACK.CSS" />
-  <![endif]-->
-  <!--[if IE 8]>
-  <link rel="stylesheet" href="COMMON/CSS/IE8HACK.CSS" />
   <![endif]-->
   <!--[if IE 7]>
   <link rel="stylesheet" href="COMMON/CSS/IE7HACK.CSS" />
@@ -27,18 +25,25 @@
         <img id="logoimage" src="COMMON/IMG/TUKUBAI_LOGO.JPG" />
       </div>
       <div id="title">
-        <p id="slogan">UEC - UNIXを深く理解し、シェルプログラミングを極めるコミュニティサイト</p>
+        <p id="slogan"></p>
         <ul id="megamenu">
           <li id="tukubai_man"><a href="index.html" class="target">Tukubaiマニュアル</a>
             <ul>
+              <li><a href="calclock.html">calclock(1)</a></li>
               <li><a href="cgi-name.html">cgi-name(1)</a></li>
               <li><a href="check_attr_name.html">check_attr_name(1)</a></li>
               <li><a href="check_need_name.html">check_need_name(1)</a></li>
+              <li><a href="cjoin0.html">cjoin0(1)</a></li>
+              <li><a href="cjoin1.html">cjoin1(1)</a></li>
+              <li><a href="cjoin2.html">cjoin2(1)</a></li>
               <li><a href="comma.html">comma(1)</a></li>
               <li><a href="count.html">count(1)</a></li>
               <li><a href="ctail.html">ctail(1)</a></li>
+              <li><a href="dayslash.html">dayslash(1)</a></li>
               <li><a href="delf.html">delf(1)</a></li>
               <li><a href="divsen.html">divsen(1)</a></li>
+              <li><a href="filehame.html">filehame(1)</a></li>
+              <li><a href="formhame.html">formhame(1)</a></li>
               <li><a href="getfirst.html">getfirst(1)</a></li>
               <li><a href="getlast.html">getlast(1)</a></li>
               <li><a href="gyo.html">gyo(1)</a></li>
@@ -76,9 +81,15 @@
               <li><a href="yobi.html">yobi(1)</a></li>
               <li><a href="ysum.html">ysum(1)</a></li>
               <li><a href="zen.html">zen(1)</a></li>
+              <li class="separator"><hr/></li>
+              <li class="separator"><hr/></li>
+              <li class="separator"><hr/></li>
               <li><a href="tag-format.html">タグ形式(5)</a></li>
               <li><a href="name-format.html">ネーム形式(5)</a></li>
               <li><a href="field-format.html">フィールド形式(5)</a></li>
+              <li><a href="master-file.html">マスタファイル(5)</a></li>
+              <li><a href="name-file.html">ネームファイル(5)</a></li>
+              <li><a href="transaction-file.html" class="target">トランザクションファイル(5)</a></li>
             </ul> 
           </li>
         </ul>
@@ -88,31 +99,30 @@
     <div id="main">
       <h1>Tukubaiオンラインコマンドマニュアル</h1>
 
-<!-- CONTENTS_CONTENTS -->
-<h2>keycut(USP Lab(1))</h2>
+      <h2>keycut(1)</h2>
 
-<h3>【名前】</h3>
+      <h3>【名前】</h3>
 
-<p>keycut : キーでファイルを分割</p>
+      <p>keycut : キーでファイルを分割</p>
 
-<h3>【書式】</h3>
+      <h3>【書式】</h3>
 
-<pre class="list">Usage	: keycut [options] &lt;filename&gt; &lt;file&gt;
-Options	: -d : キーの削除            
-	: -a : ファイル追記          
-	: -z : 圧縮                  
+      <pre class="list">Usage	: keycut [options] &lt;filename&gt; &lt;file&gt;
+Options	: -d : キーの削除
+	: -a : ファイル追記
+	: -z : 圧縮
 Version	: Thu Dec 15 13:46:38 JST 2011
 (Version: zlib-1.2.3 )</pre>
 
-<h3>【説明】</h3>
+      <h3>【説明】</h3>
 
-<p>&lt;file&gt;を読み込み、分割先ファイル名&lt;filename&gt;で指定したキーフィールドの値が同一の行でファイルを分割する。例えば、第2フィールドが同じ値を持つ行でファイルを分割したいときは、data.%2のように&lt;filename&gt;を指定する。この時、分割先ファイル名はdata.(第2フィールドの値)となる。</p>
+      <p>&lt;file&gt;を読み込み、分割先ファイル名&lt;filename&gt;で指定したキーフィールドの値が同一の行でファイルを分割する。例えば、第2フィールドが同じ値を持つ行でファイルを分割したいときは、data.%2のように&lt;filename&gt;を指定する。この時、分割先ファイル名はdata.(第2フィールドの値)となる。</p>
 
-<p>なお、keycutを使用する場合にはキーフィールドの値は事前に整列されている必要がある(内部的にはキーフィールドが変化したところでファイルに出力している)。&lt;filename&gt;におけるキーフィールドは%(フィールド番号)と指定するが、%5.2 %5.1.3のようにサブストリング指定も可能である。</p>
+      <p>なお、keycutを使用する場合にはキーフィールドの値は事前に整列されている必要がある(内部的にはキーフィールドが変化したところでファイルに出力している)。&lt;filename&gt;におけるキーフィールドは%(フィールド番号)と指定するが、%5.2 %5.1.3のようにサブストリング指定も可能である。</p>
 
-<h3>【例1】基本的な使用方法</h3>
+      <h3>【例1】基本的な使用方法</h3>
 
-<pre class="cmd">$ cat data
+      <pre class="cmd">$ cat data
 01 埼玉県 03 熊谷市 82 0 23 84 10
 01 埼玉県 01 さいたま市 91 59 20 76 54
 02 東京都 04 新宿区 30 50 71 36 30
@@ -123,130 +133,119 @@ Version	: Thu Dec 15 13:46:38 JST 2011
 04 神奈川県 16 小田原市 45 21 24 39 03
 $ </pre>
 
-<pre class="cmd">$ keycut data.%1 data</pre>
+      <pre class="cmd">$ keycut data.%1 data</pre>
 
-<pre class="cmd">$ ls -l data.*
+      <pre class="cmd">$ ls -l data.*
 -rw-r--r-- 1 usp usp 87 2009-02-19 11:14 data.01	←4つのファイルに分割
 -rw-r--r-- 1 usp usp 82 2009-02-19 11:14 data.02
 -rw-r--r-- 1 usp usp 77 2009-02-19 11:14 data.03
 -rw-r--r-- 1 usp usp 91 2009-02-19 11:14 data.04
 $ </pre>
 
-<pre class="cmd">$ cat data.01
+      <pre class="cmd">$ cat data.01
 01 埼玉県 03 熊谷市 82 0 23 84 10
 01 埼玉県 01 さいたま市 91 59 20 76 54
 $ </pre>
 
-<pre class="cmd">$ cat data.02
+      <pre class="cmd">$ cat data.02
 02 東京都 04 新宿区 30 50 71 36 30
 02 東京都 05 中央区 78 13 44 28 51
 $ </pre>
 
-<pre class="cmd">$ cat data.03
+      <pre class="cmd">$ cat data.03
 03 千葉県 10 千葉市 52 91 44 9 0
 03 千葉県 12 柏市 95 60 35 93 76
 $ </pre>
 
-<pre class="cmd">$ cat data.04
+      <pre class="cmd">$ cat data.04
 04 神奈川県 13 横浜市 92 56 83 96 75
 04 神奈川県 16 小田原市 45 21 24 39 03
 $ </pre>
 
-<h3>【例2】サブストリング指定</h3>
+      <h3>【例2】サブストリング指定</h3>
 
-<pre class="cmd">$ keycut data.%1.2.1 data</pre>
+      <pre class="cmd">$ keycut data.%1.2.1 data</pre>
 
-<pre class="cmd">$ ls -l data.*
--rw-r--r-- 1 usp usp 87 2009-02-19 11:15 data.1 
+      <pre class="cmd">$ ls -l data.*
+-rw-r--r-- 1 usp usp 87 2009-02-19 11:15 data.1
 -rw-r--r-- 1 usp usp 82 2009-02-19 11:15 data.2
 -rw-r--r-- 1 usp usp 77 2009-02-19 11:15 data.3
 -rw-r--r-- 1 usp usp 91 2009-02-19 11:15 data.4
 $ </pre>
 
-<h3>【例3】-aオプション使用例</h3>
+      <h3>【例3】-aオプション使用例</h3>
 
-<p>-aオプションを指定すると分割先ファイルは追記されるようになる。分割先ファイルがないときは新たに作成される。このオプションを指定しない場合にはファイルは上書きとなる。</p>
+      <p>-aオプションを指定すると分割先ファイルは追記されるようになる。分割先ファイルがないときは新たに作成される。このオプションを指定しない場合にはファイルは上書きとなる。</p>
 
-<pre class="cmd">$ keycut data.%1 data</pre>
+      <pre class="cmd">$ keycut data.%1 data</pre>
 
-<pre class="cmd">$ keycut -a data.%1 data</pre>
+      <pre class="cmd">$ keycut -a data.%1 data</pre>
 
-<pre class="cmd">$ ls -l data.*
--rw-r--r-- 1 usp usp 174 2009-02-19 11:16 data.01 
--rw-r--r-- 1 usp usp 164 2009-02-19 11:16 data.02 
--rw-r--r-- 1 usp usp 154 2009-02-19 11:16 data.03 
--rw-r--r-- 1 usp usp 182 2009-02-19 11:16 data.04 
+      <pre class="cmd">$ ls -l data.*
+-rw-r--r-- 1 usp usp 174 2009-02-19 11:16 data.01
+-rw-r--r-- 1 usp usp 164 2009-02-19 11:16 data.02
+-rw-r--r-- 1 usp usp 154 2009-02-19 11:16 data.03
+-rw-r--r-- 1 usp usp 182 2009-02-19 11:16 data.04
 $ </pre>
 
-<pre class="cmd">$ cat data.01
+      <pre class="cmd">$ cat data.01
 01 埼玉県 03 熊谷市 82 0 23 84 10
 01 埼玉県 01 さいたま市 91 59 20 76 54
 01 埼玉県 03 熊谷市 82 0 23 84 10
 01 埼玉県 01 さいたま市 91 59 20 76 54
 $ </pre>
 
-<h3>【例4】-dオプション使用例</h3>
+      <h3>【例4】-dオプション使用例</h3>
 
-<p>-dオプションを指定すると、キーフィールドを除いた行を分割先ファイルに作成するようになる。キーフィールド指定が%1.2.1等のサブストリング指定であっても、キーフィールド全体(この例だと第1フィールド全体)が取り除かれる。</p>
+      <p>-dオプションを指定すると、キーフィールドを除いた行を分割先ファイルに作成するようになる。キーフィールド指定が%1.2.1等のサブストリング指定であっても、キーフィールド全体(この例だと第1フィールド全体)が取り除かれる。</p>
 
-<pre class="cmd">$ keycut -d data.%1 data</pre>
+      <pre class="cmd">$ keycut -d data.%1 data</pre>
 
-<pre class="cmd">$ ls -l data.*
+      <pre class="cmd">$ ls -l data.*
 -rw-r--r-- 1 usp usp 81 2009-02-19 13:13 data.01
 -rw-r--r-- 1 usp usp 76 2009-02-19 13:13 data.02
 -rw-r--r-- 1 usp usp 71 2009-02-19 13:13 data.03
 -rw-r--r-- 1 usp usp 85 2009-02-19 13:13 data.04
 $ </pre>
 
-<pre class="cmd">$ cat data.01
+      <pre class="cmd">$ cat data.01
 埼玉県 03 熊谷市 82 0 23 84 10
 埼玉県 01 さいたま市 91 59 20 76 54
 $ </pre>
 
-<h3>【例5】-zオプション使用例</h3>
+      <h3>【例5】-zオプション使用例</h3>
 
-<p>-zオプションを指定すると、出力ファイルがGzip圧縮形式になる。</p>
+      <p>-zオプションを指定すると、出力ファイルがGzip圧縮形式になる。</p>
 
-<pre class="cmd">$ keycut -z data.%1.gz data</pre>
+      <pre class="cmd">$ keycut -z data.%1.gz data</pre>
 
-<pre class="cmd">$ ls -l data.*
+      <pre class="cmd">$ ls -l data.*
 -rw-r--r-- 1 usp usp  98 2009-02-19 13:17 data.01.gz
 -rw-r--r-- 1 usp usp  94 2009-02-19 13:17 data.02.gz
 -rw-r--r-- 1 usp usp  82 2009-02-19 13:17 data.03.gz
 -rw-r--r-- 1 usp usp 100 2009-02-19 13:17 data.04.gz
 $ </pre>
 
-<pre class="cmd">$ gunzip &lt; data.01.gz
+      <pre class="cmd">$ gunzip &lt; data.01.gz
 01 埼玉県 03 熊谷市 82 0 23 84 10
 01 埼玉県 01 さいたま市 91 59 20 76 54
 $ </pre>
 
-<h3>【備考1】</h3>
+      <h3>【備考1】</h3>
 
-<p>keycut.cはzlibライブラリを使用している。コンパイル時は次のようにオプションが必要。</p>
+      <p>keycut.cはzlibライブラリを使用している。コンパイル時は次のようにオプションが必要。</p>
 
-<pre class="cmd">$ cc keycut.c -lz -o /home/TOOL/keycut</pre>
+      <pre class="cmd">$ cckeycut.c -lz -o /home/TOOLkeycut</pre>
 
-<h3>【備考2】</h3>
+      <h3>【備考2】</h3>
 
-<p>-aオプションと-zオプションを併用したときは、すでに存在する圧縮ファイルに圧縮ファイルが追記される。生成されるファイルはgunzip(1)コマンドで展開できるが、仕様的に正しい動作はどうかは未調査。</p>
+      <p>-aオプションと-zオプションを併用したときは、すでに存在する圧縮ファイルに圧縮ファイルが追記される。生成されるファイルはgunzip(1)コマンドで展開できるが、仕様的に正しい動作はどうかは未調査。</p>
 
-<div id="pagenavigator">
-  <ul>
-    <li><a href="index.html">&and;</a></li>
-  </ul>
-</div>
-<!-- CONTENTS_CONTENTS -->
     </div>
 
-    <div id="lastmodified">
-     last modified: 2012-04-11 13:20:15
-    </div>
+    <div id="lastmodified">last modified: 2012-19-01 16:08:01</div>
 
-    <div id="footer">
-      Contact us: uecinfo@usp-lab.com<br>
-      Copyright (c) 2012 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.
-    </div>
+    <div id="footer">Contact us: uecinfo@usp-lab.com<br/>Copyright (c) 2012,2013 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
   </div>
 </body>
 </html>

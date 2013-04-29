@@ -6,11 +6,9 @@
   <title>UEC - usp engineers' community - Tukubaiオンラインコマンドマニュアル</title>
   <link rel="stylesheet" href="COMMON/CSS/MAIN.CSS" />
   <link rel="stylesheet" href="COMMON/CSS/MENU.CSS" />
-  <!--[if lte IE 7]>
+  <link rel="stylesheet" href="COMMON/CSS/PRINT.CSS" />
+  <!--[if lte IE 8]>
   <link rel="stylesheet" href="COMMON/CSS/IE67HACK.CSS" />
-  <![endif]-->
-  <!--[if IE 8]>
-  <link rel="stylesheet" href="COMMON/CSS/IE8HACK.CSS" />
   <![endif]-->
   <!--[if IE 7]>
   <link rel="stylesheet" href="COMMON/CSS/IE7HACK.CSS" />
@@ -27,18 +25,25 @@
         <img id="logoimage" src="COMMON/IMG/TUKUBAI_LOGO.JPG" />
       </div>
       <div id="title">
-        <p id="slogan">UEC - UNIXを深く理解し、シェルプログラミングを極めるコミュニティサイト</p>
+        <p id="slogan"></p>
         <ul id="megamenu">
           <li id="tukubai_man"><a href="index.html" class="target">Tukubaiマニュアル</a>
             <ul>
+              <li><a href="calclock.html">calclock(1)</a></li>
               <li><a href="cgi-name.html">cgi-name(1)</a></li>
               <li><a href="check_attr_name.html">check_attr_name(1)</a></li>
               <li><a href="check_need_name.html">check_need_name(1)</a></li>
+              <li><a href="cjoin0.html">cjoin0(1)</a></li>
+              <li><a href="cjoin1.html">cjoin1(1)</a></li>
+              <li><a href="cjoin2.html">cjoin2(1)</a></li>
               <li><a href="comma.html">comma(1)</a></li>
               <li><a href="count.html">count(1)</a></li>
               <li><a href="ctail.html">ctail(1)</a></li>
+              <li><a href="dayslash.html">dayslash(1)</a></li>
               <li><a href="delf.html">delf(1)</a></li>
               <li><a href="divsen.html">divsen(1)</a></li>
+              <li><a href="filehame.html">filehame(1)</a></li>
+              <li><a href="formhame.html">formhame(1)</a></li>
               <li><a href="getfirst.html">getfirst(1)</a></li>
               <li><a href="getlast.html">getlast(1)</a></li>
               <li><a href="gyo.html">gyo(1)</a></li>
@@ -76,9 +81,15 @@
               <li><a href="yobi.html">yobi(1)</a></li>
               <li><a href="ysum.html">ysum(1)</a></li>
               <li><a href="zen.html">zen(1)</a></li>
+              <li class="separator"><hr/></li>
+              <li class="separator"><hr/></li>
+              <li class="separator"><hr/></li>
               <li><a href="tag-format.html">タグ形式(5)</a></li>
               <li><a href="name-format.html">ネーム形式(5)</a></li>
               <li><a href="field-format.html">フィールド形式(5)</a></li>
+              <li><a href="master-file.html">マスタファイル(5)</a></li>
+              <li><a href="name-file.html">ネームファイル(5)</a></li>
+              <li><a href="transaction-file.html" class="target">トランザクションファイル(5)</a></li>
             </ul> 
           </li>
         </ul>
@@ -88,25 +99,24 @@
     <div id="main">
       <h1>Tukubaiオンラインコマンドマニュアル</h1>
 
-<!-- CONTENTS_CONTENTS -->
-<h2>up3(USP Lab(1))</h2>
+      <h2>up3(1)</h2>
 
-<h3>【名前】</h3>
+      <h3>【名前】</h3>
 
-<p>up3 : 2つのファイルを同一キーフィールドでマージ</p>
+      <p>up3 : 2つのファイルを同一キーフィールドでマージ</p>
 
-<h3>【書式】</h3>
+      <h3>【書式】</h3>
 
-<pre class="list">Usage	: up3 key=&lt;key&gt; &lt;master&gt; &lt;tran&gt;
+      <pre class="list">Usage	: up3 key=&lt;key&gt; &lt;<a href="master-file.html">master</a>&gt; &lt;<a href="transaction-file.html">tran</a>&gt;
 Version	: Thu Dec 15 13:46:38 JST 2011</pre>
 
-<h3>【説明】</h3>
+      <h3>【説明】</h3>
 
-<p>masterファイルとtranファイルの各行をkey=で指定されたフィールド値で比較し、同じキーフィールドを持つ行をmasterの該当行の下に挿入して出力する。masterもtranもキーとなるフィールドは整列されている必要がある。</p>
+      <p><a href="master-file.html">master</a>と<a href="transaction-file.html">tran</a>の各行をkey=で指定されたフィールド値で比較し、同じキーフィールドを持つ行を<a href="master-file.html">master</a>の該当行の下に挿入して出力する。<a href="master-file.html">master</a>も<a href="transaction-file.html">tran</a>もキーとなるフィールドは整列されている必要がある。</p>
 
-<h3>【例1】</h3>
+      <h3>【例1】</h3>
 
-<pre class="cmd">$ cat master
+      <pre class="cmd">$ cat <a href="master-file.html">master</a>
 a店 1日目 103 62		←1日目から3日目までのデータ
 a店 2日目 157 94
 a店 3日目 62 30
@@ -118,7 +128,7 @@ c店 2日目 76 49
 c店 3日目 38 21
 $ </pre>
 
-<pre class="cmd">$cat tran		← 4日目から5日目までのデータ
+      <pre class="cmd">$ cat <a href="transaction-file.html">tran</a>		← 4日目から5日目までのデータ
 a店 4日目 131 84
 a店 5日目 189 111
 b店 4日目 198 105
@@ -127,11 +137,11 @@ c店 4日目 81 48
 c店 5日目 98 61
 $ </pre>
 
-<pre class="cmd">$ up3 key=1 master tran
+      <pre class="cmd">$ up3 key=1 <a href="master-file.html">master</a> <a href="transaction-file.html">tran</a>
 a店 1日目 103 62
 a店 2日目 157 94
 a店 3日目 62 30
-a店 4日目 131 84		←masterのa店の下にtranのa店がきている
+a店 4日目 131 84		←<a href="master-file.html">master</a>のa店の下に<a href="transaction-file.html">tran</a>のa店がきている
 a店 5日目 189 111
 b店 1日目 210 113
 b店 2日目 237 121
@@ -145,24 +155,17 @@ c店 4日目 81 48
 c店 5日目 98 61
 $ </pre>
 
-<p>複数のキーフィールドを指定する場合はkey=2@1のように@でつないで指定する。</p>
+      <p>複数のキーフィールドを指定する場合はkey=2@1のように@でつないで指定する。</p>
 
-<div id="pagenavigator">
-  <ul>
-    <li><a href="index.html">&and;</a></li>
-  </ul>
-</div>
-<!-- CONTENTS_CONTENTS -->
+      <h3>【関連項目】</h3>
+
+      <p><a href="join0.html">join0(1)</a>、<a href="join1.html">join1(1)</a>、<a href="join2.html">join2(1)</a>、<a href="loopj.html">loopj(1)</a>、<a href="loopx.html">loopx(1)</a>、<a href="master-file.html">マスタファイル(5)</a>、<a href="transaction-file.html">トランザクションファイル(5)</a></p>
+
     </div>
 
-    <div id="lastmodified">
-     last modified: 2012-04-11 13:22:14
-    </div>
+    <div id="lastmodified">last modified: 2013-28-15 20:04:15</div>
 
-    <div id="footer">
-      Contact us: uecinfo@usp-lab.com<br>
-      Copyright (c) 2012 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.
-    </div>
+    <div id="footer">Contact us: uecinfo@usp-lab.com<br/>Copyright (c) 2012,2013 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
   </div>
 </body>
 </html>

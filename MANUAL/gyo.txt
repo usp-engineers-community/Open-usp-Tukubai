@@ -1,6 +1,6 @@
 Tukubaiオンラインコマンドマニュアル
 
-gyo(USP Lab(1))
+gyo(1)
 
 【名前】
 
@@ -13,8 +13,7 @@ Version : Thu Dec 15 13:46:38 JST 2011
 
 【説明】
 
-引数のファイルまたは標準入力のテキストデータの行数(行数)をカウントして出力する
-。
+引数のファイルまたは標準入力のテキストデータの行数(行数)をカウントして出力する。
 
 【例1】
 
@@ -61,7 +60,7 @@ $
 
 【例3】
 
-"-f"オプションを使用するとファイル名と行数をそれぞれ表示する。
+-fオプションを使用するとファイル名と行数をそれぞれ表示する。
 
 $ gyo -f data1 data2 data3
 data1 3
@@ -69,7 +68,7 @@ data2 2
 data3 4
 $
 
-【コメント】
+【備考】
 
 ファイル名に - を指定すると標準入力ファイルを期待する。
 
@@ -81,8 +80,8 @@ $
 
 【関連項目】
 
-count(USP Lab(1))、juni(USP Lab(1))、rank(USP Lab(1))、retu(USP Lab(1))
+count(1)、juni(1)、rank(1)、retu(1)
 
-last modified: 2012-04-12 19:04:28
+last modified: 2013-04-15 19:35:21
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012 Universal Shell Programming Laboratory All Rights Reserved.
+Copyright (c) 2012,2013 Universal Shell Programming Laboratory All Rights Reserved.

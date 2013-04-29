@@ -1,9 +1,32 @@
-#journal	{ width: 106px; line-height: 17px; border-right: solid 1px #999999; }
-#tukubai	{ width:  58px; line-height: 17px; border-right: solid 1px #999999; }
-#tukubai_man	{ width: 185px; line-height: 17px; border-right: solid 1px #999999; }
-#cmd_tips	{ width:  87px; line-height: 17px; border-right: solid 1px #999999; }
-#shell_tips	{ width: 171px; line-height: 17px; border-right: solid 1px #999999; }
-#info		{ width:  31px; line-height: 17px; border-right: solid 1px #999999; }
+/*
+ * Copyright (c) 2012,2013 Universal Shell Programming Laboratoryratory
+ *
+ * Permission is hereby granted, free of charge, to any person 
+ * obtaining a copy of this software and associated documentation 
+ * files (the "Software"), to deal in the Software without restriction, 
+ * including without limitation the rights to use, copy, modify, merge, 
+ * publish, distribute, sublicense, and/or sell copies of the Software, 
+ * and to permit persons to whom the Software is furnished to do so, 
+ * subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be 
+ * included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, 
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
+ * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
+ * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+ * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
+#JOURNAL	{ width: 106px; line-height: 17px; border-right: solid 1px #999999; }
+#TUKUBAI	{ width:  58px; line-height: 17px; border-right: solid 1px #999999; }
+#TUKUBAI_MAN	{ width: 183px; line-height: 17px; border-right: solid 1px #999999; }
+#CMD_TIPS	{ width:  87px; line-height: 17px; border-right: solid 1px #999999; }
+#SHELL_TIPS	{ width: 171px; line-height: 17px; border-right: solid 1px #999999; }
+#INFO		{ width:  31px; line-height: 17px; border-right: solid 1px #999999; }
 
 #megamenu {
   display: table;
@@ -81,6 +104,7 @@
   word-wrap: break-word;
   margin-top: 3px;
   margin-bottom: 3px;
+  color: #000000;
 }
 
 /* triangle-right */
@@ -92,6 +116,51 @@
   border-top: 3px solid transparent;
   border-left: 6px solid lightgray;
   border-bottom: 3px solid transparent;
+}
+
+#megamenu > li > ul > li.title {
+  font-weight: bold;
+}
+
+#megamenu > li > ul > li.title::before {
+  position: absolute;
+  content: '';
+  margin-top: 0.51em;
+  margin-left: 0px;
+  padding-right: 0px;
+  border-top: 0px solid transparent;
+  border-left: 0px solid lightgray;
+  border-bottom: 0px solid transparent;
+}
+
+#megamenu > li > ul > li.separator::before {
+  position: absolute;
+  content: '';
+  margin-top: 0.51em;
+  margin-left: 0px;
+  padding-right: 0px;
+  border-top: 0px solid transparent;
+  border-left: 0px solid lightgray;
+  border-bottom: 0px solid transparent;
+}
+
+#megamenu > li > ul > li.nobreak::before {
+  position: absolute;
+  content: '';
+  margin-top: 0.51em;
+  margin-left: 0px;
+  padding-right: 0px;
+  border-top: 0px solid transparent;
+  border-left: 0px solid lightgray;
+  border-bottom: 0px solid transparent;
+}
+
+#megamenu > li > ul > li > hr {
+  border-top-width: 0px;
+  border-right-width: 0px;
+  border-bottom-width: 1px;
+  border-left-width: 0px;
+  border-bottom-color: #AAAAAA;
 }
 
 #megamenu > li > ul > li > a {
@@ -122,26 +191,3 @@
   font-weight: normal !important;
   background-color: rgba(0, 0, 0, 0.0) !important;
 }
-
-/*
- * Copyright (c) 2012 Universal Shell Programming Laboratoryratory
- *
- * Permission is hereby granted, free of charge, to any person 
- * obtaining a copy of this software and associated documentation 
- * files (the "Software"), to deal in the Software without restriction, 
- * including without limitation the rights to use, copy, modify, merge, 
- * publish, distribute, sublicense, and/or sell copies of the Software, 
- * and to permit persons to whom the Software is furnished to do so, 
- * subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be 
- * included in all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, 
- * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
- * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
- * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
- * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */

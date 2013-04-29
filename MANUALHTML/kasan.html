@@ -6,11 +6,9 @@
   <title>UEC - usp engineers' community - Tukubaiオンラインコマンドマニュアル</title>
   <link rel="stylesheet" href="COMMON/CSS/MAIN.CSS" />
   <link rel="stylesheet" href="COMMON/CSS/MENU.CSS" />
-  <!--[if lte IE 7]>
+  <link rel="stylesheet" href="COMMON/CSS/PRINT.CSS" />
+  <!--[if lte IE 8]>
   <link rel="stylesheet" href="COMMON/CSS/IE67HACK.CSS" />
-  <![endif]-->
-  <!--[if IE 8]>
-  <link rel="stylesheet" href="COMMON/CSS/IE8HACK.CSS" />
   <![endif]-->
   <!--[if IE 7]>
   <link rel="stylesheet" href="COMMON/CSS/IE7HACK.CSS" />
@@ -27,18 +25,25 @@
         <img id="logoimage" src="COMMON/IMG/TUKUBAI_LOGO.JPG" />
       </div>
       <div id="title">
-        <p id="slogan">UEC - UNIXを深く理解し、シェルプログラミングを極めるコミュニティサイト</p>
+        <p id="slogan"></p>
         <ul id="megamenu">
           <li id="tukubai_man"><a href="index.html" class="target">Tukubaiマニュアル</a>
             <ul>
+              <li><a href="calclock.html">calclock(1)</a></li>
               <li><a href="cgi-name.html">cgi-name(1)</a></li>
               <li><a href="check_attr_name.html">check_attr_name(1)</a></li>
               <li><a href="check_need_name.html">check_need_name(1)</a></li>
+              <li><a href="cjoin0.html">cjoin0(1)</a></li>
+              <li><a href="cjoin1.html">cjoin1(1)</a></li>
+              <li><a href="cjoin2.html">cjoin2(1)</a></li>
               <li><a href="comma.html">comma(1)</a></li>
               <li><a href="count.html">count(1)</a></li>
               <li><a href="ctail.html">ctail(1)</a></li>
+              <li><a href="dayslash.html">dayslash(1)</a></li>
               <li><a href="delf.html">delf(1)</a></li>
               <li><a href="divsen.html">divsen(1)</a></li>
+              <li><a href="filehame.html">filehame(1)</a></li>
+              <li><a href="formhame.html">formhame(1)</a></li>
               <li><a href="getfirst.html">getfirst(1)</a></li>
               <li><a href="getlast.html">getlast(1)</a></li>
               <li><a href="gyo.html">gyo(1)</a></li>
@@ -76,9 +81,15 @@
               <li><a href="yobi.html">yobi(1)</a></li>
               <li><a href="ysum.html">ysum(1)</a></li>
               <li><a href="zen.html">zen(1)</a></li>
+              <li class="separator"><hr/></li>
+              <li class="separator"><hr/></li>
+              <li class="separator"><hr/></li>
               <li><a href="tag-format.html">タグ形式(5)</a></li>
               <li><a href="name-format.html">ネーム形式(5)</a></li>
               <li><a href="field-format.html">フィールド形式(5)</a></li>
+              <li><a href="master-file.html">マスタファイル(5)</a></li>
+              <li><a href="name-file.html">ネームファイル(5)</a></li>
+              <li><a href="transaction-file.html" class="target">トランザクションファイル(5)</a></li>
             </ul> 
           </li>
         </ul>
@@ -88,27 +99,26 @@
     <div id="main">
       <h1>Tukubaiオンラインコマンドマニュアル</h1>
 
-<!-- CONTENTS_CONTENTS -->
-<h2>kasan(USP Lab(1))</h2>
+      <h2>kasan(1)</h2>
 
-<h3>【名前】</h3>
+      <h3>【名前】</h3>
 
-<p>kasan : 累計</p>
+      <p>kasan : 累計</p>
 
-<h3>【書式】</h3>
+      <h3>【書式】</h3>
 
-<pre class="list">Usage	: kasan [+r] [ref=&lt;ref&gt;] key=&lt;n&gt; &lt;file&gt;
+      <pre class="list">Usage	: kasan [+r] [ref=&lt;ref&gt;] key=&lt;n&gt; &lt;file&gt;
 Version	: Thu Dec 15 13:46:38 JST 2011</pre>
 
-<h3>【説明】</h3>
+      <h3>【説明】</h3>
 
-<p>引数のファイルまたは標準入力のテキストデータの指定したフィールドの値を、各行ごとに加算して指定したフィールドの次のフィールドに挿入する。累計値を求める場合などに使用する。</p>
+      <p>引数のファイルまたは標準入力のテキストデータの指定したフィールドの値を、各行ごとに加算して指定したフィールドの次のフィールドに挿入する。累計値を求める場合などに使用する。</p>
 
-<h3>【例1】</h3>
+      <h3>【例1】</h3>
 
-<p>店別の累計の仕入れ値を算出する。ここでは4フィールド目の値を加算して5フィールド目に挿入する。</p>
+      <p>店別の累計の仕入れ値を算出する。ここでは4フィールド目の値を加算して5フィールド目に挿入する。</p>
 
-<pre class="cmd">$ cat data
+      <pre class="cmd">$ cat data
 a店 1日目 103 62		←店名 日付 売れ数 仕入数
 a店 2日目 157 94
 a店 3日目 62 30
@@ -118,7 +128,7 @@ a店 6日目 350 20
 a店 7日目 412 301
 $ </pre>
 
-<pre class="cmd">$ kasan key=4 data
+      <pre class="cmd">$ kasan key=4 data
 a店 1日目 103 62 62
 a店 2日目 157 94 156
 a店 3日目 62 30 186
@@ -128,11 +138,11 @@ a店 6日目 350 20 401
 a店 7日目 412 301 702
 $ </pre>
 
-<h3>【例2】</h3>
+      <h3>【例2】</h3>
 
-<p>あるフィールドの値が変わった場所で加算をリセットする場合は、そのリセットのキーとなるフィールドをref=で指定する。たとえば店別の累計仕入数を算出する場合には、次のように1フィールド目が変更されるごとに加算をリセットする。</p>
+      <p>あるフィールドの値が変わった場所で加算をリセットする場合は、そのリセットのキーとなるフィールドをref=で指定する。たとえば店別の累計仕入数を算出する場合には、次のように1フィールド目が変更されるごとに加算をリセットする。</p>
 
-<pre class="cmd">$ cat data
+      <pre class="cmd">$ cat data
 a店 1日目 103 62		←店名 日付 売れ数 仕入数
 a店 2日目 157 94
 a店 3日目 62 30
@@ -147,7 +157,7 @@ c店 3日目 38 21
 c店 4日目 81 48
 $ </pre>
 
-<pre class="cmd">$ kasan ref=1 key=4 data 
+      <pre class="cmd">$ kasan ref=1 key=4 data
 a店 1日目 103 62 62
 a店 2日目 157 94 156
 a店 3日目 62 30 186
@@ -162,11 +172,11 @@ c店 3日目 38 21 122
 c店 4日目 81 48 17
 $ </pre>
 
-<h3>【例3】</h3>
+      <h3>【例3】</h3>
 
-<p>元データのフィールドをその加算値と置き換えて出力する場合は+rオプションを使用する。たとえば仕入れ数を累計仕入れ数に置き換えるのであれば、この場合であれば4フィールド目の加算値を4フィールド目に出力するようにすれば良い。</p>
+      <p>元データのフィールドをその加算値と置き換えて出力する場合は+rオプションを使用する。たとえば仕入れ数を累計仕入れ数に置き換えるのであれば、この場合であれば4フィールド目の加算値を4フィールド目に出力するようにすれば良い。</p>
 
-<pre class="cmd">$ cat data		←店名 日付 売れ数 仕入数
+      <pre class="cmd">$ cat data		←店名 日付 売れ数 仕入数
 a店 1日目 103 62
 a店 2日目 157 94
 a店 3日目 62 30
@@ -176,7 +186,7 @@ a店 6日目 350 20
 a店 7日目 412 301
 $ </pre>
 
-<pre class="cmd">$ kasan +r key=4 data 
+      <pre class="cmd">$ kasan +r key=4 data
 a店 1日目 103 62
 a店 2日目 157 156
 a店 3日目 62 186
@@ -186,11 +196,11 @@ a店 6日目 350 401
 a店 7日目 412 702
 $ </pre>
 
-<h3>【例4】</h3>
+      <h3>【例4】</h3>
 
-<p>小数点のあるデータを加算する場合、それまでの行にある最大小数桁数に合わせて出力するようになる。</p>
+      <p>小数点のあるデータを加算する場合、それまでの行にある最大小数桁数に合わせて出力するようになる。</p>
 
-<pre class="cmd">$ cat data
+      <pre class="cmd">$ cat data
 A 1
 A 1.2
 A 1.23
@@ -199,7 +209,7 @@ B 2.34
 B 3
 $ </pre>
 
-<pre class="cmd">$ kasan ref=1 key=2 data
+      <pre class="cmd">$ kasan ref=1 key=2 data
 A 1 1
 A 1.2 2.2
 A 1.23 3.43
@@ -208,56 +218,45 @@ B 2.34 4.34
 B 3 7.34
 $ </pre>
 
-<h3>【例5】</h3>
+      <h3>【例5】</h3>
 
-<p>key=&lt;pos&gt;で指定できるのは数値、範囲(/)、列挙(@)、NF NF-&lt;n&gt;である。</p>
+      <p>key=&lt;pos&gt;で指定できるのは数値、範囲(/)、列挙(@)、NF NF-&lt;n&gt;である。</p>
 
-<pre class="cmd">$ kasan key=1 data</pre>
+      <pre class="cmd">$ kasan key=1 data</pre>
 
-<p>第2から第3フィールドの各フィールドを加算し、加算値をそれぞれのフィールドの直後に挿入するには次のようにコマンドを実行する。</p>
+      <p>第2から第3フィールドの各フィールドを加算し、加算値をそれぞれのフィールドの直後に挿入するには次のようにコマンドを実行する。</p>
 
-<pre class="cmd">$ cat data
+      <pre class="cmd">$ cat data
 A 1 2
-A 3 4 
+A 3 4
 A 5 6
 $ </pre>
 
-<pre class="cmd">$ kasan key=2/3 data
+      <pre class="cmd">$ kasan key=2/3 data
 A 1 1 2 2
 A 3 4 4 6
 A 5 9 6 12
 $ </pre>
 
-<p>第2フィールドと第4フィールドの各フィールドを加算し、加算値をそれぞれのフィールドの直後に挿入するには次のようにコマンドを実行する。</p>
+      <p>第2フィールドと第4フィールドの各フィールドを加算し、加算値をそれぞれのフィールドの直後に挿入するには次のようにコマンドを実行する。</p>
 
-<pre class="cmd">$ kasan key=2@4 data</pre>
+      <pre class="cmd">$ kasan key=2@4 data</pre>
 
-<p>次のようにNFも指定できる。</p>
+      <p>次のようにNFも指定できる。</p>
 
-<pre class="cmd">$ kasan key=NF data</pre>
+      <pre class="cmd">$ kasan key=NF data</pre>
 
-<pre class="cmd">$ kasan key=NF-2 data</pre>
+      <pre class="cmd">$ kasan key=NF-2 data</pre>
 
-<h3>【関連項目】</h3>
+      <h3>【関連項目】</h3>
 
-<p><a href="plus.html">plus(USP Lab(1))</a>、<a href="ratio.html">ratio(USP Lab(1))</a>、<a href="sm2.html">sm2(USP Lab(1))</a>、<a href="sm4.html">sm4(USP Lab(1))</a>、<a href="sm5.html">sm5(USP Lab(1))</a>、<a href="ysum.html">ysum(USP Lab(1))</a></p>
+      <p><a href="plus.html">plus(1)</a>、<a href="ratio.html">ratio(1)</a>、<a href="sm2.html">sm2(1)</a>、<a href="sm4.html">sm4(1)</a>、<a href="sm5.html">sm5(1)</a>、<a href="ysum.html">ysum(1)</a></p>
 
-<div id="pagenavigator">
-  <ul>
-    <li><a href="index.html">&and;</a></li>
-  </ul>
-</div>
-<!-- CONTENTS_CONTENTS -->
     </div>
 
-    <div id="lastmodified">
-     last modified: 2012-04-12 20:23:30
-    </div>
+    <div id="lastmodified">last modified: 2012-19-01 16:08:01</div>
 
-    <div id="footer">
-      Contact us: uecinfo@usp-lab.com<br>
-      Copyright (c) 2012 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.
-    </div>
+    <div id="footer">Contact us: uecinfo@usp-lab.com<br/>Copyright (c) 2012,2013 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
   </div>
 </body>
 </html>

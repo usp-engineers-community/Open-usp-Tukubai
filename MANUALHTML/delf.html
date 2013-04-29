@@ -6,11 +6,9 @@
   <title>UEC - usp engineers' community - Tukubaiオンラインコマンドマニュアル</title>
   <link rel="stylesheet" href="COMMON/CSS/MAIN.CSS" />
   <link rel="stylesheet" href="COMMON/CSS/MENU.CSS" />
-  <!--[if lte IE 7]>
+  <link rel="stylesheet" href="COMMON/CSS/PRINT.CSS" />
+  <!--[if lte IE 8]>
   <link rel="stylesheet" href="COMMON/CSS/IE67HACK.CSS" />
-  <![endif]-->
-  <!--[if IE 8]>
-  <link rel="stylesheet" href="COMMON/CSS/IE8HACK.CSS" />
   <![endif]-->
   <!--[if IE 7]>
   <link rel="stylesheet" href="COMMON/CSS/IE7HACK.CSS" />
@@ -27,18 +25,25 @@
         <img id="logoimage" src="COMMON/IMG/TUKUBAI_LOGO.JPG" />
       </div>
       <div id="title">
-        <p id="slogan">UEC - UNIXを深く理解し、シェルプログラミングを極めるコミュニティサイト</p>
+        <p id="slogan"></p>
         <ul id="megamenu">
           <li id="tukubai_man"><a href="index.html" class="target">Tukubaiマニュアル</a>
             <ul>
+              <li><a href="calclock.html">calclock(1)</a></li>
               <li><a href="cgi-name.html">cgi-name(1)</a></li>
               <li><a href="check_attr_name.html">check_attr_name(1)</a></li>
               <li><a href="check_need_name.html">check_need_name(1)</a></li>
+              <li><a href="cjoin0.html">cjoin0(1)</a></li>
+              <li><a href="cjoin1.html">cjoin1(1)</a></li>
+              <li><a href="cjoin2.html">cjoin2(1)</a></li>
               <li><a href="comma.html">comma(1)</a></li>
               <li><a href="count.html">count(1)</a></li>
               <li><a href="ctail.html">ctail(1)</a></li>
+              <li><a href="dayslash.html">dayslash(1)</a></li>
               <li><a href="delf.html">delf(1)</a></li>
               <li><a href="divsen.html">divsen(1)</a></li>
+              <li><a href="filehame.html">filehame(1)</a></li>
+              <li><a href="formhame.html">formhame(1)</a></li>
               <li><a href="getfirst.html">getfirst(1)</a></li>
               <li><a href="getlast.html">getlast(1)</a></li>
               <li><a href="gyo.html">gyo(1)</a></li>
@@ -76,9 +81,15 @@
               <li><a href="yobi.html">yobi(1)</a></li>
               <li><a href="ysum.html">ysum(1)</a></li>
               <li><a href="zen.html">zen(1)</a></li>
+              <li class="separator"><hr/></li>
+              <li class="separator"><hr/></li>
+              <li class="separator"><hr/></li>
               <li><a href="tag-format.html">タグ形式(5)</a></li>
               <li><a href="name-format.html">ネーム形式(5)</a></li>
               <li><a href="field-format.html">フィールド形式(5)</a></li>
+              <li><a href="master-file.html">マスタファイル(5)</a></li>
+              <li><a href="name-file.html">ネームファイル(5)</a></li>
+              <li><a href="transaction-file.html" class="target">トランザクションファイル(5)</a></li>
             </ul> 
           </li>
         </ul>
@@ -88,39 +99,38 @@
     <div id="main">
       <h1>Tukubaiオンラインコマンドマニュアル</h1>
 
-<!-- CONTENTS_CONTENTS -->
-<h2>delf(USP Lab(1))</h2>
+      <h2>delf(1)</h2>
 
-<h3>【名前】</h3>
+      <h3>【名前】</h3>
 
-<p>delf : 指定したフィールドを除いて出力</p>
+      <p>delf : 指定したフィールドを除いて出力</p>
 
-<h3>【書式】</h3>
+      <h3>【書式】</h3>
 
-<pre class="list">Usage	: delf f1 f2 ... file
+      <pre class="list">Usage	: delf f1 f2 ... file
 	: delf -d f1 f2 ... string
 Caution	: supposed f1 &lt; f2 &lt; f3 &lt; ..
 Version	: Thu Dec 15 13:46:38 JST 2011</pre>
 
-<h3>【説明】</h3>
+      <h3>【説明】</h3>
 
-<p>&lt;file&gt;ファイルから、指定したフィールドだけを除いて出力する(delf=delete field)。<a href="self.html">self(USP Lab(1))</a>とは逆の動作となる。ファイル名指定なし、あるいは、ファイル名が-の時は標準入力を期待する。</p>
+      <p>fileから、指定したフィールドだけを除いて出力する(delf=delete field)。<a href="self.html">self(1)</a>とは逆の動作となる。ファイル名指定なし、あるいは、ファイル名が-の時は標準入力を期待する。</p>
 
-<h3>【注意】</h3>
+      <h3>【注意】</h3>
 
-<p>f1 &lt; f2 &lt; f3 &lt; ...という関係である必要がある。</p>
+      <p>f1 &lt; f2 &lt; f3 &lt; ...という関係である必要がある。</p>
 
-<pre class="cmd">$ delf 1 3 5 data		← OK
+      <pre class="cmd">$ delf 1 3 5 data		← OK
 $ delf 3 1 5 data		← NG</pre>
 
-<h3>【オプション】</h3>
+      <h3>【オプション】</h3>
 
-<pre class="list">-d : ダイレクトモード
-     文字列&lt;string&gt;にdelf を適用する。</pre>
+      <pre class="list">-d : ダイレクトモード
+文字列&lt;string&gt;にdelf を適用する。</pre>
 
-<h3>【例1】</h3>
+      <h3>【例1】</h3>
 
-<pre class="cmd">$ cat data		←元データ
+      <pre class="cmd">$ cat data		←元データ
 0000000 浜地______ 50 F
 0000001 鈴田______ 50 F
 0000003 杉山______ 26 F
@@ -133,7 +143,7 @@ $ delf 3 1 5 data		← NG</pre>
 0000011 安武______ 55 F
 $ </pre>
 
-<pre class="cmd">$ delf 2 data		←第2フィールドを除いて出力する。
+      <pre class="cmd">$ delf 2 data		←第2フィールドを除いて出力する。
 0000000 50 F
 0000001 50 F
 0000003 26 F
@@ -146,9 +156,9 @@ $ </pre>
 0000011 55 F
 $ </pre>
 
-<h3>【例2】</h3>
+      <h3>【例2】</h3>
 
-<pre class="cmd">$ delf NF data
+      <pre class="cmd">$ delf NF data
 0000000 浜地______ 50
 0000001 鈴田______ 50
 0000003 杉山______ 26
@@ -161,9 +171,9 @@ $ </pre>
 0000011 安武______ 55
 $ </pre>
 
-<h3>【例3】</h3>
+      <h3>【例3】</h3>
 
-<pre class="cmd">$ delf 2/3 data
+      <pre class="cmd">$ delf 2/3 data
 0000000 F
 0000001 F
 0000003 F
@@ -176,34 +186,22 @@ $ </pre>
 0000011 F
 $ </pre>
 
-<h3>【注意】</h3>
+      <h3>【注意】</h3>
 
-<p>入力ファイルが改行文字で終了していない場合、つまり行が尻切れになっている場合は、ファイル末尾に改行文字が追加されて完結した行になる。</p>
+      <p>入力ファイルが改行文字で終了していない場合、つまり行が尻切れになっている場合は、ファイル末尾に改行文字が追加されて完結した行になる。</p>
 
-<h3>【バグ】</h3>
+      <h3>【バグ】</h3>
 
-<p>数字名のファイルを使用してはならない。もし"10"という名前のファイルが存在すると「delf 1 10」が"10"であるファイルから第1フィールドを削除するという動作をして、標準入力ファイルから第1、10フィールドを削除するという動作をしなくなる。ただし、"2"のように数字1文字だけを指定した場合は、そのファイルが存在しても、それは無視してフィールドとして扱う。</p>
+      <p>数字名のファイルを使用してはならない。もし10という名前のファイルが存在すると「delf 1 10」が10であるファイルから第1フィールドを削除するという動作をして、標準入力ファイルから第1、10フィールドを削除するという動作をしなくなる。ただし、2のように数字1文字だけを指定した場合は、そのファイルが存在しても、それは無視してフィールドとして扱う。</p>
 
-<h3>【関連項目】</h3>
+      <h3>【関連項目】</h3>
 
-<p><a href="self.html">self(USP Lab(1))</a></p>
-
-<div id="pagenavigator">
-  <ul>
-    <li><a href="index.html">&and;</a></li>
-  </ul>
-</div>
-<!-- CONTENTS_CONTENTS -->
+      <p><a href="self.html">self(1)</a></p>
     </div>
 
-    <div id="lastmodified">
-     last modified: 2012-04-12 19:29:56
-    </div>
+    <div id="lastmodified">last modified: 2012-29-21 14:08:21</div>
 
-    <div id="footer">
-      Contact us: uecinfo@usp-lab.com<br>
-      Copyright (c) 2012 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.
-    </div>
+    <div id="footer">Contact us: uecinfo@usp-lab.com<br/>Copyright (c) 2012,2013 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
   </div>
 </body>
 </html>

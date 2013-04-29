@@ -1,6 +1,6 @@
 Tukubaiオンラインコマンドマニュアル
 
-cgi-name(USP Lab(1))
+cgi-name(1)
 
 【名前】
 
@@ -14,8 +14,8 @@ Version : Thu Dec 15 13:46:38 JST 2011
 
 【説明】
 
-cgi-nameはWEBサーバのCGI POSTメソッドで受け渡されるデータをネーム形式へ変換する
-。
+cgi-name(1)はWEBサーバのCGI POSTメソッドで受け渡されるデータをネーム形式へ変換
+する。
 
 【例1】
 
@@ -74,8 +74,8 @@ $
 
 --templateオプションを指定することで、指定したHTMLテンプレートより、radioboxと
 checkboxの名称を取り出し、その名称でデータが出力されなければ、出力をその名称で
-補完する。radioboxやcheckboxは選択しないでsubmitすると値そのものが出力されない
-。何も選択しなかったというデータを生成するためにこのオプションを使用する。
+補完する。radioboxやcheckboxは選択しないでsubmitすると値そのものが出力されない。
+何も選択しなかったというデータを生成するためにこのオプションを使用する。
 
 $ cat html
 -----省略
@@ -117,13 +117,13 @@ $
 【備考】
 
 CGI POSTメソッドで受け渡されるデータには改行がない。通常のファイルとして使用す
-るには、ファイル末に改行コードを付加しておくほうが扱いやすい。cgi-nameコマンド
-はファイル末の改行があってもなくても正しく値を取り出す。
+るには、ファイル末に改行コードを付加しておくほうが扱いやすい。cgi-name(1)はファ
+イル末の改行があってもなくても正しく値を取り出す。
 
 【関連項目】
 
-mime-read(USP Lab(1))、nameread(USP Lab(1))、ネーム形式(USP Lab(5))
+mime-read(1)、nameread(1)、ネーム形式(5)
 
-last modified: 2012-04-13 17:07:01
+last modified: 2013-04-15 19:21:54
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012 Universal Shell Programming Laboratory All Rights Reserved.
+Copyright (c) 2012,2013 Universal Shell Programming Laboratory All Rights Reserved.

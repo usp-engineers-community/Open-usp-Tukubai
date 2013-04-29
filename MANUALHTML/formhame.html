@@ -99,55 +99,105 @@
     <div id="main">
       <h1>Tukubaiオンラインコマンドマニュアル</h1>
 
-      <h2>count(1)</h2>
+      <h2>formhame(1)</h2>
 
       <h3>【名前】</h3>
 
-      <p>count :  同じキーの行数をカウント</p>
+      <p>formhame : HTML テンプレートに文字をはめ込む</p>
 
       <h3>【書式】</h3>
 
-      <pre class="list">Usage	: count &lt;k1&gt; &lt;k2&gt; &lt;file&gt;
-Version	: Thu Dec 15 13:46:38 JST 2011</pre>
+      <pre class="list">Usage   : formhame &lt;html_template&gt; &lt;data&gt;
+Option  : --form &lt;formname&gt;
+        : -i&lt;c&gt;
+        : -d&lt;c&gt;
+Version : Sun Mar 17 12:51:52 JST 2013</pre>
 
       <h3>【説明】</h3>
 
-      <p>引数のファイルまたは標準入力のテキストデータの指定したキーフィールドの値が同じ行(行)の数を出力する。キーとなるフィールドは開始となるフィールドkey1から、終了となるフィールドkey2への形で指定する。</p>
+      <p>&lt;html_template&gt;ファイルの各種inputタグ(text、radio、checkbox、hidden)とtextareaタグ、selectタグの部分に&lt;data&gt;ファイル(第1フィールド:タグ名、第2フィールド以降:値)で指定される値を挿入する。 </p>
 
-      <h3>【例1】</h3>
+      <h3>【例】</h3>
+
+      <pre class="cmd">$ cat html
+&lt;html&gt;&lt;body&gt;
+&lt;form name="name_form"&gt;
+&lt;input type="text" name="name_text1" /&gt;
+&lt;input type="text" name="name_text2" /&gt;
+&lt;input type="radio" name="name_radio" value="a"/&gt;
+&lt;input type="radio" name="name_radio" value="b"/&gt;
+&lt;input type="checkbox" name="name_checkbox" value="x"/&gt;
+&lt;input type="checkbox" name="name_checkbox" value="y"/&gt;
+&lt;textarea name="name_textarea"&gt;
+&lt;/textarea&gt;
+&lt;select name="name_pulldown"&gt;
+&lt;option value="pd1"&gt;pd1&lt;/option&gt;
+&lt;option value="pd2"&gt;pd2&lt;/option&gt;
+&lt;option value="pd3"&gt;pd3&lt;/option&gt;
+&lt;/select&gt;
+&lt;input type="submit" name="submit" /&gt;
+&lt;/form&gt;
+&lt;/body&gt;&lt;/html&gt;
+$ </pre>
 
       <pre class="cmd">$ cat data
-01 埼玉県 01 さいたま市 91 59 20 76 54
-01 埼玉県 02 川越市 46 39 8 5 21
-01 埼玉県 03 熊谷市 82 0 23 84 10
-02 東京都 04 新宿区 30 50 71 36 30
-02 東京都 05 中央区 78 13 44 28 51
-02 東京都 06 港区 58 71 20 10 6
-02 東京都 07 千代田区 39 22 13 76 08
-02 東京都 08 八王子市 82 79 16 21 80
-02 東京都 09 立川市 50 2 33 15 62
-03 千葉県 10 千葉市 52 91 44 9 0
-03 千葉県 11 市川市 60 89 33 18 6
-03 千葉県 12 柏市 95 60 35 93 76
-04 神奈川県 13 横浜市 92 56 83 96 75
-04 神奈川県 14 川崎市 30 12 32 44 19
-04 神奈川県 15 厚木市 48 66 23 71 24
-04 神奈川県 16 小田原市 45 21 24 39 03
+name_text1 hello
+name_text2          
+name_radio b
+name_checkbox y
+name_textarea usp\nlaboratory
+name_pulldown pd3
 $ </pre>
 
-      <pre class="cmd">$ count 1 2 data		←県ごとの市の数を数えて出力
-01 埼玉県 3
-02 東京都 6
-03 千葉県 3
-04 神奈川県 4
+      <pre class="cmd">$ formhame html data 
+&lt;html&gt;&lt;body&gt;
+&lt;form name="name_form"&gt;
+&lt;input type="text" name="name_text1"  value="hello" /&gt;
+&lt;input type="text" name="name_text2" /&gt;
+&lt;input type="radio" name="name_radio" value="a"/&gt;
+&lt;input type="radio" name="name_radio" value="b" checked="checked" /&gt;
+&lt;input type="checkbox" name="name_checkbox" value="x"/&gt;
+&lt;input type="checkbox" name="name_checkbox" value="y" checked="checked" /&gt;
+&lt;textarea name="name_textarea"&gt;
+usp
+laboratory
+&lt;/textarea&gt;
+&lt;select name="name_pulldown"&gt;
+&lt;option value="pd1"&gt;pd1&lt;/option&gt;
+&lt;option value="pd2"&gt;pd2&lt;/option&gt;
+&lt;option value="pd3" selected="selected" &gt;pd3&lt;/option&gt;
+&lt;/select&gt;
+&lt;input type="submit" name="submit" /&gt;
+&lt;/form&gt;
+&lt;/body&gt;&lt;/html&gt;
 $ </pre>
+
+      <h3>【備考】</h3>
+
+      <ol start="1">
+        <li>inputタグの場合、すでにvalue=""とテンプレートに記述している場合は、値を置換する。同様にtextareaタグの場合も値を置換する。selectタグの場合は、すでにselected="selected"とテンプレートに指定されている場合、指定場所を移動する。</li>
+        <li>textareaの場合、すでにある値を置換する。\nは改行に置換する。</li>
+        <li>値が無い場合、値は挿入されない。</li>
+        <li>-iオプションで文字列を指定すると、その文字列に等しい値はヌル文字列にして挿入する。</li>
+        <li>-dオプションで文字を指定すると、その文字に等しい値は半角空白文字に置換して挿入する。ただし、\指定文字というデータは半角空白に変換しない。</li>
+        <li>HTMLは正しく記述されている必要がある。タグはすべて小文字であり、&lt;タグ /&gt;あるいは、&lt;タグ&gt;&lt;/タグ&gt;と記述される必要がある。変数は必ず" "で囲まれている必要がある(value="1"など)。input type="checkbox"のときは、必ずvalue="XXX"が指定されている必要がある。</li>
+        <li>checkbox、radiobox、selectboxの複数選択の場合は、<a href="name-format.html">ネーム形式データ(5)</a>は次のように1つのタグに対して複行となる。</li>
+      </ol>
+
+      <pre class="list">name_radio a
+name_radio b
+name_checkbox x
+name_checkbox y
+name_pulldown pd1
+name_pulldown pd2</pre>
 
       <h3>【関連項目】</h3>
 
-      <p><a href="gyo.html">gyo(1)</a>、<a href="juni.html">juni(1)</a>、<a href="rank.html">rank(1)</a>、<a href="retu.html">retu(1)</a></p>
+      <p><a href="filehame.html">filehame(1)</a>、<a href="mojihame.html">mojihame(1)</a></p>
+
     </div>
 
-    <div id="lastmodified">last modified: 2012-19-01 16:08:01</div>
+    <div id="lastmodified">last modified: 2013-49-16 17:04:16</div>
 
     <div id="footer">Contact us: uecinfo@usp-lab.com<br/>Copyright (c) 2012,2013 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
   </div>

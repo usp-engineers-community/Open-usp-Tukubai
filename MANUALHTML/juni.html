@@ -6,11 +6,9 @@
   <title>UEC - usp engineers' community - Tukubaiオンラインコマンドマニュアル</title>
   <link rel="stylesheet" href="COMMON/CSS/MAIN.CSS" />
   <link rel="stylesheet" href="COMMON/CSS/MENU.CSS" />
-  <!--[if lte IE 7]>
+  <link rel="stylesheet" href="COMMON/CSS/PRINT.CSS" />
+  <!--[if lte IE 8]>
   <link rel="stylesheet" href="COMMON/CSS/IE67HACK.CSS" />
-  <![endif]-->
-  <!--[if IE 8]>
-  <link rel="stylesheet" href="COMMON/CSS/IE8HACK.CSS" />
   <![endif]-->
   <!--[if IE 7]>
   <link rel="stylesheet" href="COMMON/CSS/IE7HACK.CSS" />
@@ -27,18 +25,25 @@
         <img id="logoimage" src="COMMON/IMG/TUKUBAI_LOGO.JPG" />
       </div>
       <div id="title">
-        <p id="slogan">UEC - UNIXを深く理解し、シェルプログラミングを極めるコミュニティサイト</p>
+        <p id="slogan"></p>
         <ul id="megamenu">
           <li id="tukubai_man"><a href="index.html" class="target">Tukubaiマニュアル</a>
             <ul>
+              <li><a href="calclock.html">calclock(1)</a></li>
               <li><a href="cgi-name.html">cgi-name(1)</a></li>
               <li><a href="check_attr_name.html">check_attr_name(1)</a></li>
               <li><a href="check_need_name.html">check_need_name(1)</a></li>
+              <li><a href="cjoin0.html">cjoin0(1)</a></li>
+              <li><a href="cjoin1.html">cjoin1(1)</a></li>
+              <li><a href="cjoin2.html">cjoin2(1)</a></li>
               <li><a href="comma.html">comma(1)</a></li>
               <li><a href="count.html">count(1)</a></li>
               <li><a href="ctail.html">ctail(1)</a></li>
+              <li><a href="dayslash.html">dayslash(1)</a></li>
               <li><a href="delf.html">delf(1)</a></li>
               <li><a href="divsen.html">divsen(1)</a></li>
+              <li><a href="filehame.html">filehame(1)</a></li>
+              <li><a href="formhame.html">formhame(1)</a></li>
               <li><a href="getfirst.html">getfirst(1)</a></li>
               <li><a href="getlast.html">getlast(1)</a></li>
               <li><a href="gyo.html">gyo(1)</a></li>
@@ -76,9 +81,15 @@
               <li><a href="yobi.html">yobi(1)</a></li>
               <li><a href="ysum.html">ysum(1)</a></li>
               <li><a href="zen.html">zen(1)</a></li>
+              <li class="separator"><hr/></li>
+              <li class="separator"><hr/></li>
+              <li class="separator"><hr/></li>
               <li><a href="tag-format.html">タグ形式(5)</a></li>
               <li><a href="name-format.html">ネーム形式(5)</a></li>
               <li><a href="field-format.html">フィールド形式(5)</a></li>
+              <li><a href="master-file.html">マスタファイル(5)</a></li>
+              <li><a href="name-file.html">ネームファイル(5)</a></li>
+              <li><a href="transaction-file.html" class="target">トランザクションファイル(5)</a></li>
             </ul> 
           </li>
         </ul>
@@ -88,30 +99,29 @@
     <div id="main">
       <h1>Tukubaiオンラインコマンドマニュアル</h1>
 
-<!-- CONTENTS_CONTENTS -->
-<h2>juni(USP Lab(1))</h2>
+      <h2>juni(1)</h2>
 
-<h3>【名前】</h3>
+      <h3>【名前】</h3>
 
-<p>juni : 同一キー内での順位を出力</p>
+      <p>juni : 同一キー内での順位を出力</p>
 
-<h3>【書式】</h3>
+      <h3>【書式】</h3>
 
-<pre class="list">Usage	: juni [&lt;k1&gt; &lt;k2&gt;] &lt;file&gt;
+      <pre class="list">Usage	: juni [&lt;k1&gt; &lt;k2&gt;] &lt;file&gt;
 	: juni -h [&lt;k1&gt; &lt;k2&gt;] &lt;file&gt;
 Version	: Thu Dec 15 13:46:38 JST 2011</pre>
 
-<h3>【説明】</h3>
+      <h3>【説明】</h3>
 
-<p>第&lt;k1&gt;フィールドから第&lt;k2&gt;フィールドまでをキーフィールドとして、同一キーの行どうしにおける順位を行の先頭に挿入する。&lt;k1&gt; &lt;k2&gt;を指定しないときは、すべての行が同一キーとみなすものとする。この場合は単純に行の先頭に行番号を挿入するのと同じになる。</p>
+      <p>第&lt;k1&gt;フィールドから第&lt;k2&gt;フィールドまでをキーフィールドとして、同一キーの行どうしにおける順位を行の先頭に挿入する。&lt;k1&gt; &lt;k2&gt;を指定しないときは、すべての行が同一キーとみなすものとする。この場合は単純に行の先頭に行番号を挿入するのと同じになる。</p>
 
-<p>-hオプションを指定した場合、各キーフィールドの順位を階層的に出力する。&lt;file&gt;を指定しない、あるいは、-が指定された時には標準入力からのデータ入力を期待する。</p>
+      <p>-hオプションを指定した場合、各キーフィールドの順位を階層的に出力する。&lt;file&gt;を指定しない、あるいは、-が指定された時には標準入力からのデータ入力を期待する。</p>
 
-<h3>【例1】</h3>
+      <h3>【例1】</h3>
 
-<p>行番号を付与する。</p>
+      <p>行番号を付与する。</p>
 
-<pre class="cmd">$ cat data
+      <pre class="cmd">$ cat data
 0000007 セロリ 100
 0000017 練馬大根 95
 0000021 温州みかん 80
@@ -119,7 +129,7 @@ Version	: Thu Dec 15 13:46:38 JST 2011</pre>
 0000030 じゃが芋 30
 $ </pre>
 
-<pre class="cmd">$ juni data
+      <pre class="cmd">$ juni data
 1 0000007 セロリ 100
 2 0000017 練馬大根 95
 3 0000021 温州みかん 80
@@ -127,11 +137,11 @@ $ </pre>
 5 0000030 じゃが芋 30
 $ </pre>
 
-<h3>【例2】</h3>
+      <h3>【例2】</h3>
 
-<p>キーが関係する場合、キーの開始フィールドと終了フィールドを指定して、同一キーを持つ行どうしにおける順位を行頭に付与する。</p>
+      <p>キーが関係する場合、キーの開始フィールドと終了フィールドを指定して、同一キーを持つ行どうしにおける順位を行頭に付与する。</p>
 
-<pre class="cmd">$ cat data
+      <pre class="cmd">$ cat data
 関東 パスタ 100
 関東 おにぎり 90
 関東 パン 40
@@ -140,7 +150,7 @@ $ </pre>
 九州 パスタ 100
 $ </pre>
 
-<pre class="cmd">$ juni 1 1 data
+      <pre class="cmd">$ juni 1 1 data
 1 関東 パスタ 100
 2 関東 おにぎり 90
 3 関東 パン 40
@@ -149,11 +159,11 @@ $ </pre>
 3 九州 パスタ 100
 $ </pre>
 
-<h3>【例3】</h3>
+      <h3>【例3】</h3>
 
-<p>-hオプションを指定した場合、各キーフィールドの順位を階層的に出力する。</p>
+      <p>-hオプションを指定した場合、各キーフィールドの順位を階層的に出力する。</p>
 
-<pre class="cmd">$ cat data
+      <pre class="cmd">$ cat data
 A A1 A11 A111
 A A1 A11 A112
 A A1 A12 A121
@@ -172,7 +182,7 @@ B B2 B22 B221
 B B2 B22 B222
 $ </pre>
 
-<pre class="cmd">$ juni -h 1 3 data
+      <pre class="cmd">$ juni -h 1 3 data
 1 1 1 A A1 A11 A111
 1 1 1 A A1 A11 A112
 1 1 2 A A1 A12 A121
@@ -191,11 +201,11 @@ $ </pre>
 2 2 2 B B2 B22 B222
 $ </pre>
 
-<h3>【例4】</h3>
+      <h3>【例4】</h3>
 
-<p>-hオプションでキーを指定しない場合には、第1フィールドから最終フィールドまでをキーフィールドとみなす。</p>
+      <p>-hオプションでキーを指定しない場合には、第1フィールドから最終フィールドまでをキーフィールドとみなす。</p>
 
-<pre class="cmd">$ juni -h data
+      <pre class="cmd">$ juni -h data
 1 1 1 1 A A1 A11 A111
 1 1 1 2 A A1 A11 A112
 1 1 2 1 A A1 A12 A121
@@ -213,26 +223,15 @@ $ </pre>
 2 2 2 1 B B2 B22 B221
 2 2 2 2 B B2 B22 B222</pre>
 
-<h3>【関連項目】</h3>
+      <h3>【関連項目】</h3>
 
-<p><a href="count.html">count(USP Lab(1))</a>、<a href="gyo.html">gyo(USP Lab(1))</a>、<a href="rank.html">rank(USP Lab(1))</a>、<a href="retu.html">retu(USP Lab(1))</a></p>
+      <p><a href="count.html">count(1)</a>、<a href="gyo.html">gyo(1)</a>、<a href="rank.html">rank(1)</a>、<a href="retu.html">retu(1)</a></p>
 
-<div id="pagenavigator">
-  <ul>
-    <li><a href="index.html">&and;</a></li>
-  </ul>
-</div>
-<!-- CONTENTS_CONTENTS -->
     </div>
 
-    <div id="lastmodified">
-     last modified: 2012-04-12 19:05:15
-    </div>
+    <div id="lastmodified">last modified: 2012-19-01 16:08:01</div>
 
-    <div id="footer">
-      Contact us: uecinfo@usp-lab.com<br>
-      Copyright (c) 2012 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.
-    </div>
+    <div id="footer">Contact us: uecinfo@usp-lab.com<br/>Copyright (c) 2012,2013 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
   </div>
 </body>
 </html>

@@ -6,11 +6,9 @@
   <title>UEC - usp engineers' community - Tukubaiオンラインコマンドマニュアル</title>
   <link rel="stylesheet" href="COMMON/CSS/MAIN.CSS" />
   <link rel="stylesheet" href="COMMON/CSS/MENU.CSS" />
-  <!--[if lte IE 7]>
+  <link rel="stylesheet" href="COMMON/CSS/PRINT.CSS" />
+  <!--[if lte IE 8]>
   <link rel="stylesheet" href="COMMON/CSS/IE67HACK.CSS" />
-  <![endif]-->
-  <!--[if IE 8]>
-  <link rel="stylesheet" href="COMMON/CSS/IE8HACK.CSS" />
   <![endif]-->
   <!--[if IE 7]>
   <link rel="stylesheet" href="COMMON/CSS/IE7HACK.CSS" />
@@ -27,18 +25,25 @@
         <img id="logoimage" src="COMMON/IMG/TUKUBAI_LOGO.JPG" />
       </div>
       <div id="title">
-        <p id="slogan">UEC - UNIXを深く理解し、シェルプログラミングを極めるコミュニティサイト</p>
+        <p id="slogan"></p>
         <ul id="megamenu">
           <li id="tukubai_man"><a href="index.html" class="target">Tukubaiマニュアル</a>
             <ul>
+              <li><a href="calclock.html">calclock(1)</a></li>
               <li><a href="cgi-name.html">cgi-name(1)</a></li>
               <li><a href="check_attr_name.html">check_attr_name(1)</a></li>
               <li><a href="check_need_name.html">check_need_name(1)</a></li>
+              <li><a href="cjoin0.html">cjoin0(1)</a></li>
+              <li><a href="cjoin1.html">cjoin1(1)</a></li>
+              <li><a href="cjoin2.html">cjoin2(1)</a></li>
               <li><a href="comma.html">comma(1)</a></li>
               <li><a href="count.html">count(1)</a></li>
               <li><a href="ctail.html">ctail(1)</a></li>
+              <li><a href="dayslash.html">dayslash(1)</a></li>
               <li><a href="delf.html">delf(1)</a></li>
               <li><a href="divsen.html">divsen(1)</a></li>
+              <li><a href="filehame.html">filehame(1)</a></li>
+              <li><a href="formhame.html">formhame(1)</a></li>
               <li><a href="getfirst.html">getfirst(1)</a></li>
               <li><a href="getlast.html">getlast(1)</a></li>
               <li><a href="gyo.html">gyo(1)</a></li>
@@ -76,9 +81,15 @@
               <li><a href="yobi.html">yobi(1)</a></li>
               <li><a href="ysum.html">ysum(1)</a></li>
               <li><a href="zen.html">zen(1)</a></li>
+              <li class="separator"><hr/></li>
+              <li class="separator"><hr/></li>
+              <li class="separator"><hr/></li>
               <li><a href="tag-format.html">タグ形式(5)</a></li>
               <li><a href="name-format.html">ネーム形式(5)</a></li>
               <li><a href="field-format.html">フィールド形式(5)</a></li>
+              <li><a href="master-file.html">マスタファイル(5)</a></li>
+              <li><a href="name-file.html">ネームファイル(5)</a></li>
+              <li><a href="transaction-file.html" class="target">トランザクションファイル(5)</a></li>
             </ul> 
           </li>
         </ul>
@@ -88,25 +99,24 @@
     <div id="main">
       <h1>Tukubaiオンラインコマンドマニュアル</h1>
 
-<!-- CONTENTS_CONTENTS -->
-<h2>getfirst(USP Lab(1))</h2>
+      <h2>getfirst(1)</h2>
 
-<h3>【名前】</h3>
+      <h3>【名前】</h3>
 
-<p>getfirst : 同一キーの最初の行を出力</p>
+      <p>getfirst : 同一キーの最初の行を出力</p>
 
-<h3>【書式】</h3>
+      <h3>【書式】</h3>
 
-<pre class="list">Usage	: getfirst [+ng[&lt;fd&gt;]] &lt;n1&gt; &lt;n2&gt; &lt;file&gt;
+      <pre class="list">Usage	: getfirst [+ng[&lt;fd&gt;]] &lt;n1&gt; &lt;n2&gt; &lt;file&gt;
 Version	: Thu Dec 15 13:46:38 JST 2011</pre>
 
-<h3>【説明】</h3>
+      <h3>【説明】</h3>
 
-<p>引数のファイルまたは標準入力のテキストデータに対し、指定されたキーフィールドの値が同一の行が複数ある場合に、キーフィールドごとに最初の行のみを抽出して出力する。</p>
+      <p>引数のファイルまたは標準入力のテキストデータに対し、指定されたキーフィールドの値が同一の行が複数ある場合に、キーフィールドごとに最初の行のみを抽出して出力する。</p>
 
-<h3>【例1】</h3>
+      <h3>【例1】</h3>
 
-<pre class="cmd">$ cat date		←元データ  商品コード 商品名 販売日 売れ数
+      <pre class="cmd">$ cat date		←元データ  商品コード 商品名 販売日 売れ数
 0000007 セロリ 20060201 117
 0000007 セロリ 20060202 136
 0000007 セロリ 20060203 221
@@ -124,7 +134,7 @@ Version	: Thu Dec 15 13:46:38 JST 2011</pre>
 0000030 じゃが芋 20060203 184
 $ </pre>
 
-<pre class="cmd">$ getfirst 1 2 data		←同一商品コード/商品名の最初の行のみ出力
+      <pre class="cmd">$ getfirst 1 2 data		←同一商品コード/商品名の最初の行のみ出力
 0000007 セロリ 20060201 117
 0000017 練馬大根 20060201 31
 0000021 温州みかん 20060201 90
@@ -132,11 +142,11 @@ $ </pre>
 0000030 じゃが芋 20060201 575
 $ </pre>
 
-<h3>【例2】</h3>
+      <h3>【例2】</h3>
 
-<p>"+ng"オプションを指定すると、同じキーフィールドの値を持つ行の最初の行以外を標準エラー出力に出力する。</p>
+      <p>"+ng"オプションを指定すると、同じキーフィールドの値を持つ行の最初の行以外を標準エラー出力に出力する。</p>
 
-<pre class="cmd">$ getfirst +ng 1 2 data &gt; /dev/null 2&gt; data2
+      <pre class="cmd">$ getfirst +ng 1 2 data &gt; /dev/null 2&gt; data2
 $ cat data2
 0000007 セロリ 20060202 136
 0000007 セロリ 20060203 221
@@ -150,11 +160,11 @@ $ cat data2
 0000030 じゃが芋 20060203 184
 $ </pre>
 
-<h3>【例3】</h3>
+      <h3>【例3】</h3>
 
-<p>+ng オプションに&lt;fd&gt;を指定すると、標準エラー出力のかわりに&lt;fd&gt;への出力が実施される。</p>
+      <p>+ng オプションに&lt;fd&gt;を指定すると、標準エラー出力のかわりに&lt;fd&gt;への出力が実施される。</p>
 
-<pre class="cmd">$ getfirst +ng4 1 2 data &gt; /dev/null 4&gt; data2
+      <pre class="cmd">$ getfirst +ng4 1 2 data &gt; /dev/null 4&gt; data2
 $ cat data2
 0000007 セロリ 20060202 136
 0000007 セロリ 20060203 221
@@ -168,33 +178,21 @@ $ cat data2
 0000030 じゃが芋 20060203 184
 $ </pre>
 
-<h3>【注意】</h3>
+      <h3>【注意】</h3>
 
-<p>フィールド分割において連続する空白は1つの空白とみなされる。また、行頭の空白は無視される。例えば、キーフィールド指定が1と2の場合、次の2行は同じキーフィールドを持つとみなされる。</p>
+      <p>フィールド分割において連続する空白は1つの空白とみなされる。また、行頭の空白は無視される。例えば、キーフィールド指定が1と2の場合、次の2行は同じキーフィールドを持つとみなされる。</p>
 
-<pre class="source">0000007 セロリ 20060202 136
+      <pre class="source">0000007 セロリ 20060202 136
 0000007  セロリ 20060203 221</pre>
 
-<h3>【関連項目】</h3>
+      <h3>【関連項目】</h3>
 
-<p><a href="ctail.html">ctail(USP Lab(1))</a>、<a href="getlast.html">getlast(USP Lab(1))</a>、<a href="tcat.html">tcat(USP Lab(1))</a>、<a href="ycat.html">ycat(USP Lab(1))</a></p>
-
-<div id="pagenavigator">
-  <ul>
-    <li><a href="index.html">&and;</a></li>
-  </ul>
-</div>
-<!-- CONTENTS_CONTENTS -->
+      <p><a href="ctail.html">ctail(1)</a>、<a href="getlast.html">getlast(1)</a>、<a href="tcat.html">tcat(1)</a>、<a href="ycat.html">ycat(1)</a></p>
     </div>
 
-    <div id="lastmodified">
-     last modified: 2012-04-12 19:25:42
-    </div>
+    <div id="lastmodified">last modified: 2012-19-01 16:08:01</div>
 
-    <div id="footer">
-      Contact us: uecinfo@usp-lab.com<br>
-      Copyright (c) 2012 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.
-    </div>
+    <div id="footer">Contact us: uecinfo@usp-lab.com<br/>Copyright (c) 2012,2013 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
   </div>
 </body>
 </html>

@@ -6,11 +6,9 @@
   <title>UEC - usp engineers' community - Tukubaiオンラインコマンドマニュアル</title>
   <link rel="stylesheet" href="COMMON/CSS/MAIN.CSS" />
   <link rel="stylesheet" href="COMMON/CSS/MENU.CSS" />
-  <!--[if lte IE 7]>
+  <link rel="stylesheet" href="COMMON/CSS/PRINT.CSS" />
+  <!--[if lte IE 8]>
   <link rel="stylesheet" href="COMMON/CSS/IE67HACK.CSS" />
-  <![endif]-->
-  <!--[if IE 8]>
-  <link rel="stylesheet" href="COMMON/CSS/IE8HACK.CSS" />
   <![endif]-->
   <!--[if IE 7]>
   <link rel="stylesheet" href="COMMON/CSS/IE7HACK.CSS" />
@@ -27,18 +25,25 @@
         <img id="logoimage" src="COMMON/IMG/TUKUBAI_LOGO.JPG" />
       </div>
       <div id="title">
-        <p id="slogan">UEC - UNIXを深く理解し、シェルプログラミングを極めるコミュニティサイト</p>
+        <p id="slogan"></p>
         <ul id="megamenu">
           <li id="tukubai_man"><a href="index.html" class="target">Tukubaiマニュアル</a>
             <ul>
+              <li><a href="calclock.html">calclock(1)</a></li>
               <li><a href="cgi-name.html">cgi-name(1)</a></li>
               <li><a href="check_attr_name.html">check_attr_name(1)</a></li>
               <li><a href="check_need_name.html">check_need_name(1)</a></li>
+              <li><a href="cjoin0.html">cjoin0(1)</a></li>
+              <li><a href="cjoin1.html">cjoin1(1)</a></li>
+              <li><a href="cjoin2.html">cjoin2(1)</a></li>
               <li><a href="comma.html">comma(1)</a></li>
               <li><a href="count.html">count(1)</a></li>
               <li><a href="ctail.html">ctail(1)</a></li>
+              <li><a href="dayslash.html">dayslash(1)</a></li>
               <li><a href="delf.html">delf(1)</a></li>
               <li><a href="divsen.html">divsen(1)</a></li>
+              <li><a href="filehame.html">filehame(1)</a></li>
+              <li><a href="formhame.html">formhame(1)</a></li>
               <li><a href="getfirst.html">getfirst(1)</a></li>
               <li><a href="getlast.html">getlast(1)</a></li>
               <li><a href="gyo.html">gyo(1)</a></li>
@@ -76,9 +81,15 @@
               <li><a href="yobi.html">yobi(1)</a></li>
               <li><a href="ysum.html">ysum(1)</a></li>
               <li><a href="zen.html">zen(1)</a></li>
+              <li class="separator"><hr/></li>
+              <li class="separator"><hr/></li>
+              <li class="separator"><hr/></li>
               <li><a href="tag-format.html">タグ形式(5)</a></li>
               <li><a href="name-format.html">ネーム形式(5)</a></li>
               <li><a href="field-format.html">フィールド形式(5)</a></li>
+              <li><a href="master-file.html">マスタファイル(5)</a></li>
+              <li><a href="name-file.html">ネームファイル(5)</a></li>
+              <li><a href="transaction-file.html" class="target">トランザクションファイル(5)</a></li>
             </ul> 
           </li>
         </ul>
@@ -88,82 +99,70 @@
     <div id="main">
       <h1>Tukubaiオンラインコマンドマニュアル</h1>
 
-<!-- CONTENTS_CONTENTS -->
-<h2>han(USP Lab(1))</h2>
+      <h2>han(1)</h2>
 
-<h3>【名前】</h3>
+      <h3>【名前】</h3>
 
-<p>han : 半角へ変換</p>
+      <p>han : 半角へ変換</p>
 
-<h3>【書式】</h3>
+      <h3>【書式】</h3>
 
-<pre class="list">Usage	: han f1 f2 .. file
+      <pre class="list">Usage	: han f1 f2 .. file
 	: han -d string
 Version	: Thu Dec 15 13:46:38 JST 2011
 	: UTF-8</pre>
 
-<h3>【説明】</h3>
+      <h3>【説明】</h3>
 
-<p>引数のファイルまたは標準入力のテキストデータの、全角スペース、全角英数およびカタカナの部分をすべて半角に変換して出力する。</p>
+      <p>引数のファイルまたは標準入力のテキストデータの、全角スペース、全角英数およびカタカナの部分をすべて半角に変換して出力する。</p>
 
-<h3>【例1】</h3>
+      <h3>【例1】</h3>
 
-<p>引数のファイルの指定したフィールドの中身を半角に変換する。</p>
-<pre class="cmd">$ cat data
+      <p>引数のファイルの指定したフィールドの中身を半角に変換する。</p>
+      <pre class="cmd">$ cat data
 これは データ である。
 Ｔｈｉｓ ｉｓ ｄａｔａ
 １２３４ ５６７ ８９０
 $ </pre>
 
-<pre class="cmd">$ han 1 2 3 data
+      <pre class="cmd">$ han 1 2 3 data
 これは ﾃﾞｰﾀ である｡
 This is data
 1234 567 890
 $ </pre>
 
-<h3>【例2】</h3>
+      <h3>【例2】</h3>
 
-<p>フィールドを指定しないと行全体を半角にする。全角スペースは半角スペースになる。</p>
+      <p>フィールドを指定しないと行全体を半角にする。全角スペースは半角スペースになる。</p>
 
-<pre class="cmd">$ cat data2
+      <pre class="cmd">$ cat data2
 これはデータである。
 全角　スペース　データも変換する。
 １２３456７８９
 $ </pre>
 
-<pre class="cmd">$ han data2
+      <pre class="cmd">$ han data2
 これはﾃﾞｰﾀである｡
 全角 スペース ﾃﾞｰﾀも変換する。
 123456789</pre>
 
-<h3>【例3】</h3>
+      <h3>【例3】</h3>
 
-<p>-dオプションを使用すると、引数で指定した文字列の全角部分を半角に変えて出力させることができる。</p>
+      <p>-dオプションを使用すると、引数で指定した文字列の全角部分を半角に変えて出力させることができる。</p>
 
-<pre class="cmd">$ han -d カタカナＡＢＣ１２３
+      <pre class="cmd">$ han -d カタカナＡＢＣ１２３
 ｶﾀｶﾅABC123
 $ </pre>
 
-<h3>【関連項目】</h3>
+      <h3>【関連項目】</h3>
 
-<p><a href="zen.html">zen(USP Lab(1))</a></p>
+      <p><a href="zen.html">zen(1)</a></p>
 
-<div id="pagenavigator">
-  <ul>
-    <li><a href="index.html">&and;</a></li>
-  </ul>
-</div>
-<!-- CONTENTS_CONTENTS -->
     </div>
 
-    <div id="lastmodified">
-     last modified: 2012-04-12 19:46:33
-    </div>
+    <div id="lastmodified">last modified: 2012-19-01 16:08:01</div>
 
-    <div id="footer">
-      Contact us: uecinfo@usp-lab.com<br>
-      Copyright (c) 2012 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.
-    </div>
+    <div id="footer">Contact us: uecinfo@usp-lab.com<br/>Copyright (c) 2012,2013 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
   </div>
 </body>
 </html>
