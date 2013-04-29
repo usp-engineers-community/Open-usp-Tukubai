@@ -3,7 +3,7 @@ import System.Environment
 import System.IO
 
 {--
-tarr（Open usp Tukubai）
+yarr（Open usp Tukubai）
 
 designed by Nobuaki Tounaka
 written by Ryuichi Ueda
@@ -33,7 +33,7 @@ THE SOFTWARE.
 
 showUsage :: IO ()
 showUsage = do hPutStr stderr
-		("Usage    : tarr [num=<n>] [-<m>] <file>\n" ++ 
+		("Usage    : yarr [num=<n>] [-<m>] <file>\n" ++ 
 		"Sat Mar 23 22:55:39 JST 2013\n" ++
 		"Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
 
@@ -43,29 +43,52 @@ main = do
 	case args of
 		["-h"]     -> showUsage
 		["--help"] -> showUsage
-		[]         -> do foldAll
-		["-"]      -> do foldAll
+		[]         -> do unfoldAll
+		["-"]      -> do unfoldAll
 		_          -> do if (fileName args) == "-" 
 					then getContents >>= mainProc (parseArgs args)
 					else readFile (fileName args) >>= mainProc (parseArgs args)
 
+splitAtKey :: Int -> [String] -> [ ([String], [String]) ]
+splitAtKey num [] = []
+splitAtKey num (c:cs) = splitAt num (words c) : splitAtKey num cs
+
+mergeByKey :: ([String], [String]) -> [ ([String], [String]) ] -> [ ([String], [String]) ]
+mergeByKey c [] = [c]
+mergeByKey ([""],[""]) (r:rs) = mergeByKey r rs
+mergeByKey c (r:rs) = if (fst c) == (fst r)
+			then mergeByKey (fst c, (snd c)++(snd r)) rs
+			else c : mergeByKey r rs
+
 --単語ごとに全部改行して出力
-foldAll = getContents >>= putBSLines . fold
-	where fold cs = unlines $ concat [ words c | c <- lines cs ]
+unfoldAll = getContents >>= putStrLn . unfold
+	where unfold cs = unwords $ concat [ words c | c <- lines cs ]
 
---UTF-8の出力のお約束
-putBSLines :: String -> IO ()
---putBSLines = putStr . unpack 
-putBSLines = putStr 
-
---tarr実行
+--yarr実行
 mainProc :: (Int,Int) -> String -> IO()
-mainProc (  0,m) cs = putBSLines $ mFold m cs
-mainProc (num,m) cs = putBSLines $ keyFold num m $ lines cs
+mainProc (  0,0) cs = putStrLn . unwords $ concat [ words c | c <- lines cs ]
+mainProc (  0,m) cs = putStr $ mUnfold m cs
+--mainProc (num,m) cs = putStr $ keyUnfold num m $ lines cs
+mainProc (num,0) cs = putStr . fold . mergeByKey ([""],[""]) $ splitAtKey num (lines cs)
+mainProc (num,m) cs = putStr . mFold m $ mergeByKey ([""],[""]) $ splitAtKey num (lines cs)
 
 -- -<m> オプションのときに1行をm単語ずつ折り返し
-mFold :: Int -> String -> String
-mFold m cs = unlines $ concat [ mSet m ( words c ) | c <- lines cs ]
+fold :: [ ([String], [String]) ] -> String
+fold cs = unlines [ fold' (fst c) (snd c) | c <- cs ]
+		where fold' k vs = (unwords k) ++ " " ++ (unwords vs) 
+
+-- -<m> オプションのときに1行をm単語ずつ折り返し
+mFold :: Int -> [ ([String], [String]) ] -> String
+mFold m cs = unlines $ concat [ mFold' m (fst c) (snd c) | c <- cs ]
+
+mFold' :: Int -> [String] -> [String] -> [String]
+mFold' m k vs = [(unwords k) ++ " " ++ c | c <- mSet m vs ]
+
+-- -<m> オプションのときに1行をm単語ずつ折り返し
+mUnfold :: Int -> String -> String
+--mUnfold m cs = unlines $ concat [ mSet m ( words c ) | c <- lines cs ]
+mUnfold m cs = unlines $ mSet m ( words c )
+	where c = unwords $ lines cs
 
 -- 単語のリストから単語をm個ずつまとめたリストへ
 mSet :: Int -> [ String ] -> [ String ]
@@ -74,8 +97,8 @@ mSet m ws = (unwords $ fst s) : mSet m (snd s)
 		where s = splitAt m ws 
 
 -- キー(num=<n>)への対応
-keyFold :: Int -> Int -> [ String ] -> String
-keyFold num m cs = unlines $ concat [ keyExpand num m ( words c ) | c <- cs ]
+keyUnfold :: Int -> Int -> [ String ] -> String
+keyUnfold num m cs = unlines $ concat [ keyExpand num m ( words c ) | c <- cs ]
 
 -- オプションからファイル名取り出し
 fileName :: [String] -> String
@@ -101,5 +124,5 @@ parseArgs as = (getNum $ head0 $ filter findNum as, getM $ head1 $ filter findM 
 		findM a = "-" `isPrefixOf` a && length a > 1
 		getM a = read (drop 1 a)::Int
 		head1 :: [String] -> String
-		head1 [] = "-1"
+		head1 [] = "-0"
 		head1 as = head as
