@@ -1,5 +1,3 @@
-import qualified Data.ByteString.Lazy.Char8 as BS
-import Codec.Binary.UTF8.String as CBUS
 import System.Environment
 import System.IO
 
@@ -48,10 +46,10 @@ main = do
 		["-h"] -> showUsage
 		["--help"] -> showUsage
 		[] -> showUsage
-		_ -> BS.getContents >>= putBSLines . makeOut (parseOpts args )
+		_ -> getContents >>= putBSLines . makeOut (parseOpts args )
 
-putBSLines :: [BS.ByteString] -> IO ()
-putBSLines = putStr . CBUS.decodeString . BS.unpack . BS.unlines
+putBSLines :: [String] -> IO ()
+putBSLines = putStr . unlines
 
 parseOpts :: [String] -> [((Int,Int),(Int,Int))]
 parseOpts args = [ parseOpt a | a <- args ]
@@ -85,17 +83,17 @@ toNum str = (if f == "NF" then -1 else read f::Int ) + ( if s == "" then 0 else 
 		f = fst $ break (== '-') str
 		s = snd $ break (== '-') str
 	
-makeOut :: [((Int,Int),(Int,Int))] -> BS.ByteString -> [BS.ByteString]
-makeOut as cs = [ makeLine as (makeBaseStr c) | c <- BS.lines cs ]
+makeOut :: [((Int,Int),(Int,Int))] -> String -> [String]
+makeOut as cs = [ makeLine as (makeBaseStr c) | c <- lines cs ]
 
-makeBaseStr :: BS.ByteString -> [BS.ByteString]
-makeBaseStr line = line : (BS.words line)
+makeBaseStr :: String -> [String]
+makeBaseStr line = line : (words line)
 
-makeLine :: [((Int,Int),(Int,Int))] -> [BS.ByteString] -> BS.ByteString
-makeLine as ws = BS.unwords [ choiceWord a ws | a <- as ]
+makeLine :: [((Int,Int),(Int,Int))] -> [String] -> String
+makeLine as ws = unwords [ choiceWord a ws | a <- as ]
 
-choiceWord :: ((Int,Int),(Int,Int)) -> [BS.ByteString] -> BS.ByteString
-choiceWord a ws = BS.unwords [ makeSubWord (snd a) (ws !! n) |  n <- makeSeq (fst a) (length ws) ]
+choiceWord :: ((Int,Int),(Int,Int)) -> [String] -> String
+choiceWord a ws = unwords [ makeSubWord (snd a) (ws !! n) |  n <- makeSeq (fst a) (length ws) ]
 
 makeSeq :: (Int,Int) -> Int -> [Int]
 makeSeq a num = [x..y]
@@ -105,11 +103,11 @@ makeSeq a num = [x..y]
 			x = if f >= 0 then f else num + f
 			y = if s >= 0 then s else num + s
 
-makeSubWord :: (Int,Int) -> BS.ByteString -> BS.ByteString
+makeSubWord :: (Int,Int) -> String -> String
 makeSubWord (0,0) str = str
 makeSubWord a str = cutTail (snd a) (cutFront (fst a) str)
 		where 
-			cutFront :: Int -> BS.ByteString -> [Char]
-			cutFront n str = drop (n-1) (BS.unpack str)
-			cutTail :: Int -> [Char] -> BS.ByteString
-			cutTail n str = BS.pack $ take n str
+			cutFront :: Int -> String -> [Char]
+			cutFront n str = drop (n-1) str
+			cutTail :: Int -> [Char] -> String
+			cutTail n str = take n str
