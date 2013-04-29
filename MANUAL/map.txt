@@ -1,6 +1,6 @@
 Tukubaiオンラインコマンドマニュアル
 
-map(USP Lab(1))
+map(1)
 
 【名前】
 
@@ -24,9 +24,9 @@ Version : Sat Dec 10 21:04:17 JST 2011
 
 【例1】
 
-縦型データをmapするには次のようにコマンドを実行する。num=<n>の値は縦キーのフィ
-ールド数を表す。この例ではnumの値は縦キーの最後のフィールドを指し示す2を指定す
-る必要がある。
+縦型データをmap(1)するには次のようにコマンドを実行する。num=<n>の値は縦キーの
+フィールド数を表す。この例ではnumの値は縦キーの最後のフィールドを指し示す2を
+指定する必要がある。
 
 $ cat data
 001 a店 01/01 103               ←縦キー 縦キー 横キー データ部
@@ -84,10 +84,10 @@ d店 A    75    72    34    74    91    98   101
 d店 B    48    42    19    43    51    69    90
 $
 
-【ワンポイント】
+【例4】
 
-例2の結果をさらにsed(1)コマンドでAを売数、Bを客数に置換すると次のような表になる
-。
+例2の結果をさらにsed(1)コマンドでAを売数、Bを客数に置換すると次のような表にな
+る。
 
 $ map num=1 data | sed -e 's/A/売数/1' -e 's/B/客数/1' | keta
   *    * 1日目 2日目 3日目 4日目 5日目 6日目 7日目
@@ -151,7 +151,7 @@ $
 
 【例7】
 
--<数値>オプションを妻うことで<数値>フィールド分ずつmapを実施することができる。
+-<数値>オプションを妻うことで<数値>フィールド分ずつmap(1)を実施できる。
 <数値>はデータ部のフィールド数の約数である必要がある。
 
 $ cat data
@@ -276,8 +276,8 @@ $
 
 【関連項目】
 
-unmap(USP Lab(1))、tateyoko(USP Lab(1))
+unmap(1)、tateyoko(1)
 
-last modified: 2012-04-12 20:30:58
+last modified: 2013-04-15 19:46:40
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012 Universal Shell Programming Laboratory All Rights Reserved.
+Copyright (c) 2012,2013 Universal Shell Programming Laboratory All Rights Reserved.

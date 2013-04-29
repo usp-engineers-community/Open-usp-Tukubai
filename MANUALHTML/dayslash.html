@@ -99,55 +99,74 @@
     <div id="main">
       <h1>Tukubaiオンラインコマンドマニュアル</h1>
 
-      <h2>count(1)</h2>
+      <h2>dayslash(1)</h2>
 
       <h3>【名前】</h3>
 
-      <p>count :  同じキーの行数をカウント</p>
+      <p>dayslash : 日付と時刻のフォーマット変換</p>
 
       <h3>【書式】</h3>
 
-      <pre class="list">Usage	: count &lt;k1&gt; &lt;k2&gt; &lt;file&gt;
-Version	: Thu Dec 15 13:46:38 JST 2011</pre>
+      <pre class="list">Usage   : dayslash [-r] &lt;format&gt; &lt;field&gt; &lt;file&gt;
+Version : Mon Dec 12 19:38:29 JST 2011</pre>
 
       <h3>【説明】</h3>
 
-      <p>引数のファイルまたは標準入力のテキストデータの指定したキーフィールドの値が同じ行(行)の数を出力する。キーとなるフィールドは開始となるフィールドkey1から、終了となるフィールドkey2への形で指定する。</p>
+      <p>標準入力または入力ファイル&lt;file&gt;の指定フィールド&lt;field&gt;のデータのフォーマットが次の3パターンのいずれかである場合、&lt;format&gt;で指定した形式に変換して出力する。次の3パターンのいずれでもない場合、入力データをそのまま出力する。フォーマットは桁数のみを検証し、年月日時分秒の正当性は評価しない。</p>
+
+      <dl>
+        <dt>yyyymmdd</dt>
+        <dd>年月日(8桁)</dd>
+        <dt>HHMMSS</dt>
+        <dd>時分秒(6桁)</dd>
+        <dt>yyyymmddHHMMSS</dt>
+        <dd>年月日時分秒(14桁)</dd>
+      </dl>
+
+      <p>&lt;format&gt;でm, d, H, M, Sを単独で指定した場合、前0は削除される。</p>
+
+      <p>オプション-rを指定すると逆変換を実施する。標準入力または入力ファイル&lt;file&gt;の指定フィールド&lt;field&gt;のデータが、&lt;format&gt;で指定されたフォーマットに一致する場合、次のいずれかの形式へ変換する。一致しない場合、入力データをそのまま出力する。</p>
+
+      <dl>
+        <dt>yyyymmdd</dt>
+        <dd>年月日(8桁)</dd>
+        <dt>HHMMSS</dt>
+        <dd>時分秒(6桁)</dd>
+        <dt>yyyymmddHHMMSS</dt>
+        <dd>年月日時分秒(14桁)</dd>
+      </dl>
+
+      <p>フォーマットのみを検証し、年月日時分秒の正当性は評価しない。</p>
 
       <h3>【例1】</h3>
 
-      <pre class="cmd">$ cat data
-01 埼玉県 01 さいたま市 91 59 20 76 54
-01 埼玉県 02 川越市 46 39 8 5 21
-01 埼玉県 03 熊谷市 82 0 23 84 10
-02 東京都 04 新宿区 30 50 71 36 30
-02 東京都 05 中央区 78 13 44 28 51
-02 東京都 06 港区 58 71 20 10 6
-02 東京都 07 千代田区 39 22 13 76 08
-02 東京都 08 八王子市 82 79 16 21 80
-02 東京都 09 立川市 50 2 33 15 62
-03 千葉県 10 千葉市 52 91 44 9 0
-03 千葉県 11 市川市 60 89 33 18 6
-03 千葉県 12 柏市 95 60 35 93 76
-04 神奈川県 13 横浜市 92 56 83 96 75
-04 神奈川県 14 川崎市 30 12 32 44 19
-04 神奈川県 15 厚木市 48 66 23 71 24
-04 神奈川県 16 小田原市 45 21 24 39 03
+      <pre class="cmd">$ echo 20120304 | dayslash yyyy/mm/dd 1
+2012/03/04
+$ echo 050607 | dayslash H時M分S秒 1
+5時6分7秒
+$ echo 20111201235958 | dayslash m/d 1
+12/1
+$ echo - | dayslash yyyy/mm/dd 1
+-
 $ </pre>
 
-      <pre class="cmd">$ count 1 2 data		←県ごとの市の数を数えて出力
-01 埼玉県 3
-02 東京都 6
-03 千葉県 3
-04 神奈川県 4
+      <h3>【例2】</h3>
+
+      <pre class="cmd">$ echo 2012/03/04 | dayslash -r yyyy/mm/dd 1
+20120304
+$ echo 5時6分7秒 | dayslash -r H時M分S秒 1
+050607
+$ echo 2011年12月1日_23:59:10 | dayslash -r yyyy年m月d日_HH:MM:SS 1
+20111201235910
 $ </pre>
 
       <h3>【関連項目】</h3>
 
-      <p><a href="gyo.html">gyo(1)</a>、<a href="juni.html">juni(1)</a>、<a href="rank.html">rank(1)</a>、<a href="retu.html">retu(1)</a></p>
+      <p><a href="calclock.html">calclock(1)</a>、<a href="mdate.html">mdate(1)</a>、<a href="yobi.html">yobi(1)</a></p>
+
     </div>
 
-    <div id="lastmodified">last modified: 2012-19-01 16:08:01</div>
+    <div id="lastmodified">last modified: 2013-30-16 17:04:16</div>
 
     <div id="footer">Contact us: uecinfo@usp-lab.com<br/>Copyright (c) 2012,2013 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
   </div>

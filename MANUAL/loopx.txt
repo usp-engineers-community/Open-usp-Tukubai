@@ -1,6 +1,6 @@
 Tukubaiオンラインコマンドマニュアル
 
-loopx(USP Lab(1))
+loopx(1)
 
 【名前】
 
@@ -49,8 +49,8 @@ $
 
 【関連項目】
 
-loopj(USP Lab(1))
+loopj(1)
 
-last modified: 2012-04-12 20:28:55
+last modified: 2013-04-15 19:42:18
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012 Universal Shell Programming Laboratory All Rights Reserved.
+Copyright (c) 2012,2013 Universal Shell Programming Laboratory All Rights Reserved.

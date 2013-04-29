@@ -1,6 +1,6 @@
 Tukubaiオンラインコマンドマニュアル
 
-ctail(USP Lab(1))
+ctail(1)
 
 【名前】
 
@@ -55,8 +55,8 @@ $
 
 【関連項目】
 
-getfirst(USP Lab(1))、getlast(USP Lab(1))、tcat(USP Lab(1))、ycat(USP Lab(1))
+getfirst(1)、getlast(1)、tcat(1)、ycat(1)
 
-last modified: 2012-04-12 19:25:31
+last modified: 2013-04-15 19:24:58
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012 Universal Shell Programming Laboratory All Rights Reserved.
+Copyright (c) 2012,2013 Universal Shell Programming Laboratory All Rights Reserved.

@@ -1,6 +1,6 @@
 Tukubaiオンラインコマンドマニュアル
 
-join0(USP Lab(1))
+join0(1)
 
 【名前】
 
@@ -144,9 +144,8 @@ $
 
 【例4】
 
-ファイル名を-にすることにより標準入力からmasterやtranを読むことができる。join1
-(USP Lab(1))やjoin2(USP Lab(1))も同様。tranの-を省略した場合も標準入力からtran
-を読み込む。
+ファイル名を-にすることにより標準入力からmasterやtranを読むことができる。
+join1(1)やjoin2(1)も同様。tranの-を省略した場合も標準入力からtranを読み込む。
 
 $ cat master | join0 key=1 - tran
 
@@ -154,7 +153,7 @@ $ cat tran | join0 key=1 master -
 
 $ cat tran | join0 key=1 master         ←-を省略可能
 
-【コラム1】+ngオプションのコメント - join1(USP Lab(1))も同様
+【コラム1】+ngオプションのコメント - join1(1)も同様
 
 不一致のデータをパイプで次のコマンドへつなぐ場合は次のように記述する。
 
@@ -166,21 +165,21 @@ $ join0 +ng key=1 master tran > /dev/null 2> ng-data
 
 【コラム2】
 
-join0(USP Lab(1))およびjoin1(USP Lab(1))はmasterと同じキーフィールドを持つtran
-の行を出力するが、パイプの目詰まりを起こさないようにmasterを読み終わったあと読
-み残したtranについても最後まで読むように動作する。
+join0(1)およびjoin1(1)はmasterと同じキーフィールドを持つtranの行を出力するが、
+パイプの目詰まりを起こさないようにmasterを読み終わったあと読み残したtranに
+ついても最後まで読むように動作する。
 
 $ cat bigfile | join0 key=1 master > ok-data
 
 【備考】
 
 keyのフィールドは合わせて128フィールドが最大で、1キーフィールドあたり最大256
-[byte]まで指定できる。
+バイトまで指定できる。
 
 【関連項目】
 
-join1(USP Lab(1))、join2(USP Lab(1))
+join1(1)、join2(1)
 
-last modified: 2012-04-12 19:49:31
+last modified: 2013-04-15 19:36:39
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012 Universal Shell Programming Laboratory All Rights Reserved.
+Copyright (c) 2012,2013 Universal Shell Programming Laboratory All Rights Reserved.

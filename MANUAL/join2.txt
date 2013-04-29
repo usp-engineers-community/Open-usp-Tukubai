@@ -1,6 +1,6 @@
 Tukubaiオンラインコマンドマニュアル
 
-join2(USP Lab(1))
+join2(1)
 
 【名前】
 
@@ -10,7 +10,7 @@ join2 : トランザクションファイルにマスターファイルを連結
 
 Usage   : join2 [-d<string>] [+<string>] key=<key> <master_file> <trans_file>
 Version : Thu Dec 15 13:46:38 JST 2011
-        UTF-8
+          UTF-8
 
 【説明】
 
@@ -140,7 +140,7 @@ $ join2 +@ key=1 master kekka
 0000011 @ @ @ 92 56 83 96 75
 $
 
-【コラム】
+【備考】
 
 masterが0バイトの時は何も連結せずtranそのものを出力する。
 
@@ -153,8 +153,10 @@ masterのフィールドを保証したい時は、例えば次のようなコ�
 $ [ ! -s master ] && echo 0000000 0 > master
 $ join2 key=1 master tran
 
-join0(USP Lab(1))、join1(USP Lab(1))
+【関連項目】
 
-last modified: 2012-04-27 19:42:24
+join0(1)、join1(1)
+
+last modified: 2013-04-15 19:37:42
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012 Universal Shell Programming Laboratory All Rights Reserved.
+Copyright (c) 2012,2013 Universal Shell Programming Laboratory All Rights Reserved.

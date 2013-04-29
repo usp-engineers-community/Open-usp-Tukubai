@@ -39,20 +39,15 @@ Tukubaiオンラインコマンドマニュアル
 0009 20111016 10 M 0.013111
 0010 20111017 72 F 0.482945
 
-フィールド形式ではすべての行のフィールド数が同一である必要がある点に注意が必要
-。ユニケージ開発手法のコマンド実装系であるOpen usp Tukubaiやusp Tukubaiは行ごと
+フィールド形式ではすべての行のフィールド数が同一である必要がある点に注意が必要。
+ユニケージ開発手法のコマンド実装系であるOpen usp Tukubaiやusp Tukubaiは行ごと
 のフィールド数が異なるフィールド形式のファイルは動作を保証しない。
 
 【関連項目】
 
-タグ形式(5)、ネーム形式(5)、マスタファイル(5)、ネームファイル(5)、トランザクシ
-ョンファイル(5)
+タグ形式(5)、ネーム形式(5)、マスタファイル(5)、ネームファイル(5)、
+トランザクションファイル(5)
 
-※ ユニケージはユニバーサル・シェル・プログラミング研究所の登録商標。
-
-※ 2012年7月から始まる教育講座に合わせて、従来の「ユニケージ」または「ユニケージ
-方法論」は「ユニケージ開発手法」へ名称を統一。
-
-last modified: 2012-08-01 16:19:55
+last modified: 2013-04-15 19:26:48
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012 Universal Shell Programming Laboratory All Rights Reserved.
+Copyright (c) 2012,2013 Universal Shell Programming Laboratory All Rights Reserved.

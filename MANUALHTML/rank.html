@@ -6,11 +6,9 @@
   <title>UEC - usp engineers' community - Tukubaiオンラインコマンドマニュアル</title>
   <link rel="stylesheet" href="COMMON/CSS/MAIN.CSS" />
   <link rel="stylesheet" href="COMMON/CSS/MENU.CSS" />
-  <!--[if lte IE 7]>
+  <link rel="stylesheet" href="COMMON/CSS/PRINT.CSS" />
+  <!--[if lte IE 8]>
   <link rel="stylesheet" href="COMMON/CSS/IE67HACK.CSS" />
-  <![endif]-->
-  <!--[if IE 8]>
-  <link rel="stylesheet" href="COMMON/CSS/IE8HACK.CSS" />
   <![endif]-->
   <!--[if IE 7]>
   <link rel="stylesheet" href="COMMON/CSS/IE7HACK.CSS" />
@@ -27,18 +25,25 @@
         <img id="logoimage" src="COMMON/IMG/TUKUBAI_LOGO.JPG" />
       </div>
       <div id="title">
-        <p id="slogan">UEC - UNIXを深く理解し、シェルプログラミングを極めるコミュニティサイト</p>
+        <p id="slogan"></p>
         <ul id="megamenu">
           <li id="tukubai_man"><a href="index.html" class="target">Tukubaiマニュアル</a>
             <ul>
+              <li><a href="calclock.html">calclock(1)</a></li>
               <li><a href="cgi-name.html">cgi-name(1)</a></li>
               <li><a href="check_attr_name.html">check_attr_name(1)</a></li>
               <li><a href="check_need_name.html">check_need_name(1)</a></li>
+              <li><a href="cjoin0.html">cjoin0(1)</a></li>
+              <li><a href="cjoin1.html">cjoin1(1)</a></li>
+              <li><a href="cjoin2.html">cjoin2(1)</a></li>
               <li><a href="comma.html">comma(1)</a></li>
               <li><a href="count.html">count(1)</a></li>
               <li><a href="ctail.html">ctail(1)</a></li>
+              <li><a href="dayslash.html">dayslash(1)</a></li>
               <li><a href="delf.html">delf(1)</a></li>
               <li><a href="divsen.html">divsen(1)</a></li>
+              <li><a href="filehame.html">filehame(1)</a></li>
+              <li><a href="formhame.html">formhame(1)</a></li>
               <li><a href="getfirst.html">getfirst(1)</a></li>
               <li><a href="getlast.html">getlast(1)</a></li>
               <li><a href="gyo.html">gyo(1)</a></li>
@@ -76,9 +81,15 @@
               <li><a href="yobi.html">yobi(1)</a></li>
               <li><a href="ysum.html">ysum(1)</a></li>
               <li><a href="zen.html">zen(1)</a></li>
+              <li class="separator"><hr/></li>
+              <li class="separator"><hr/></li>
+              <li class="separator"><hr/></li>
               <li><a href="tag-format.html">タグ形式(5)</a></li>
               <li><a href="name-format.html">ネーム形式(5)</a></li>
               <li><a href="field-format.html">フィールド形式(5)</a></li>
+              <li><a href="master-file.html">マスタファイル(5)</a></li>
+              <li><a href="name-file.html">ネームファイル(5)</a></li>
+              <li><a href="transaction-file.html" class="target">トランザクションファイル(5)</a></li>
             </ul> 
           </li>
         </ul>
@@ -88,27 +99,26 @@
     <div id="main">
       <h1>Tukubaiオンラインコマンドマニュアル</h1>
 
-<!-- CONTENTS_CONTENTS -->
-<h2>rank(USP Lab(1))</h2>
+      <h2>rank(1)</h2>
 
-<h3>【名前】</h3>
+      <h3>【名前】</h3>
 
-<p>rank : 行に階数を追加</p>
+      <p>rank : 行に階数を追加</p>
 
-<h3>【書式】</h3>
+      <h3>【書式】</h3>
 
-<pre class="list">Usage	: rank ref=&lt;ref&gt; key=&lt;key&gt; &lt;file&gt;
+      <pre class="list">Usage	: rank ref=&lt;ref&gt; key=&lt;key&gt; &lt;file&gt;
 Version	: Thu Dec 15 13:46:38 JST 2011</pre>
 
-<h3>【説明】</h3>
+      <h3>【説明】</h3>
 
-<p>fileの各行に階数を追加する。ref=&lt;ref&gt;で参照キーフィールドを指定した場合、参照キーフィールドが変化した段階で階数を1に初期化する。key=&lt;key&gt;で値フィールドを指定した場合、値が同じ間は同じ階数を追加する。</p>
+      <p>fileの各行に階数を追加する。ref=&lt;ref&gt;で参照キーフィールドを指定した場合、参照キーフィールドが変化した段階で階数を1に初期化する。key=&lt;key&gt;で値フィールドを指定した場合、値が同じ間は同じ階数を追加する。</p>
 
-<h3>【例1】基本パターン</h3>
+      <h3>【例1】基本パターン</h3>
 
-<p>引数を何も指定しないときは、単純に行番号を追加する。</p>
+      <p>引数を何も指定しないときは、単純に行番号を追加する。</p>
 
-<pre class="cmd">$ cat data
+      <pre class="cmd">$ cat data
 JPN 杉山______ 26
 JPN 崎村______ 27
 JPN 梶川______ 27
@@ -119,7 +129,7 @@ USA SAM_______ 29
 USA TOM_______ 35
 $ </pre>
 
-<pre class="cmd">$ rank data
+      <pre class="cmd">$ rank data
 1 JPN 杉山______ 26
 2 JPN 崎村______ 27
 3 JPN 梶川______ 27
@@ -130,11 +140,11 @@ $ </pre>
 8 USA TOM_______ 35
 $ </pre>
 
-<h3>【例2】ref指定</h3>
+      <h3>【例2】ref指定</h3>
 
-<p>ref=&lt;ref&gt;で参照フィールドを指定したときは、参照フィールドが変化した行で、階数を1に初期化する。ref=1/2 ref=3@2/5 などの連続・不連続のフィールドを指定することも可能。</p>
+      <p>ref=&lt;ref&gt;で参照フィールドを指定したときは、参照フィールドが変化した行で、階数を1に初期化する。ref=1/2 ref=3@2/5 などの連続・不連続のフィールドを指定することも可能。</p>
 
-<pre class="cmd">$ rank ref=1 data
+      <pre class="cmd">$ rank ref=1 data
 1 JPN 杉山______ 26
 2 JPN 崎村______ 27
 3 JPN 梶川______ 27
@@ -145,11 +155,11 @@ $ </pre>
 4 USA TOM_______ 35
 $ </pre>
 
-<h3>【例3】key指定</h3>
+      <h3>【例3】key指定</h3>
 
-<p>key=&lt;key&gt;で値フィールドを1つだけ指定できる。この場合、値が同じフィールドを持つ行には同じ階数が追加される。次の行には、はじめから数えた階数が追加される。</p>
+      <p>key=&lt;key&gt;で値フィールドを1つだけ指定できる。この場合、値が同じフィールドを持つ行には同じ階数が追加される。次の行には、はじめから数えた階数が追加される。</p>
 
-<pre class="cmd">$ rank key=3 data
+      <pre class="cmd">$ rank key=3 data
 1 JPN 杉山______ 26
 2 JPN 崎村______ 27
 2 JPN 梶川______ 27
@@ -160,11 +170,11 @@ $ </pre>
 8 USA TOM_______ 35
 $ </pre>
 
-<h3>【例4】refとkey指定</h3>
+      <h3>【例4】refとkey指定</h3>
 
-<p>参照キーが変化するところで、行番号が初期化され、かつ同じ値フィールドを持つ行には同じ階数が追加される。</p>
+      <p>参照キーが変化するところで、行番号が初期化され、かつ同じ値フィールドを持つ行には同じ階数が追加される。</p>
 
-<pre class="cmd">$ rank ref=1 key=3 data
+      <pre class="cmd">$ rank ref=1 key=3 data
 1 JPN 杉山______ 26
 2 JPN 崎村______ 27
 2 JPN 梶川______ 27
@@ -175,32 +185,21 @@ $ </pre>
 4 USA TOM_______ 35
 $ </pre>
 
-<h3>【注意】</h3>
+      <h3>【注意】</h3>
 
-<p>入力ファイルが-あるいは指定がない場合には、標準入力のデータが使用される。</p>
+      <p>入力ファイルが-あるいは指定がない場合には、標準入力のデータが使用される。</p>
 
-<p>同じ階数を追加するかどうかは、値が文字列として同じかどうかで判断しており、数字としては判定していない。</p>
+      <p>同じ階数を追加するかどうかは、値が文字列として同じかどうかで判断しており、数字としては判定していない。</p>
 
-<h3>【関連項目】</h3>
+      <h3>【関連項目】</h3>
 
-<p><a href="count.html">count(USP Lab(1))</a>、<a href="gyo.html">gyo(USP Lab(1))</a>、<a href="juni.html">juni(USP Lab(1))</a>、<a href="retu.html">retu(USP Lab(1))</a></p>
+      <p><a href="count.html">count(1)</a>、<a href="gyo.html">gyo(1)</a>、<a href="juni.html">juni(1)</a>、<a href="retu.html">retu(1)</a></p>
 
-<div id="pagenavigator">
-  <ul>
-    <li><a href="index.html">&and;</a></li>
-  </ul>
-</div>
-<!-- CONTENTS_CONTENTS -->
     </div>
 
-    <div id="lastmodified">
-     last modified: 2012-04-12 19:06:26
-    </div>
+    <div id="lastmodified">last modified: 2012-19-01 16:08:01</div>
 
-    <div id="footer">
-      Contact us: uecinfo@usp-lab.com<br>
-      Copyright (c) 2012 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.
-    </div>
+    <div id="footer">Contact us: uecinfo@usp-lab.com<br/>Copyright (c) 2012,2013 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
   </div>
 </body>
 </html>

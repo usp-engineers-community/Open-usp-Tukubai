@@ -6,11 +6,9 @@
   <title>UEC - usp engineers' community - Tukubaiオンラインコマンドマニュアル</title>
   <link rel="stylesheet" href="COMMON/CSS/MAIN.CSS" />
   <link rel="stylesheet" href="COMMON/CSS/MENU.CSS" />
-  <!--[if lte IE 7]>
+  <link rel="stylesheet" href="COMMON/CSS/PRINT.CSS" />
+  <!--[if lte IE 8]>
   <link rel="stylesheet" href="COMMON/CSS/IE67HACK.CSS" />
-  <![endif]-->
-  <!--[if IE 8]>
-  <link rel="stylesheet" href="COMMON/CSS/IE8HACK.CSS" />
   <![endif]-->
   <!--[if IE 7]>
   <link rel="stylesheet" href="COMMON/CSS/IE7HACK.CSS" />
@@ -27,18 +25,25 @@
         <img id="logoimage" src="COMMON/IMG/TUKUBAI_LOGO.JPG" />
       </div>
       <div id="title">
-        <p id="slogan">UEC - UNIXを深く理解し、シェルプログラミングを極めるコミュニティサイト</p>
+        <p id="slogan"></p>
         <ul id="megamenu">
           <li id="tukubai_man"><a href="index.html" class="target">Tukubaiマニュアル</a>
             <ul>
+              <li><a href="calclock.html">calclock(1)</a></li>
               <li><a href="cgi-name.html">cgi-name(1)</a></li>
               <li><a href="check_attr_name.html">check_attr_name(1)</a></li>
               <li><a href="check_need_name.html">check_need_name(1)</a></li>
+              <li><a href="cjoin0.html">cjoin0(1)</a></li>
+              <li><a href="cjoin1.html">cjoin1(1)</a></li>
+              <li><a href="cjoin2.html">cjoin2(1)</a></li>
               <li><a href="comma.html">comma(1)</a></li>
               <li><a href="count.html">count(1)</a></li>
               <li><a href="ctail.html">ctail(1)</a></li>
+              <li><a href="dayslash.html">dayslash(1)</a></li>
               <li><a href="delf.html">delf(1)</a></li>
               <li><a href="divsen.html">divsen(1)</a></li>
+              <li><a href="filehame.html">filehame(1)</a></li>
+              <li><a href="formhame.html">formhame(1)</a></li>
               <li><a href="getfirst.html">getfirst(1)</a></li>
               <li><a href="getlast.html">getlast(1)</a></li>
               <li><a href="gyo.html">gyo(1)</a></li>
@@ -76,9 +81,15 @@
               <li><a href="yobi.html">yobi(1)</a></li>
               <li><a href="ysum.html">ysum(1)</a></li>
               <li><a href="zen.html">zen(1)</a></li>
+              <li class="separator"><hr/></li>
+              <li class="separator"><hr/></li>
+              <li class="separator"><hr/></li>
               <li><a href="tag-format.html">タグ形式(5)</a></li>
               <li><a href="name-format.html">ネーム形式(5)</a></li>
               <li><a href="field-format.html">フィールド形式(5)</a></li>
+              <li><a href="master-file.html">マスタファイル(5)</a></li>
+              <li><a href="name-file.html">ネームファイル(5)</a></li>
+              <li><a href="transaction-file.html" class="target">トランザクションファイル(5)</a></li>
             </ul> 
           </li>
         </ul>
@@ -88,50 +99,49 @@
     <div id="main">
       <h1>Tukubaiオンラインコマンドマニュアル</h1>
 
-<!-- CONTENTS_CONTENTS -->
-<h2>loopj(USP Lab(1))</h2>
+      <h2>loopj(1)</h2>
 
-<h3>【名前】</h3>
+      <h3>【名前】</h3>
 
-<p>loopj : 複数のテキストファイル全行を連結</p>
+      <p>loopj : 複数のテキストファイル全行を連結</p>
 
-<h3>【書式】</h3>
+      <h3>【書式】</h3>
 
-<pre class="list">Usage	: loopj [-d&lt;string&gt;] num=&lt;num&gt; &lt;file1&gt; &lt;file2&gt; ..
+      <pre class="list">Usage	: loopj [-d&lt;string&gt;] num=&lt;num&gt; &lt;file1&gt; &lt;file2&gt; ..
 Version	: Thu Dec 15 13:46:38 JST 2011</pre>
 
-<h3>【説明】</h3>
+      <h3>【説明】</h3>
 
-<p>引数で指定した複数のテキストファイルを、第1フィールドからnum=&lt;n&gt;で指定したフィールドまでをキーにしてすべて連結する(loopj=loop of join)。各ファイルの中でキーフィールドが一致しない行についてはそれぞれ0でフィールドを補完する。</p>
+      <p>引数で指定した複数のテキストファイルを、第1フィールドからnum=&lt;n&gt;で指定したフィールドまでをキーにしてすべて連結する(loopj=loop of join)。各ファイルの中でキーフィールドが一致しない行についてはそれぞれ0でフィールドを補完する。</p>
 
-<p>連結する各ファイルは0バイトより大きく、キーとなるフィールドは必ずユニークかつ昇順で整列されていることが条件となる。フィールド数がキーフィールド数に満たない場合エラーとなる。また、&lt;file&gt;が0バイトファイルの場合にもエラーとなる。</p>
+      <p>連結する各ファイルは0バイトより大きく、キーとなるフィールドは必ずユニークかつ昇順で整列されていることが条件となる。フィールド数がキーフィールド数に満たない場合エラーとなる。また、&lt;file&gt;が0バイトファイルの場合にもエラーとなる。</p>
 
-<h3>【例1】基本的な使い方</h3>
+      <h3>【例1】基本的な使い方</h3>
 
-<pre class="cmd">$ cat file1
+      <pre class="cmd">$ cat file1
 0000003 杉山______ A
 0000005 崎村______ B
 0000007 梶川______ C
 0000010 柳本______ D
 $ </pre>
 
-<pre class="cmd">$ cat file2
+      <pre class="cmd">$ cat file2
 0000000 50
 0000003 26
 0000004 40
 0000009 68
 $ </pre>
 
-<pre class="cmd">$ cat file3
+      <pre class="cmd">$ cat file3
 0000000 F
 0000003 F
 0000004 M
 0000005 F
 $ </pre>
 
-<p>3つのファイルを連結するには次のようにコマンドを実行する。</p>
+      <p>3つのファイルを連結するには次のようにコマンドを実行する。</p>
 
-<pre class="cmd">$ loopj num=1 file1 file2 file3
+      <pre class="cmd">$ loopj num=1 file1 file2 file3
 0000000 0 0 50 F
 0000003 杉山______ A 26 F
 0000004 0 0 40 M
@@ -141,15 +151,15 @@ $ </pre>
 0000010 柳本______ D 0 0
 $ </pre>
 
-<p>ファイル名を-にすることで、標準入力ファイルを連結することができる。</p>
+      <p>ファイル名を-にすることで、標準入力ファイルを連結することができる。</p>
 
-<pre class="cmd">$ cat file2 | loopj num=1 file1 - file3</pre>
+      <pre class="cmd">$ cat file2 | loopj num=1 file1 - file3</pre>
 
-<h3>【例2】-d オプション</h3>
+      <h3>【例2】-d オプション</h3>
 
-<p>-dオプションを使用することで補完する文字列を指定することができる。</p>
+      <p>-dオプションを使用することで補完する文字列を指定することができる。</p>
 
-<pre class="cmd">$ loopj -d@@@ num=1 file1 file2 file3
+      <pre class="cmd">$ loopj -d@@@ num=1 file1 file2 file3
 0000000 @@@ @@@ 50 F
 0000003 杉山______ A 26 F
 0000004 @@@ @@@ 40 M
@@ -159,80 +169,69 @@ $ </pre>
 0000010 柳本______ D @@@ @@@
 $ </pre>
 
-<h3>【例3】キーのみを持つファイルの連結</h3>
+      <h3>【例3】キーのみを持つファイルの連結</h3>
 
-<p>キーのみを持つファイルを連結した場合には値のみ補完が実施される。</p>
+      <p>キーのみを持つファイルを連結した場合には値のみ補完が実施される。</p>
 
-<pre class="cmd">$ cat file1
+      <pre class="cmd">$ cat file1
 0001 1
 0002 2
 $ </pre>
 
-<pre class="cmd">$ cat file2
+      <pre class="cmd">$ cat file2
 0001
 0002
 0003
 0004
 $ </pre>
 
-<pre class="cmd">$ loopj num=1 file1 file2
+      <pre class="cmd">$ loopj num=1 file1 file2
 0001 1
 0002 2
 0003 0
 0004 0
 $ </pre>
 
-<pre class="cmd">$ loopj num=1 file2 file2
+      <pre class="cmd">$ loopj num=1 file2 file2
 0001
 0002
 0003
 0004
 $ </pre>
 
-<h3>【注意】</h3>
+      <h3>【注意】</h3>
 
-<p>連結するファイルが0バイトの時はエラーになる。</p>
+      <p>連結するファイルが0バイトの時はエラーになる。</p>
 
-<pre class="cmd">$ : &gt; data1
+      <pre class="cmd">$ : &gt; data1
 $ cat data2
 a 1
 b 2
 c 3
 $ </pre>
 
-<pre class="cmd">$ loopj num=1 data1 data2
-Error[loopj] : 0バイトファイル[1]は連結できません。
+      <pre class="cmd">$ loopj num=1 data1 data2
+Errorloopj] : 0バイトファイル[1]は連結できません。
 $ </pre>
 
-<p>上記の例でdata1が、例えば3フィールドあることを保証するには、次のようにコマンドを実行すれば良い。</p>
+      <p>上記の例でdata1が、例えば3フィールドあることを保証するには、次のようにコマンドを実行すれば良い。</p>
 
-<pre class="cmd">$ [ ! -s data1 ] &amp;&amp; echo x 0 0 &gt; data1 
-$ loopj num=1 data1 data2 | awk '$1!~/x/
+      <pre class="cmd">$ [ ! -s data1 ] &amp;&amp; echo x 0 0 &gt; data1
+$ loopj num=1 data1 data2 |  awk '$1!~/x/
 a 0 0 1
 b 0 0 2
 c 0 0 3
 $ </pre>
 
-<h3>【関連項目】</h3>
+      <h3>【関連項目】</h3>
 
-<p><a href="loopx.html">loopx(USP Lab(1))</a></p>
+      <p><a href="join0.html">join0(1)</a>、<a href="join1.html">join1(1)</a>、<a href="join2.html">join2(1)</a>、<a href="loopx.html">loopx(1)</a>、<a href="up3.html">up3(1)</a>、<a href="master-file.html">マスタファイル(5)</a>、<a href="transaction-file.html">トランザクションファイル(5)</a></p>
 
-<div id="pagenavigator">
-  <ul>
-    <li><a href="index.html">&and;</a></li>
-  </ul>
-</div>
-<!-- CONTENTS_CONTENTS -->
     </div>
 
-    <div id="lastmodified">
-     last modified: 2012-04-12 20:28:39
-    </div>
+    <div id="lastmodified">last modified: 2012-19-01 16:08:01</div>
 
-    <div id="footer">
-      Contact us: uecinfo@usp-lab.com<br>
-      Copyright (c) 2012 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.
-    </div>
+    <div id="footer">Contact us: uecinfo@usp-lab.com<br/>Copyright (c) 2012,2013 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
   </div>
 </body>
 </html>

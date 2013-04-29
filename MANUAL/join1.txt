@@ -1,6 +1,6 @@
 Tukubaiオンラインコマンドマニュアル
 
-join1(USP Lab(1))
+join1(1)
 
 【名前】
 
@@ -162,8 +162,8 @@ $
 
 【関連項目】
 
-join0(USP Lab(1))、join2(USP Lab(1))
+join0(1)、join2(1)
 
-last modified: 2012-04-23 16:44:31
+last modified: 2013-04-15 19:37:14
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012 Universal Shell Programming Laboratory All Rights Reserved.
+Copyright (c) 2012,2013 Universal Shell Programming Laboratory All Rights Reserved.

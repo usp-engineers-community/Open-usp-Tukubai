@@ -1,6 +1,6 @@
 Tukubaiオンラインコマンドマニュアル
 
-sm4(USP Lab(1))
+sm4(1)
 
 【名前】
 
@@ -21,8 +21,8 @@ s1からs2までのフィールドまでのフィールドを集計フィール�
 終行に挿入する。
 
 集計行におけるサブキーのフィールドは@で補完される。小計および中計を段階的に付与
-するためにsm4を複数回使用する場合には、サブキーに@が含まれる行は集計から除外さ
-れる。キーまたは集計フィールドいずれの範囲にも指定していないフィールドについて
+するためにsm4(1)を複数回使用する場合には、サブキーに@が含まれる行は集計から除外
+される。キーまたは集計フィールドいずれの範囲にも指定していないフィールドについて
 は出力は実行されない。
 
 【例1】
@@ -182,9 +182,8 @@ $
 
 【関連項目】
 
-kasan(USP Lab(1))、plus(USP Lab(1))、ratio(USP Lab(1))、sm2(USP Lab(1))、sm5
-(USP Lab(1))、ysum(USP Lab(1))
+kasan(1)、plus(1)、ratio(1)、sm2(1)、sm5(1)、ysum(1)
 
-last modified: 2012-04-12 20:25:55
+last modified: 2013-04-15 20:14:26
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012 Universal Shell Programming Laboratory All Rights Reserved.
+Copyright (c) 2012,2013 Universal Shell Programming Laboratory All Rights Reserved.

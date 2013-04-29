@@ -1,12 +1,12 @@
 window.onload = function() 
 {
   adjustMegamenu({
-    'Info':                      {cols: 1, width: 20},
-    'UECジャーナル':             {cols: 1, width: 25},
-    'Tukubai':                   {cols: 1, width: 27},
-    'Tukubaiマニュアル': {cols: 4, width: 13},
+    'Info':                      {cols: 1, width: 26},
+    'UECジャーナル':             {cols: 1, width: 27},
+    'Tukubai':                   {cols: 1, width: 38},
+    'Tukubaiマニュアル': {cols: 3, width: 16},
     'コマンドTips':              {cols: 1, width: 23},
-    'シェルプログラミングTips':  {cols: 1, width: 19}
+    'シェルプログラミングTips':  {cols: 1, width: 23}
   });
   setTimeout(adjustSubmenuPosition, 400/* wait for animation */);
 

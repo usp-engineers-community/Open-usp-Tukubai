@@ -6,11 +6,9 @@
   <title>UEC - usp engineers' community - Tukubaiオンラインコマンドマニュアル</title>
   <link rel="stylesheet" href="COMMON/CSS/MAIN.CSS" />
   <link rel="stylesheet" href="COMMON/CSS/MENU.CSS" />
-  <!--[if lte IE 7]>
+  <link rel="stylesheet" href="COMMON/CSS/PRINT.CSS" />
+  <!--[if lte IE 8]>
   <link rel="stylesheet" href="COMMON/CSS/IE67HACK.CSS" />
-  <![endif]-->
-  <!--[if IE 8]>
-  <link rel="stylesheet" href="COMMON/CSS/IE8HACK.CSS" />
   <![endif]-->
   <!--[if IE 7]>
   <link rel="stylesheet" href="COMMON/CSS/IE7HACK.CSS" />
@@ -27,18 +25,25 @@
         <img id="logoimage" src="COMMON/IMG/TUKUBAI_LOGO.JPG" />
       </div>
       <div id="title">
-        <p id="slogan">UEC - UNIXを深く理解し、シェルプログラミングを極めるコミュニティサイト</p>
+        <p id="slogan"></p>
         <ul id="megamenu">
           <li id="tukubai_man"><a href="index.html" class="target">Tukubaiマニュアル</a>
             <ul>
+              <li><a href="calclock.html">calclock(1)</a></li>
               <li><a href="cgi-name.html">cgi-name(1)</a></li>
               <li><a href="check_attr_name.html">check_attr_name(1)</a></li>
               <li><a href="check_need_name.html">check_need_name(1)</a></li>
+              <li><a href="cjoin0.html">cjoin0(1)</a></li>
+              <li><a href="cjoin1.html">cjoin1(1)</a></li>
+              <li><a href="cjoin2.html">cjoin2(1)</a></li>
               <li><a href="comma.html">comma(1)</a></li>
               <li><a href="count.html">count(1)</a></li>
               <li><a href="ctail.html">ctail(1)</a></li>
+              <li><a href="dayslash.html">dayslash(1)</a></li>
               <li><a href="delf.html">delf(1)</a></li>
               <li><a href="divsen.html">divsen(1)</a></li>
+              <li><a href="filehame.html">filehame(1)</a></li>
+              <li><a href="formhame.html">formhame(1)</a></li>
               <li><a href="getfirst.html">getfirst(1)</a></li>
               <li><a href="getlast.html">getlast(1)</a></li>
               <li><a href="gyo.html">gyo(1)</a></li>
@@ -76,9 +81,15 @@
               <li><a href="yobi.html">yobi(1)</a></li>
               <li><a href="ysum.html">ysum(1)</a></li>
               <li><a href="zen.html">zen(1)</a></li>
+              <li class="separator"><hr/></li>
+              <li class="separator"><hr/></li>
+              <li class="separator"><hr/></li>
               <li><a href="tag-format.html">タグ形式(5)</a></li>
               <li><a href="name-format.html">ネーム形式(5)</a></li>
               <li><a href="field-format.html">フィールド形式(5)</a></li>
+              <li><a href="master-file.html">マスタファイル(5)</a></li>
+              <li><a href="name-file.html">ネームファイル(5)</a></li>
+              <li><a href="transaction-file.html" class="target">トランザクションファイル(5)</a></li>
             </ul> 
           </li>
         </ul>
@@ -88,40 +99,43 @@
     <div id="main">
       <h1>Tukubaiオンラインコマンドマニュアル</h1>
 
-<!-- CONTENTS_CONTENTS -->
-<h2>join1(USP Lab(1))</h2>
+      <h2>join1(1)</h2>
 
-<h3>【名前】</h3>
+      <h3>【名前】</h3>
 
-<p>join1 : トランザクションファイルにマスターファイルを連結</p>
+      <p>join1 : <a href="transaction-file.html">トランザクションファイル</a>に<a href="master-file.html">マスタファイル</a>を連結(一致した行のみ連結)</p>
 
-<h3>【書式】</h3>
+      <h3>【書式】</h3>
 
-<pre class="list">Usage	: join1 [+ng[&lt;fd&gt;]] key=&lt;n&gt; &lt;master&gt; &lt;tran&gt;
+      <pre class="list">Usage	: join1 [+ng[&lt;fd&gt;]] key=&lt;n&gt; &lt;<a href="master-file.html">master</a>&gt; &lt;<a href="transaction-file.html">tran</a>&gt;
 Version	: Thu Dec 15 13:46:38 JST 2011</pre>
 
-<h3>【説明】</h3>
+      <h3>【説明】</h3>
 
-<p>テキストファイルtranのkey=&lt;n&gt;で指定したキーフィールドがマスターファイルmasterの第1フィールド(キーフィールド)と一致した行のみtranから抽出して、masterの情報を連結して出力する。連結はtranのキーフィールドの直後にmasterの内容を挿入連結する形で実施される。</p>
+      <p><a href="transaction-file.html">tran</a>のkey=&lt;n&gt;で指定したキーフィールドが<a href="master-file.html">master</a>の第1フィールド(キーフィールド)と一致した行のみ<a href="transaction-file.html">tran</a>から抽出して、<a href="master-file.html">master</a>の情報を連結して出力する。連結は<a href="transaction-file.html">tran</a>のキーフィールドの直後に<a href="master-file.html">master</a>の内容を挿入連結する形で実施される。</p>
 
-<p>masterの第1フィールドおよびtranの第&lt;n&gt;フィールドは必ず昇順で整列されていることが条件となる。また、masterのキーフィールド(第1フィールド)はユニークでなければならない。(第1フィールドが同じ値をもつ行が複数あってはならない)。tranについてはこの制約はなく、キーフィールド(第&lt;n&gt;フィールド)が同じ値を行はいくつあっても構わない。</p>
+      <p><a href="master-file.html">master</a>に-を指定すると標準入力を<a href="master-file.html">マスタファイル</a>とする。<a href="transaction-file.html">tran</a>が無指定かまたは-が指定されている場合には、標準入力が<a href="transaction-file.html">トランザクションファイル</a>となる。</p>
 
-<p>キーに選択するフィールドは複数指定することも可能。</p>
+      <p><a href="master-file.html">master</a>の第1フィールドおよび<a href="transaction-file.html">tran</a>の第&lt;n&gt;フィールドは必ず昇順で整列されていることが条件となる。また、<a href="master-file.html">master</a>のキーフィールド(第1フィールド)はユニークでなければならない。(第1フィールドが同じ値をもつ行が複数あってはならない)。<a href="transaction-file.html">tran</a>についてはこの制約はなく、キーフィールド(第&lt;n&gt;フィールド)が同じ値を行はいくつあっても構わない。</p>
 
-<p>+ng&lt;fd&gt;オプションを使うことで、一致した行を標準出力ファイルへ、一致しなかった行をファイルデスクリプタ&lt;fd&gt;のファイルへ出力することが可能。&lt;fd&gt;を省略した場合は標準エラー出力へ出力する。</p>
+      <p><a href="master-file.html">master</a>の第1フィールドおよび<a href="transaction-file.html">tran</a>の第&lt;n&gt;フィールドは必ず昇順で整列されていることが条件となる。また、<a href="master-file.html">master</a>のキーフィールド(第1フィールド)はユニークでなければならない。(第1フィールドが同じ値をもつ行が複数あってはならない)。<a href="transaction-file.html">tran</a>についてはこの制約はなく、キーフィールド(第&lt;n&gt;フィールド)が同じ値を行はいくつあっても構わない。</p>
 
-<h3>【例1】基本パターン</h3>
+      <p>+ng&lt;fd&gt;オプションを使うことで、一致した行を標準出力ファイルへ、一致しなかった行をファイルデスクリプタ&lt;fd&gt;のファイルへ出力することが可能。&lt;fd&gt;を省略した場合は標準エラー出力へ出力する。</p>
 
-<p>経費ファイルkeihiからmasterに登録されている4人のデータを抽出し、マスターの内容を連結する。</p>
+      <p><a href="transaction-file.html">tran</a>でキーが整列されていないものはjoin1(1)では処理できない。その場合は一旦<a href="transaction-file.html">tran</a>を整列してからjoin1(1)で処理するか、join1(1)のかわりに<a href="cjoin1.html">cjoin1(1)</a>を使って処理すればよい。</p>
 
-<pre class="cmd">$ cat master
+      <h3>【例1】基本パターン</h3>
+
+      <p>経費ファイルkeihiから<a href="master-file.html">master</a>に登録されている4人のデータを抽出し、<a href="master-file.html">マスタファイル</a>の内容を連結する。</p>
+
+      <pre class="cmd">$ cat <a href="master-file.html">master</a>
 0000003 杉山______ 26 F
 0000005 崎村______ 50 F
 0000007 梶川______ 42 F
 0000010 柳本______ 50 F
 $ </pre>
 
-<pre class="cmd">$ cat keihi
+      <pre class="cmd">$ cat keihi
 20070401 0000001 300
 20070403 0000001 500
 20070404 0000001 700
@@ -135,9 +149,9 @@ $ </pre>
 20070406 0000007 610
 $ </pre>
 
-<p>keihiの第2フィールドをキーにしてmasterを結合する。masterに存在するキーをもつ行にしか連結を行わない。存在しない行は捨てられる。keihiは同じキーを持つ行が複数行あっても構わない。</p>
+      <p>keihiの第2フィールドをキーにして<a href="master-file.html">master</a>を結合する。<a href="master-file.html">master</a>に存在するキーをもつ行にしか連結を行わない。存在しない行は捨てられる。keihiは同じキーを持つ行が複数行あっても構わない。</p>
 
-<pre class="cmd">$ join1 key=2 master keihi
+      <pre class="cmd">$ join1 key=2 <a href="master-file.html">master</a> keihi
 20070401 0000003 杉山______ 26 F 200
 20070402 0000003 杉山______ 26 F 400
 20070405 0000003 杉山______ 26 F 600
@@ -148,18 +162,18 @@ $ </pre>
 20070406 0000007 梶川______ 42 F 610
 $ </pre>
 
-<h3>【例2】</h3>
+      <h3>【例2】</h3>
 
-<p>左から順に連続した複数のフィールドをキーに指定する場合は次のように実行する。kekkaファイルの第2フィールド、第2フィールドをキーにして(第2、第3フィールド順に整列されている)masterファイル(第1、第2フィールドの順に整列されている)に存在する行のみ抽出して、masterの内容を連結して出力している。</p>
+      <p>左から順に連続した複数のフィールドをキーに指定する場合は次のように実行する。kekkaファイルの第2フィールド、第2フィールドをキーにして(第2、第3フィールド順に整列されている)<a href="master-file.html">master</a>ファイル(第1、第2フィールドの順に整列されている)に存在する行のみ抽出して、<a href="master-file.html">master</a>の内容を連結して出力している。</p>
 
-<pre class="cmd">$ cat master
+      <pre class="cmd">$ cat <a href="master-file.html">master</a>
 A 0000003 杉山______ 26 F
 A 0000005 崎村______ 50 F
 B 0000007 梶川______ 42 F
 C 0000010 柳本______ 50 F
 $ </pre>
 
-<pre class="cmd">$ cat kekka
+      <pre class="cmd">$ cat kekka
 1 A 0000000 91 59 20 76 54
 2 A 0000001 46 39 8  5  21
 3 A 0000003 30 50 71 36 30
@@ -172,29 +186,29 @@ $ </pre>
 10 C 0000011 92 56 83 96 75
 $ </pre>
 
-<pre class="cmd">$ join1 key=2/3 master kekka
+      <pre class="cmd">$ join1 key=2/3 <a href="master-file.html">master</a> kekka
 3 A 0000003 杉山______ 26 F 30 50 71 36 30
 5 A 0000005 崎村______ 50 F 82 79 16 21 80
 6 B 0000007 梶川______ 42 F 50 2  33 15 62
 9 C 0000010 柳本______ 50 F 95 60 35 93 76
 $ </pre>
 
-<p>左から順に連続していない複数のフィールドをキーに指定することも可能。この場合は複数のキーフィールドを@でつなげて指定する。なお次の例の場合には、tranは第4、第2フィールドの順に整列され、masterは第3、第1フィールドの順に整列されていることが必要となる。</p>
+      <p>左から順に連続していない複数のフィールドをキーに指定することも可能。この場合は複数のキーフィールドを@でつなげて指定する。なお次の例の場合には、<a href="transaction-file.html">tran</a>は第4、第2フィールドの順に整列され、<a href="master-file.html">master</a>は第3、第1フィールドの順に整列されていることが必要となる。</p>
 
-<pre class="cmd">$ join1 key=4@2 master tran</pre>
+      <pre class="cmd">$ join1 key=4@2 <a href="master-file.html">master</a> <a href="transaction-file.html">tran</a></pre>
 
-<h3>【例3】"+ng" オプション</h3>
+      <h3>【例3】"+ng" オプション</h3>
 
-<p>masterとキーに一致しない行を抽出することも可能。キーに一致する行は標準出力に、一致しない行は標準エラー出力に出力される。この場合、一致する行はマスターファイルと連結されるが、一致しない行はマスターに存在しないため連結されずそのまま出力されることになる。</p>
+      <p><a href="master-file.html">master</a>とキーに一致しない行を抽出することも可能。キーに一致する行は標準出力に、一致しない行は標準エラー出力に出力される。この場合、一致する行は<a href="master-file.html">マスタファイル</a>と連結されるが、一致しない行は<a href="master-file.html">マスタファイル</a>に存在しないため連結されずそのまま出力されることになる。</p>
 
-<pre class="cmd">$ cat master
+      <pre class="cmd">$ cat <a href="master-file.html">master</a>
 0000003 杉山______ 26 F
 0000005 崎村______ 50 F
 0000007 梶川______ 42 F
 0000010 柳本______ 50 F
 $ </pre>
 
-<pre class="cmd">$ cat kekka
+      <pre class="cmd">$ cat kekka
 0000000 91 59 20 76 54
 0000001 46 39 8  5  21
 0000003 30 50 71 36 30
@@ -207,18 +221,18 @@ $ </pre>
 0000011 92 56 83 96 75
 $ </pre>
 
-<p>成績ファイルkekkaからmasterに登録されている4名のデータとその他のデータはそれぞれ次のように抽出できる。</p>
+      <p>成績ファイルkekkaから<a href="master-file.html">master</a>に登録されている4名のデータとその他のデータはそれぞれ次のように抽出できる。</p>
 
-<pre class="cmd">$ join1 +ng key=1 master kekka &gt; ok-data 2&gt; ng-data</pre>
+      <pre class="cmd">$ join1 +ng key=1 <a href="master-file.html">master</a> kekka &gt; ok-data 2&gt; ng-data</pre>
 
-<pre class="cmd">$ cat ok-data		←　一致したデータ
+      <pre class="cmd">$ cat ok-data		←　一致したデータ
 0000003 杉山______ 26 F 30 50 71 36 30
 0000005 崎村______ 50 F 82 79 16 21 80
 0000007 梶川______ 42 F 50 2  33 15 62
 0000010 柳本______ 50 F 95 60 35 93 76
 $ </pre>
 
-<pre class="cmd">$ cat ng-data		←　一致しなかったデータ
+      <pre class="cmd">$ cat ng-data		←　一致しなかったデータ
 0000000 91 59 20 76 54
 0000001 46 39 8  5  21
 0000004 58 71 20 10 6
@@ -227,26 +241,15 @@ $ </pre>
 0000011 92 56 83 96 75
 $ </pre>
 
-<h3>【関連項目】</h3>
+      <h3>【関連項目】</h3>
 
-<p><a href="join0.html">join0(USP Lab(1))</a>、<a href="join2.html">join2(USP Lab(1))</a></p>
+      <p><a href="cjoin0.html">cjoin0(1)</a>、<a href="cjoin1.html">cjoin1(1)</a>、<a href="cjoin2.html">cjoin2(1)</a>、<a href="join0.html">join0(1)</a>、<a href="join2.html">join2(1)</a>、<a href="loopj.html">loopj(1)</a>、<a href="loopx.html">loopx(1)</a>、<a href="up3.html">up3(1)</a>、<a href="master-file.html">マスタファイル(5)</a>、<a href="transaction-file.html">トランザクションファイル(5)</a></p>
 
-<div id="pagenavigator">
-  <ul>
-    <li><a href="index.html">&and;</a></li>
-  </ul>
-</div>
-<!-- CONTENTS_CONTENTS -->
     </div>
 
-    <div id="lastmodified">
-     last modified: 2012-04-23 16:44:31
-    </div>
+    <div id="lastmodified">last modified: 2012-35-02 11:08:02</div>
 
-    <div id="footer">
-      Contact us: uecinfo@usp-lab.com<br>
-      Copyright (c) 2012 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.
-    </div>
+    <div id="footer">Contact us: uecinfo@usp-lab.com<br/>Copyright (c) 2012,2013 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
   </div>
 </body>
 </html>
