@@ -170,6 +170,7 @@ if __name__ == '__main__':
 			print r.group(1),
 			del_name(name, r.group(1))
 			d = r.group(2)
+			d = re.sub(r'\+', ' ', d)
 			d = re.sub(r'%0D%0A', r'\\n', d)
 			d = re.sub(r'%([0-9A-F]{2})', lambda x: chr(int(x.group(1), 16)), d)
 			d = re.sub(r' ', blank, d)
