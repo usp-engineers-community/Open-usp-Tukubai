@@ -35,7 +35,7 @@ THE SOFTWARE.
 showUsage :: IO ()
 showUsage = do hPutStr stderr
 		("Usage    : delf <f1> <f2> ... <file>\n" ++ 
-		"Sat Mar 23 22:55:39 JST 2013\n" ++
+		"Sun May 26 21:14:17 JST 2013\n" ++
 		"Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
 
 main :: IO ()
