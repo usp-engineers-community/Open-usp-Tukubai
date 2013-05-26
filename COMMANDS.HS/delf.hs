@@ -1,11 +1,7 @@
-import qualified Data.ByteString.Lazy.Char8 as BS
-import Codec.Binary.UTF8.String as CBUS
 import System.Environment
 import System.IO
-import Data.List
-
--- incomplete version
--- cannot manipulate Japanese
+import Text.ParserCombinators.Parsec
+import Control.Monad
 
 {--
 delf（Open usp Tukubai）
@@ -38,86 +34,101 @@ THE SOFTWARE.
 
 showUsage :: IO ()
 showUsage = do hPutStr stderr
-		("Usage    : delf <n...> <file>\n" ++ 
-		"Wed Aug 15 19:29:08 JST 2012\n" ++
+		("Usage    : delf <f1> <f2> ... <file>\n" ++ 
+		"Sat Mar 23 22:55:39 JST 2013\n" ++
 		"Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
 
 main :: IO ()
 main = do
 	args <- getArgs
 	case args of
-		["-h"] -> showUsage
+		["-h"]     -> showUsage
 		["--help"] -> showUsage
-		[] -> showUsage
-		_ -> BS.getContents >>= putBSLines . makeOut (parseOpts args )
+		_          -> do if f == "-"
+                                     then getContents >>= mainProc fields
+                                     else readFile f >>= mainProc fields
+                                     where f = getFileName opts
+                                           fields = getFields opts
+                                           opts = setOpts args
+                                   
+------------
+-- output --
+------------
 
-putBSLines :: [BS.ByteString] -> IO ()
-putBSLines = putStr . CBUS.decodeString . BS.unpack . BS.unlines
+mainProc :: [(Int,Int)] -> String -> IO ()
+mainProc fs cs = putStr $ unlines [ lineProc fs c | c <- lines cs ]
 
-parseOpts :: [String] -> [(Int,Int)]
-parseOpts as = [ parseSlash a | a <- as ]
+lineProc :: [(Int,Int)] -> String -> String
+lineProc fs ln = unwords $ deleteFields (fieldNormalize fs (length wds)) (zip [1..] wds)
+                 where wds = words ln
 
-parseSlash :: String -> (Int,Int)
-parseSlash a = ( toNum f , toNum s ) 
-		where
-			f = fst $ break (== '/') a
-			s = if s' == "" then f else tail s'
-			s' = snd $ break (== '/') a
+fieldNormalize :: [(Int,Int)] -> Int -> [Int]
+fieldNormalize ((a,b):fs) fnum = [c..d] ++ (fieldNormalize fs fnum)
+                 where c = if a > 0 then a else fnum + a
+                       d = if b > 0 then b else fnum + b
+fieldNormalize [] fnum = []
 
-toNum :: String -> Int
-toNum str = (if f == "NF" then -1 else read f::Int ) + ( if s == "" then 0 else read s::Int)
-	where
-		f = fst $ break (== '-') str
-		s = snd $ break (== '-') str
-	
-parseOpt :: String -> ((Int,Int),(Int,Int))
-parseOpt a = ( mainPart f , subPart s )
-		where
-			f = fst $ break (== '.') a
-			s = snd $ break (== '.') a
+deleteFields :: [Int] -> [(Int,String)] -> [String]
+deleteFields fs ((n,w):nws) = if n `elem` fs
+                              then deleteFields fs nws
+                              else w : deleteFields fs nws 
+deleteFields fs [] = []
 
-mainPart :: String -> (Int,Int)
-mainPart str = (f,s)
-		where
-			f = toNum $ fst $ break (== '/') str
-			s = if s' == "" then f else toNum $ tail s'
-			s' = snd $ break (== '/') str
+------------------------
+-- parsing of options --
+------------------------
 
-subPart :: String -> (Int,Int)
-subPart "" = (0, 0)
-subPart str = ( toNum f , subPart' s )
-	where
-		f = fst $ break (== '.') $ tail str
-		s = snd $ break (== '.') $ tail str
-		subPart' :: String -> Int
-		subPart' "" = 0
-		subPart' lst = read ( tail lst )::Int
+data Field = Field Int
+data Option = FRange Field Field | FileName String | Error String
 
-makeOut :: [(Int,Int)] -> BS.ByteString -> [BS.ByteString]
-makeOut as cs = [ makeLine a c | c <- BS.lines cs ]
-		where
-			a = fixOpt as cs
+getFields :: [Option] -> [(Int,Int)]
+getFields ((FRange a b):opts) = (getF a,getF b) : getFields opts
+	                        where getF (Field c) = c
+getFields (opt:opts)       = getFields opts
+getFields []               = []
 
-fixOpt :: [(Int,Int)] -> BS.ByteString -> [Int]
-fixOpt as cs = fieldList as (length $ BS.words $ head $ BS.lines cs)
+getFileName :: [Option] -> String
+getFileName ((FileName s):opts) = s
+getFileName (opt:opts)          = getFileName opts
+getFileName []                  = "-"
 
-makeLine :: [Int] -> BS.ByteString -> BS.ByteString
-makeLine a ln = selectWords a (BS.words ln)
+setOpts :: [String] -> [Option]
+setOpts as = [ fnc a | a <- as ]
+             where fnc str = case parse parseOption "" str of
+                                  Right opt -> opt
+                                  Left err -> Error ( show err ) 
 
-selectWords :: [Int] -> [BS.ByteString] -> BS.ByteString
-selectWords fs ws = BS.unwords [ ws !! f | f <- fs ]
+parseMonoRange :: Parser Option
+parseMonoRange = do f <- parseField
+                    return (FRange f f)
 
-fieldList :: [(Int,Int)] -> Int -> [Int]
-fieldList ds nf = fieldInv (fieldMake ds nf) nf
+parseField :: Parser Field
+parseField = try(parseNormalField) <|> try(parseNFMinusField) <|> try(parseNFField)
 
-fieldInv :: [Int] -> Int -> [Int]
-fieldInv fs nf = [0..(nf-1)] \\ fs
+parseCompRange :: Parser Option
+parseCompRange = do first <- parseField
+                    char '/'
+                    second <- parseField
+                    return ( FRange first second )
 
-fieldMake :: [(Int,Int)] -> Int -> [Int]
-fieldMake [] _ = []
-fieldMake (d:ds) nf = [x..y] ++ fieldMake ds nf
-		where
-			f = fst d
-			s = snd d
-			x = if f > 0 then f-1 else nf + f
-			y = if s > 0 then s-1 else nf + s
+parseOption :: Parser Option
+parseOption = try(parseCompRange) <|> try(parseMonoRange) <|> try(parseFileName)
+
+parseNormalField :: Parser Field
+parseNormalField =  liftM (Field . read) $ many1 digit
+
+parseNFMinusField :: Parser Field
+parseNFMinusField =  do string "NF-"
+			num <- many1 digit
+                        return $ Field ( -1 * (read num) )
+
+parseNFField :: Parser Field
+parseNFField =  do string "NF"
+                   return $ Field 0
+
+parseFileName :: Parser Option
+parseFileName =  do s <- many1 ( letter <|> digit <|> symbol ) 
+                    return $ FileName s
+
+symbol :: Parser Char
+symbol = oneOf "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
