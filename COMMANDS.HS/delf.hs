@@ -59,8 +59,9 @@ mainProc :: [(Int,Int)] -> String -> IO ()
 mainProc fs cs = putStr $ unlines [ lineProc fs c | c <- lines cs ]
 
 lineProc :: [(Int,Int)] -> String -> String
-lineProc fs ln = unwords $ deleteFields (fieldNormalize fs (length wds)) (zip [1..] wds)
-                 where wds = words ln
+lineProc fs ln = unwords $ deleteFields nfs zwds
+                 where zwds = zip [1..] (words ln)
+                       nfs = fieldNormalize fs (length zwds)
 
 fieldNormalize :: [(Int,Int)] -> Int -> [Int]
 fieldNormalize ((a,b):fs) fnum = [c..d] ++ (fieldNormalize fs fnum)
@@ -82,8 +83,8 @@ data Field = Field Int
 data Option = FRange Field Field | FileName String | Error String
 
 getFields :: [Option] -> [(Int,Int)]
-getFields ((FRange a b):opts) = (getF a,getF b) : getFields opts
-	                        where getF (Field c) = c
+getFields ((FRange a b):opts) = (f a,f b) : getFields opts
+	                        where f (Field c) = c
 getFields (opt:opts)       = getFields opts
 getFields []               = []
 
@@ -99,8 +100,7 @@ setOpts as = [ fnc a | a <- as ]
                                   Left err -> Error ( show err ) 
 
 parseMonoRange :: Parser Option
-parseMonoRange = do f <- parseField
-                    return (FRange f f)
+parseMonoRange = do {f <- parseField ; return (FRange f f) }
 
 parseField :: Parser Field
 parseField = try(parseNormalField) <|> try(parseNFMinusField) <|> try(parseNFField)
@@ -115,7 +115,7 @@ parseOption :: Parser Option
 parseOption = try(parseCompRange) <|> try(parseMonoRange) <|> try(parseFileName)
 
 parseNormalField :: Parser Field
-parseNormalField =  liftM (Field . read) $ many1 digit
+parseNormalField = liftM (Field . read) $ many1 digit
 
 parseNFMinusField :: Parser Field
 parseNFMinusField =  do string "NF-"
@@ -123,12 +123,10 @@ parseNFMinusField =  do string "NF-"
                         return $ Field ( -1 * (read num) )
 
 parseNFField :: Parser Field
-parseNFField =  do string "NF"
-                   return $ Field 0
+parseNFField =  string "NF" >> (return $ Field 0)
 
 parseFileName :: Parser Option
-parseFileName =  do s <- many1 ( letter <|> digit <|> symbol ) 
-                    return $ FileName s
+parseFileName =  many1 ( letter <|> digit <|> symbol ) >>= return . FileName
 
 symbol :: Parser Char
 symbol = oneOf "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
