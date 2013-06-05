@@ -1,8 +1,8 @@
 import System.Environment
 import System.IO
-
--- incomplete version
--- cannot manipulate Japanese
+import Text.ParserCombinators.Parsec
+import Control.Monad
+import Data.Char
 
 {--
 self（Open usp Tukubai）
@@ -35,79 +35,174 @@ THE SOFTWARE.
 
 showUsage :: IO ()
 showUsage = do hPutStr stderr
-		("Usage    : self <n...> <file>\n" ++ 
-		"Wed Aug 15 19:29:08 JST 2012\n" ++
+		("Usage    : self <f1> <f2> ... <file>\n" ++ 
+		"Sun May 26 21:14:17 JST 2013\n" ++
 		"Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
 
 main :: IO ()
 main = do
 	args <- getArgs
 	case args of
-		["-h"] -> showUsage
+		["-h"]     -> showUsage
 		["--help"] -> showUsage
-		[] -> showUsage
-		_ -> getContents >>= putBSLines . makeOut (parseOpts args )
+		"-d":as    -> directMode as
+		_          -> do if f == "-"
+                                     then getContents >>= mainProc fields
+                                     else readFile f >>= mainProc fields
+                                     where f = getFileName opts
+                                           fields = getFields opts
+                                           opts = setOpts args
 
-putBSLines :: [String] -> IO ()
-putBSLines = putStr . unlines
+------------
+-- output --
+------------
 
-parseOpts :: [String] -> [((Int,Int),(Int,Int))]
-parseOpts args = [ parseOpt a | a <- args ]
+directMode :: [String] -> IO ()
+directMode as = mainProc fields str
+                where str = last as
+                      fields = getFields opts
+                      opts = setOpts (init as)
 
-parseOpt :: String -> ((Int,Int),(Int,Int))
-parseOpt a = ( mainPart f , subPart s )
-		where
-			f = fst $ break (== '.') a
-			s = snd $ break (== '.') a
+mainProc :: [Field] -> String -> IO ()
+mainProc fs cs = putStr $ unlines [ lineProc nfs c nf | c <- lines cs ]
+                   where nf = length $ words ( lines cs !! 0 )
+                         nfs = [ normalizeField f nf | f <- fs ]
 
-mainPart :: String -> (Int,Int)
-mainPart str = (f,s)
-		where
-			f = toNum $ fst $ break (== '/') str
-			s = if s' == "" then f else toNum $ tail s'
-			s' = snd $ break (== '/') str
+normalizeField :: Field -> Int -> Field
+normalizeField (SimpleField x) nf = SimpleField (solveNF x nf)
+normalizeField (Range x y) nf = Range (solveNF x nf) (solveNF y nf)
+normalizeField (SubField x y) nf = SubField (solveNF x nf) y
+normalizeField (SubSubField x y z) nf = SubSubField (solveNF x nf) y z
 
-subPart :: String -> (Int,Int)
-subPart "" = (0, 0)
-subPart str = ( toNum f , subPart' s )
-	where
-		f = fst $ break (== '.') $ tail str
-		s = snd $ break (== '.') $ tail str
-		subPart' :: String -> Int
-		subPart' "" = 0
-		subPart' lst = read ( tail lst )::Int
+solveNF :: Int -> Int -> Int
+solveNF x nf = if x >= 0 then x else x + nf + 1
 
-toNum :: String -> Int
-toNum str = (if f == "NF" then -1 else read f::Int ) + ( if s == "" then 0 else read s::Int)
-	where
-		f = fst $ break (== '-') str
-		s = snd $ break (== '-') str
-	
-makeOut :: [((Int,Int),(Int,Int))] -> String -> [String]
-makeOut as cs = [ makeLine as (makeBaseStr c) | c <- lines cs ]
+lineProc :: [Field] -> String -> Int -> String
+lineProc fs ln nf = unwords [ getWords f ws | f <- fs ]
+                    where ws = ln : words ln
 
-makeBaseStr :: String -> [String]
-makeBaseStr line = line : (words line)
+getWords :: Field -> [String] -> String
+getWords (SimpleField n) ws = ws !! n
+getWords (Range x y) ws = unwords $ take (y-x+1) ( drop x ws )
+getWords (SubField x y) ws = cutWord w y 0 where w = ws !! x
+getWords (SubSubField x y z) ws = cutWord w y z where w = ws !! x
 
-makeLine :: [((Int,Int),(Int,Int))] -> [String] -> String
-makeLine as ws = unwords [ choiceWord a ws | a <- as ]
+widthCount :: String -> [Int]
+widthCount cs = pileUp [ wc c | c <- cs ] 1
+                  where
+                       wc c = wc' (ord c)
+                       wc' n = if n < 128 then 1 else (hanzen n)
+                       hanzen m = if m >= 0xFF61 && m <= 0xFF9F then 1 else 2
 
-choiceWord :: ((Int,Int),(Int,Int)) -> [String] -> String
-choiceWord a ws = unwords [ makeSubWord (snd a) (ws !! n) |  n <- makeSeq (fst a) (length ws) ]
+pileUp :: [Int] -> Int -> [Int]
+pileUp (n:[]) m = m : [m + n]
+pileUp (n:ns) m = m : (pileUp ns (n + m))
 
-makeSeq :: (Int,Int) -> Int -> [Int]
-makeSeq a num = [x..y]
-		where
-			f = fst a
-			s = snd a
-			x = if f >= 0 then f else num + f
-			y = if s >= 0 then s else num + s
+cutWord :: String -> Int -> Int -> String
+cutWord str frm 0 = drop x str
+                      -- 文字の切断位置が悪い場合は無理矢理エラー（よくない）
+                      where x = if align then ([1] !! 2)
+                                else length $ filter ( < frm ) wc
+                            align = filter (==frm) (init wc) == []
+                            wc = widthCount str
+cutWord str frm num = drop x (take y str)
+                      where x = if align then ([1] !! 2)
+                                else length $ filter ( < frm ) wc
+                            y = if align2 then ([1] !! 2)
+                                else length $ filter ( < to ) wc
+                            align = filter (==frm) (init wc) == []
+                            align2 = (filter (==to) wc) == [] 
+                            to = frm + num
+                            wc = widthCount str
 
-makeSubWord :: (Int,Int) -> String -> String
-makeSubWord (0,0) str = str
-makeSubWord a str = cutTail (snd a) (cutFront (fst a) str)
-		where 
-			cutFront :: Int -> String -> [Char]
-			cutFront n str = drop (n-1) str
-			cutTail :: Int -> [Char] -> String
-			cutTail n str = take n str
+------------------------
+-- handling of options --
+------------------------
+
+getFileName :: [Option] -> String
+getFileName ((FileName s):opts) = s
+getFileName (opt:opts)          = getFileName opts
+getFileName []                  = "-"
+
+getFields :: [Option] -> [Field]
+getFields ((Select a):opts) = a : getFields opts
+getFields (opt:opts)       = getFields opts
+getFields []               = []
+
+------------------------
+-- parsing of options --
+------------------------
+
+data Field = SimpleField Int 
+            | Range Int Int 
+            | SubField Int Int
+            | SubSubField Int Int Int
+
+data Option = Select Field | FileName String | Error String
+
+showOpts :: [Option] -> IO ()
+showOpts opts = print [ f opt | opt <- opts ]
+                where f (Select x) = f' x
+                      f (FileName x) = "file:" ++ x
+                      f' (SimpleField s) = show s
+                      f' (Range s t) = (show s) ++ "/" ++ (show t)
+                      f' (SubField s t) = (show s) ++ "." ++ (show t)
+                      f' (SubSubField s t u) = (show s) ++ "." ++ (show t) ++ "." ++ (show u)
+
+setOpts :: [String] -> [Option]
+setOpts as = [ fnc a | a <- as ]
+             where fnc str = case parse parseOption "" str of
+                                  Right opt -> opt
+                                  Left err -> Error ( show err ) 
+
+parseOption :: Parser Option
+parseOption = try(parseSelect) <|> try(parseFileName)
+
+parseSelect :: Parser Option
+parseSelect = do r <- ( try(parseRange) 
+                        <|> try(parseSubSubField) 
+                        <|> try(parseSubField) 
+                        <|> try(parseSimpleField) )
+                 return $ Select r
+
+parseRange :: Parser Field
+parseRange = do first <- parseSimpleField
+                char '/'
+                second <- parseSimpleField
+                return ( Range (n first) (n second) )
+                where n (SimpleField num) = num
+
+parseSubField :: Parser Field
+parseSubField = do first <- parseSimpleField
+                   char '.'
+                   second <- many1 digit
+                   return $ SubField (n first) (read second)
+                   where n (SimpleField num) = num
+
+parseSubSubField :: Parser Field
+parseSubSubField = do f <- parseSimpleField
+                      char '.'
+                      s <- many1 digit
+                      char '.'
+                      t <- many1 digit
+                      return $ SubSubField (n f) (read s) (read t)
+                      where n (SimpleField num) = num
+
+parseSimpleField :: Parser Field
+parseSimpleField = try(liftM (SimpleField . read) $ many1 digit)
+               <|> try(parseNFM) <|> try(parseNF)
+
+
+parseNFM :: Parser Field
+parseNFM = do string "NF-"
+              num <- many1 digit
+              return $ SimpleField ( -1 * (read num) - 1 )
+
+parseNF :: Parser Field
+parseNF = string "NF" >> (return $ SimpleField (-1) )
+
+parseFileName :: Parser Option
+parseFileName =  many1 ( letter <|> digit <|> symbol ) >>= return . FileName
+
+symbol :: Parser Char
+symbol = oneOf "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
