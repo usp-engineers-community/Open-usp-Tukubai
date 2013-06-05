@@ -29,9 +29,12 @@ cd $dir
 #####################################
 #support of haskell binary
 
+./delf.test COMMANDS.HS ""
 ./gyo.test COMMANDS.HS ""
 ./retu.test COMMANDS.HS ""
+./self.test COMMANDS.HS ""
 ./tarr.test COMMANDS.HS ""
+./yarr.test COMMANDS.HS ""
 
 #####################################
 #support of 2.x

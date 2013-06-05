@@ -28,7 +28,7 @@ ERROR_CHECK(){
 cat << FIN > $tmp-in
 0000000 浜地______ 50 F 91 59 20 76 54
 0000001 鈴田______ 50 F 46 39 8  5  21
-0000003 杉山______ 26 F 30 50 71 36 30
+0000003 江頭______ 26 F 30 50 71 36 30
 0000004 白土______ 40 M 58 71 20 10 6
 0000005 崎村______ 50 F 82 79 16 21 80
 FIN
@@ -36,7 +36,7 @@ FIN
 cat << FIN > $tmp-out
 浜地______ F
 鈴田______ F
-杉山______ F
+江頭______ F
 白土______ M
 崎村______ F
 FIN
@@ -51,7 +51,7 @@ diff $tmp-ans $tmp-out
 cat << FIN > $tmp-out
 0000 浜地______
 0001 鈴田______
-0003 杉山______
+0003 江頭______
 0004 白土______
 0005 崎村______
 FIN
@@ -66,7 +66,7 @@ diff $tmp-ans $tmp-out
 cat << FIN > $tmp-out
 浜地 50
 鈴田 50
-杉山 26
+江頭 26
 白土 40
 崎村 50
 FIN
@@ -81,7 +81,7 @@ diff $tmp-ans $tmp-out
 cat << FIN > $tmp-out
 0000000 浜地______ 50 F 91 59 20 76 54
 0000001 鈴田______ 50 F 46 39 8  5  21
-0000003 杉山______ 26 F 30 50 71 36 30
+0000003 江頭______ 26 F 30 50 71 36 30
 0000004 白土______ 40 M 58 71 20 10 6
 0000005 崎村______ 50 F 82 79 16 21 80
 FIN
@@ -96,7 +96,7 @@ diff $tmp-ans $tmp-out
 cat << FIN > $tmp-out
 F 0000000 浜地______ 50 F 91 59 20 76 54
 F 0000001 鈴田______ 50 F 46 39 8  5  21
-F 0000003 杉山______ 26 F 30 50 71 36 30
+F 0000003 江頭______ 26 F 30 50 71 36 30
 M 0000004 白土______ 40 M 58 71 20 10 6
 F 0000005 崎村______ 50 F 82 79 16 21 80
 FIN
@@ -111,7 +111,7 @@ diff $tmp-ans $tmp-out
 cat << FIN > $tmp-out
 浜地______ 50 F 91
 鈴田______ 50 F 46
-杉山______ 26 F 30
+江頭______ 26 F 30
 白土______ 40 M 58
 崎村______ 50 F 82
 FIN
@@ -151,23 +151,25 @@ diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST7-2 error"
 
 
-###########################################
+############################################
 #TEST8
-
-cat << FIN > $tmp-in
-   a    b  
-c   d e
-FIN
-
-cat << FIN > $tmp-out
-a b
-c d e
-FIN
-
-${com} 1/NF $tmp-in > $tmp-ans
-diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST8 error"
-
+# NF should be static on the business command.
+# This test is obsolete.
+#
+#cat << FIN > $tmp-in
+#   a    b  
+#c   d e
+#FIN
+#
+#cat << FIN > $tmp-out
+#a b
+#c d e
+#FIN
+#
+#${com} 1/NF $tmp-in > $tmp-ans
+#diff $tmp-ans $tmp-out
+#[ $? -eq 0 ] ; ERROR_CHECK "TEST8 error"
+#
 ###########################################
 #TEST9
 
