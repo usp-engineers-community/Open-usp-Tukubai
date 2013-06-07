@@ -39,7 +39,7 @@ THE SOFTWARE.
 showUsage :: IO ()
 showUsage = do hPutStr stderr
 		("Usage    : calclock <f1> <f2> ... <file>\n" ++ 
-		"Fri Jun  7 16:21:47 JST 2013\n" ++
+		"Sat Jun  8 08:08:49 JST 2013\n" ++
 		"Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
 
 main :: IO ()
@@ -84,29 +84,25 @@ wordProc ops (n,str) flg = if length ( filter (==n) ops ) == 0
                                  then normal str else rev str
 
 normal :: String -> String
-normal str = str ++ " " ++ (toStr (getAns x y z))
-             where x = normal8 str
-                   y = normal14 str
-                   z = normal16 str
+normal str = str ++ " " ++ (getAns (length str) str)
+
+getAns :: Int -> String -> String
+getAns 8 = toStr . normal8
+getAns 12 = toStr . normal12
+getAns 14 = toStr . normal14
 
 normal8 :: String -> Maybe UTCTime
 normal8 str = parseTime defaultTimeLocale "%Y%m%d" str :: Maybe UTCTime
 
-normal14 :: String -> Maybe UTCTime
-normal14 str = parseTime defaultTimeLocale "%Y%m%d%H%M" str :: Maybe UTCTime
+normal12 :: String -> Maybe UTCTime
+normal12 str = parseTime defaultTimeLocale "%Y%m%d%H%M" str :: Maybe UTCTime
 
-normal16 :: String -> Maybe UTCTime
-normal16 str = parseTime defaultTimeLocale "%Y%m%d%H%M%S" str :: Maybe UTCTime
+normal14 :: String -> Maybe UTCTime
+normal14 str = parseTime defaultTimeLocale "%Y%m%d%H%M%S" str :: Maybe UTCTime
 
 toStr :: Maybe UTCTime -> String
 toStr (Just s) = formatTime defaultTimeLocale "%s" s
 toStr Nothing = [""] !! 2
-
-getAns :: Maybe UTCTime -> Maybe UTCTime -> Maybe UTCTime -> Maybe UTCTime
-getAns (Just s) y z = Just s
-getAns x (Just s) z = Just s
-getAns x y (Just s) = Just s
-getAns x y z = Nothing
 
 rev :: String -> String
 rev str = str ++ " " ++ toStrRev (parseTime defaultTimeLocale "%s" str :: Maybe UTCTime )
