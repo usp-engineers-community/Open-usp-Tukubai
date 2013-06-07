@@ -37,6 +37,20 @@ ${com} 		> $tmp-ans
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST1 error"
 
+###########################################
+#TEST2
+
+echo -e 'HOGE=rm+-Rf&JPN=%E6%97%A5%E6%9C%AC' > $tmp-in
+
+cat << FIN > $tmp-out
+HOGE rm -Rf
+JPN 日本
+FIN
+
+cat $tmp-in	|
+${com} 		> $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2 error"
 
 rm -f $tmp-*
 echo "${com}" OK

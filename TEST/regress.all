@@ -50,6 +50,9 @@ FIN
 cat $tmp-ver	|
 while read com ; do
 	./calclock.test COMMANDS $com
+	./cjoin0.test COMMANDS $com
+	./cjoin1.test COMMANDS $com
+	./cjoin2.test COMMANDS $com
 	./tateyoko.test COMMANDS $com
 	./sm2.test COMMANDS $com
 	./cgi-name.test COMMANDS $com
@@ -63,13 +66,11 @@ while read com ; do
 	./nameread.test COMMANDS $com
 	./check_need_name.test COMMANDS $com
 	./join0.test COMMANDS $com
-	./cjoin0.test COMMANDS $com
-	./cjoin1.test COMMANDS $com
-	./cjoin2.test COMMANDS $com
 	./filehame.test COMMANDS $com
 	./formhame.test COMMANDS $com
 	./gyo.test COMMANDS $com
 	./keta.test COMMANDS $com
+	./loopx.test COMMANDS $com
 done
 
 #####################################
