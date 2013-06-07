@@ -1,0 +1,132 @@
+#!/usr/local/bin/bash -xv
+#
+# test script of loopx 
+#
+# usage: ./loopx.test <command dir> <python ver>
+
+name=loopx
+    
+tmp=/tmp/$$
+dir=$(dirname $0)/..
+cd $dir
+    
+com="$2 ./$1/${name}"
+[ "$1" = "" ] && com="./$1/${name}"
+
+ERROR_CHECK(){
+	[ "$(echo ${PIPESTATUS[@]} | tr -d ' 0')" = "" ] && return
+
+	echo $1
+	echo "$com" NG
+	rm -f $tmp-*
+	exit 1
+}
+
+###########################################
+#TEST1
+
+cat << FIN > $tmp-in1
+0000000 浜地______
+0000001 鈴田______
+0000003 杉山______
+0000004 白土______
+0000005 崎村______
+FIN
+
+cat << FIN > $tmp-in2
+1 2
+3 4
+FIN
+
+cat << FIN > $tmp-out
+0000000 浜地______ 1 2
+0000000 浜地______ 3 4
+0000001 鈴田______ 1 2
+0000001 鈴田______ 3 4
+0000003 杉山______ 1 2
+0000003 杉山______ 3 4
+0000004 白土______ 1 2
+0000004 白土______ 3 4
+0000005 崎村______ 1 2
+0000005 崎村______ 3 4
+FIN
+
+${com} $tmp-in1 $tmp-in2 > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1 error"
+
+###########################################
+#TEST2
+
+cat << FIN > $tmp-in1
+0000000 浜地______
+0000001 鈴田______
+0000003 杉山______
+0000004 白土______
+0000005 崎村______
+FIN
+
+cat << FIN > $tmp-in2
+1 2
+3 4
+FIN
+
+cat << FIN > $tmp-out
+0000000 浜地______ 1 2
+0000000 浜地______ 3 4
+0000001 鈴田______ 1 2
+0000001 鈴田______ 3 4
+0000003 杉山______ 1 2
+0000003 杉山______ 3 4
+0000004 白土______ 1 2
+0000004 白土______ 3 4
+0000005 崎村______ 1 2
+0000005 崎村______ 3 4
+FIN
+
+cat $tmp-in1 | ${com} - $tmp-in2 > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2 error"
+
+###########################################
+#TEST3
+
+cat << FIN > $tmp-in1
+0000000 浜地______
+0000001 鈴田______
+0000005 崎村______
+FIN
+
+cat << FIN > $tmp-in2
+1 2
+3 4
+FIN
+
+cat << FIN > $tmp-in3
+abc
+def
+FIN
+
+cat << FIN > $tmp-out
+0000000 浜地______ 1 2 abc
+0000000 浜地______ 1 2 def
+0000000 浜地______ 3 4 abc
+0000000 浜地______ 3 4 def
+0000001 鈴田______ 1 2 abc
+0000001 鈴田______ 1 2 def
+0000001 鈴田______ 3 4 abc
+0000001 鈴田______ 3 4 def
+0000005 崎村______ 1 2 abc
+0000005 崎村______ 1 2 def
+0000005 崎村______ 3 4 abc
+0000005 崎村______ 3 4 def
+FIN
+
+cat $tmp-in2 | ${com} $tmp-in1 - $tmp-in3 > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3 error"
+
+
+rm -f $tmp-*
+echo "${com}" OK
+exit 0
