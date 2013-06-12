@@ -39,7 +39,7 @@ THE SOFTWARE.
 showUsage :: IO ()
 showUsage = do hPutStr stderr
 		("Usage    : calclock <f1> <f2> ... <file>\n" ++ 
-		"Sat Jun  8 08:08:49 JST 2013\n" ++
+		"Wed Jun 12 22:14:11 JST 2013\n" ++
 		"Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
 
 main :: IO ()
@@ -84,12 +84,13 @@ wordProc ops (n,str) flg = if length ( filter (==n) ops ) == 0
                                  then normal str else rev str
 
 normal :: String -> String
-normal str = str ++ " " ++ (getAns (length str) str)
+normal str = str ++ " " ++ (getAns str)
 
-getAns :: Int -> String -> String
-getAns 8 = toStr . normal8
-getAns 12 = toStr . normal12
-getAns 14 = toStr . normal14
+getAns :: String -> String
+getAns str = case (length str) of 
+              8  -> toStr $ normal8 str
+              12 -> toStr $ normal12 str
+              14 -> toStr $ normal14 str
 
 normal8 :: String -> Maybe UTCTime
 normal8 str = parseTime defaultTimeLocale "%Y%m%d" str :: Maybe UTCTime
@@ -110,10 +111,6 @@ rev str = str ++ " " ++ toStrRev (parseTime defaultTimeLocale "%s" str :: Maybe 
 toStrRev :: Maybe UTCTime -> String
 toStrRev (Just s) = formatTime defaultTimeLocale "%Y%m%d%H%M%S" s
 toStrRev Nothing = ["abc"] !! 10
-
---formatTime defaultTimeLocale "%Y-%m-%d" time
-
---parseTime defaultTimeLocale "%Y-%m-%d %H:%M:%S" "2011-01-12 13:30:22" :: Maybe ZonedTime
 
 data Option = Field Int | FileName String | Rev Bool | Error String
 

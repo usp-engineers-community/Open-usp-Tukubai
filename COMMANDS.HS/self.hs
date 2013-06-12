@@ -36,7 +36,7 @@ THE SOFTWARE.
 showUsage :: IO ()
 showUsage = do hPutStr stderr
 		("Usage    : self <f1> <f2> ... <file>\n" ++ 
-		"Wed Jun  5 13:52:23 JST 2013\n" ++
+		"Wed Jun 12 22:14:11 JST 2013\n" ++
 		"Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
 
 main :: IO ()
@@ -100,18 +100,17 @@ pileUp (n:ns) m = m : (pileUp ns (n + m))
 
 cutWord :: String -> Int -> Int -> String
 cutWord str frm 0 = drop x str
-                      -- 文字の切断位置が悪い場合は無理矢理エラー（よくない）
-                      where x = if align then ([1] !! 2)
+                      where x = if cutpos then error "bad cut position"
                                 else length $ filter ( < frm ) wc
-                            align = filter (==frm) (init wc) == []
+                            cutpos = filter (==frm) (init wc) == []
                             wc = widthCount str
 cutWord str frm num = drop x (take y str)
-                      where x = if align then ([1] !! 2)
+                      where x = if cutpos then error "bad cut position"
                                 else length $ filter ( < frm ) wc
-                            y = if align2 then ([1] !! 2)
+                            y = if cutpos2 then error "bad length"
                                 else length $ filter ( < to ) wc
-                            align = filter (==frm) (init wc) == []
-                            align2 = (filter (==to) wc) == [] 
+                            cutpos = filter (==frm) (init wc) == []
+                            cutpos2 = (filter (==to) wc) == [] 
                             to = frm + num
                             wc = widthCount str
 

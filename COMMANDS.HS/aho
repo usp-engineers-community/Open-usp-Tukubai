@@ -1,0 +1,88 @@
+
+tarr.hs:64:52:
+    Couldn't match expected type `BS.ByteString'
+                with actual type `String'
+    Expected type: [BS.ByteString]
+      Actual type: [String]
+    In the return type of a call of `lines'
+    In the second argument of `($)', namely `lines cs'
+
+tarr.hs:68:65:
+    Couldn't match expected type `String'
+                with actual type `BS.ByteString'
+    In the first argument of `lines', namely `cs'
+    In the expression: lines cs
+    In a stmt of a list comprehension: c <- lines cs
+
+tarr.hs:73:28:
+    Couldn't match expected type `String'
+                with actual type `BS.ByteString'
+    Expected type: ([String], b0)
+      Actual type: ([BS.ByteString], [BS.ByteString])
+    In the first argument of `fst', namely `s'
+    In the second argument of `($)', namely `fst s'
+
+tarr.hs:78:39:
+    Couldn't match expected type `String'
+                with actual type `BS.ByteString'
+    Expected type: [String]
+      Actual type: [BS.ByteString]
+    In the return type of a call of `keyExpand'
+    In the expression: keyExpand num m (words c)
+
+tarr.hs:87:24:
+    Couldn't match expected type `BS.ByteString'
+                with actual type `String'
+    In the return type of a call of `unwords'
+    In the expression: unwords [k, v]
+    In the expression: [unwords [k, v] | v <- vs]
+
+tarr.hs:88:46:
+    Couldn't match expected type `String'
+                with actual type `BS.ByteString'
+    Expected type: [String]
+      Actual type: [BS.ByteString]
+    In the second argument of `take', namely `ws'
+    In the second argument of `($)', namely `take num ws'
+
+tarr.hs:93:41:
+    Couldn't match expected type `BS.ByteString'
+                with actual type `[Char]'
+    Expected type: BS.ByteString -> Bool
+      Actual type: [Char] -> Bool
+    In the first argument of `filter', namely `findNum'
+    In the second argument of `($)', namely `filter findNum as'
+
+tarr.hs:98:28:
+    Couldn't match expected type `BS.ByteString'
+                with actual type `[Char]'
+    In the expression: "num=0"
+    In an equation for `head0': head0 [] = "num=0"
+    In an equation for `parseArgs':
+        parseArgs as
+          = (getNum $ head0 $ filter findNum as, 
+             getM $ head1 $ filter findM as)
+          where
+              findNum a = "num=" `isPrefixOf` a
+              getNum a = read (drop 4 a) :: Int
+              head0 :: [BS.ByteString] -> BS.ByteString
+              head0 [] = "num=0"
+              head0 as = head as
+              ....
+
+tarr.hs:104:28:
+    Couldn't match expected type `BS.ByteString'
+                with actual type `[Char]'
+    In the expression: "-1"
+    In an equation for `head1': head1 [] = "-1"
+    In an equation for `parseArgs':
+        parseArgs as
+          = (getNum $ head0 $ filter findNum as, 
+             getM $ head1 $ filter findM as)
+          where
+              findNum a = "num=" `isPrefixOf` a
+              getNum a = read (drop 4 a) :: Int
+              head0 :: [BS.ByteString] -> BS.ByteString
+              head0 [] = "num=0"
+              head0 as = head as
+              ....

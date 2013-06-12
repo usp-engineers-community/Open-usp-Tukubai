@@ -35,21 +35,21 @@ THE SOFTWARE.
 
 showUsage :: IO ()
 showUsage = do System.IO.hPutStr stderr ("Usage    : delf <f1> <f2> ... <file>\n" ++ 
-                "Sun Jun  9 09:23:37 JST 2013\n" ++
+                "Wed Jun 12 22:14:11 JST 2013\n" ++
                 "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
 
 main :: IO ()
-main = do
-        args <- getArgs
-        case args of
-                ["-h"]     -> showUsage
-                ["--help"] -> showUsage
-                _          -> do if f == "-"
-                                     then BS.getContents >>= mainProc fields
-                                     else BS.readFile f >>= mainProc fields
-                                     where f = getFileName opts
-                                           fields = getFields opts
-                                           opts = setOpts args
+main = do args <- getArgs
+          case args of
+              ["-h"]     -> showUsage
+              ["--help"] -> showUsage
+              _          -> do readF (getFileName os) >>= mainProc fs
+                                     where fs = getFields os
+                                           os = setOpts args
+
+readF :: String -> IO BS.ByteString
+readF "-" = BS.getContents
+readF f = BS.readFile f
                                    
 ------------
 -- output --
