@@ -2,6 +2,7 @@ import System.Environment
 import System.IO
 import Text.ParserCombinators.Parsec
 import Control.Monad
+import qualified Data.ByteString.Lazy.Char8 as BS
 
 {--
 tateyoko（Open usp Tukubai）
@@ -34,31 +35,31 @@ THE SOFTWARE.
 
 showUsage :: IO ()
 showUsage = do hPutStr stderr
-		("Usage    : tateyoko <file>\n" ++ 
-		"Fri Jun  7 10:42:24 JST 2013\n" ++
-		"Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
+                ("Usage    : tateyoko <file>\n" ++ 
+                "Wed Jun 12 22:37:46 JST 2013\n" ++
+                "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
 
 main :: IO ()
 main = do
-	args <- getArgs
-	case args of
-		["-h"]     -> showUsage
-		["--help"] -> showUsage
-		_          -> do if f == "-"
-                                     then getContents >>= mainProc
-                                     else readFile f >>= mainProc
-                                     where f = if (length args) > 0
-                                               then args !! 0 else "-"
-                                   
+        args <- getArgs
+        case args of
+            ["-h"]     -> showUsage
+            ["--help"] -> showUsage
+            _          -> do readF f >>= mainProc
+                             where f = if (length args) > 0
+                                       then args !! 0 else "-"
 
-mainProc :: String -> IO ()
-mainProc cs = putStr $ unlines [ unwords a | a <- arr ]
-              where arr = tateyoko [ words ln | ln <- lines cs ] n
-                    n = length $ words $ ( lines cs ) !! 0
+readF :: String -> IO BS.ByteString
+readF "-" = BS.getContents
+readF f = BS.readFile f
 
-tateyoko :: [[String]] -> Int -> [[String]]
+mainProc :: BS.ByteString -> IO ()
+mainProc cs = BS.putStr $ BS.unlines [ BS.unwords a | a <- arr ]
+              where arr = tateyoko [ BS.words ln | ln <- BS.lines cs ] n
+                    n = length $ BS.words $ ( BS.lines cs ) !! 0
+
+tateyoko :: [[BS.ByteString]] -> Int -> [[BS.ByteString]]
 tateyoko ws n = [ mtakes ws m | m <- [0..(n-1)] ]
 
-mtakes :: [[String]] -> Int -> [String]
+mtakes :: [[BS.ByteString]] -> Int -> [BS.ByteString]
 mtakes lns m = [ (ln !! m) | ln <- lns ]
-
