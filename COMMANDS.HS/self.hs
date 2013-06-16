@@ -36,42 +36,40 @@ THE SOFTWARE.
 showUsage :: IO ()
 showUsage = do hPutStr stderr
 		("Usage    : self <f1> <f2> ... <file>\n" ++ 
-		"Wed Jun 12 22:14:11 JST 2013\n" ++
+		"Sun Jun 16 16:54:10 JST 2013\n" ++
 		"Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
 
 main :: IO ()
-main = do
-	args <- getArgs
-	case args of
+main = do args <- getArgs
+	  case args of
 		["-h"]     -> showUsage
 		["--help"] -> showUsage
 		"-d":as    -> directMode as
-		_          -> do if f == "-"
-                                     then getContents >>= mainProc fields
-                                     else readFile f >>= mainProc fields
-                                     where f = getFileName opts
-                                           fields = getFields opts
-                                           opts = setOpts args
+		_          -> readF (getFileName os) >>= mainProc (getFields os)
+                                     where os = setOpts args
+
+readF :: String -> IO String
+readF "-" = getContents
+readF f   = readFile f
 
 ------------
 -- output --
 ------------
 
 directMode :: [String] -> IO ()
-directMode as = mainProc fields str
+directMode as = mainProc fs str
                 where str = last as
-                      fields = getFields opts
-                      opts = setOpts (init as)
+                      fs = getFields $ setOpts (init as)
 
 mainProc :: [Field] -> String -> IO ()
 mainProc fs cs = putStr $ unlines [ lineProc nfs c nf | c <- lines cs ]
-                   where nf = length $ words ( lines cs !! 0 )
+                   where nf = length $ words $ head ( lines cs)
                          nfs = [ normalizeField f nf | f <- fs ]
 
 normalizeField :: Field -> Int -> Field
-normalizeField (SimpleField x) nf = SimpleField (solveNF x nf)
-normalizeField (Range x y) nf = Range (solveNF x nf) (solveNF y nf)
-normalizeField (SubField x y) nf = SubField (solveNF x nf) y
+normalizeField (SimpleField x) nf     = SimpleField (solveNF x nf)
+normalizeField (Range x y) nf         = Range (solveNF x nf) (solveNF y nf)
+normalizeField (SubField x y) nf      = SubField (solveNF x nf) y
 normalizeField (SubSubField x y z) nf = SubSubField (solveNF x nf) y z
 
 solveNF :: Int -> Int -> Int
@@ -82,15 +80,14 @@ lineProc fs ln nf = unwords [ getWords f ws | f <- fs ]
                     where ws = ln : words ln
 
 getWords :: Field -> [String] -> String
-getWords (SimpleField n) ws = ws !! n
-getWords (Range x y) ws = unwords $ take (y-x+1) ( drop x ws )
-getWords (SubField x y) ws = cutWord w y 0 where w = ws !! x
+getWords (SimpleField n) ws     = ws !! n
+getWords (Range x y) ws         = unwords $ take (y-x+1) ( drop x ws )
+getWords (SubField x y) ws      = cutWord w y 0 where w = ws !! x
 getWords (SubSubField x y z) ws = cutWord w y z where w = ws !! x
 
 widthCount :: String -> [Int]
 widthCount cs = pileUp [ wc c | c <- cs ] 1
-                  where
-                       wc c = wc' (ord c)
+                 where wc c = wc' (ord c)
                        wc' n = if n < 128 then 1 else (hanzen n)
                        hanzen m = if m >= 0xFF61 && m <= 0xFF9F then 1 else 2
 
