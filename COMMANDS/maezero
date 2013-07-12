@@ -1,0 +1,192 @@
+#!/usr/bin/env python
+#coding: utf-8
+#
+# maezero ゼロ埋めする（Open usp Tukubai版）
+# 
+# designed by Nobuaki Tounaka
+# written by Ryuichi Ueda
+#
+# The MIT License
+#
+# Copyright (C) 2011 Universal Shell Programming Laboratory
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+# marumeからコードを拝借して応急処置で作った物です。
+# コードの掃除が必要
+_usage = "maezero <f1.d1> <f2.d2> .. <file>"
+_version = "Fri Jul 12 12:26:56 JST 2013"
+_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
+_keypat = r'(\d+)\.(0?)(\d+)$'
+		# 1: field number
+		# 2: 0 (means round integral part)
+		# 3: precision
+
+import re
+import os
+import sys
+from decimal import *
+
+def round(x, n):
+	return x.quantize(Decimal('.1') ** n)
+
+def error(msg, *arg):
+	print >> sys.stderr, 'Error[maezero] :', msg % arg
+	sys.exit(1)
+
+def usage():
+	print >> sys.stderr, "Usage   :", _usage
+	print >> sys.stderr, "Version :", _version
+	print >> sys.stderr, "         ", _code
+	sys.exit(1)
+
+class FieldLine:
+	def __init__(self, line, allow_z = False):
+		self.__allow_zero = allow_z
+		line = line.rstrip('\n')
+		self.__fields = [ line ]
+		self.__fields += [ x for x in line.split(' ') if x ]
+
+	def size(self):
+		return len(self.__fields) - 1
+
+	def getFieldNum(self, key):
+		if type(key) == type(0):
+			return key
+		if re.match(r'\d+$', key):
+			key = int(key)
+		elif key == 'NF':
+			key = self.size()
+		else:
+			key = self.size() - int(key[3:])
+			if key <= 0:
+				error("NF-x の x が大きすぎます。")
+		if key < 0:
+			error("フィールド番号が負です。")
+		if key == 0 and not self.__allow_zero:
+			error("フィールド番号が０です。")
+		if key > self.size():
+			error("フィールド番号が大きすぎます。")
+		return key
+
+	def getField(self, s, e = None):
+		s = self.getFieldNum(s)
+		if e == None:
+			e = s
+		else:
+			e = self.getFieldNum(e)
+		if s <= e:
+			return ' '.join(self.__fields[s : e + 1])
+		else:
+			t = self.__fields[e : s + 1]
+			t.reverse()
+			return ' '.join(t)
+
+#
+# 入力ファイルオープン
+#
+def open_file(n, mode = 'r'):
+	if n >= len(sys.argv):
+		file = sys.stdin
+	elif sys.argv[n] == '-':
+		file = sys.stdin
+		del sys.argv[n]
+	else:
+		try:
+			file = open(sys.argv[n], mode)
+			del sys.argv[n]
+		except:
+			error("ファイル %s をオープンできません。", sys.argv[n])
+	return file
+
+#
+# フィールド値の取得
+#
+def getval(line, n):
+	if re.match(r'(\+|-)?(\d+\.?|\d*\.\d+)$', line.getField(n)):
+		return Decimal(line.getField(n))
+	else:
+		error("数値変換できません。")
+
+#
+# ゼロ埋め出力
+#
+def pr_round(x, prec):
+	fmt = '%0' + str(prec) + 'd'
+	print fmt % x,
+
+#
+#メイン関数
+#
+if __name__ == '__main__':
+
+	if len(sys.argv) <= 1 \
+	 or sys.argv[1] == '--help' or sys.argv[1] == '--version':
+		usage()
+
+	#
+	# +age / -sage
+	#
+	if sys.argv[1] == '+age':
+		getcontext().rounding = ROUND_UP
+		del sys.argv[1]
+	elif sys.argv[1] == '-sage':
+		getcontext().rounding = ROUND_DOWN
+		del sys.argv[1]
+	else:
+		getcontext().rounding = ROUND_HALF_UP
+	if len(sys.argv) <= 1:
+		usage()
+
+	if re.match(_keypat, sys.argv[-1]):
+		file = sys.stdin
+	else:
+		file = open_file(len(sys.argv) - 1)
+
+	#
+	# 精度の取得
+	#
+	prec = []
+	for arg in sys.argv[1:]:
+		p = re.match(_keypat, arg)
+		if not p:
+			usage()
+		if p.group(2) == '':
+			prec += [ [ int(p.group(1)), int(p.group(3))] ]
+		else:
+			prec += [ [ int(p.group(1)), -int(p.group(3))] ]
+	for x in zip(prec, prec[1:]):
+		if x[0][0] >= x[1][0]:
+			error("フィールド位置が昇順になっていません。")
+	#
+	# メインループ
+	#
+	for line in file:
+		line = FieldLine(line)
+		p = prec[:]
+		for i in range(1, line.size() + 1):
+			while p and i > p[0][0]:
+				del p[0]
+			if not p or i < p[0][0]:
+				print line.getField(i),
+			else:
+				pr_round(getval(line, i), p[0][1]),
+		print
+
+	sys.exit(0)
