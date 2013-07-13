@@ -9,7 +9,7 @@ marume : 四捨五入、切り上げ、切り捨て
 【書式】
 
 Usage   : marume [+age|-sage] <f1.d1> <f2.d2> .. <file>
-Version : Thu Dec 15 13:46:38 JST 2011
+Version : Sat Jul 13 17:11:48 JST 2013
 
 【説明】
 
