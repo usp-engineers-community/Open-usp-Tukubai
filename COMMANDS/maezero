@@ -127,7 +127,7 @@ def getval(line, n):
 #
 # ゼロ埋め出力
 #
-def pr_round(x, prec):
+def add_zero(x, prec):
 	fmt = '%0' + str(prec) + 'd'
 	print fmt % x,
 
@@ -186,7 +186,7 @@ if __name__ == '__main__':
 			if not p or i < p[0][0]:
 				print line.getField(i),
 			else:
-				pr_round(getval(line, i), p[0][1]),
+				add_zero(getval(line, i), p[0][1]),
 		print
 
 	sys.exit(0)

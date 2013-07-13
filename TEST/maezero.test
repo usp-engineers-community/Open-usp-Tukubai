@@ -1,0 +1,51 @@
+#!/usr/local/bin/bash -xv
+#
+# test script of maezero 
+#
+# usage: ./maezero.test <command path>
+
+name=maezero
+    
+tmp=/tmp/$$
+dir=$(dirname $0)/..
+cd $dir
+    
+com="$2 ./$1/${name}"
+[ "$1" = "" ] && com="./$1/${name}"
+
+ERROR_CHECK(){
+	[ "$(echo ${PIPESTATUS[@]} | tr -d ' 0')" = "" ] && return
+
+	echo $1
+	echo "$com" NG
+#	rm -f $tmp-*
+	exit 1
+}
+
+###########################################
+#TEST1
+
+cat << FIN > $tmp-in
+1
+342
+12
+FIN
+
+cat << FIN > $tmp-out
+0001
+0342
+0012
+FIN
+
+${com} 1.4 $tmp-in > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1.1 error"
+
+cat $tmp-in | ${com} 1.4 > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1.2 error"
+
+
+rm -f $tmp-*
+echo "${com}" OK
+exit 0

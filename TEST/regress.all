@@ -32,6 +32,7 @@ cd $dir
 ./cjoin0.test COMMANDS.HS ""
 ./calclock.test COMMANDS.HS ""
 ./delf.test COMMANDS.HS ""
+./filehame.test COMMANDS.HS ""
 ./gyo.test COMMANDS.HS ""
 ./retu.test COMMANDS.HS ""
 ./self.test COMMANDS.HS ""
@@ -65,6 +66,8 @@ while read com ; do
 	./self.test COMMANDS $com
 	./tarr.test COMMANDS $com
 	./delf.test COMMANDS $com
+	./maezero.test COMMANDS $com
+	./marume.test COMMANDS $com
 	./nameread.test COMMANDS $com
 	./check_need_name.test COMMANDS $com
 	./join0.test COMMANDS $com
