@@ -126,7 +126,13 @@ def getval(line, n):
 # 丸め出力
 #
 def pr_round(x, prec):
-	print '%.*f' % (prec, round(x, prec)),
+	r = round(x, prec)
+	if r == 0 :
+		s = '%.*f' % (prec, r)
+		s = s.lstrip("-")
+		print s,
+	else :
+		print '%.*f' % (prec, r),
 
 #
 #メイン関数
