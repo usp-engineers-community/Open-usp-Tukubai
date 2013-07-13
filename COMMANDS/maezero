@@ -31,7 +31,7 @@
 # marumeからコードを拝借して応急処置で作った物です。
 # コードの掃除が必要
 _usage = "maezero <f1.d1> <f2.d2> .. <file>"
-_version = "Fri Jul 12 12:26:56 JST 2013"
+_version = "Sat Jul 13 17:11:48 JST 2013"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
 _keypat = r'(\d+)\.(0?)(\d+)$'
 		# 1: field number
