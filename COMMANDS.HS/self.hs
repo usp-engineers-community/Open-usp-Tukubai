@@ -3,6 +3,7 @@ import System.IO
 import Text.ParserCombinators.Parsec
 import Control.Monad
 import Data.Char
+import Control.Applicative hiding ((<|>)) 
 
 {--
 self（Open usp Tukubai）
@@ -36,7 +37,7 @@ THE SOFTWARE.
 showUsage :: IO ()
 showUsage = do hPutStr stderr
 		("Usage    : self <f1> <f2> ... <file>\n" ++ 
-		"Sun Jun 16 16:54:10 JST 2013\n" ++
+		"Thu Jul 18 16:22:23 JST 2013\n" ++
 		"Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
 
 main :: IO ()
@@ -155,11 +156,8 @@ parseOption :: Parser Option
 parseOption = try(parseSelect) <|> try(parseFileName)
 
 parseSelect :: Parser Option
-parseSelect = do r <- ( try(parseRange) 
-                        <|> try(parseSubSubField) 
-                        <|> try(parseSubField) 
-                        <|> try(parseSimpleField) )
-                 return $ Select r
+parseSelect = Select <$> ( try(parseRange) <|> try(parseSubSubField) 
+                        <|> try(parseSubField) <|> try(parseSimpleField) ) 
 
 parseRange :: Parser Field
 parseRange = do first <- parseSimpleField
@@ -195,7 +193,7 @@ parseNFM = do string "NF-"
               return $ SimpleField ( -1 * (read num) - 1 )
 
 parseNF :: Parser Field
-parseNF = string "NF" >> (return $ SimpleField (-1) )
+parseNF = string "NF" >> (return . SimpleField) (-1)
 
 parseFileName :: Parser Option
 parseFileName =  many1 ( letter <|> digit <|> symbol ) >>= return . FileName
