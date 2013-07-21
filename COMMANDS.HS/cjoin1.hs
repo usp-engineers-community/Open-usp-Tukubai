@@ -37,7 +37,7 @@ THE SOFTWARE.
 
 showUsage :: IO ()
 showUsage = do System.IO.hPutStr stderr ("Usage    : cjoin1 [+ng] <key=n> <master> <tran>\n" ++ 
-                "Sun Jul 21 14:34:20 JST 2013\n" ++
+                "Sun Jul 21 15:37:16 JST 2013\n" ++
                 "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
 
 main :: IO ()
@@ -66,32 +66,27 @@ parseKey str = case parse keys "" str of
                     Left  err -> Error (show err)
 
 mainProc' :: Bool -> Keys -> BS.ByteString -> BS.ByteString -> IO ()
-mainProc' ng (Keys ks) ms ts = (BS.putStr $ BS.unlines oktran) >> (BS.hPutStr stderr $ BS.unlines ngtran)
+mainProc' ng (Keys ks) ms ts = out ng [ join1 mlines t | t <- tlines ]
                                where mlines = parseMaster ks (BS.lines ms)
                                      tlines = parseTran ks (BS.lines ts)
                                      ans = [ join1 mlines t | t <- tlines ]
-                                     oktran = pickOk ans
-                                     ngtran = if ng then pickNg ans else []
 
- -- BS.hPutStr stderr 
-
-pickOk :: [OutTran] -> [BS.ByteString]
-pickOk [] = []
-pickOk ((OkTran ln):as) = ln : pickOk as
-pickOk ((NgTran ln):as) = pickOk as
-
-pickNg :: [OutTran] -> [BS.ByteString]
-pickNg [] = []
-pickNg ((NgTran ln):as) = ln : pickNg as
-pickNg ((OkTran ln):as) = pickNg as
+out :: Bool -> [OutTran] -> IO ()
+out _  []                  = do return ()
+out False ((OkTran ln):as) = (BS.putStrLn ln) >> (out False as)
+out True  ((OkTran ln):as) = (BS.putStrLn ln) >> (out True  as)
+out False ((NgTran ln):as) = out False as
+out True  ((NgTran ln):as) = (BS.hPutStrLn stderr ln) >> (out True as)
 
 join1 :: [Master] -> Tran -> OutTran
-join1 ms (Tran p k a) = makeLine m (Tran p k a)
-                        where m = pickMaster ms k
+join1 ms (Tran p k a) = makeLine (pickMaster ms k) (Tran p k a)
 
 makeLine :: Maybe Master -> Tran -> OutTran
 makeLine (Just (Master k v)) (Tran p _ a) = OkTran (BS.unwords $ p ++ k ++ v ++ a)
-makeLine Nothing (Tran p k a) = NgTran (BS.unwords $ p ++ k ++ a)
+makeLine Nothing             (Tran p k a) = NgTran (BS.unwords $ p ++ k ++ a)
+
+myWords :: BS.ByteString -> [BS.ByteString]
+myWords line = BS.split ' ' line
 
 pickMaster :: [Master] -> [BS.ByteString] -> Maybe Master
 pickMaster ms k = if length matched > 0 then Just (head matched) else Nothing
@@ -100,11 +95,11 @@ pickMaster ms k = if length matched > 0 then Just (head matched) else Nothing
 matchMaster k (Master a b) = k == a
               
 parseMaster :: [Int] -> [BS.ByteString] -> [Master]
-parseMaster ks lines = [ f (length ks) (BS.words ln) | ln <- lines ]
+parseMaster ks lines = [ f (length ks) (myWords ln) | ln <- lines ]
                        where f n ws = Master (take n ws) (drop n ws)
 
 parseTran :: [Int] -> [BS.ByteString] -> [Tran]
-parseTran ks lines = [ parseTran' ks (BS.words ln) | ln <- lines ]
+parseTran ks lines = [ parseTran' ks (myWords ln) | ln <- lines ]
 
 parseTran' :: [Int] -> [BS.ByteString] -> Tran
 parseTran' ks ws = Tran (take pre ws) (take (length ks) rem) (drop (length ks) rem)
