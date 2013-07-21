@@ -37,7 +37,7 @@ THE SOFTWARE.
 
 showUsage :: IO ()
 showUsage = do System.IO.hPutStr stderr ("Usage    : cjoin0 [+ng] <key=n> <master> <tran>\n" ++ 
-                "Sun Jul 21 15:37:16 JST 2013\n" ++
+                "Sun Jul 21 16:10:50 JST 2013\n" ++
                 "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
 
 main :: IO ()
@@ -66,10 +66,9 @@ parseKey str = case parse keys "" str of
                     Left  err -> Error (show err)
 
 mainProc' :: Bool -> Keys -> BS.ByteString -> BS.ByteString -> IO ()
-mainProc' ng (Keys ks) ms ts = out ng [ join1 mlines t | t <- tlines ]
+mainProc' ng (Keys ks) ms ts = out ng [ join0 mlines t | t <- tlines ]
                                where mlines = parseMaster ks (BS.lines ms)
                                      tlines = parseTran ks (BS.lines ts)
-                                     ans = [ join1 mlines t | t <- tlines ]
 
 out :: Bool -> [OutTran] -> IO ()
 out _  []                  = do return ()
@@ -78,8 +77,8 @@ out True  ((OkTran ln):as) = (BS.putStrLn ln) >> (out True  as)
 out False ((NgTran ln):as) = out False as
 out True  ((NgTran ln):as) = (BS.hPutStrLn stderr ln) >> (out True as)
 
-join1 :: [Master] -> Tran -> OutTran
-join1 ms (Tran p k a) = makeLine (pickMaster ms k) (Tran p k a)
+join0 :: [Master] -> Tran -> OutTran
+join0 ms (Tran p k a) = makeLine (pickMaster ms k) (Tran p k a)
 
 makeLine :: Maybe Master -> Tran -> OutTran
 makeLine (Just (Master k v)) (Tran p _ a) = OkTran (BS.unwords $ p ++ k ++ a)
