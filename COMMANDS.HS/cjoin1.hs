@@ -37,7 +37,7 @@ THE SOFTWARE.
 
 showUsage :: IO ()
 showUsage = do System.IO.hPutStr stderr ("Usage    : cjoin1 [+ng] <key=n> <master> <tran>\n" ++ 
-                "Sun Jul 21 15:37:16 JST 2013\n" ++
+                "Sun Jul 21 16:10:50 JST 2013\n" ++
                 "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
 
 main :: IO ()
@@ -69,7 +69,6 @@ mainProc' :: Bool -> Keys -> BS.ByteString -> BS.ByteString -> IO ()
 mainProc' ng (Keys ks) ms ts = out ng [ join1 mlines t | t <- tlines ]
                                where mlines = parseMaster ks (BS.lines ms)
                                      tlines = parseTran ks (BS.lines ts)
-                                     ans = [ join1 mlines t | t <- tlines ]
 
 out :: Bool -> [OutTran] -> IO ()
 out _  []                  = do return ()
