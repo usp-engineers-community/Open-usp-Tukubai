@@ -2,8 +2,9 @@ import System.Environment
 import System.IO
 import Text.ParserCombinators.Parsec
 import Control.Monad
-import Data.ByteString.Lazy.Char8 as BS
+import Data.ByteString.Lazy.Char8 as BS hiding (length,take,drop,filter,head)
 import Data.List.Split
+import Control.Applicative hiding ((<|>), many)
 
 {--
 cjoin0（Open usp Tukubai）
@@ -36,66 +37,86 @@ THE SOFTWARE.
 
 showUsage :: IO ()
 showUsage = do System.IO.hPutStr stderr ("Usage    : cjoin0 [+ng] <key=n> <master> <tran>\n" ++ 
-                "Sun Jun  9 17:48:12 JST 2013\n" ++
+                "Sun Jul 21 15:37:16 JST 2013\n" ++
                 "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
-
-type Lines = [BS.ByteString]
-type TrnLine = BS.ByteString
-type Master = [[BS.ByteString]]
-type TranWords = [BS.ByteString]
-type Keys = [Int]
 
 main :: IO ()
 main = do args <- getArgs
           case args of
                 ["-h"]     -> showUsage
                 ["--help"] -> showUsage
-                ("+ng":as) -> mainProc True as
-                _          -> mainProc False args
+                ["+ng",key,master,tran] -> mainProc True  key master tran
+                ["+ng",key,master]      -> mainProc True  key master "-"
+                [key,master,tran]       -> mainProc False key master tran
+                [key,master]            -> mainProc False key master "-"
 
 
-mainProc :: Bool -> [String] -> IO ()
-mainProc flg as = do mst <- readF (as !! 1)
-                     trn <- readF tran
-                     printRes flg $ mainProc' keys (BS.lines mst) (BS.lines trn)
-                     where tran = if (Prelude.length as) == 3 then (as !! 2) else "-"
-                           keys = getKeys (as !! 0)
-
-mainProc' :: Keys -> Lines -> Lines -> [(Int,TrnLine)]
-mainProc' ks ms ts = [ mainProc'' ks master t | t <- ts ]
-                         where master = [ Prelude.take keynum (BS.words ln) | ln <- ms ]
-                               keynum = Prelude.length ks
-
-mainProc'' :: Keys -> Master -> TrnLine -> (Int,TrnLine)
-mainProc'' ks ms t = if keys `Prelude.elem` ms then (0,t) else (1,t)
-                     where keys = takeKeys ks (BS.words t)
-
-printRes :: Bool -> [(Int,TrnLine)] -> IO ()
-printRes False cs = BS.putStr . BS.unlines $ ok cs
-printRes True cs = do BS.putStr . BS.unlines $ ok cs 
-                      BS.hPutStr stderr . BS.unlines $ ng True cs
-
-ok :: [(Int,TrnLine)] -> [TrnLine]
-ok ((0,ln):lns) = ln : ok lns
-ok ((1,ln):lns) = ok lns
-ok [] = [] 
-
-ng :: Bool -> [(Int,TrnLine)] -> [TrnLine]
-ng False lns = [] 
-ng True ((1,ln):lns) = ln : ng True lns
-ng True ((0,ln):lns) = ng True lns
-ng True [] = [] 
-
-takeKeys :: Keys -> TranWords -> [BS.ByteString]
-takeKeys (n:ns) ts = (ts !! n) : takeKeys ns ts
-takeKeys [] ts = []
+mainProc :: Bool -> String -> String -> String -> IO ()
+mainProc ng key master tran = do ms <- readF master
+                                 ts <- readF tran
+                                 mainProc' ng (parseKey key) ms ts
 
 readF :: String -> IO BS.ByteString
 readF "-" = BS.getContents
-readF f = BS.readFile f
+readF f   = BS.readFile f
 
-getKeys :: String -> Keys
-getKeys str = [f..s]
-              where ks = splitOn "/" (Prelude.drop 4 str)
-                    f = read (ks !! 0) - 1
-                    s = if Prelude.length ks == 1 then f else read (ks !! 1) - 1
+parseKey :: String -> Keys
+parseKey str = case parse keys "" str of
+                    Right opt -> opt
+                    Left  err -> Error (show err)
+
+mainProc' :: Bool -> Keys -> BS.ByteString -> BS.ByteString -> IO ()
+mainProc' ng (Keys ks) ms ts = out ng [ join1 mlines t | t <- tlines ]
+                               where mlines = parseMaster ks (BS.lines ms)
+                                     tlines = parseTran ks (BS.lines ts)
+                                     ans = [ join1 mlines t | t <- tlines ]
+
+out :: Bool -> [OutTran] -> IO ()
+out _  []                  = do return ()
+out False ((OkTran ln):as) = (BS.putStrLn ln) >> (out False as)
+out True  ((OkTran ln):as) = (BS.putStrLn ln) >> (out True  as)
+out False ((NgTran ln):as) = out False as
+out True  ((NgTran ln):as) = (BS.hPutStrLn stderr ln) >> (out True as)
+
+join1 :: [Master] -> Tran -> OutTran
+join1 ms (Tran p k a) = makeLine (pickMaster ms k) (Tran p k a)
+
+makeLine :: Maybe Master -> Tran -> OutTran
+makeLine (Just (Master k v)) (Tran p _ a) = OkTran (BS.unwords $ p ++ k ++ a)
+makeLine Nothing             (Tran p k a) = NgTran (BS.unwords $ p ++ k ++ a)
+
+myWords :: BS.ByteString -> [BS.ByteString]
+myWords line = BS.split ' ' line
+
+pickMaster :: [Master] -> [BS.ByteString] -> Maybe Master
+pickMaster ms k = if length matched > 0 then Just (head matched) else Nothing
+            where matched = filter ( matchMaster k ) ms
+
+matchMaster k (Master a b) = k == a
+              
+parseMaster :: [Int] -> [BS.ByteString] -> [Master]
+parseMaster ks lines = [ f (length ks) (myWords ln) | ln <- lines ]
+                       where f n ws = Master (take n ws) (drop n ws)
+
+parseTran :: [Int] -> [BS.ByteString] -> [Tran]
+parseTran ks lines = [ parseTran' ks (myWords ln) | ln <- lines ]
+
+parseTran' :: [Int] -> [BS.ByteString] -> Tran
+parseTran' ks ws = Tran (take pre ws) (take (length ks) rem) (drop (length ks) rem)
+             where pre = (ks !! 0) - 1
+                   rem = drop pre ws
+
+data Keys   = Keys [Int] | Error String
+data Master = Master [BS.ByteString] [BS.ByteString] deriving Show -- keys and values
+data Tran   = Tran [BS.ByteString] [BS.ByteString] [BS.ByteString] deriving Show -- values and keys and values
+data OutTran = OkTran BS.ByteString | NgTran BS.ByteString
+
+keys = string "key=" >> (try(rangekey) <|> try(singlekey) )
+
+singlekey = do n <- many1 digit
+               return $ Keys [read n::Int]
+
+rangekey = do n <- many1 digit
+              char '/'
+              m <- many1 digit
+              return $ Keys [(read n::Int)..(read m::Int)]
