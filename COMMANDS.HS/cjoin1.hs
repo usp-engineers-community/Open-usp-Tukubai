@@ -3,7 +3,6 @@ import System.IO
 import Text.ParserCombinators.Parsec
 import Control.Monad
 import Data.ByteString.Lazy.Char8 as BS hiding (length,take,drop,filter,head)
-import Data.List.Split
 import Control.Applicative hiding ((<|>), many)
 
 {--
@@ -37,7 +36,7 @@ THE SOFTWARE.
 
 showUsage :: IO ()
 showUsage = do System.IO.hPutStr stderr ("Usage    : cjoin1 [+ng] <key=n> <master> <tran>\n" ++ 
-                "Sun Jul 21 16:10:50 JST 2013\n" ++
+                "Mon Jul 22 10:17:09 JST 2013\n" ++
                 "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
 
 main :: IO ()
