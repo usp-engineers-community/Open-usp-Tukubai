@@ -183,8 +183,10 @@ if __name__ == '__main__':
 	else:
 		master,dummy = setMasterDummyFixed(openReadFile(sys.argv[1]),key_to - key_from,dummy_string)
 
+	if len(sys.argv) < 3 : f = "-"
+	else:                  f = sys.argv[2]
 	#メイン処理：トランザクションとマスタのマッチング
-	for line in openReadFile(sys.argv[2]):
+	for line in openReadFile(f):
 		line = line.rstrip("\n")
 		tokens = line.split(" ")
 
