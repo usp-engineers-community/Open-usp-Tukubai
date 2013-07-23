@@ -3,12 +3,11 @@ import System.IO
 import Text.ParserCombinators.Parsec
 import Control.Monad
 import Data.ByteString.Lazy.Char8 as BS hiding (take,drop,filter,head,last,map,zip,repeat)
-import Data.ByteString.Lazy.UTF8 as US hiding (take,drop,filter,head,last,map,zip,repeat)
 import Control.Applicative hiding ((<|>), many)
 import Data.Char
 
 {--
-cjoin1（Open usp Tukubai）
+cjoin2（Open usp Tukubai）
 
 designed by Nobuaki Tounaka
 written by Ryuichi Ueda
@@ -37,8 +36,8 @@ THE SOFTWARE.
 --}
 
 showUsage :: IO ()
-showUsage = do System.IO.hPutStr stderr ("Usage    : cjoin1 [+ng] <key=n> <master> <tran>\n" ++ 
-                "Tue Jul 23 11:10:37 JST 2013\n" ++
+showUsage = do System.IO.hPutStr stderr ("Usage    : cjoin2 [+ng] <key=n> <master> <tran>\n" ++ 
+                "Tue Jul 23 11:15:22 JST 2013\n" ++
                 "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
 
 main :: IO ()
