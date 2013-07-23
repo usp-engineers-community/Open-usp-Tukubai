@@ -31,6 +31,7 @@ cd $dir
 
 ./cjoin0.test COMMANDS.HS ""
 ./cjoin1.test COMMANDS.HS ""
+./cjoin2.test COMMANDS.HS ""
 ./calclock.test COMMANDS.HS ""
 ./delf.test COMMANDS.HS ""
 ./filehame.test COMMANDS.HS ""

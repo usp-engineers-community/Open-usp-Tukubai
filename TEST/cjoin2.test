@@ -81,7 +81,7 @@ diff $tmp-ans $tmp-out
 
 cat << FIN > $tmp-tran
 DDD 004 堅田
-AAA 001 山田 
+AAA 001 山田
 CCC 003 太田
 BBB 002 上田
 FIN
@@ -157,6 +157,10 @@ diff $tmp-ans $tmp-out
 ${com} -d@@ key=2/3 $tmp-master $tmp-tran > $tmp-ans
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST5.2 error"
+
+cat $tmp-tran | ${com} -d@@ key=2/3 $tmp-master > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5.3 error"
 
 rm -f $tmp-*
 echo "${com}" OK
