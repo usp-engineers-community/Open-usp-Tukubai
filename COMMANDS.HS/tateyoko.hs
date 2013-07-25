@@ -36,7 +36,7 @@ THE SOFTWARE.
 showUsage :: IO ()
 showUsage = do hPutStr stderr
                 ("Usage    : tateyoko <file>\n" ++ 
-                "Wed Jun 12 22:37:46 JST 2013\n" ++
+                "Thu Jul 25 22:01:12 JST 2013\n" ++
                 "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
 
 main :: IO ()
@@ -55,8 +55,11 @@ readF f = BS.readFile f
 
 mainProc :: BS.ByteString -> IO ()
 mainProc cs = BS.putStr $ BS.unlines [ BS.unwords a | a <- arr ]
-              where arr = tateyoko [ BS.words ln | ln <- BS.lines cs ] n
-                    n = length $ BS.words $ ( BS.lines cs ) !! 0
+              where arr = tateyoko [ myWords ln | ln <- BS.lines cs ] n
+                    n = length $ myWords $ ( BS.lines cs ) !! 0
+
+myWords :: BS.ByteString -> [BS.ByteString]
+myWords ws = filter (/= BS.pack "") $ BS.split ' ' ws
 
 tateyoko :: [[BS.ByteString]] -> Int -> [[BS.ByteString]]
 tateyoko ws n = [ mtakes ws m | m <- [0..(n-1)] ]
