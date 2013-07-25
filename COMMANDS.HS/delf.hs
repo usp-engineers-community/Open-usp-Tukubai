@@ -2,7 +2,7 @@ import System.Environment
 import System.IO
 import Text.ParserCombinators.Parsec
 import Control.Monad
-import Data.ByteString.Lazy.Char8 as BS
+import Data.ByteString.Lazy.Char8 as BS hiding (filter)
 
 {--
 delf（Open usp Tukubai）
@@ -35,7 +35,7 @@ THE SOFTWARE.
 
 showUsage :: IO ()
 showUsage = do System.IO.hPutStr stderr ("Usage    : delf <f1> <f2> ... <file>\n" ++ 
-                "Wed Jun 12 22:14:11 JST 2013\n" ++
+                "Thu Jul 25 21:57:24 JST 2013\n" ++
                 "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
 
 main :: IO ()
@@ -60,8 +60,11 @@ mainProc fs cs = BS.putStr $ BS.unlines [ lineProc fs c | c <- BS.lines cs ]
 
 lineProc :: [(Int,Int)] -> BS.ByteString -> BS.ByteString
 lineProc fs ln = BS.unwords $ deleteFields nfs zwds
-                 where zwds = Prelude.zip [1..] (BS.words ln)
+                 where zwds = Prelude.zip [1..] (myWords ln)
                        nfs = fieldNormalize fs (Prelude.length zwds)
+
+myWords :: BS.ByteString -> [BS.ByteString]
+myWords ws = filter (/= BS.pack "") $ split ' ' ws
 
 fieldNormalize :: [(Int,Int)] -> Int -> [Int]
 fieldNormalize ((a,b):fs) fnum = [c..d] ++ (fieldNormalize fs fnum)
