@@ -4,6 +4,7 @@ import Text.ParserCombinators.Parsec
 import Control.Monad
 import Data.Char
 import Control.Applicative hiding ((<|>)) 
+import Data.ByteString.Lazy.Char8 as BS hiding (filter,head,last,map,zip,repeat,init,hPutStr)
 
 {--
 self（Open usp Tukubai）
@@ -37,7 +38,7 @@ THE SOFTWARE.
 showUsage :: IO ()
 showUsage = do hPutStr stderr
 		("Usage    : self <f1> <f2> ... <file>\n" ++ 
-		"Thu Jul 18 16:22:23 JST 2013\n" ++
+		"Thu Jul 25 21:17:16 JST 2013\n" ++
 		"Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
 
 main :: IO ()
@@ -49,23 +50,27 @@ main = do args <- getArgs
 		_          -> readF (getFileName os) >>= mainProc (getFields os)
                                      where os = setOpts args
 
-readF :: String -> IO String
-readF "-" = getContents
-readF f   = readFile f
+readF :: String -> IO BS.ByteString
+readF "-" = BS.getContents
+readF f   = BS.readFile f
 
 ------------
 -- output --
 ------------
 
 directMode :: [String] -> IO ()
-directMode as = mainProc fs str
+directMode as = mainProc fs (BS.pack str) 
                 where str = last as
                       fs = getFields $ setOpts (init as)
 
-mainProc :: [Field] -> String -> IO ()
-mainProc fs cs = putStr $ unlines [ lineProc nfs c nf | c <- lines cs ]
-                   where nf = length $ words $ head ( lines cs)
+mainProc :: [Field] -> BS.ByteString -> IO ()
+mainProc fs cs = BS.putStr $ BS.unlines [ lineProc nfs c nf | c <- BS.lines cs ]
+                   where nf = Prelude.length $ myWords $ head ( BS.lines cs)
                          nfs = [ normalizeField f nf | f <- fs ]
+
+myWords :: BS.ByteString -> [BS.ByteString]
+myWords line = filter (/= x) $ BS.split ' ' line
+               where x = BS.pack ""
 
 normalizeField :: Field -> Int -> Field
 normalizeField (SimpleField x) nf     = SimpleField (solveNF x nf)
@@ -76,41 +81,54 @@ normalizeField (SubSubField x y z) nf = SubSubField (solveNF x nf) y z
 solveNF :: Int -> Int -> Int
 solveNF x nf = if x >= 0 then x else x + nf + 1
 
-lineProc :: [Field] -> String -> Int -> String
-lineProc fs ln nf = unwords [ getWords f ws | f <- fs ]
-                    where ws = ln : words ln
+lineProc :: [Field] -> BS.ByteString -> Int -> BS.ByteString
+lineProc fs ln nf = BS.unwords [ getWords f ws | f <- fs ]
+                    where ws = ln : (myWords ln)
 
-getWords :: Field -> [String] -> String
+getWords :: Field -> [BS.ByteString] -> BS.ByteString
 getWords (SimpleField n) ws     = ws !! n
-getWords (Range x y) ws         = unwords $ take (y-x+1) ( drop x ws )
+getWords (Range x y) ws         = BS.unwords $ Prelude.take (y-x+1) ( Prelude.drop x ws )
 getWords (SubField x y) ws      = cutWord w y 0 where w = ws !! x
 getWords (SubSubField x y z) ws = cutWord w y z where w = ws !! x
 
-widthCount :: String -> [Int]
-widthCount cs = pileUp [ wc c | c <- cs ] 1
-                 where wc c = wc' (ord c)
-                       wc' n = if n < 128 then 1 else (hanzen n)
-                       hanzen m = if m >= 0xFF61 && m <= 0xFF9F then 1 else 2
+cutWord :: BS.ByteString -> Int -> Int -> BS.ByteString
+cutWord str frm 0 = cutWordFrm (BS.unpack str) frm 0
+cutWord str frm to = BS.pack $ cutWordTo x to 0 
+                     where x = BS.unpack $ cutWordFrm (BS.unpack str) frm 0
 
-pileUp :: [Int] -> Int -> [Int]
-pileUp (n:[]) m = m : [m + n]
-pileUp (n:ns) m = m : (pileUp ns (n + m))
+cutWordFrm :: String -> Int -> Int -> BS.ByteString
+cutWordFrm [] num cutted = error "wrong cut point"
+cutWordFrm str num cutted = if cutted == num-1 then BS.pack str else cutWordFrm s num (cutted+n)
+                         where split = takeChar str
+                               c = fst split
+                               s = snd split
+                               n = wc c
 
-cutWord :: String -> Int -> Int -> String
-cutWord str frm 0 = drop x str
-                      where x = if cutpos then error "bad cut position"
-                                else length $ filter ( < frm ) wc
-                            cutpos = filter (==frm) (init wc) == []
-                            wc = widthCount str
-cutWord str frm num = drop x (take y str)
-                      where x = if cutpos then error "bad cut position"
-                                else length $ filter ( < frm ) wc
-                            y = if cutpos2 then error "bad length"
-                                else length $ filter ( < to ) wc
-                            cutpos = filter (==frm) (init wc) == []
-                            cutpos2 = (filter (==to) wc) == [] 
-                            to = frm + num
-                            wc = widthCount str
+cutWordTo :: String -> Int -> Int -> String
+cutWordTo str num cutted = if num == cutted then [] else c ++ (cutWordTo s num (cutted+n))
+                         where split = takeChar str
+                               c = fst split
+                               s = snd split
+                               n = wc c
+
+takeChar :: String -> (String,String)
+takeChar [] = error "wrong cut pos"
+takeChar (c:[]) = ([c],[])
+takeChar (c:a:[]) = if (ord c) < 128 then ([c],[a]) else error "not supported charcter"
+takeChar (c:a:b:[]) = if (ord c) < 128 then ([c],(a:b:[])) else ((c:a:b:[]),[])
+takeChar (c:a:b:cs) = if (ord c) < 128 then ([c],(a:b:cs)) else ((c:a:b:[]),cs)
+
+wc :: String -> Int
+wc []           = 0
+wc (c:[])       = 1
+wc (c:a:[])     = 2
+wc (c:a:b:cs) = wc' $ ord c
+                 where wc' n = if n < 128
+                       then (1 + wc (a:b:cs))
+                       else (hanzen ((ord a)*256+(ord c))) + wc cs
+                       hanzen m = if m >= 0xBDA1 && m <= 0xBE9F then 1 else 2
+
+-- 半角カナ：EFBDA1 ~ EFBE9F
 
 ------------------------
 -- handling of options --
@@ -133,9 +151,9 @@ getFields []               = []
 data Field = SimpleField Int 
             | Range Int Int 
             | SubField Int Int
-            | SubSubField Int Int Int
+            | SubSubField Int Int Int deriving Show
 
-data Option = Select Field | FileName String | Error String
+data Option = Select Field | FileName String | Error String deriving Show
 
 showOpts :: [Option] -> IO ()
 showOpts opts = print [ f opt | opt <- opts ]
