@@ -4,7 +4,7 @@ import Text.ParserCombinators.Parsec
 import Control.Monad
 import Data.Char
 import Control.Applicative hiding ((<|>)) 
-import Data.ByteString.Lazy.Char8 as BS hiding (filter,head,last,map,zip,repeat,init,hPutStr)
+import Data.ByteString.Lazy.Char8 as BS hiding (filter,head,last,map,zip,repeat,init)
 
 {--
 self（Open usp Tukubai）
@@ -36,7 +36,7 @@ THE SOFTWARE.
 --}
 
 showUsage :: IO ()
-showUsage = do hPutStr stderr
+showUsage = do System.IO.hPutStr stderr
 		("Usage    : self <f1> <f2> ... <file>\n" ++ 
 		"Thu Jul 25 21:26:20 JST 2013\n" ++
 		"Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
