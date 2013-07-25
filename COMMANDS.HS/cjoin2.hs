@@ -37,7 +37,7 @@ THE SOFTWARE.
 
 showUsage :: IO ()
 showUsage = do System.IO.hPutStr stderr ("Usage    : cjoin2 [+ng] <key=n> <master> <tran>\n" ++ 
-                "Tue Jul 23 11:15:22 JST 2013\n" ++
+                "Thu Jul 25 21:26:20 JST 2013\n" ++
                 "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
 
 main :: IO ()
@@ -137,11 +137,11 @@ wc :: String -> Int
 wc []           = 0
 wc (c:[])       = 1
 wc (c:a:[])     = 2
-wc (c:a:b:cs) = (wc' (ord c))
+wc (c:a:b:cs) = wc' $ ord c
                  where wc' n = if n < 128 
-                       then (1 + wc (a:b:cs))
-                       else (hanzen (n*256*256+(ord a)*256+(ord c))) + wc cs
-                       hanzen m = if m >= 0xFF61 && m <= 0xFF9F then 1 else 2
+                       then 1 + wc (a:b:cs)
+                       else (hanzen (n*256*256+(ord a)*256+(ord b))) + wc cs
+                       hanzen m = if m >= 0xEFBDA1 && m <= 0xEFBE9F then 1 else 2
 
 data Keys   = Keys [Int] | Error String
 data Master = Master [BS.ByteString] [BS.ByteString] deriving Show -- keys and values

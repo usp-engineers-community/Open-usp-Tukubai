@@ -38,7 +38,7 @@ THE SOFTWARE.
 showUsage :: IO ()
 showUsage = do hPutStr stderr
 		("Usage    : self <f1> <f2> ... <file>\n" ++ 
-		"Thu Jul 25 21:17:16 JST 2013\n" ++
+		"Thu Jul 25 21:26:20 JST 2013\n" ++
 		"Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
 
 main :: IO ()
@@ -124,8 +124,8 @@ wc (c:[])       = 1
 wc (c:a:[])     = 2
 wc (c:a:b:cs) = wc' $ ord c
                  where wc' n = if n < 128
-                       then (1 + wc (a:b:cs))
-                       else (hanzen ((ord a)*256+(ord c))) + wc cs
+                       then 1 + wc (a:b:cs)
+                       else (hanzen ((ord a)*256+(ord b))) + wc cs
                        hanzen m = if m >= 0xBDA1 && m <= 0xBE9F then 1 else 2
 
 -- 半角カナ：EFBDA1 ~ EFBE9F
