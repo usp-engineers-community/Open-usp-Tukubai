@@ -60,6 +60,8 @@ while read com ; do
 	./cjoin1.test COMMANDS $com
 	./cjoin2.test COMMANDS $com
 	./count.test COMMANDS $com
+	./getlast.test COMMANDS $com
+	./getfirst.test COMMANDS $com
 	./tateyoko.test COMMANDS $com
 	./sm2.test COMMANDS $com
 	./cgi-name.test COMMANDS $com
