@@ -34,6 +34,8 @@ cd $dir
 ./cjoin2.test COMMANDS.HS ""
 ./calclock.test COMMANDS.HS ""
 ./count.test COMMANDS.HS ""
+./getfirst.test COMMANDS.HS ""
+./getlast.test COMMANDS.HS ""
 ./delf.test COMMANDS.HS ""
 ./filehame.test COMMANDS.HS ""
 ./gyo.test COMMANDS.HS ""
@@ -62,6 +64,7 @@ while read com ; do
 	./count.test COMMANDS $com
 	./getlast.test COMMANDS $com
 	./getfirst.test COMMANDS $com
+	./getlast.test COMMANDS $com
 	./tateyoko.test COMMANDS $com
 	./sm2.test COMMANDS $com
 	./cgi-name.test COMMANDS $com
