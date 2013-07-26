@@ -41,6 +41,7 @@ cd $dir
 ./gyo.test COMMANDS.HS ""
 ./retu.test COMMANDS.HS ""
 ./self.test COMMANDS.HS ""
+./sm2.test COMMANDS.HS ""
 ./tarr.test COMMANDS.HS ""
 ./tateyoko.test COMMANDS.HS ""
 ./yarr.test COMMANDS.HS ""
