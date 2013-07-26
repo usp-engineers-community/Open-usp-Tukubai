@@ -1,6 +1,7 @@
-import Data.List
+import Data.List as DL
 import System.Environment
 import System.IO
+import Data.ByteString.Lazy.Char8 as BS hiding (filter,head,last,map,zip,repeat,init,concat,take,drop,length)
 
 {--
 tarr（Open usp Tukubai）
@@ -32,9 +33,9 @@ THE SOFTWARE.
 --}
 
 showUsage :: IO ()
-showUsage = do hPutStr stderr
+showUsage = do System.IO.hPutStr stderr
 		("Usage    : tarr [num=<n>] [-<m>] <file>\n" ++ 
-		"Sat Mar 23 22:55:39 JST 2013\n" ++
+		"Fri Jul 26 17:18:56 JST 2013\n" ++
 		"Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
 
 main :: IO ()
@@ -46,59 +47,63 @@ main = do
 		[]         -> do foldAll
 		["-"]      -> do foldAll
 		_          -> do if (fileName args) == "-" 
-					then getContents >>= mainProc (parseArgs args)
-					else readFile (fileName args) >>= mainProc (parseArgs args)
+					then BS.getContents >>= mainProc (parseArgs args)
+					else BS.readFile (fileName args) >>= mainProc (parseArgs args)
 
 --単語ごとに全部改行して出力
-foldAll = getContents >>= putBSLines . fold
-	where fold cs = unlines $ concat [ words c | c <- lines cs ]
+foldAll = BS.getContents >>= putBSLines . fold
+	where fold cs = BS.unlines $ concat [ myWords c | c <- BS.lines cs ]
 
 --UTF-8の出力のお約束
-putBSLines :: String -> IO ()
+putBSLines :: BS.ByteString -> IO ()
 --putBSLines = putStr . unpack 
-putBSLines = putStr 
+putBSLines = BS.putStr 
 
 --tarr実行
-mainProc :: (Int,Int) -> String -> IO()
+mainProc :: (Int,Int) -> BS.ByteString -> IO()
 mainProc (  0,m) cs = putBSLines $ mFold m cs
-mainProc (num,m) cs = putBSLines $ keyFold num m $ lines cs
+mainProc (num,m) cs = putBSLines $ keyFold num m $ BS.lines cs
 
 -- -<m> オプションのときに1行をm単語ずつ折り返し
-mFold :: Int -> String -> String
-mFold m cs = unlines $ concat [ mSet m ( words c ) | c <- lines cs ]
+mFold :: Int -> BS.ByteString -> BS.ByteString
+mFold m cs = BS.unlines $ concat [ mSet m ( myWords c ) | c <- BS.lines cs ]
 
 -- 単語のリストから単語をm個ずつまとめたリストへ
-mSet :: Int -> [ String ] -> [ String ]
+mSet :: Int -> [ BS.ByteString ] -> [ BS.ByteString ]
 mSet m [] = []
-mSet m ws = (unwords $ fst s) : mSet m (snd s)
-		where s = splitAt m ws 
+mSet m ws = (BS.unwords $ fst s) : mSet m (snd s)
+		where s = Prelude.splitAt m ws 
 
 -- キー(num=<n>)への対応
-keyFold :: Int -> Int -> [ String ] -> String
-keyFold num m cs = unlines $ concat [ keyExpand num m ( words c ) | c <- cs ]
+keyFold :: Int -> Int -> [ BS.ByteString ] -> BS.ByteString
+keyFold num m cs = BS.unlines $ concat [ keyExpand num m ( myWords c ) | c <- cs ]
 
 -- オプションからファイル名取り出し
 fileName :: [String] -> String
-fileName as = if "num=" `isPrefixOf` lst || "-" `isPrefixOf` lst then "-" else lst
+fileName as = if "num=" `DL.isPrefixOf` lst || "-" `DL.isPrefixOf` lst then "-" else lst
 	where lst = last as
 
 -- 1行のトークンをキーと値のペアの文字列にして出力
-keyExpand :: Int -> Int -> [ String ] ->  [ String ]
-keyExpand num m ws = [ unwords [ k , v ] | v <- vs ]
-		where k = unwords $ take num ws
+keyExpand :: Int -> Int -> [ BS.ByteString ] ->  [ BS.ByteString ]
+keyExpand num m ws = [ BS.unwords [ k , v ] | v <- vs ]
+		where k = BS.unwords $ take num ws
 		      vs = mSet m (drop num ws)
+
+myWords :: BS.ByteString -> [BS.ByteString]
+myWords line = filter (/= x) $ BS.split ' ' line
+               where x = BS.pack ""
 
 -- オプションからパラメータ取り出し
 parseArgs :: [String] -> (Int,Int)
 parseArgs as = (getNum $ head0 $ filter findNum as, getM $ head1 $ filter findM as)
 	where
-		findNum a = "num=" `isPrefixOf` a
+		findNum a = "num=" `DL.isPrefixOf` a
 		getNum a = read (drop 4 a)::Int
 		head0 :: [String] -> String
 		head0 [] = "num=0"
 		head0 as = head as
 
-		findM a = "-" `isPrefixOf` a && length a > 1
+		findM a = "-" `DL.isPrefixOf` a && length a > 1
 		getM a = read (drop 1 a)::Int
 		head1 :: [String] -> String
 		head1 [] = "-1"
