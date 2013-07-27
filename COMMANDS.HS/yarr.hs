@@ -37,7 +37,7 @@ THE SOFTWARE.
 showUsage :: IO ()
 showUsage = do System.IO.hPutStr stderr
 		("Usage    : yarr [num=<n>] [-<m>] <file>\n" ++ 
-		"Sat Jul 27 10:02:29 JST 2013\n" ++
+		"Sat Jul 27 10:19:35 JST 2013\n" ++
 		"Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
 
 main :: IO ()
@@ -45,6 +45,7 @@ main = do args <- getArgs
           case args of
               ["-h"]     -> showUsage
               ["--help"] -> showUsage
+              []         -> do mainProc (Option 0 0 "-")
               _          -> do mainProc (setOpts args)
 
 readF :: String -> IO BS.ByteString
