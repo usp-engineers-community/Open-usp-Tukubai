@@ -1,7 +1,9 @@
-import Data.List as DL
 import System.Environment
 import System.IO
-import Data.ByteString.Lazy.Char8 as BS hiding (filter,head,last,map,zip,repeat,init,concat,take,drop,length)
+import Text.ParserCombinators.Parsec
+import Control.Monad
+import Data.ByteString.Lazy.Char8 as BS hiding (filter,drop,head,length,take)
+import Data.List as DL
 
 {--
 tarr（Open usp Tukubai）
@@ -35,76 +37,71 @@ THE SOFTWARE.
 showUsage :: IO ()
 showUsage = do System.IO.hPutStr stderr
 		("Usage    : tarr [num=<n>] [-<m>] <file>\n" ++ 
-		"Fri Jul 26 17:18:56 JST 2013\n" ++
+		"Sat Jul 27 10:29:01 JST 2013\n" ++
 		"Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
 
 main :: IO ()
-main = do
-	args <- getArgs
-	case args of
-		["-h"]     -> showUsage
-		["--help"] -> showUsage
-		[]         -> do foldAll
-		["-"]      -> do foldAll
-		_          -> do if (fileName args) == "-" 
-					then BS.getContents >>= mainProc (parseArgs args)
-					else BS.readFile (fileName args) >>= mainProc (parseArgs args)
+main = do args <- getArgs
+          case args of
+              ["-h"]     -> showUsage
+              ["--help"] -> showUsage
+              []         -> do mainProc (Option 0 1 "-")
+              _          -> do mainProc (setOpts args)
 
---単語ごとに全部改行して出力
-foldAll = BS.getContents >>= putBSLines . fold
-	where fold cs = BS.unlines $ concat [ myWords c | c <- BS.lines cs ]
+readF :: String -> IO BS.ByteString
+readF "-" = BS.getContents
+readF f = BS.readFile f
 
---UTF-8の出力のお約束
-putBSLines :: BS.ByteString -> IO ()
---putBSLines = putStr . unpack 
-putBSLines = BS.putStr 
+data Option = Option Int Int String | Error String deriving Show
 
---tarr実行
-mainProc :: (Int,Int) -> BS.ByteString -> IO()
-mainProc (  0,m) cs = putBSLines $ mFold m cs
-mainProc (num,m) cs = putBSLines $ keyFold num m $ BS.lines cs
+data Record = Record (Maybe BS.ByteString) [BS.ByteString]
 
--- -<m> オプションのときに1行をm単語ずつ折り返し
-mFold :: Int -> BS.ByteString -> BS.ByteString
-mFold m cs = BS.unlines $ concat [ mSet m ( myWords c ) | c <- BS.lines cs ]
+mainProc :: Option -> IO ()
+mainProc (Option num m file) = readF file >>= mainProc' num m
 
--- 単語のリストから単語をm個ずつまとめたリストへ
-mSet :: Int -> [ BS.ByteString ] -> [ BS.ByteString ]
-mSet m [] = []
-mSet m ws = (BS.unwords $ fst s) : mSet m (snd s)
-		where s = Prelude.splitAt m ws 
+mainProc' :: Int -> Int -> BS.ByteString -> IO ()
+mainProc' num m str = BS.putStr $ BS.unlines $ DL.map toStr $ tarr m rs
+                      where rs = [ makeRecord num ln | ln <- BS.lines str ]
 
--- キー(num=<n>)への対応
-keyFold :: Int -> Int -> [ BS.ByteString ] -> BS.ByteString
-keyFold num m cs = BS.unlines $ concat [ keyExpand num m ( myWords c ) | c <- cs ]
+tarr :: Int -> [Record] -> [Record]
+tarr m []       = []
+tarr m ((Record k []):rs) = tarr m rs
+tarr m ((Record k vs):rs) = new : tarr m (remain:rs)
+                where new = Record k (take m vs)
+                      remain = Record k (drop m vs)
+{--
+tarr 0 (a:b:rs) = if compKey a b then tarr 0 ((mergeKey a b) : rs) else (a : tarr 0 (b:rs))
+tarr m (a:b:rs) = if compKey a b then tarr' m (x:rs) else (a : tarr m (b:rs))
+                  where x = mergeKey a b
 
--- オプションからファイル名取り出し
-fileName :: [String] -> String
-fileName as = if "num=" `DL.isPrefixOf` lst || "-" `DL.isPrefixOf` lst then "-" else lst
-	where lst = last as
+tarr' :: Int -> [Record] -> [Record]
+tarr' m ((Record k vs):rs) = if (length vs) > m 
+                             then Record k (take m vs) : tarr m (Record k (drop m vs): rs) 
+                             else  (Record k vs) : tarr m rs
+--}
 
--- 1行のトークンをキーと値のペアの文字列にして出力
-keyExpand :: Int -> Int -> [ BS.ByteString ] ->  [ BS.ByteString ]
-keyExpand num m ws = [ BS.unwords [ k , v ] | v <- vs ]
-		where k = BS.unwords $ take num ws
-		      vs = mSet m (drop num ws)
+toStr :: Record -> BS.ByteString
+toStr (Record k vs) = if k == Nothing then BS.unwords vs else BS.unwords ((f k):vs)
+                      where f (Just x) = x
+
+compKey (Record k vs) (Record k2 vs2 )  = k == k2
+mergeKey (Record k vs) (Record k2 vs2 ) = Record k (vs ++ vs2)  
+
+makeRecord :: Int -> BS.ByteString -> Record
+makeRecord 0   str = Record Nothing (myWords str)
+makeRecord num str = Record k (drop num vs)
+                     where vs = myWords str
+                           k  = Just (BS.unwords $ take num vs)
 
 myWords :: BS.ByteString -> [BS.ByteString]
-myWords line = filter (/= x) $ BS.split ' ' line
-               where x = BS.pack ""
+myWords ws = filter (/= BS.pack "") $ split ' ' ws
 
--- オプションからパラメータ取り出し
-parseArgs :: [String] -> (Int,Int)
-parseArgs as = (getNum $ head0 $ filter findNum as, getM $ head1 $ filter findM as)
-	where
-		findNum a = "num=" `DL.isPrefixOf` a
-		getNum a = read (drop 4 a)::Int
-		head0 :: [String] -> String
-		head0 [] = "num=0"
-		head0 as = head as
-
-		findM a = "-" `DL.isPrefixOf` a && length a > 1
-		getM a = read (drop 1 a)::Int
-		head1 :: [String] -> String
-		head1 [] = "-1"
-		head1 as = head as
+setOpts :: [String] -> Option
+setOpts as = Option num m f
+             where ns = filter ( DL.isPrefixOf "num=" ) as
+                   num = if ns == [] then 0 else read $ drop 4 $ head ns
+                   ms = filter ( /= "-" ) $ filter ( DL.isPrefixOf "-" ) as
+                   m = if ms == [] then 1 else read $ drop 1 $ head ms
+                   str = DL.last as
+                   f = if "num=" `DL.isPrefixOf` str 
+                       then "-" else ( if "-" `DL.isPrefixOf` str then "-" else str )
