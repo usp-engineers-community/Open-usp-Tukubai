@@ -40,6 +40,8 @@ cd $dir
 ./filehame.test COMMANDS.HS ""
 ./gyo.test COMMANDS.HS ""
 ./join0.test COMMANDS.HS ""
+./join1.test COMMANDS.HS ""
+./join2.test COMMANDS.HS ""
 ./retu.test COMMANDS.HS ""
 ./self.test COMMANDS.HS ""
 ./sm2.test COMMANDS.HS ""
