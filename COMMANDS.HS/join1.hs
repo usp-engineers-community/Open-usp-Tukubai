@@ -6,7 +6,7 @@ import Data.ByteString.Lazy.Char8 as BS hiding (length,take,drop,filter,head)
 import Control.Applicative hiding ((<|>), many)
 
 {--
-join0（Open usp Tukubai）
+join1（Open usp Tukubai）
 
 designed by Nobuaki Tounaka
 written by Ryuichi Ueda
@@ -35,7 +35,7 @@ THE SOFTWARE.
 --}
 
 showUsage :: IO ()
-showUsage = do System.IO.hPutStr stderr ("Usage    : join0 [+ng] <key=n> <master> <tran>\n" ++ 
+showUsage = do System.IO.hPutStr stderr ("Usage    : join1 [+ng] <key=n> <master> <tran>\n" ++ 
                 "Sun Jul 28 15:40:30 JST 2013\n" ++
                 "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
 
@@ -65,7 +65,7 @@ parseKey str = case parse keys "" str of
                     Left  err -> Error (show err)
 
 mainProc' :: Bool -> Keys -> BS.ByteString -> BS.ByteString -> IO ()
-mainProc' ng (Keys ks) ms ts = out ng (join0 ng (head mlines) (drop 1 mlines) tlines) 
+mainProc' ng (Keys ks) ms ts = out ng (join1 ng (head mlines) (drop 1 mlines) tlines) 
                                where mlines = parseMaster ks (BS.lines ms)
                                      tlines = parseTran ks (BS.lines ts)
 
@@ -76,19 +76,20 @@ out True  ((OkTran ln):as) = (BS.putStrLn ln) >> (out True  as)
 out False ((NgTran ln):as) = out False as
 out True  ((NgTran ln):as) = (BS.hPutStrLn stderr ln) >> (out True as)
 
-join0 :: Bool -> Master -> [Master] -> [Tran] -> [OutTran]
-join0 _ _ _ []    = []
-join0 ng (Master mk v) [] ((Tran p tk a):ts) 
-  | mk == tk      = OkTran (toStr (Tran p tk a)) : join0 ng (Master mk v) [] ts
-  | ng == True    = NgTran (toStr (Tran p tk a)) : join0 ng (Master mk v) [] ts
-  | otherwise     = join0 ng (Master mk v) [] ts
-join0 ng (Master mk v) (m:ms) ((Tran p tk a):ts) 
-  | mk == tk      = OkTran (toStr (Tran p tk a)) : join0 ng (Master mk v) (m:ms) ts 
-  | mk <  tk      = join0 ng m ms ((Tran p tk a):ts) 
-  | ng == True    = NgTran (toStr (Tran p tk a)) : join0 ng (Master mk v) (m:ms) ts
-  | otherwise     = join0 ng (Master mk v) (m:ms) ts
+join1 :: Bool -> Master -> [Master] -> [Tran] -> [OutTran]
+join1 _ _ _ []    = []
+join1 ng (Master mk v) [] ((Tran p tk a):ts) 
+  | mk == tk      = OkTran (toStr2 v (Tran p tk a)) : join1 ng (Master mk v) [] ts
+  | ng == True    = NgTran (toStr (Tran p tk a)) : join1 ng (Master mk v) [] ts
+  | otherwise     = join1 ng (Master mk v) [] ts
+join1 ng (Master mk v) (m:ms) ((Tran p tk a):ts) 
+  | mk == tk      = OkTran (toStr2 v (Tran p tk a)) : join1 ng (Master mk v) (m:ms) ts 
+  | mk <  tk      = join1 ng m ms ((Tran p tk a):ts) 
+  | ng == True    = NgTran (toStr (Tran p tk a)) : join1 ng (Master mk v) (m:ms) ts
+  | otherwise     = join1 ng (Master mk v) (m:ms) ts
 
 toStr (Tran p k a) = BS.unwords $ filter (/= (BS.pack "")) [p,k,a]
+toStr2 v (Tran p k a) = BS.unwords $ filter (/= (BS.pack "")) [p,k,v,a]
 
 makeLine :: Maybe Master -> Tran -> OutTran
 makeLine (Just (Master k v)) (Tran p _ a) = OkTran (BS.unwords [p,k,a])
