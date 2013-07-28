@@ -34,11 +34,12 @@ cat << FIN > $tmp-in
 FIN
 
 cat << FIN > $tmp-out
-001 0.01
+001 0.010
 002 1.101
 FIN
 
-${com} 1 1 2 2 $tmp-in > $tmp-ans
+${com} 1 1 2 2 $tmp-in 		|
+marume 2.3			> $tmp-ans
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST1 error"
 
@@ -57,10 +58,37 @@ cat << FIN > $tmp-out
 1.111
 FIN
 
-${com} 0 0 2 2 $tmp-in > $tmp-ans
+${com} 0 0 2 2 $tmp-in		|
+marume 1.3			> $tmp-ans
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST2 error"
 
+###########################################
+#TEST3
+
+cat << FIN > $tmp-in
+001 1
+001 1.11
+001 -2.1
+002 0.0
+002 1.101
+FIN
+
+cat << FIN > $tmp-out
+001 3 0.010
+002 2 1.101
+FIN
+
+${com} +count 1 1 2 2 $tmp-in 	|
+marume 3.3			> $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3.1 error"
+
+cat $tmp-in			|
+${com} +count 1 1 2 2 		|
+marume 3.3			> $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3.2 error"
 
 rm -f $tmp-*
 echo "${com}" OK
