@@ -7,7 +7,7 @@ import Data.ByteString.Lazy.Char8 as BS hiding (filter,last,zip,head,drop,revers
 import Control.Applicative hiding ((<|>), many)
 
 {--
-delf（Open usp Tukubai）
+marume（Open usp Tukubai）
 
 designed by Nobuaki Tounaka
 written by Ryuichi Ueda
@@ -36,8 +36,8 @@ THE SOFTWARE.
 --}
 
 showUsage :: IO ()
-showUsage = do System.IO.hPutStr stderr ("Usage    : delf <f1> <f2> ... <file>\n" ++ 
-                "Sun Jul 28 22:58:54 JST 2013\n" ++
+showUsage = do System.IO.hPutStr stderr ("Usage    : marume <f1> <f2> ... <file>\n" ++ 
+                "Mon Jul 29 13:02:25 JST 2013\n" ++
                 "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
 
 main :: IO ()
