@@ -7,7 +7,7 @@ import Data.ByteString.Lazy.Char8 as BS hiding (filter,last,zip,head,drop,revers
 import Control.Applicative hiding ((<|>), many)
 
 {--
-marume（Open usp Tukubai）
+comma（Open usp Tukubai）
 
 designed by Nobuaki Tounaka
 written by Ryuichi Ueda
@@ -36,8 +36,8 @@ THE SOFTWARE.
 --}
 
 showUsage :: IO ()
-showUsage = do System.IO.hPutStr stderr ("Usage    : marume <f1> <f2> ... <file>\n" ++ 
-                "Mon Jul 29 13:02:25 JST 2013\n" ++
+showUsage = do System.IO.hPutStr stderr ("Usage    : comma <f1> <f2> ... <file>\n" ++ 
+                "Mon Jul 29 18:08:15 JST 2013\n" ++
                 "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
 
 main :: IO ()
