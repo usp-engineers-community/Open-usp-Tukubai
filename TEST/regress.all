@@ -40,6 +40,7 @@ cd $dir
 ./getfirst.test COMMANDS.HS ""
 ./getlast.test COMMANDS.HS ""
 ./delf.test COMMANDS.HS ""
+./divsen.test COMMANDS.HS ""
 ./filehame.test COMMANDS.HS ""
 ./gyo.test COMMANDS.HS ""
 ./join0.test COMMANDS.HS ""
