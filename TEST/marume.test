@@ -74,6 +74,21 @@ ${com} 1.01 $tmp-in > $tmp-ans
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST2.1 error"
 
+###########################################
+#TEST3
+
+cat << FIN > $tmp-in
+0.5 0.05
+FIN
+
+cat << FIN > $tmp-out
+1 0.1
+FIN
+
+${com} 1.0 2.1 $tmp-in > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3.1 error"
+
 
 rm -f $tmp-*
 echo "${com}" OK
