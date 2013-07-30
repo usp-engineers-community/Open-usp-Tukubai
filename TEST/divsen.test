@@ -1,0 +1,74 @@
+#!/usr/local/bin/bash -xv
+#
+# test script of divsen 
+#
+# usage: ./divsen.test <divsennd dir> <python ver>
+
+name=divsen
+    
+tmp=/tmp/$$
+dir=$(dirname $0)/..
+cd $dir
+    
+com="$2 ./$1/${name}"
+[ "$1" = "" ] && com="./$1/${name}"
+
+ERROR_CHECK(){
+	[ "$(echo ${PIPESTATUS[@]} | tr -d ' 0')" = "" ] && return
+
+	echo $1
+	echo "$com" NG
+#	rm -f $tmp-*
+	exit 1
+}
+
+###########################################
+#TEST1
+
+cat << FIN > $tmp-in
+0.124 12412553 12345 -1242.32 2.24144
+FIN
+
+cat << FIN > $tmp-out
+0.124 12413 12345 -1 0
+FIN
+
+${com} 2 4 5 $tmp-in > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1.1 error"
+
+cat $tmp-in	|
+${com} 2 4 5 > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1.2 error"
+
+###########################################
+#TEST2
+
+cat << FIN > $tmp-in
+0.124 12412553 12345 -1242.32 2.24144
+FIN
+
+cat << FIN > $tmp-out
+0.124 12412.553 12345 -1.24232 0.00224144
+FIN
+
+${com} -s 2 4 5 $tmp-in 	|
+marume 2.6 4.8 5.11            > $tmp-ans
+cat $tmp-out		|
+marume 2.6 4.8 5.11     |
+diff $tmp-ans -
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2.1 error"
+
+cat $tmp-in	|
+${com} -s 2 4 5 |
+marume 2.6 4.8 5.11            > $tmp-ans
+cat $tmp-out		|
+marume 2.6 4.8 5.11     |
+diff $tmp-ans -
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2.2 error"
+
+
+rm -f $tmp-*
+echo "${com}" OK
+exit 0
