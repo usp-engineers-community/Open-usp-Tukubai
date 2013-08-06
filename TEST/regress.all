@@ -46,6 +46,7 @@ cd $dir
 ./join0.test COMMANDS.HS ""
 ./join1.test COMMANDS.HS ""
 ./join2.test COMMANDS.HS ""
+./juni.test COMMANDS.HS ""
 ./loopx.test COMMANDS.HS ""
 ./maezero.test COMMANDS.HS ""
 ./marume.test COMMANDS.HS ""
