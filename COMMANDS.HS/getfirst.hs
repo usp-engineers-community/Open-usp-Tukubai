@@ -35,8 +35,8 @@ THE SOFTWARE.
 --}
 
 showUsage :: IO ()
-showUsage = do System.IO.hPutStr stderr ("Usage    : getfirst [+ng] <key=n> <master> <tran>\n" ++ 
-                "Fri Jul 26 09:53:41 JST 2013\n" ++
+showUsage = do System.IO.hPutStr stderr ("Usage    : getfirst <f1> <f2> <file>\n" ++ 
+                "Tue Aug  6 10:09:16 JST 2013\n" ++
                 "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
 
 main :: IO ()
