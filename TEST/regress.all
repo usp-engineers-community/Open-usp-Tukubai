@@ -58,6 +58,7 @@ cd $dir
 ./tarr.test COMMANDS.HS ""
 ./tateyoko.test COMMANDS.HS ""
 ./yarr.test COMMANDS.HS ""
+./zen.test COMMANDS.HS ""
 
 #####################################
 #support of 2.x
