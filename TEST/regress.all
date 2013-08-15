@@ -43,6 +43,7 @@ cd $dir
 ./divsen.test COMMANDS.HS ""
 ./filehame.test COMMANDS.HS ""
 ./gyo.test COMMANDS.HS ""
+./han.test COMMANDS.HS ""
 ./join0.test COMMANDS.HS ""
 ./join1.test COMMANDS.HS ""
 ./join2.test COMMANDS.HS ""
