@@ -1,0 +1,151 @@
+#!/usr/local/bin/bash -xv
+#
+# test script of kasan
+#
+# usage: ./kasan.test <python ver>
+
+name=kasan
+    
+tmp=/tmp/$$
+dir=$(dirname $0)/..
+cd $dir
+    
+com="$2 ./$1/${name}"
+[ "$1" = "" ] && com="./$1/${name}"
+
+ERROR_CHECK(){
+	[ "$(echo ${PIPESTATUS[@]} | tr -d ' 0')" = "" ] && return
+
+	echo $1
+	echo "$com" NG
+#	rm -f $tmp-*
+	exit 1
+}
+
+###########################################
+#TEST1
+
+cat << FIN > $tmp-in
+a店 1日目 103 62
+a店 2日目 157 94
+a店 3日目 62 30
+a店 4日目 131 84
+a店 5日目 189 111
+a店 6日目 350 20
+a店 7日目 412 301
+FIN
+
+cat << FIN > $tmp-out
+a店 1日目 103 62 62
+a店 2日目 157 94 156
+a店 3日目 62 30 186
+a店 4日目 131 84 270
+a店 5日目 189 111 381
+a店 6日目 350 20 401
+a店 7日目 412 301 702
+FIN
+
+${com} key=4 $tmp-in > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1.1 error"
+
+cat $tmp-in | ${com} key=4 > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1.2 error"
+
+cat $tmp-in | ${com} key=4 - > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1.3 error"
+
+###########################################
+#TEST2
+
+cat << FIN > $tmp-in
+a店 1日目 103 62
+a店 2日目 157 94
+a店 3日目 62 30
+a店 4日目 131 84
+b店 1日目 210 113
+b店 2日目 237 121
+b店 3日目 150 82
+b店 4日目 198 105
+c店 1日目 81 52
+c店 2日目 76 49
+c店 3日目 38 21
+c店 4日目 81 48
+FIN
+
+cat << FIN > $tmp-out
+a店 1日目 103 62 62
+a店 2日目 157 94 156
+a店 3日目 62 30 186
+a店 4日目 131 84 270
+b店 1日目 210 113 113
+b店 2日目 237 121 234
+b店 3日目 150 82 316
+b店 4日目 198 105 421
+c店 1日目 81 52 52
+c店 2日目 76 49 101
+c店 3日目 38 21 122
+c店 4日目 81 48 170
+FIN
+
+${com} ref=1 key=4 $tmp-in > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2 error"
+
+###########################################
+#TEST3
+
+cat << FIN > $tmp-in
+a店 1日目 103 62
+a店 2日目 157 94
+a店 3日目 62 30
+a店 4日目 131 84
+a店 5日目 189 111
+a店 6日目 350 20
+a店 7日目 412 301
+FIN
+
+cat << FIN > $tmp-out
+a店 1日目 103 62
+a店 2日目 157 156
+a店 3日目 62 186
+a店 4日目 131 270
+a店 5日目 189 381
+a店 6日目 350 401
+a店 7日目 412 702
+FIN
+
+${com} +r key=4 $tmp-in > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3 error"
+
+###########################################
+#TEST4
+
+cat << FIN > $tmp-in
+A 1
+A 1.2
+A 1.23
+B 2
+B 2.34
+B 3
+FIN
+
+cat << FIN > $tmp-out
+A 1 1
+A 1.2 2.2
+A 1.23 3.43
+B 2 2
+B 2.34 4.34
+B 3 7.34
+FIN
+
+${com} ref=1 key=2 $tmp-in > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4 error"
+
+rm -f $tmp-*
+echo "${com}" OK
+exit 0

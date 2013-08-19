@@ -48,6 +48,7 @@ cd $dir
 ./join1.test COMMANDS.HS ""
 ./join2.test COMMANDS.HS ""
 ./juni.test COMMANDS.HS ""
+./kasan.test COMMANDS.HS ""
 ./loopx.test COMMANDS.HS ""
 ./maezero.test COMMANDS.HS ""
 ./marume.test COMMANDS.HS ""
@@ -101,6 +102,7 @@ while read com ; do
 	./filehame.test COMMANDS $com
 	./formhame.test COMMANDS $com
 	./gyo.test COMMANDS $com
+	./kasan.test COMMANDS $com
 	./keta.test COMMANDS $com
 	./loopx.test COMMANDS $com
 done
