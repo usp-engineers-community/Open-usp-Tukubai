@@ -37,7 +37,7 @@ THE SOFTWARE.
 
 showUsage :: IO ()
 showUsage = do System.IO.hPutStr stderr ("Usage    : ratio [-<m>] [ref=<ref>] key=<n> <file>\n" ++ 
-                "Mon Aug 19 11:03:28 JST 2013\n" ++
+                "Mon Aug 19 18:08:18 JST 2013\n" ++
                 "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
 
 main :: IO ()
