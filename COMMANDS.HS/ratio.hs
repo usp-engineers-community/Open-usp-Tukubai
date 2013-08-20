@@ -37,7 +37,7 @@ THE SOFTWARE.
 
 showUsage :: IO ()
 showUsage = do System.IO.hPutStr stderr ("Usage    : ratio [-<m>] [ref=<ref>] key=<n> <file>\n" ++ 
-                "Mon Aug 19 18:08:18 JST 2013\n" ++
+                "Tue Aug 20 10:29:46 JST 2013\n" ++
                 "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
 
 main :: IO ()
@@ -103,10 +103,11 @@ myWords line = filter (/= x) $ BS.split ' ' line
                where x = BS.pack ""
 
 parseLine :: Int -> [Int] -> BS.ByteString -> Record
-parseLine ref ks ln = Record ws refstr ks vs
+parseLine ref ks ln = Record ws refstr nks vs
           where ws = myWords ln
+                nks = [ if k > 0 then k else k + (length ws) | k <- ks ]
                 refstr = if ref == 0 then (BS.pack "") else (ws !! (ref-1))
-                vs = [read $ BS.unpack $ ws !! (k-1) | k <- ks ]
+                vs = [read $ BS.unpack $ ws !! (k-1) | k <- nks ]
 
 data Record = Record [BS.ByteString] BS.ByteString [Int] [Double] deriving Show
 
@@ -141,19 +142,27 @@ key = do string "key="
          char ' '
          return a
 
-atnums = do a <- intnum
+atnums = do a <- posnum
             nums <- many1 atnum
             return (a:nums)
 
-atnum = char '@' >> intnum
+atnum = char '@' >> posnum
 
-slashnums = do a <- intnum
+slashnums = do a <- posnum
                char '/'
-               b <- intnum
+               b <- posnum
                return [a..b]
 
-simplepos = do a <- many1 digit
-               return [read a]
+posnum = try(nfmnum) <|> try(nfnum) <|> intnum
+
+nfnum = string "NF" >> return 0
+
+nfmnum = do string "NF-"
+            a <- many1 digit
+            return $ (read a) * (-1)
+
+simplepos = do a <- posnum
+               return [a]
 
 intnum = many1 digit >>= return . read
 
