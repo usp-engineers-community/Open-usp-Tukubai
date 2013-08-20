@@ -36,7 +36,7 @@ THE SOFTWARE.
 
 showUsage :: IO ()
 showUsage = do System.IO.hPutStr stderr ("Usage    : kasan [+r] [ref=<ref>] key=<n> <file>\n" ++ 
-                "Mon Aug 19 15:05:05 JST 2013\n" ++
+                "Tue Aug 20 10:23:06 JST 2013\n" ++
                 "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
 
 main :: IO ()
@@ -88,12 +88,13 @@ newRecord (Record ws refstr fs vs) (Record pws prefstr pfs pvs)
   | refstr == prefstr = Record ws refstr fs [ (fst x) + (snd x) | x <- Prelude.zip vs pvs]
 
 parseLine :: Int -> [Int] -> BS.ByteString -> Record
-parseLine ref ks ln = Record ws refstr ks vs
+parseLine ref ks ln = Record ws refstr nks vs
           where ws = myWords ln
+                nks = [ if k > 0 then k else k + (Prelude.length ws) | k <- ks ]
                 refstr = if ref == 0 then (BS.pack "") else (ws !! (ref-1))
-                vs = f ks ws
+                vs = f nks ws
                 f [] _      = []
-                f (k:ks) ws = (read (BS.unpack $ ws !! (k-1))::Double ) : f ks ws
+                f (k:nks) ws = (read (BS.unpack $ ws !! (k-1))::Double ) : f nks ws
 
 myWords :: BS.ByteString -> [BS.ByteString]
 myWords line = filter (/= x) $ BS.split ' ' line
@@ -127,21 +128,30 @@ key = do string "key="
          char ' '
          return a
 
-atnums = do a <- intnum
+atnums = do a <- posnum
             nums <- many1 atnum
             return (a:nums)
 
-atnum = char '@' >> intnum
+atnum = char '@' >> posnum
 
-slashnums = do a <- intnum
+slashnums = do a <- posnum
                char '/'
-               b <- intnum
+               b <- posnum
                return [a..b]
 
-simplepos = do a <- many1 digit
-               return [read a]
+simplepos = do a <- posnum
+               return [a]
+
+posnum = try(nfmnum) <|> try(nfnum) <|> intnum
 
 intnum = many1 digit >>= return . read
+
+nfnum = string "NF" >> return 0
+
+nfmnum = do string "NF-"
+            a <- many1 digit 
+            return $ (read a) * (-1)
+
 
 filename =  many1 ( letter <|> digit <|> symbol )
 
