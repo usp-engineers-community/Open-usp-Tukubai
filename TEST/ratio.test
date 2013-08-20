@@ -53,6 +53,10 @@ cat $tmp-in | ${com} key=3 - > $tmp-ans
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST1.3 error"
 
+cat $tmp-in | ${com} key=NF-1 - > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1.4 error"
+
 ###########################################
 #TEST2
 
@@ -119,7 +123,11 @@ FIN
 
 ${com} -3 key=3 $tmp-in > $tmp-ans
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST3 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3.1 error"
+
+${com} -3 key=NF-1 $tmp-in > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3.2 error"
 
 rm -f $tmp-*
 echo "${com}" OK
