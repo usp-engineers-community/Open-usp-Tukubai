@@ -119,32 +119,40 @@ FIN
 
 ${com} +r key=4 $tmp-in > $tmp-ans
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST3 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3.1 error"
+
+${com} +r key=NF $tmp-in > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3.2 error"
 
 ###########################################
 #TEST4
 
 cat << FIN > $tmp-in
-A 1
-A 1.2
-A 1.23
-B 2
-B 2.34
-B 3
+A 1 a
+A 1.2 江頭
+A 1.23 a
+B 2 b
+B 2.34 江頭
+B 3 b
 FIN
 
 cat << FIN > $tmp-out
-A 1 1
-A 1.2 2.2
-A 1.23 3.43
-B 2 2
-B 2.34 4.34
-B 3 7.34
+A 1 1 a
+A 1.2 2.2 江頭
+A 1.23 3.43 a
+B 2 2 b
+B 2.34 4.34 江頭
+B 3 7.34 b
 FIN
 
 ${com} ref=1 key=2 $tmp-in > $tmp-ans
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST4 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4.1 error"
+
+${com} ref=1 key=NF-1 $tmp-in > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4.2 error"
 
 rm -f $tmp-*
 echo "${com}" OK
