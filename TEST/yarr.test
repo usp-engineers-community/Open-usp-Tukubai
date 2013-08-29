@@ -18,7 +18,7 @@ ERROR_CHECK(){
 
 	echo $1
 	echo "$com" NG
-#	rm -f $tmp-*
+	rm -f $tmp-*
 	exit 1
 }
 
@@ -82,6 +82,30 @@ cat $tmp-in		|
 ${com} num=1 -2 > $tmp-ans
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST2-2 error"
+
+###########################################
+#TEST3: simple pattern
+
+cat << FIN > $tmp-in
+001 山田
+001 山本
+001 武田
+002 田中
+002 中
+FIN
+
+cat << FIN > $tmp-out
+001 山田 001 山本 001 武田 002 田中 002 中
+FIN
+
+${com} $tmp-in > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3.1 error"
+
+cat $tmp-in		|
+${com}			> $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3.2 error"
 
 rm -f $tmp-*
 echo "${com}" OK

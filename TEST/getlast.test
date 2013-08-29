@@ -18,7 +18,7 @@ ERROR_CHECK(){
 
 	echo $1
 	echo "$com" NG
-#	rm -f $tmp-*
+	rm -f $tmp-*
 	exit 1
 }
 
