@@ -1,0 +1,63 @@
+#!/usr/bin/env python
+#coding: utf-8
+#
+# numchar 文字列を数値文字参照に変換（Open usp Tukubaiオリジナル）
+# 
+# written by Ryuichi Ueda
+#
+# The MIT License
+#
+# Copyright (C) Ryuichi Ueda
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+_usage = "numchar < <file>"
+_version = "Tue Sep 10 11:38:19 JST 2013"
+_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
+
+import re
+import os
+import sys
+import codecs
+
+def error(msg, *arg):
+	print >> sys.stderr, 'Error[numchar] :', msg % arg
+	sys.exit(1)
+
+def usage():
+	print >> sys.stderr, "Usage   :", _usage
+	print >> sys.stderr, "Version :", _version
+	print >> sys.stderr, "         ", _code
+	sys.exit(1)
+
+def openReadFile(file_name):
+        if file_name != "-":
+                try:    return codecs.open(file_name,'r','utf-8')
+                except: die("ファイルを開けません。")
+
+        if sys.version_info[0] < 3:
+                return codecs.getreader('utf-8')(sys.stdin)
+
+        return codecs.getreader('utf-8')(sys.stdin.detach())
+
+if __name__ == '__main__':
+
+	for line in openReadFile("-"):
+		print "".join([ "&#x%x;" % ord(c) for c in line.rstrip() ])
+
