@@ -97,6 +97,7 @@ while read com ; do
 	./maezero.test COMMANDS $com
 	./marume.test COMMANDS $com
 	./nameread.test COMMANDS $com
+	./numchar.test COMMANDS $com
 	./check_need_name.test COMMANDS $com
 	./join0.test COMMANDS $com
 	./join1.test COMMANDS $com
