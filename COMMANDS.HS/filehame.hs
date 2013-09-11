@@ -1,6 +1,7 @@
 import System.Environment
 import System.IO
 import Data.List
+import Data.ByteString.Lazy.Char8 as BS hiding (length,drop)
 
 {--
 filehame（Open usp Tukubai）
@@ -32,7 +33,7 @@ THE SOFTWARE.
 --}
 
 showUsage :: IO ()
-showUsage = do hPutStr stderr ("Usage    : filehame <-lSTRING> <file1> <file2>\n" ++ 
+showUsage = do System.IO.hPutStr stderr ("Usage    : filehame <-lSTRING> <file1> <file2>\n" ++ 
                 "Sun Jun 16 17:52:08 JST 2013\n" ++
                 "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
 
@@ -41,17 +42,17 @@ main = do args <- getArgs
           case args of
                 (label:f1:f2:[]) -> do cs <- readF f1
                                        ins <- readF f2
-                                       mainProc (drop 2 label) (lines cs) ins
+                                       mainProc (drop 2 label) (BS.lines cs) ins
                 _                -> showUsage
 
-mainProc :: String -> [String] -> String -> IO ()
+mainProc :: String -> [BS.ByteString] -> BS.ByteString -> IO ()
 mainProc "" _ _             = error "no label"
-mainProc label [] ins       = putStr []
+mainProc label [] ins  = do return ()
 mainProc label (ln:lns) ins = f >> mainProc label lns ins
-                            where f = if label `isInfixOf` ln
-                                      then putStr ins
-                                      else putStrLn ln 
+                            where f = if label `isInfixOf` (BS.unpack ln)
+                                      then BS.putStr ins
+                                      else BS.putStrLn ln 
 
-readF :: String -> IO String
-readF "-" = getContents
-readF f   = readFile f
+readF :: String -> IO BS.ByteString
+readF "-" = BS.getContents
+readF f   = BS.readFile f
