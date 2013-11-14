@@ -191,14 +191,14 @@ cat << FIN > $tmp-in
 FIN
 
 cat << FIN > $tmp-out
-江頭 20130127 20130127 20130128 20130129 20130130
-江頭 20131231 20131231 20140101 20140102 20140103
-江頭 19731231 19731231 19740101 19740102 19740103
-江頭 20130903 20130903 20130904 20130905 20130906
+江頭 20130127 20130128 20130129 20130130
+江頭 20131231 20140101 20140102 20140103
+江頭 19731231 19740101 19740102 19740103
+江頭 20130903 20130904 20130905 20130906
 FIN
 
 cat $tmp-in		|
-${com} -f -e 2/+3 > $tmp-ans
+${com} -f -e 2/+3 | sed 's/ *$//' > $tmp-ans
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST11.1 error"
 
@@ -220,7 +220,7 @@ cat << FIN > $tmp-out
 FIN
 
 cat $tmp-in		|
-${com} -f -e 2 3 > $tmp-ans
+${com} -f -e 2 3 | sed 's/ *$//' > $tmp-ans
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST12.1 error"
 
@@ -242,7 +242,8 @@ cat << FIN > $tmp-out
 FIN
 
 cat $tmp-in		|
-${com} -f 2/+100	> $tmp-ans
+${com} -f 2/+100	|
+sed 's/ *$//'		> $tmp-ans
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST13.1 error"
 
@@ -264,7 +265,8 @@ cat << FIN > $tmp-out
 FIN
 
 cat $tmp-in		|
-${com} -f 2 3	> $tmp-ans
+${com} -f 2 3		|
+sed 's/ *$//'		> $tmp-ans
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST14.1 error"
 
@@ -286,7 +288,8 @@ cat << FIN > $tmp-out
 FIN
 
 cat $tmp-in		|
-${com} -f 3 +4 > $tmp-ans
+${com} -f 3 +4		|
+sed 's/ *$//'		> $tmp-ans
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST15.1 error"
 
@@ -298,7 +301,8 @@ cat << FIN > $tmp-out
 FIN
 
 cat $tmp-in		|
-${com} -f 3 -4 > $tmp-ans
+${com} -f 3 -4 		|
+sed 's/ *$//'		> $tmp-ans
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST15.2 error"
 
@@ -320,7 +324,8 @@ cat << FIN > $tmp-out
 FIN
 
 cat $tmp-in		|
-${com} -f -e 3 -4 > $tmp-ans
+${com} -f -e 3 -4	|
+sed 's/ *$//'		> $tmp-ans
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST16.1 error"
 
@@ -342,7 +347,8 @@ cat << FIN > $tmp-out
 FIN
 
 cat $tmp-in		|
-${com} -f -ly 2 > $tmp-ans
+${com} -f -ly 2		|
+sed 's/ *$//'	> $tmp-ans
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST17.1 error"
 
@@ -358,7 +364,8 @@ cat << FIN > $tmp-out
 201202m 20120201 20120202 20120203 20120204 20120205 20120206 20120207 20120208 20120209 20120210 20120211 20120212 20120213 20120214 20120215 20120216 20120217 20120218 20120219 20120220 20120221 20120222 20120223 20120224 20120225 20120226 20120227 20120228 20120229
 FIN
 
-cat $tmp-in | ${com} -f -d 1m > $tmp-ans
+cat $tmp-in | ${com} -f -d 1m	|
+sed 's/ *$//'			> $tmp-ans
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST18.1 error"
 
@@ -377,7 +384,8 @@ cat << FIN > $tmp-out
 江頭 198212 198101
 FIN
 
-cat $tmp-in | ${com} -f 2m/-23 > $tmp-ans
+cat $tmp-in | ${com} -f 2m/-23	|
+sed 's/ *$//'			> $tmp-ans
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST19.1 error"
 
@@ -396,7 +404,8 @@ cat << FIN > $tmp-out
 江頭 198212 198210 198211 198212
 FIN
 
-cat $tmp-in | ${com} -f -e 2m/-2 > $tmp-ans
+cat $tmp-in | ${com} -f -e 2m/-2	|
+sed 's/ *$//'			> $tmp-ans
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST20.1 error"
 
@@ -415,7 +424,8 @@ cat << FIN > $tmp-out
 江頭 198212 198105 19
 FIN
 
-cat $tmp-in | ${com} -f 2m 3m > $tmp-ans
+cat $tmp-in | ${com} -f 2m 3m	|
+sed 's/ *$//'			> $tmp-ans
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST21.1 error"
 
@@ -434,7 +444,8 @@ cat << FIN > $tmp-out
 江頭 198212 198105 198105 198106 198107 198108 198109 198110 198111 198112 198201 198202 198203 198204 198205 198206 198207 198208 198209 198210 198211 198212
 FIN
 
-cat $tmp-in | ${com} -f -e 2m 3m > $tmp-ans
+cat $tmp-in | ${com} -f -e 2m 3m	|
+sed 's/ *$//'			> $tmp-ans
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST22.1 error"
 
@@ -453,7 +464,8 @@ cat << FIN > $tmp-out
 江頭 198212 48 198612
 FIN
 
-cat $tmp-in | ${com} -f 2m +3 > $tmp-ans
+cat $tmp-in | ${com} -f 2m +3	|
+sed 's/ *$//'			> $tmp-ans
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST23.1 error"
 
@@ -463,7 +475,8 @@ cat << FIN > $tmp-out
 江頭 198212 48 197812
 FIN
 
-cat $tmp-in | ${com} -f 2m -3 > $tmp-ans
+cat $tmp-in | ${com} -f 2m -3	|
+sed 's/ *$//'			> $tmp-ans
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST23.2 error"
 
@@ -482,7 +495,8 @@ cat << FIN > $tmp-out
 江頭 198212 48 198212 198301 198302 198303 198304 198305 198306 198307 198308 198309 198310 198311 198312 198401 198402 198403 198404 198405 198406 198407 198408 198409 198410 198411 198412 198501 198502 198503 198504 198505 198506 198507 198508 198509 198510 198511 198512 198601 198602 198603 198604 198605 198606 198607 198608 198609 198610 198611 198612
 FIN
 
-cat $tmp-in | ${com} -f -e 2m +3 > $tmp-ans
+cat $tmp-in | ${com} -f -e 2m +3	|
+sed 's/ *$//'			> $tmp-ans
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST24.1 error"
 
@@ -501,7 +515,8 @@ cat << FIN > $tmp-out
 江頭 198212 198112 48
 FIN
 
-cat $tmp-in | ${com} -f -ly 2m > $tmp-ans
+cat $tmp-in | ${com} -f -ly 2m	|
+sed 's/ *$//'			> $tmp-ans
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST25.1 error"
 

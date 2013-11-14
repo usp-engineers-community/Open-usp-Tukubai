@@ -349,8 +349,6 @@ def filterMode(opt):
 		# mdate -f <f1> +<f2>         : 日付の加算
 		f1 = int(sys.argv[2]) - 1
 		f2 = abs(int(sys.argv[3])) - 1
-		sign = 1
-		if int(sys.argv[2]) < 0 : sign = -1
 
 		for line in sys.stdin:
 			tokens = line.rstrip().split(' ')
@@ -358,7 +356,24 @@ def filterMode(opt):
 			printTokens(0,f2+1,tokens)
 
 			d1 = strToDate(tokens[f1])
-			d2 = shiftDay(d1,int(tokens[f2])*sign)
+			d2 = shiftDay(d1,int(tokens[f2]))
+
+			printDay(d2)
+
+			printTokens(f2+1,len(tokens),tokens)
+			print ""
+	elif re.compile('^-f [0-9]+ -[0-9]+$').match(opt):
+		# mdate -f <f1> -<f2>         : 日付の加算
+		f1 = int(sys.argv[2]) - 1
+		f2 = abs(int(sys.argv[3])) - 1
+
+		for line in sys.stdin:
+			tokens = line.rstrip().split(' ')
+
+			printTokens(0,f2+1,tokens)
+
+			d1 = strToDate(tokens[f1])
+			d2 = shiftDay(d1,- int(tokens[f2]))
 
 			printDay(d2)
 
@@ -378,6 +393,24 @@ def filterMode(opt):
 
 			d1 = strToDate(tokens[f1])
 			d2 = shiftDay(d1,int(tokens[f2])*sign)
+			d1, d2 = sortTwoDays(d1,d2)
+
+			printDays(d1,d2)
+
+			printTokens(f2+1,len(tokens),tokens)
+			print ""
+	elif re.compile('^-f -e [0-9]+ -[0-9]+$').match(opt):
+		#mdate -f -e <f1> -<f2>       : 日付の加算 展開
+		f1 = int(sys.argv[3]) - 1
+		f2 = abs(int(sys.argv[4])) - 1
+
+		for line in sys.stdin:
+			tokens = line.rstrip().split(' ')
+
+			printTokens(0,f2+1,tokens)
+
+			d1 = strToDate(tokens[f1])
+			d2 = shiftDay(d1,- int(tokens[f2]))
 			d1, d2 = sortTwoDays(d1,d2)
 
 			printDays(d1,d2)
@@ -434,10 +467,12 @@ def filterMode(opt):
 			m2 = shiftMonth(m1,diff)
 			if m1 > m2 : m1, m2 = m2, m1
 
+			if diff < 0 : print m2,
 			m = m1
 			while m <= m2:
 				print m, 
 				m = shiftMonth(m,1)
+	
 
 			d1 = monthToFirstDay(tokens[f][:6])
 			printTokens(f+1,len(tokens),tokens)
@@ -487,7 +522,7 @@ def filterMode(opt):
 	
 			print ""
 
-	elif re.compile('^-f [0-9]+m \+[0-9]+$').match(opt):
+	elif re.compile('^-f [0-9]+m [-\+][0-9]+$').match(opt):
 		#mdate -f <f>m ±<dif>         : 月の加算
 		f1 = int(sys.argv[2][:-1]) - 1
 		f2 = abs(int(sys.argv[3])) - 1
@@ -545,6 +580,24 @@ def filterMode(opt):
 			m = tokens[f][4:6]
 
 			print str(y) + m,
+			printTokens(f+1,len(tokens),tokens)
+
+			print ""
+	elif re.compile('^-f -ly [0-9]$').match(opt):
+		#mdate -f -ly <f>             : 前年日
+		f = int(sys.argv[3]) - 1
+
+		for line in sys.stdin:
+			tokens = line.rstrip().split(' ')
+
+			printTokens(0,f+1,tokens)
+
+			y = int(tokens[f][:4]) - 1
+			md = tokens[f][4:]
+
+			if md == "0229" : md = "0228"
+
+			print str(y) + md,
 			printTokens(f+1,len(tokens),tokens)
 
 			print ""
