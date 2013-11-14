@@ -279,7 +279,7 @@ filterEnumDayDiff :: Int -> Int -> BS.ByteString -> IO ()
 filterEnumDayDiff pos diff cs = BS.putStr $ BS.unlines [ f pos diff (mwords ln) | ln <- (BS.lines cs) ]
             where f pos diff wds = BS.unwords [ g pos diff w | w <- zip [1..] wds ]
                   g pos diff (n,wd) = if pos == n
-                                 then BS.unwords (wd : gain)
+                                 then BS.unwords $ if wd == (DL.head gain) then gain else (wd : gain)
                                  else wd
                                  where gain = [ toDayStr d | d <- enumDiff (DayRange (BS.unpack wd) diff) ]
 
