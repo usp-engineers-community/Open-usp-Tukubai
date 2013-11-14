@@ -94,10 +94,6 @@ while read com ; do
 	./self.test COMMANDS $com
 	./tarr.test COMMANDS $com
 	./delf.test COMMANDS $com
-	./maezero.test COMMANDS $com
-	./marume.test COMMANDS $com
-	./nameread.test COMMANDS $com
-	./numchar.test COMMANDS $com
 	./check_need_name.test COMMANDS $com
 	./join0.test COMMANDS $com
 	./join1.test COMMANDS $com
@@ -108,6 +104,11 @@ while read com ; do
 	./kasan.test COMMANDS $com
 	./keta.test COMMANDS $com
 	./loopx.test COMMANDS $com
+	./maezero.test COMMANDS $com
+	./marume.test COMMANDS $com
+	./mdate.test COMMANDS $com
+	./nameread.test COMMANDS $com
+	./numchar.test COMMANDS $com
 done
 
 #####################################
