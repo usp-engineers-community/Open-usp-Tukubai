@@ -73,7 +73,7 @@ showUsage = do System.IO.hPutStr stderr ("Usage    : \n" ++
                               "         mdate -f -e <f>m ±<dif>      : 月の加算展開\n"++
                               "         mdate -f -ly <f>m             : 前年月\n"++
                               "\n"++
-                              "Mon Aug  5 22:39:51 JST 2013\n" ++
+                              "Thu Nov 14 11:08:53 JST 2013\n" ++
                               "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
 
 main :: IO ()

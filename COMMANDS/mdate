@@ -63,7 +63,7 @@ _usage = """
 # mdate -ly <yyyymmdd>              : 前年同日
 # mdate -ly <f>              : 前年日
 
-_version = "Wed Dec 28 15:32:10 JST 2011"
+_version = "Thu Nov 14 11:08:53 JST 2013"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
 
 import re
