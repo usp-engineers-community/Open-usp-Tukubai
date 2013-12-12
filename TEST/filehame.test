@@ -64,7 +64,6 @@ cat << FIN > $tmp-file3
 なにぬねの
 FIN
 
-
 cat << FIN > $tmp-out
 あいうえお
 かきくけこ
@@ -76,7 +75,13 @@ FIN
 ${com} -lINSERT_FIRST $tmp-file1 $tmp-file2	|
 ${com} -lINSERT_NEXT - $tmp-file3 > $tmp-ans
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST2 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2.1 error"
+
+cat $tmp-file2					|
+${com} -lINSERT_FIRST $tmp-file1 -		|
+${com} -lINSERT_NEXT - $tmp-file3 > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2.2 error"
 
 rm -f $tmp-*
 echo "${com}" OK

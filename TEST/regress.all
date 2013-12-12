@@ -104,6 +104,7 @@ while read com ; do
 	./gyo.test COMMANDS $com
 	./kasan.test COMMANDS $com
 	./keta.test COMMANDS $com
+	./keycut.test COMMANDS $com
 	./loopx.test COMMANDS $com
 	./maezero.test COMMANDS $com
 	./marume.test COMMANDS $com
