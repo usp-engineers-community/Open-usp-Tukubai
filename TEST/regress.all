@@ -51,6 +51,7 @@ cd $dir
 ./juni.test COMMANDS.HS ""
 ./kasan.test COMMANDS.HS ""
 ./loopx.test COMMANDS.HS ""
+./formhame.hs.test COMMANDS.HS ""
 ./maezero.test COMMANDS.HS ""
 ./marume.test COMMANDS.HS ""
 ./mdate.test COMMANDS.HS ""
