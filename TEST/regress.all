@@ -37,6 +37,7 @@ cd $dir
 ./check_need_name.test COMMANDS.HS ""
 ./comma.test COMMANDS.HS ""
 ./count.test COMMANDS.HS ""
+./dayslash.test COMMANDS.HS ""
 ./divsen.test COMMANDS.HS ""
 ./getfirst.test COMMANDS.HS ""
 ./getlast.test COMMANDS.HS ""
