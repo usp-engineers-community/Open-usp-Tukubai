@@ -33,9 +33,10 @@ THE SOFTWARE.
 
 showUsage :: IO ()
 showUsage = do System.IO.hPutStr stderr
-		("Usage: keta\n" ++ 
-		 "       keta -v\n" ++ 
-		"Sun Dec 29 15:53:38 JST 2013\n" ++
+		("Usage: keta n1 n2 .. <filename>\n" ++ 
+		 "       keta -v <filename>\n" ++ 
+		 "       keta -- <filename>\n" ++ 
+		"Sun Dec 29 15:58:05 JST 2013\n" ++
 		"Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
 
 main :: IO ()
@@ -118,6 +119,3 @@ charWid ch
   | n >= 0xFF61 && n <= 0xFF91 = 1
   | otherwise = 2
     where n = ord ch
-
-isHanKana a b c = x >= 0xEFBDA1 && x <= 0xEFBE9F
-    where x = (ord a)*256*256 + (ord b)*256 + (ord c)
