@@ -6,7 +6,7 @@ import Data.List.Split
 import qualified Data.ByteString.Lazy.Char8 as BS 
 
 {--
-self（Open usp Tukubai）
+cgi-name（Open usp Tukubai）
 
 designed by Nobuaki Tounaka
 written by Ryuichi Ueda
