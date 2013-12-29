@@ -36,7 +36,7 @@ THE SOFTWARE.
 
 showUsage :: IO ()
 showUsage = do System.IO.hPutStr stderr
-		("Usage: cgi-name [-d<c>]\n" ++ 
+		("Usage: cgi-name [-d<c>] [-i<c>]\n" ++ 
 		"Sun Dec 29 13:34:08 JST 2013\n" ++
 		"Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
 
