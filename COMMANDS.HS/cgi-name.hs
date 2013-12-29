@@ -36,8 +36,8 @@ THE SOFTWARE.
 
 showUsage :: IO ()
 showUsage = do System.IO.hPutStr stderr
-		("Usage: cgi-name \n" ++ 
-		"Sun Dec 29 12:53:51 JST 2013\n" ++
+		("Usage: cgi-name [-d<c>]\n" ++ 
+		"Sun Dec 29 13:34:08 JST 2013\n" ++
 		"Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
 
 main :: IO ()
@@ -45,24 +45,38 @@ main = do args <- getArgs
 	  case args of
 		["-h"]     -> showUsage
 		["--help"] -> showUsage
-		[f]        -> readF f   >>= main'
-		_          -> readF "-" >>= main'
+		_          -> readF f >>= main' dstr istr
+                    where opt = snd $ parseOpt (args,[" ","","-"])
+                          dstr = opt !! 0
+                          istr = opt !! 1
+                          f    = opt !! 2
 
-main' :: BS.ByteString -> IO ()
-main' = BS.putStr . BS.unlines . map (removeEq . BS.pack . normalize . decodeStr . BS.unpack ) . BS.split '&'
+type Opt = [String] -- DString, IString, Filename
+
+parseOpt :: ([String],Opt) -> ([String],Opt)
+parseOpt ([],opt)                                 = ([],opt)
+parseOpt ((('-':'d':str):args),[_,istr,filename]) = parseOpt (args,[str,istr,filename])
+parseOpt ((('-':'i':str):args),[dstr,_,filename]) = parseOpt (args,[dstr,str,filename])
+parseOpt ((str:args),[dstr,istr,_])               = parseOpt (args,[dstr,istr,str])
+
+main' :: String -> String -> BS.ByteString -> IO ()
+main' dstr istr = BS.putStr . BS.unlines . map (removeEq istr . BS.pack . normalize . decodeStr dstr . BS.unpack ) . BS.split '&'
 
 readF :: String -> IO BS.ByteString
 readF "-" = BS.getContents
 readF f   = BS.readFile f
 
-removeEq cs = BS.unwords $ [fst x,BS.tail (snd x)]
+removeEq istr cs = BS.unwords $ [fst x,v']
     where x = BS.break ( == '=') cs
+          v = BS.tail $ snd x
+          v' = if v == (BS.pack "") then BS.pack istr else v
 
-decodeStr :: String -> String
-decodeStr []            = []
-decodeStr ['\n']        = []
-decodeStr ('%':a:b:str) = chr ((digitToInt a)*16 + digitToInt b) : decodeStr str
-decodeStr (a:str)       = a : decodeStr str
+decodeStr :: String -> String -> String
+decodeStr dstr []            = []
+decodeStr dstr ['\n']        = []
+decodeStr dstr (' ':str)     = dstr ++ decodeStr dstr str
+decodeStr dstr ('%':a:b:str) = chr ((digitToInt a)*16 + digitToInt b) : decodeStr dstr str
+decodeStr dstr (a:str)       = a : decodeStr dstr str
 
 normalize []        = []
 normalize ('+':str) = ' ' : normalize str
