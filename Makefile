@@ -75,6 +75,17 @@ INSTALL_DOCS=	${INSTALL} -m ${DOCMODE}
 BINMODE=	555
 DOCMODE=	444
 
+all:
+	@echo "Run 'make install' to install"
+	@echo "    LOCALBASE=${LOCALBASE}"
+	@echo "    BINDIR=${BINDIR}"
+	@echo "    TUKDIR=${LOCALBASE}/share/${NAME}"
+	@echo "    DATDIR=${TUKDIR}/devel"
+	@echo "    MANDIR=${DATDIR}/man"
+	@echo "    HTMDIR=${DATDIR}/html"
+	@echo "    PDFDIR=${DATDIR}/pdf"
+	@echo "    DOCDIR=${DATDIR}/doc"
+
 install:
 	${MKDIR} ${BINDIR}
 	@for i in ${COMMANDS}; \
