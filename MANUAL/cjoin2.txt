@@ -64,7 +64,7 @@ $ cat ok
 0000007 梶川______ 42 F 50 2  33 15 62
 $
 
-【例2】-dオプションの使い方
+【例2】+dオプションの使い方
 
 $ cjoin2 -d@@ key=1 master tran > ok
 $ cat ok
@@ -82,9 +82,9 @@ $ cat tran | cjoin2 +ng key=1 master
 $ cat tran | cjoin2 +ng key=1 master -
 $ cat master | cjoin2 +ng key=1 - tran
 
-cjoin0(1)、cjoin1(1)、cjoin2(1)、join0(1)、join1(1)、loopj(1)、loopx(1)、up3(1)、
-マスタファイル(5)、トランザクションファイル(5)
+cjoin0(1)、cjoin1(1)、cjoin2(1)、join0(1)、join1(1)、loopj(1)、loopx(1)、up3(1)
+、マスタファイル(5)、トランザクションファイル(5)
 
-last modified: 2013-04-15 19:24:04
+last modified: 2014-01-13 16:01:13
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012,2013 Universal Shell Programming Laboratory All Rights Reserved.
+Copyright (c) 2012-2014 Universal Shell Programming Laboratory All Rights

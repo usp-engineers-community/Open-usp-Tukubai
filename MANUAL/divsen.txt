@@ -38,8 +38,8 @@ $ divsen 2 3 data               ←2フィールドと3フィールドを1,000�
 20060206 771 400
 $
 
--sを指定して小数点まで表示させる。こうしたデータは以降でmarume(1)など
-を使って加工する。　
+-sを指定して小数点まで表示させる。こうしたデータは以降でmarume(1)などを使って加
+工する。　
 
 $ divsen -s 2 3 data            ←小数点まで表示
 20060201 296.030 6710.000
@@ -52,13 +52,13 @@ $
 
 【ワンポイント】
 
-divsen(1)された結果をさらにパイプでつないでdivsen(1)を実行すると、100万
-単位のデータを作成することができる。
+divsenされた結果をさらにパイプでつないでdivsenを実行すると、100万単位のデータを
+作成することができる。
 
 【関連項目】
 
 marume(1)
 
-last modified: 2013-04-15 19:26:05
+last modified: 2014-01-13 16:01:13
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012,2013 Universal Shell Programming Laboratory All Rights Reserved.
+Copyright (c) 2012-2014 Universal Shell Programming Laboratory All Rights

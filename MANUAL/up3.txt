@@ -14,8 +14,8 @@ Version : Thu Dec 15 13:46:38 JST 2011
 【説明】
 
 masterとtranの各行をkey=で指定されたフィールド値で比較し、同じキーフィールドを
-持つ行をmasterの該当行の下に挿入して出力する。masterもtranもキーとなるフィー
-ルドは整列されている必要がある。 
+持つ行をmasterの該当行の下に挿入して出力する。masterもtranもキーとなるフィール
+ドは整列されている必要がある。
 
 【例1】
 
@@ -31,7 +31,7 @@ c店 2日目 76 49
 c店 3日目 38 21
 $
 
-$ cat tran               ← 4日目から5日目までのデータ
+$ cat tran              ← 4日目から5日目までのデータ
 a店 4日目 131 84
 a店 5日目 189 111
 b店 4日目 198 105
@@ -62,9 +62,9 @@ $
 
 【関連項目】
 
-join0(1)、join1(1)、join2(1)、loopj(1)、loopx(1)、マスタファイル(5)、
-トランザクションファイル(5)
+join0(1)、join1(1)、join2(1)、loopj(1)、loopx(1)、マスタファイル(5)、トランザク
+ションファイル(5)
 
-last modified: 2013-04-15 20:29:06
+last modified: 2014-01-13 16:01:13
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012,2013 Universal Shell Programming Laboratory All Rights Reserved.
+Copyright (c) 2012-2014 Universal Shell Programming Laboratory All Rights

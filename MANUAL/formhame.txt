@@ -16,9 +16,9 @@ Version : Sun Mar 17 12:51:52 JST 2013
 
 【説明】
 
-<html_template>ファイルの各種inputタグ(text、radio、checkbox、hidden)と
-textareaタグ、selectタグの部分に<data>ファイル(第1フィールド:タグ名、
-第2フィールド以降:値)で指定される値を挿入する。
+<html_template>ファイルの各種inputタグ(text、radio、checkbox、hidden)とtextarea
+タグ、selectタグの部分に<data>ファイル(第1フィールド:タグ名、第2フィールド以降:
+値)で指定される値を挿入する。
 
 【例】
 
@@ -41,18 +41,18 @@ $ cat html
 <input type="submit" name="submit" />
 </form>
 </body></html>
-$ 
+$
 
 $ cat data
 name_text1 hello
-name_text2          
+name_text2
 name_radio b
 name_checkbox y
 name_textarea usp\nlaboratory
 name_pulldown pd3
-$ 
+$
 
-$ formhame html data 
+$ formhame html data
 <html><body>
 <form name="name_form">
 <input type="text" name="name_text1"  value="hello" />
@@ -73,44 +73,37 @@ laboratory
 <input type="submit" name="submit" />
 </form>
 </body></html>
-$ 
+$
 
 【備考】
 
-1. input タグの場合、すでに value="" とテンプレートに記述している場合は、
-   値を置換する。同様に textareaタグの場合も値を置換する。select タグの
-   場合は、すでに selected="selected" とテンプレートに指定されている場合、
-   指定場所を移動する。
+ 1. inputタグの場合、すでにvalue=""とテンプレートに記述している場合は、値を置換
+    する。同様にtextareaタグの場合も値を置換する。selectタグの場合は、すでに
+    selected="selected"とテンプレートに指定されている場合、指定場所を移動する。
+ 2. textareaの場合、すでにある値を置換する。\nは改行に置換する。
+ 3. 値が無い場合、値は挿入されない。
+ 4. -iオプションで文字列を指定すると、その文字列に等しい値はヌル文字列にして挿
+    入する。
+ 5. -dオプションで文字を指定すると、その文字に等しい値は半角空白文字に置換して
+    挿入する。ただし、\指定文字というデータは半角空白に変換しない。
+ 6. HTMLは正しく記述されている必要がある。タグはすべて小文字であり、<タグ />あ
+    るいは、<タグ></タグ>と記述される必要がある。変数は必ず" "で囲まれている必
+    要がある(value="1"など)。input type="checkbox"のときは、必ずvalue="XXX"が指
+    定されている必要がある。
+ 7. checkbox、radiobox、selectboxの複数選択の場合は、ネーム形式データ(5)は次の
+    ように1つのタグに対して複行となる。
 
-2. textarea の場合、すでにある値を置換する。\nは改行に置換する。
-
-3. 値が無い場合、値は挿入されない。
-
-4. -iオプションで文字列を指定すると、その文字列に等しい値はヌル文字列に
-   して挿入する。
-
-5. -dオプションで文字を指定すると、その文字に等しい値は半角空白文字に
-   置換して挿入する。 ただし、\指定文字というデータは半角空白に変換しない。
-
-6. HTMLは正しく記述されている必要がある。タグはすべて小文字であり、
-   <タグ  /> あるいは、<タグ></タグ> と記述される必要がある。
-   変数は必ず" "で囲まれている必要がある(value="1" など)。
-   input type="checkbox"のときは、必ずvalue="XXX"が指定されている必要がある。
-
-7. checkbox、radiobox、selectboxの複数選択の場合は、ネーム形式データ(5)は
-   次のように1つのタグに対して複行となる。
-
-   name_radio a
-   name_radio b
-   name_checkbox x
-   name_checkbox y
-   name_pulldown pd1
-   name_pulldown pd2
+name_radio a
+name_radio b
+name_checkbox x
+name_checkbox y
+name_pulldown pd1
+name_pulldown pd2
 
 【関連項目】
 
-filehame(1), mojihame(1)
+filehame(1)、mojihame(1)
 
-last modified: 2013-04-15 19:34:09
+last modified: 2014-01-13 16:01:13
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2013 Universal Shell Programming Laboratory All Rights Reserved.
+Copyright (c) 2012-2014 Universal Shell Programming Laboratory All Rights
