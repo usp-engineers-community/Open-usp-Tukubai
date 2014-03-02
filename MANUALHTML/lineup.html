@@ -99,91 +99,128 @@
     <div id="main">
       <h1>Tukubaiオンラインコマンドマニュアル</h1>
 
-      <h2>gyo(1)</h2>
+      <h2>lineup(1)</h2>
 
       <h3>【名前】</h3>
 
-      <p>gyo : 行をカウント</p>
+      <p>lineup : 指定したフィールドのデータのラインナップを抽出</p>
 
       <h3>【書式】</h3>
 
-      <pre class="list">Usage	: gyo [-f] &lt;file&gt; ...
-Version	: Thu Dec 15 13:46:38 JST 2011</pre>
+      <pre class="list">Usage   : lineup -f &lt;f1&gt; &lt;f2&gt; ... &lt;file&gt;
+Version : Wed Oct 23 20:51:25 JST 2013</pre>
 
       <h3>【説明】</h3>
 
-      <p>引数のファイルまたは標準入力のテキストデータの行数(行数)をカウントして出力する。</p>
+      <p>&lt;file&gt;ファイルから指定したフィールドのデータだけを取り出してそのラインナップをソートして出力する。-fオプションを指定すると整列せずに出現順で出力されている。</p>
+
+      <p>&lt;file&gt;指定がないかまたは-の時は標準入力ファイルを読み込む。</p>
 
       <h3>【例1】</h3>
 
       <pre class="prettyprint">$ cat data
-0000000 浜地______ 50 F 91 59 20 76 54
-0000001 鈴田______ 50 F 46 39 8  5  21
-0000003 杉山______ 26 F 30 50 71 36 30
-0000004 白土______ 40 M 58 71 20 10 6
-0000005 崎村______ 50 F 82 79 16 21 80
-0000007 梶川______ 42 F 50 2  33 15 62
-$ </pre>
-
-      <pre class="prettyprint">$ gyo data
-6
-$ </pre>
+1 1 717300 abc1
+1 2 717301 abc2
+1 3 717302 abc3
+1 1 717303 abc4
+1 2 717304 abc5
+2 0 717305 abc6
+2 2 717306 abc7
+2 2 717307 abc8
+3 4 717308 abc9
+3 4 717309 abcA
+3 4 717310 abcB
+1 1 717300  abc1
+1 2 717301  abc2
+$ lineup 2 data
+0
+1
+2
+3
+4
+$</pre>
 
       <h3>【例2】</h3>
 
-      <p>複数のファイルの行数を一度にカウントできる。</p>
+      <p>複数のフィールドを指定したときは、指定したフィールドを連結したデータのラインナップを整列して出力する。</p>
 
-      <pre class="prettyprint">$ cat data1
-1 file1
-2 file1
-3 file1
-$ </pre>
-
-      <pre class="prettyprint">$ cat data2
-1 file2
-2 file2
-$ </pre>
-
-      <pre class="prettyprint">$ cat data3
-1 file3
-2 file3
-3 file3
-4 file3
-$ </pre>
-
-      <pre class="prettyprint">$ gyo data1 data2 data3
-3
-2
-4
-$ </pre>
+      <pre class="prettyprint">$ lineup 1 2 data
+1 1
+1 2
+1 3
+2 0
+2 2
+3 4
+$</pre>
 
       <h3>【例3】</h3>
 
-      <p>"-f"オプションを使用するとファイル名と行数をそれぞれ表示する。</p>
+      <p>連続したフィールドを記述できる。</p>
 
-      <pre class="prettyprint">$ gyo -f data1 data2 data3
-data1 3
-data2 2
-data3 4
-$ </pre>
+      <pre class="prettyprint">$ ineup 1/2 data
+1 1
+1 2
+1 3
+2 0
+2 2
+3 4
+$</pre>
+
+      <h3>【例4】</h3>
+
+      <p>フィールド指定にNFを使うことができる。</p>
+
+      <pre class="prettyprint">$ lineup NF-2 data
+0
+1
+2
+3
+4
+$</pre>
+
+      <h3>【例5】</h3>
+
+      <p>フィールド指定に0(行全体)を使うことができる。1/NFと異なり入力行の余分な空白の削除は行わない。</p>
+
+      <pre class="prettyprint">$ lineup 0 data
+1 1 717300  abc1
+1 1 717300 abc1
+1 1 717303 abc4
+1 2 717301  abc2
+1 2 717301 abc2
+1 2 717304 abc5
+1 3 717302 abc3
+2 0 717305 abc6
+2 2 717306 abc7
+2 2 717307 abc8
+3 4 717308 abc9
+3 4 717309 abcA
+3 4 717310 abcB
+$</pre>
+
+      <h3>【例6】</h3>
+
+      <p>オプションに-fを指定すると出現順になる。</p>
+
+      <pre class="prettyprint">$ lineup -f 2 data
+1
+2
+3
+0
+4
+$</pre>
 
       <h3>【備考】</h3>
 
-      <p>ファイル名に - を指定すると標準入力ファイルを期待する。</p>
-
-      <pre class="prettyprint">$ cat data2 |  gyo -f data1 - data3
-data1 3
-data2 2
-data3 4
-$ </pre>
+      <p>数字名のファイルを使用できない。もし10という名前のファイルが存在すると、たとえばlineup 1 10の場合、ファイル名が10であるファイルの第１フィールドをラインナップするという動作をして、標準入力ファイルから第1、10フィールドをラインナップするという動作をしなくなる。ただし、2のように数字1文字だけを指定した場合は、そのファイルが存在してもそれは無視してフィールドとして扱う。</p>
 
       <h3>【関連項目】</h3>
 
-      <p><a href="count.html">count(1)</a>、<a href="juni.html">juni(1)</a>、<a href="rank.html">rank(1)</a>、<a href="retu.html">retu(1)</a></p>
+      <p><a href="field-format.html">フィールド形式(5)</a></p>
 
     </div>
 
-    <div id="lastmodified">last modified: 2014-08-13 16:01:13</div>
+    <div id="lastmodified">last modified: 2014-38-27 17:02:27</div>
 
     <div id="footer">Contact us: uecinfo@usp-lab.com<br/>Copyright (c) 2012,2013 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
   </div>

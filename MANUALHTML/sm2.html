@@ -116,7 +116,7 @@ Version	: Thu Dec 15 13:46:38 JST 2011</pre>
 
       <h3>【例1】</h3>
 
-      <pre class="cmd">$ cat data
+      <pre class="prettyprint">$ cat data
 0001 新橋店 20060201 91 59 20 76 54	←店別番号 店名 日付 商品別売数
 0001 新橋店 20060202 46 39 8  5  21
 0001 新橋店 20060203 82 0  23 84 10
@@ -133,7 +133,7 @@ $ </pre>
 
       <p>店別の売れ数の合計を出力させる。第1フィールドから第2フィールドをキーとして第4フィールドから第8フィールドを集計する。</p>
 
-      <pre class="cmd">$ sm2 1 2 4 8 data
+      <pre class="prettyprint">$ sm2 1 2 4 8 data
 0001 新橋店 219 98 51 165 85
 0002 池袋店 166 134 135 74 87
 0003 新宿店 184 172 93 45 142
@@ -144,7 +144,7 @@ $ </pre>
 
       <p>+countオプションはキー毎の集計すると同時に、元データの各キー毎の行の行数をキーの直後に挿入出力する。</p>
 
-      <pre class="cmd">$ cat data
+      <pre class="prettyprint">$ cat data
 1111 3
 1111 5
 1111 2
@@ -158,7 +158,7 @@ $ </pre>
 
       <p>キーが同一の行を出力する。</p>
 
-      <pre class="cmd">$ sm2 +count 1 1 2 2 data
+      <pre class="prettyprint">$ sm2 +count 1 1 2 2 data
 1111 3 10
 2222 2 13
 3333 4 27
@@ -168,14 +168,14 @@ $ </pre>
 
       <p>sm2(1)は小数点がある場合、各キー、各フィールド毎に一番精度の高い数に合わせて出力する。</p>
 
-      <pre class="cmd">$ cat data3
+      <pre class="prettyprint">$ cat data3
 a 1.4 2.55
 a 2   4
 b 1.33 2.1
 b 5.222 3.12
 $ </pre>
 
-      <pre class="cmd">$ sm2 1 1 2 3 data3
+      <pre class="prettyprint">$ sm2 1 1 2 3 data3
 a 3.4 6.55
 b 6.552 5.22
 $ </pre>
@@ -184,19 +184,19 @@ $ </pre>
 
       <p>キーを0 0に指定すると、集計フィールドの総合計を出力する。</p>
 
-      <pre class="cmd">$ cat data4
+      <pre class="prettyprint">$ cat data4
 a 1
 b 2
 c 3
 $ </pre>
 
-      <pre class="cmd">$ sm2 0 0 2 2 data4
+      <pre class="prettyprint">$ sm2 0 0 2 2 data4
 6
 $ </pre>
 
       <p>指定したディレクトリに存在するファイルのサイズを合計するには次のようにコマンドを実行する。</p>
 
-      <pre class="cmd">$ ls -l directory | sm2 0 0 5 5</pre>
+      <pre class="prettyprint">$ ls -l directory | sm2 0 0 5 5</pre>
 
       <h3>【関連項目】</h3>
 
@@ -204,7 +204,7 @@ $ </pre>
 
     </div>
 
-    <div id="lastmodified">last modified: 2013-14-15 20:04:15</div>
+    <div id="lastmodified">last modified: 2014-08-13 16:01:13</div>
 
     <div id="footer">Contact us: uecinfo@usp-lab.com<br/>Copyright (c) 2012,2013 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
   </div>

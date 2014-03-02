@@ -117,14 +117,14 @@ Version	: Thu Dec 15 13:46:38 JST 2011</pre>
 
       <h3>【例1】基本的な使い方</h3>
 
-      <pre class="cmd">$ cat data
+      <pre class="prettyprint">$ cat data
 0000000 浜地______ 50 F 91 59 20 76
 0000001 鈴田______ 50 F 46 39 8 5
 0000003 杉山______ 26 F 30 50 71 36
 0000004 白土______ 40 M 58 71 20 10
 $ </pre>
 
-      <pre class="cmd">$ tarr num=4 data		←第4フィールドまでをキーに縦に展開
+      <pre class="prettyprint">$ tarr num=4 data		←第4フィールドまでをキーに縦に展開
 0000000 浜地______ 50 F 91
 0000000 浜地______ 50 F 59
 0000000 浜地______ 50 F 20
@@ -147,7 +147,7 @@ $ </pre>
 
       <p>-&lt;n&gt;オプションを使用すると&lt;n&gt;フィールドごとに縦展開する。</p>
 
-      <pre class="cmd">$ tarr -2 num=4 data		←2フィールド毎に縦展開する。
+      <pre class="prettyprint">$ tarr -2 num=4 data		←2フィールド毎に縦展開する。
 0000000 浜地______ 50 F 91 59
 0000000 浜地______ 50 F 20 76
 0000001 鈴田______ 50 F 46 39
@@ -162,12 +162,12 @@ $ </pre>
 
       <p>num=&lt;n&gt;を指定しないと単純に縦展開する。</p>
 
-      <pre class="cmd">$ cat data3
+      <pre class="prettyprint">$ cat data3
 1 2 3 4
 5 6
 $ </pre>
 
-      <pre class="cmd">$ tarr data3
+      <pre class="prettyprint">$ tarr data3
 1
 2
 3
@@ -180,14 +180,14 @@ $ </pre>
 
       <p>-d&lt;str&gt;オプションを使うことで縦展開するフィールドのフィールドセパレータを指定できる。num=&lt;n&gt;で指定されるキーフィールドは空白区切りである必要がある。</p>
 
-      <pre class="cmd">$ cat data
+      <pre class="prettyprint">$ cat data
 0000000 浜地______ 50 F 91@59@20@76@54
 0000001 鈴田______ 50 F 46@39@8@5@21
 0000003 杉山______ 26 F 30@50@71@36@30
 0000004 白土______ 40 M 58@71@20@10@6
 $ </pre>
 
-      <pre class="cmd">$ tarr -d@ num=4 data
+      <pre class="prettyprint">$ tarr -d@ num=4 data
 0000000 浜地______ 50 F 91
 0000000 浜地______ 50 F 59
 0000000 浜地______ 50 F 20
@@ -210,12 +210,12 @@ $ </pre>
 0000004 白土______ 40 M 6
 $ </pre>
 
-      <pre class="cmd">$ cat data2
+      <pre class="prettyprint">$ cat data2
 0001 1n2n3
 0002 4n5n6
 $ </pre>
 
-      <pre class="cmd">$ tarr -d'n' num=1 data2
+      <pre class="prettyprint">$ tarr -d'n' num=1 data2
 0001 1
 0001 2
 0001 3
@@ -230,7 +230,7 @@ $ </pre>
 
     </div>
 
-    <div id="lastmodified">last modified: 2012-19-01 16:08:01</div>
+    <div id="lastmodified">last modified: 2014-08-13 16:01:13</div>
 
     <div id="footer">Contact us: uecinfo@usp-lab.com<br/>Copyright (c) 2012,2013 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
   </div>

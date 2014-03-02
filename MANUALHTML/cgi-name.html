@@ -119,7 +119,7 @@ Version	: Thu Dec 15 13:46:38 JST 2011</pre>
 
       <p>Webサーバよりplace=tokyo&amp;country=japanという文字列が渡される場合、キー値と値を<a href="name-format.html">ネーム形式</a>に変更して出力する。</p>
 
-      <pre class="cmd">$ dd bs=$CONTENT_LENGTH | cgi-name
+      <pre class="prettyprint">$ dd bs=$CONTENT_LENGTH | cgi-name
 place tokyo
 country japan
 $ </pre>
@@ -128,7 +128,7 @@ $ </pre>
 
       <p>改行(%0D%0A)はnに変換される。</p>
 
-      <pre class="cmd">$ echo 'place=%E6%9D%B1%E4%BA%AC%0D%0A%E5%A4%A7%E9%98%AA&amp;<a href="count.html">count</a>ry=japan' | cgi-name
+      <pre class="prettyprint">$ echo 'place=%E6%9D%B1%E4%BA%AC%0D%0A%E5%A4%A7%E9%98%AA&amp;<a href="count.html">count</a>ry=japan' | cgi-name
 place 東京n大阪
 country japan
 $ </pre>
@@ -137,17 +137,17 @@ $ </pre>
 
       <p>-dオプションを指定すると半角空白は削除あるいは指定文字に変換される。</p>
 
-      <pre class="cmd">$ echo 'place=tokyo osaka&amp;<a href="count.html">count</a>ry=japan' | cgi-name
+      <pre class="prettyprint">$ echo 'place=tokyo osaka&amp;<a href="count.html">count</a>ry=japan' | cgi-name
 place tokyo osaka
 country japan
 $ </pre>
 
-      <pre class="cmd">$ echo 'place=tokyo osaka&amp;<a href="count.html">count</a>ry=japan' | cgi-name -d_
+      <pre class="prettyprint">$ echo 'place=tokyo osaka&amp;<a href="count.html">count</a>ry=japan' | cgi-name -d_
 place tokyo_osaka
 country japan
 $ </pre>
 
-      <pre class="cmd">$ echo 'place=tokyo osaka&amp;<a href="count.html">count</a>ry=japan' | cgi-name -d
+      <pre class="prettyprint">$ echo 'place=tokyo osaka&amp;<a href="count.html">count</a>ry=japan' | cgi-name -d
 place tokyoosaka
 country japan
 $ </pre>
@@ -156,12 +156,12 @@ $ </pre>
 
       <p>-iオプションを指定することで、返される文字列がヌルの場合の初期値を指定できる。</p>
 
-      <pre class="cmd">$ echo 'place=&amp;<a href="count.html">count</a>ry=japan' | cgi-name
+      <pre class="prettyprint">$ echo 'place=&amp;<a href="count.html">count</a>ry=japan' | cgi-name
 place
 country japan
 $ </pre>
 
-      <pre class="cmd">$ echo 'place=&amp;<a href="count.html">count</a>ry=japan' | cgi-name -i somewhere
+      <pre class="prettyprint">$ echo 'place=&amp;<a href="count.html">count</a>ry=japan' | cgi-name -i somewhere
 place somewhere
 country japan
 $ </pre>
@@ -170,7 +170,7 @@ $ </pre>
 
       <p>--templateオプションを指定することで、指定したHTMLテンプレートより、radioboxとcheckboxの名称を取り出し、その名称でデータが出力されなければ、出力をその名称で補完する。radioboxやcheckboxは選択しないでsubmitすると値そのものが出力されない。何も選択しなかったというデータを生成するためにこのオプションを使用する。</p>
 
-      <pre class="cmd">$ cat html
+      <pre class="prettyprint">$ cat html
 -----省略
 &lt;input type="radiobox" name="XXXX" value="A" /&gt;
 &lt;input type="radiobox" name="XXXX" value="B" /&gt;
@@ -181,7 +181,7 @@ $ </pre>
 -----省略
 $ </pre>
 
-      <pre class="cmd">$ dd bs=$CONTENT_LENGTH | cgi-name -i_ --template html
+      <pre class="prettyprint">$ dd bs=$CONTENT_LENGTH | cgi-name -i_ --template html
 -----省略
 XXXX _
 YYYY _
@@ -192,7 +192,7 @@ $ </pre>
 
       <p>radiobox checkboxがhtmlテンプレートのmojihame -lコマンド対象部分にある場合においても、タグ名_%数字を認識して選択値がなくてもタグ名を出力する。</p>
 
-      <pre class="cmd">$ cat html
+      <pre class="prettyprint">$ cat html
 -----省略
 &lt;!-- MOJIHAME --&gt;
 &lt;input type="radiobox" name="X_%1" value="%2" /&gt;
@@ -200,7 +200,7 @@ $ </pre>
 -----省略
 $ </pre>
 
-      <pre class="cmd">$ dd bs=$CONTENT_LENGTH | cgi-name -i_ --template html
+      <pre class="prettyprint">$ dd bs=$CONTENT_LENGTH | cgi-name -i_ --template html
 -----省略
 X _
 -----省略
@@ -215,7 +215,7 @@ $ </pre>
       <p><a href="mime-read.html">mime-read(1)</a>、<a href="nameread.html">nameread(1)</a>、<a href="name-format.html">ネーム形式(5)</a></p>
     </div>
 
-    <div id="lastmodified">last modified: 2012-22-02 14:08:02</div>
+    <div id="lastmodified">last modified: 2014-08-13 16:01:13</div>
 
     <div id="footer">Contact us: uecinfo@usp-lab.com<br/>Copyright (c) 2012,2013 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
   </div>

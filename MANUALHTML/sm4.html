@@ -119,7 +119,7 @@ Version	: Thu Dec 15 13:46:38 JST 2011
 
       <h3>【例1】</h3>
 
-      <pre class="cmd">$ cat data
+      <pre class="prettyprint">$ cat data
 01 埼玉県 01 さいたま市 91 59 20 76 54		←各都市での調査データ
 01 埼玉県 02 川越市 46 39 8 5 21
 01 埼玉県 03 熊谷市 82 0 23 84 10
@@ -138,7 +138,7 @@ $ </pre>
 
       <p>県別に小計を出する。</p>
 
-      <pre class="cmd">$ sm4 1 2 3 4 5 NF data
+      <pre class="prettyprint">$ sm4 1 2 3 4 5 NF data
 01 埼玉県 01 さいたま市 91 59 20 76 54
 01 埼玉県 02 川越市 46 39 8 5 21
 01 埼玉県 03 熊谷市 82 0 23 84 10
@@ -163,7 +163,7 @@ $ </pre>
 
       <p>小計と中計を出す。</p>
 
-      <pre class="cmd">$ cat data
+      <pre class="prettyprint">$ cat data
 01 関東地区 01 埼玉県 01 さいたま市 91 59 20 76 54
 01 関東地区 01 埼玉県 03 熊谷市 82 0 23 84 10
 01 関東地区 02 東京都 04 新宿区 30 50 71 36 30
@@ -181,7 +181,7 @@ $ </pre>
 02 関西地区 03 京都府 10 舞鶴市 60 89 33 18 6
 $ </pre>
 
-      <pre class="cmd">$ sm4 1 4 5 6 7 11 data > data2
+      <pre class="prettyprint">$ sm4 1 4 5 6 7 11 data > data2
 $ cat data2
 01 関東地区 01 埼玉県 01 さいたま市 91 59 20 76 54
 01 関東地区 01 埼玉県 03 熊谷市 82 0 23 84 10
@@ -205,7 +205,7 @@ $ cat data2
 02 関西地区 03 京都府 @@ @@@@@@@@@@ 112 180 77 27 6
 $ </pre>
 
-      <pre class="cmd">$ sm4 1 2 3 6 7 11 data2
+      <pre class="prettyprint">$ sm4 1 2 3 6 7 11 data2
 01 関東地区 01 埼玉県 01 さいたま市 91 59 20 76 54
 01 関東地区 01 埼玉県 03 熊谷市 82 0 23 84 10
 01 関東地区 01 埼玉県 @@ @@@@@@@@@@ 173 59 43 160 64
@@ -234,7 +234,7 @@ $ </pre>
 
       <p>サブキーがない場合には次のような実行結果が得られる。</p>
 
-      <pre class="cmd">$ cat data
+      <pre class="prettyprint">$ cat data
 埼玉県 91 59 20 76 54
 埼玉県 46 39 8 5 21
 埼玉県 82 0 23 84 10
@@ -251,7 +251,7 @@ $ </pre>
 神奈川県 48 66 23 71 24
 $ </pre>
 
-      <pre class="cmd">$ sm4 1 1 x x 2 6 data
+      <pre class="prettyprint">$ sm4 1 1 x x 2 6 data
 埼玉県 91 59 20 76 54
 埼玉県 46 39 8 5 21
 埼玉県 82 0 23 84 10
@@ -278,7 +278,7 @@ $ </pre>
 
     </div>
 
-    <div id="lastmodified">last modified: 2013-15-15 20:04:15</div>
+    <div id="lastmodified">last modified: 2014-08-13 16:01:13</div>
 
     <div id="footer">Contact us: uecinfo@usp-lab.com<br/>Copyright (c) 2012,2013 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
   </div>

@@ -134,14 +134,14 @@ Version		: Thu Dec 15 13:46:38 JST 2011
 
       <h3>【例1】通常のチェック</h3>
 
-      <pre class="cmd">$ cat check
+      <pre class="prettyprint">$ cat check
 A N3            ←3桁整数
 B n4            ←4桁以下の整数
 C x3            ←5桁以下の文字
 D X6            ←6桁の文字
 $ </pre>
 
-      <pre class="cmd">$ cat data
+      <pre class="prettyprint">$ cat data
 A 200
 B 12345
 C abcde
@@ -150,7 +150,7 @@ D_002 xxxxx
 D_003 xxxx
 $ </pre>
 
-      <pre class="cmd">$ check_attr_name check data
+      <pre class="prettyprint">$ check_attr_name check data
 B n4
 C x3
 D_002 X6
@@ -161,7 +161,7 @@ $ </pre>
 
       <h3>【例2】--through オプションでチェックしない値を指定する</h3>
 
-      <pre class="cmd">$ cat data2
+      <pre class="prettyprint">$ cat data2
 A 200
 B _
 C _
@@ -170,7 +170,7 @@ D_002 _
 D_003 _
 $ </pre>
 
-      <pre class="cmd">$ check_attr_name --through _ check data2
+      <pre class="prettyprint">$ check_attr_name --through _ check data2
 $ echo $?
 0
 $ </pre>
@@ -180,7 +180,7 @@ $ </pre>
       <p><a href="name-format.html">ネーム形式(5)</a></p>
     </div>
 
-    <div id="lastmodified">last modified: 2012-19-01 16:08:01</div>
+    <div id="lastmodified">last modified: 2014-08-13 16:01:13</div>
 
     <div id="footer">Contact us: uecinfo@usp-lab.com<br/>Copyright (c) 2012,2013 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
   </div>

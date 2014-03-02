@@ -99,91 +99,111 @@
     <div id="main">
       <h1>Tukubaiオンラインコマンドマニュアル</h1>
 
-      <h2>gyo(1)</h2>
+      <h2>sisu(1)</h2>
 
       <h3>【名前】</h3>
 
-      <p>gyo : 行をカウント</p>
+      <p>sisu : 指数(構成比)を計算</p>
 
       <h3>【書式】</h3>
 
-      <pre class="list">Usage	: gyo [-f] &lt;file&gt; ...
-Version	: Thu Dec 15 13:46:38 JST 2011</pre>
+      <pre class="list">Usage   : sisu [-&lt;p&gt;] [key=&lt;key&gt;] val=&lt;val&gt; &lt;file&gt;
+Version : Wed Feb 19 16:34:37 JST 2014</pre>
 
       <h3>【説明】</h3>
 
-      <p>引数のファイルまたは標準入力のテキストデータの行数(行数)をカウントして出力する。</p>
+      <p>引数のファイルまたは標準入力のテキストデータのkey=で指定したフィールドについて全レコード(行)の合計に占める各フィールドの値の構成比を算出し、その次のフィールドに挿入して出力する。</p>
 
       <h3>【例1】</h3>
 
-      <pre class="prettyprint">$ cat data
-0000000 浜地______ 50 F 91 59 20 76 54
-0000001 鈴田______ 50 F 46 39 8  5  21
-0000003 杉山______ 26 F 30 50 71 36 30
-0000004 白土______ 40 M 58 71 20 10 6
-0000005 崎村______ 50 F 82 79 16 21 80
-0000007 梶川______ 42 F 50 2  33 15 62
-$ </pre>
+      <pre class="prettyprint">$ cat data # 店 日付 売数 客数
+a店 1日目 103  62
+b店 1日目 210 113
+c店 1日目 81   52
+d店 1日目 75   48
+e店 1日目 211 140
+$</pre>
 
-      <pre class="prettyprint">$ gyo data
-6
-$ </pre>
+      <p>売数(第３フィールド)の店別構成比を求めて売数の次のフィールドに挿入する。</p>
+
+      <pre class="prettyprint">$ sisu val=3 data | keta
+a店 1日目 103  75.7  62
+b店 1日目 210 154.4 113
+c店 1日目  81  59.6  52
+d店 1日目  75  55.1  48
+e店 1日目 211 155.1 140
+$ # 第4フィールドが構成比</pre>
 
       <h3>【例2】</h3>
 
-      <p>複数のファイルの行数を一度にカウントできる。</p>
+      <p>key=で指定したフィールドをキーフィールドとし、キーフィールドの値が同じレコードの中で構成比を計算して出力する。なおキーフィールドはあらかじめ整列済みであることが条件となる。</p>
 
-      <pre class="prettyprint">$ cat data1
-1 file1
-2 file1
-3 file1
-$ </pre>
+      <pre class="prettyprint">$ cat data # 店 日付 売数 客数
+a店 1日目 103  62
+a店 2日目 157  94
+a店 3日目  62  30
+b店 1日目 210 113
+b店 2日目 237 121
+b店 3日目 150  82
+c店 1日目  81  52
+c店 2日目  76  49
+c店 3日目  38  21
+d店 1日目  75  48
+d店 2日目  72  42
+d店 3日目  34  19
+e店 1日目 211 140
+e店 2日目 149  91
+e店 3日目 120  73
+$</pre>
 
-      <pre class="prettyprint">$ cat data2
-1 file2
-2 file2
-$ </pre>
+      <p>各日(第2フィールド)毎に店別の売数(第3フィールド)の構成比を求める。</p>
 
-      <pre class="prettyprint">$ cat data3
-1 file3
-2 file3
-3 file3
-4 file3
-$ </pre>
-
-      <pre class="prettyprint">$ gyo data1 data2 data3
-3
-2
-4
-$ </pre>
+      <pre class="prettyprint">$ msort key=2/1 data | sisu key=2 val=3 | keta
+a店 1日目 103  75.7  62  ----
+b店 1日目 210 154.4 113   ↑
+c店 1日目  81  59.6  52   1日目の中での構成比
+d店 1日目  75  55.1  48   ↓
+e店 1日目 211 155.1 140  ----
+a店 2日目 157 113.6  94  ----
+b店 2日目 237 171.5 121   ↑
+c店 2日目  76  55.0  49   2日目の中での構成比
+d店 2日目  72  52.1  42   ↓
+e店 2日目 149 107.8  91  ----
+a店 3日目  62  76.7  30  ----
+b店 3日目 150 185.6  82   ↑
+c店 3日目  38  47.0  21   3日目の中での構成比
+d店 3日目  34  42.1  19   ↓
+e店 3日目 120 148.5  73  ----
+$ # 第4フィールドが構成比</pre>
 
       <h3>【例3】</h3>
 
-      <p>"-f"オプションを使用するとファイル名と行数をそれぞれ表示する。</p>
+      <p>「-数値」で構成比の小数点以下の精度を指定できる。</p>
 
-      <pre class="prettyprint">$ gyo -f data1 data2 data3
-data1 3
-data2 2
-data3 4
-$ </pre>
+      <pre class="prettyprint">$ cat data # 店 日付 売数 客数
+a店 1日目 103  62
+b店 1日目 210 113
+c店 1日目 81   52
+d店 1日目 75   48
+e店 1日目 211 140
+$</pre>
 
-      <h3>【備考】</h3>
+      <p>売数(第3フィールド)の店別構成比を小数点3桁まで求める。</p>
 
-      <p>ファイル名に - を指定すると標準入力ファイルを期待する。</p>
-
-      <pre class="prettyprint">$ cat data2 |  gyo -f data1 - data3
-data1 3
-data2 2
-data3 4
-$ </pre>
+      <pre class="prettyprint">$ sisu -3 val=3 data | keta
+a店 1日目 103  75.735  62
+b店 1日目 210 154.412 113
+c店 1日目  81  59.559  52
+d店 1日目  75  55.147  48
+e店 1日目 211 155.147 140
+$</pre>
 
       <h3>【関連項目】</h3>
 
-      <p><a href="count.html">count(1)</a>、<a href="juni.html">juni(1)</a>、<a href="rank.html">rank(1)</a>、<a href="retu.html">retu(1)</a></p>
-
+      <p><a href="field-format.html">フィールド形式(5)</a></p>
     </div>
 
-    <div id="lastmodified">last modified: 2014-08-13 16:01:13</div>
+    <div id="lastmodified">last modified: 2014-39-27 17:02:27</div>
 
     <div id="footer">Contact us: uecinfo@usp-lab.com<br/>Copyright (c) 2012,2013 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
   </div>

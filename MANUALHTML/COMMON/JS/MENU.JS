@@ -2,7 +2,7 @@ window.onload = function()
 {
   adjustMegamenu({
     'Info':                      {cols: 1, width: 26},
-    'UECジャーナル':             {cols: 1, width: 27},
+    'UECジャーナル':             {cols: 1, width: 30},
     'Tukubai':                   {cols: 1, width: 38},
     'Tukubaiマニュアル': {cols: 3, width: 16},
     'コマンドTips':              {cols: 1, width: 23},

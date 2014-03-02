@@ -116,13 +116,13 @@ Version	: Thu Dec 15 13:46:38 JST 2011</pre>
 
       <h3>【例1】</h3>
 
-      <pre class="cmd">$ cat data
+      <pre class="prettyprint">$ cat data
 1 2 3
 A B C
 4 5 6
 $ </pre>
 
-      <pre class="cmd">$ tateyoko data
+      <pre class="prettyprint">$ tateyoko data
 1 A 4
 2 B 5
 3 C 6
@@ -132,7 +132,7 @@ $ </pre>
 
       <p><a href="map.html">map(1)</a>の出力を縦横変換する。</p>
 
-      <pre class="cmd">$ cat data
+      <pre class="prettyprint">$ cat data
 A 10/01 1
 A 10/02 2
 A 10/03 3
@@ -141,13 +141,13 @@ B 10/02 5
 B 10/03 6
 $ </pre>
 
-      <pre class="cmd">$ <a href="map.html">map</a> num=1 data |  <a href="keta.html">keta</a>
+      <pre class="prettyprint">$ <a href="map.html">map</a> num=1 data |  <a href="keta.html">keta</a>
 * 10/01 10/02 10/03
 A     1     2     3
 B     4     5     6
 $ </pre>
 
-      <pre class="cmd">$ <a href="map.html">map</a> num=1 data | tateyoko | <a href="keta.html">keta</a>
+      <pre class="prettyprint">$ <a href="map.html">map</a> num=1 data | tateyoko | <a href="keta.html">keta</a>
 *     A B
 10/01 1 4
 10/02 2 5
@@ -164,7 +164,7 @@ $ </pre>
 
     </div>
 
-    <div id="lastmodified">last modified: 2013-23-15 20:04:15</div>
+    <div id="lastmodified">last modified: 2014-08-13 16:01:13</div>
 
     <div id="footer">Contact us: uecinfo@usp-lab.com<br/>Copyright (c) 2012,2013 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
   </div>

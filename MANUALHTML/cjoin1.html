@@ -126,13 +126,13 @@ Version	: Fri Jul 27 20:25:12 JST 2012</pre>
 
       <h3>【例1】基本パターン</h3>
 
-      <pre class="cmd">$ cat master
+      <pre class="prettyprint">$ cat master
 0000003 杉山______ 26 F
 0000005 崎村______ 50 F
 0000007 梶川______ 42 F
 $ </pre>
 
-      <pre class="cmd">$ cat tran
+      <pre class="prettyprint">$ cat tran
 0000005 82 79 16 21 80
 0000001 46 39 8  5  21
 0000004 58 71 20 10 6
@@ -141,7 +141,7 @@ $ </pre>
 0000007 50 2  33 15 62
 $ </pre>
 
-      <pre class="cmd">
+      <pre class="prettyprint">
 $ cjoin1 key=1 master tran &gt; ok
 $ cat ok
 0000005 崎村______ 50 F 82 79 16 21 80
@@ -151,7 +151,7 @@ $ </pre>
 
       <h3>【例2】+ngオプションの使い方</h3>
 
-      <pre class="cmd">$ cjoin1 +ng key=1 master tran &gt; ok 2&gt; ng
+      <pre class="prettyprint">$ cjoin1 +ng key=1 master tran &gt; ok 2&gt; ng
 $ cat ng
 0000001 46 39 8  5  21
 0000004 58 71 20 10 6
@@ -160,7 +160,7 @@ $ </pre>
 
       <h3>【例3】標準入力の使い方</h3>
 
-      <pre class="cmd">$ cat tran | cjoin1 +ng key=1 master &gt; ok 2&gt; ng
+      <pre class="prettyprint">$ cat tran | cjoin1 +ng key=1 master &gt; ok 2&gt; ng
 $ cat tran | cjoin1 +ng key=1 master - &gt; ok 2&gt; ng
 $ cat master | cjoin1 +ng key=1 - tran &gt; ok 2&gt; ng</pre>
 
@@ -170,7 +170,7 @@ $ cat master | cjoin1 +ng key=1 - tran &gt; ok 2&gt; ng</pre>
 
     </div>
 
-    <div id="lastmodified">last modified: 2012-34-02 11:08:02</div>
+    <div id="lastmodified">last modified: 2014-08-13 16:01:13</div>
 
     <div id="footer">Contact us: uecinfo@usp-lab.com<br/>Copyright (c) 2012,2013 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
   </div>

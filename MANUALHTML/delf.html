@@ -120,7 +120,7 @@ Version	: Thu Dec 15 13:46:38 JST 2011</pre>
 
       <p>f1 &lt; f2 &lt; f3 &lt; ...という関係である必要がある。</p>
 
-      <pre class="cmd">$ delf 1 3 5 data		← OK
+      <pre class="prettyprint">$ delf 1 3 5 data		← OK
 $ delf 3 1 5 data		← NG</pre>
 
       <h3>【オプション】</h3>
@@ -130,7 +130,7 @@ $ delf 3 1 5 data		← NG</pre>
 
       <h3>【例1】</h3>
 
-      <pre class="cmd">$ cat data		←元データ
+      <pre class="prettyprint">$ cat data		←元データ
 0000000 浜地______ 50 F
 0000001 鈴田______ 50 F
 0000003 杉山______ 26 F
@@ -143,7 +143,7 @@ $ delf 3 1 5 data		← NG</pre>
 0000011 安武______ 55 F
 $ </pre>
 
-      <pre class="cmd">$ delf 2 data		←第2フィールドを除いて出力する。
+      <pre class="prettyprint">$ delf 2 data		←第2フィールドを除いて出力する。
 0000000 50 F
 0000001 50 F
 0000003 26 F
@@ -158,7 +158,7 @@ $ </pre>
 
       <h3>【例2】</h3>
 
-      <pre class="cmd">$ delf NF data
+      <pre class="prettyprint">$ delf NF data
 0000000 浜地______ 50
 0000001 鈴田______ 50
 0000003 杉山______ 26
@@ -173,7 +173,7 @@ $ </pre>
 
       <h3>【例3】</h3>
 
-      <pre class="cmd">$ delf 2/3 data
+      <pre class="prettyprint">$ delf 2/3 data
 0000000 F
 0000001 F
 0000003 F
@@ -199,7 +199,7 @@ $ </pre>
       <p><a href="self.html">self(1)</a></p>
     </div>
 
-    <div id="lastmodified">last modified: 2012-29-21 14:08:21</div>
+    <div id="lastmodified">last modified: 2014-08-13 16:01:13</div>
 
     <div id="footer">Contact us: uecinfo@usp-lab.com<br/>Copyright (c) 2012,2013 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
   </div>
