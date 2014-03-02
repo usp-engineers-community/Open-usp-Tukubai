@@ -86,9 +86,9 @@ $
 
 【ワンポイント】
 
-データファイルの数値にcomma(1)でカンマを追加してしまうと、それ以降は
-sm2(1)やdivsen(1)などでの数値計算はできなくなる。カンマの追加はすべ
-ての計算を終えた最終成形の段階で使用する。
+データファイルの数値にcommaでカンマを追加してしまうと、それ以降はsm2(1)やdivsen
+(1)などでの数値計算はできなくなる。カンマの追加はすべての計算を終えた最終成形の
+段階で使用する。
 
 【ワンポイント】
 
@@ -98,6 +98,6 @@ sm2(1)やdivsen(1)などでの数値計算はできなくなる。カンマの�
 
 keta(1)
 
-last modified: 2013-04-15 19:24:26
+last modified: 2014-01-13 16:01:13
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012,2013 Universal Shell Programming Laboratory All Rights Reserved.
+Copyright (c) 2012-2014 Universal Shell Programming Laboratory All Rights

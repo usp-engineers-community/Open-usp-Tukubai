@@ -22,8 +22,8 @@ s1からs2までのフィールドまでのフィールドを集計フィール�
 
 集計行におけるサブキーのフィールドは@で補完される。小計および中計を段階的に付与
 するためにsm4(1)を複数回使用する場合には、サブキーに@が含まれる行は集計から除外
-される。キーまたは集計フィールドいずれの範囲にも指定していないフィールドについて
-は出力は実行されない。
+される。キーまたは集計フィールドいずれの範囲にも指定していないフィールドについ
+ては出力は実行されない。
 
 【例1】
 
@@ -184,6 +184,6 @@ $
 
 kasan(1)、plus(1)、ratio(1)、sm2(1)、sm5(1)、ysum(1)
 
-last modified: 2013-04-15 20:14:26
+last modified: 2014-01-13 16:01:13
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012,2013 Universal Shell Programming Laboratory All Rights Reserved.
+Copyright (c) 2012-2014 Universal Shell Programming Laboratory All Rights

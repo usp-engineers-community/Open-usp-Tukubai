@@ -14,8 +14,8 @@ Tukubaiオンラインコマンドマニュアル
 
 【説明】
 
-タグ形式(5)はフィールド形式(5)のデータの先頭行にヘッダが配置されたもの。主に
-次の用途で使用される。
+タグ形式(5)はフィールド形式(5)のデータの先頭行にヘッダが配置されたもの。主に次
+の用途で使用される。
 
   • 複数のネームファイル(5)を単一のファイルにまとめる
   • フィールド数がきわめて多い場合
@@ -42,6 +42,7 @@ ID DATE AGE GENDER VALUE
 
 フィールド形式(5)、ネーム形式(5)、ネームファイル(5)
 
-last modified: 2013-04-15 20:19:21
+ツイート
+last modified: 2014-01-13 16:01:13
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012,2013 Universal Shell Programming Laboratory All Rights Reserved.
+Copyright (c) 2012-2014 Universal Shell Programming Laboratory All Rights

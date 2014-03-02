@@ -73,7 +73,7 @@ $ cat data4
 $
 
 $ yarr data4
- 1 2 3 4
+1 2 3 4
 $
 
 【例4】
@@ -99,6 +99,6 @@ $
 
 tarr(1)
 
-last modified: 2013-04-15 20:29:29
+last modified: 2014-01-13 16:01:13
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012,2013 Universal Shell Programming Laboratory All Rights Reserved.
+Copyright (c) 2012-2014 Universal Shell Programming Laboratory All Rights

@@ -13,25 +13,30 @@ Version : Mon Dec 12 19:38:29 JST 2011
 
 【説明】
 
-標準入力または入力ファイル<file>の指定フィールド<field>のデータのフォーマッ
-トが次の3パターンのいずれかである場合、<format>で指定した形式に変換して出力
-する。次の3パターンのいずれでもない場合、入力データをそのまま出力する。フォー
-マットは桁数のみを検証し、年月日時分秒の正当性は評価しない。
+標準入力または入力ファイル<file>の指定フィールド<field>のデータのフォーマットが
+次の3パターンのいずれかである場合、<format>で指定した形式に変換して出力する。次
+の3パターンのいずれでもない場合、入力データをそのまま出力する。フォーマットは桁
+数のみを検証し、年月日時分秒の正当性は評価しない。
 
-  yyyymmdd        : 年月日        8桁
-  HHMMSS          : 時分秒        6桁
-  yyyymmddHHMMSS  : 年月日時分秒 14桁
+yyyymmdd
+    年月日(8桁)
+HHMMSS
+    時分秒(6桁)
+yyyymmddHHMMSS
+    年月日時分秒(14桁)
 
 <format>でm, d, H, M, Sを単独で指定した場合、前0は削除される。
 
-オプション-rを指定すると逆変換を実施する。標準入力または入力ファイル<file>の
-指定フィールド<field>のデータが、<format>で指定されたフォーマットに一致する
-場合、次のいずれかの形式へ変換する。一致しない場合、入力データをそのまま出力
-する。
+オプション-rを指定すると逆変換を実施する。標準入力または入力ファイル<file>の指
+定フィールド<field>のデータが、<format>で指定されたフォーマットに一致する場合、
+次のいずれかの形式へ変換する。一致しない場合、入力データをそのまま出力する。
 
-  yyyymmdd        : 年月日        8桁
-  HHMMSS          : 時分秒        6桁
-  yyyymmddHHMMSS  : 年月日時分秒 14桁
+yyyymmdd
+    年月日(8桁)
+HHMMSS
+    時分秒(6桁)
+yyyymmddHHMMSS
+    年月日時分秒(14桁)
 
 フォーマットのみを検証し、年月日時分秒の正当性は評価しない。
 
@@ -45,7 +50,7 @@ $ echo 20111201235958 | dayslash m/d 1
 12/1
 $ echo - | dayslash yyyy/mm/dd 1
 -
-$ 
+$
 
 【例2】
 
@@ -59,8 +64,8 @@ $
 
 【関連項目】
 
-calclock(1), mdate(1), yobi(1)
+calclock(1)、mdate(1)、yobi(1)
 
-last modified: 2013-04-15 19:25:16
+last modified: 2014-01-13 16:01:13
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2013 Universal Shell Programming Laboratory All Rights Reserved.  
+Copyright (c) 2012-2014 Universal Shell Programming Laboratory All Rights

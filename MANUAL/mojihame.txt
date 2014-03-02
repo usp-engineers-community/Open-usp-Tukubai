@@ -86,7 +86,8 @@ $
 【例3】行単位
 
 dataは1行単位に読み込まれ、行の各フィールドが%1 %2 ...に対応する。次の行が読み
-込まれるときは再びtemplateが使用され、データがはめ込まれ出力される。
+込まれるときは再びtemplateが使用され、データがはめ込まれ出力される。この使い方
+は旧mojihameの-rと互換性がある。mojihame -rは将来廃止される。
 
 $ cat data
 a b c d
@@ -174,8 +175,7 @@ K2
 MEMBER
 $
 
-$ mojihame -lK1 template kbn1 | \
-  mojihame -lK2 - kbn2 | mojihame -lMEMBER - member
+$ mojihame -lK1 template kbn1 |   mojihame -lK2 - kbn2 | mojihame -lMEMBER - member
 氏名＝佐藤
 地名＝東京
 地名＝大阪
@@ -255,8 +255,8 @@ $ mojihame -hLABEL -dx template data
 
 【注意2】アンダースコアデータの扱い
 
-データの中の\_はmojihame実行後には_に置換される。エスケープのない_は半角スペー
-スに置換される。
+データの中の_mojihame実行後には_に置換される。エスケープのない_は半角スペースに
+置換される。
 
 $ cat template
 <input type="text" value="%1" />
@@ -266,8 +266,8 @@ $
 
 $ cat data
 usp_lab
-usp\_lab
-______\_\_
+usp_lab
+________
 $
 
 $ mojihame template data
@@ -278,16 +278,15 @@ $
 
 【備考】
 
-1. ファイル名に-を指定したときは標準入力からのデータを期待する。templateも
-   dataのいずれかを指定できる。
-
-2. -dオプションは文字列を指定しない場合にはdataの値をそのまますべてtemplateに
-   はめ込む。
+ 1. ファイル名に-を指定したときは標準入力からのデータを期待する。templateもdata
+    のいずれかを指定できる。
+ 2. -dオプションは文字列を指定しない場合にはdataの値をそのまますべてtemplateに
+    はめ込む。
 
 【関連項目】
 
-filehame(1), formhame(1)
+filehame(1)、formhame(1)
 
-last modified: 2013-04-15 19:58:57
+last modified: 2014-01-13 16:01:13
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012,2013 Universal Shell Programming Laboratory All Rights Reserved.
+Copyright (c) 2012-2014 Universal Shell Programming Laboratory All Rights

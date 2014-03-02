@@ -31,14 +31,14 @@ $
 て正常終了、異なればエラー終了である、といった判定処理に利用される。この使い方
 は${PIPESTATUS[@]}が提供されているbashなどに限定される。
 
-$ comman1 | command2 | command3 | ... > result
+$ comman1 |  command2 | command3 | ... > result
 
-$ [ $(plus ${PIPESTATUS[@]}) -ne 0 ] && exit
+$ [ $plus ${PIPESTATUS[@]}) -ne 0 ] && exit
 
 【関連項目】
 
 kasan(1)、ratio(1)、sm2(1)、sm4(1)、sm5(1)、ysum(1)
 
-last modified: 2013-04-15 20:06:36
+last modified: 2014-01-13 16:01:13
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012,2013 Universal Shell Programming Laboratory All Rights Reserved.
+Copyright (c) 2012-2014 Universal Shell Programming Laboratory All Rights
