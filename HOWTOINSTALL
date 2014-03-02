@@ -8,15 +8,15 @@ Open usp Tukubaiインストール : Makefile
 デフォルトのパスにコマンドおよびドキュメント、マニュアルをインス
 トールする場合は次のように作業する。
 
-  $ make install
+	$ make install
 
 デフォルトでは次のパスにインストールが実施される。
 
-  コマンド         /usr/local/bin/
-  マニュアルPDF    /usr/local/share/open-usp-tukubai/devel/pdf/
-  マニュアルHTML   /usr/local/share/open-usp-tukubai/devel/html/
-  マニュアルTEXT   /usr/local/share/open-usp-tukubai/devel/man/
-  ドキュメント     /usr/local/share/open-usp-tukubai/devel/doc/
+	コマンド	/usr/local/bin/
+	マニュアルPDF	/usr/local/share/open-usp-tukubai/devel/pdf/
+	マニュアルHTML	/usr/local/share/open-usp-tukubai/devel/html/
+	マニュアルTEXT	/usr/local/share/open-usp-tukubai/devel/man/
+	ドキュメント	/usr/local/share/open-usp-tukubai/devel/doc/
 
 インストールパスは環境変数またはmakeで指定する変数としてLOCALBASEを
 使うことで変更可能。LOCALBASEの値を/usr/local以外に変更するとほかの
@@ -26,22 +26,40 @@ Open usp Tukubaiインストール : Makefile
 
 アンインストールは次のように作業する。
 
-  $ make uninstall
+	$ make uninstall
 
-CentOSおよびFreeBSDにおける動作が確認されている。
+Mac OS X、Linux、FreeBSDにおける動作が確認されている。
 
+
+Open usp Tukubaiインストール : Mac OS X
+=======================================
+
+次のようにインストールする。
+
+	% make install
+
+Open usp Tukubaiインストール : Linux
+====================================
+
+次のようにインストールする。
+
+	% make install
 
 Open usp Tukubaiインストール : FreeBSD
 ======================================
 
-Ports Collectionからインストールする。Ports Collectionを最新の状態に
-更新したら、次のようにインストールする。
+次のようにインストールする。
 
+	% make install
+
+Ports Collectionからインストール場合は次のようにインストールする。
+
+	% portsnap fetch extract update
 	% cd /usr/ports/devel/open-usp-tukubai/
 	% make install clean
 
-またはFreeBSD 10.0-RELEASE以降はpkg(8)コマンドを使って次のようにイン
-ストールする。
+FreeBSD 10.0-RELEASE以降はpkg(8)コマンドを使って次のようにもイン
+ストールできる。
 
 	% pkg install open-usp-tukubai
 
