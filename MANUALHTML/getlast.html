@@ -116,7 +116,7 @@ Version	: Thu Dec 15 13:46:38 JST 2011</pre>
 
       <h3>【例1】</h3>
 
-      <pre class="cmd">$ cat data		←元データ 商品コード 商品名 販売日 売れ数
+      <pre class="prettyprint">$ cat data		←元データ 商品コード 商品名 販売日 売れ数
 0000007               セロリ 20060201 117
 0000007               セロリ 20060202 136
 0000007               セロリ 20060203 221
@@ -134,7 +134,7 @@ Version	: Thu Dec 15 13:46:38 JST 2011</pre>
 0000030             じゃが芋 20060203 184
 $ </pre>
 
-      <pre class="cmd">$ getlast 1 2 data
+      <pre class="prettyprint">$ getlast 1 2 data
 0000007               セロリ 20060203 221
 0000017             練馬大根 20060203 514
 0000021           温州みかん 20060203 573
@@ -146,7 +146,7 @@ $ </pre>
 
       <p>"+ng"オプションを指定すると、同じキーフィールドの値を持つ行の最後の行以外を標準エラー出力に出力する。</p>
 
-      <pre class="cmd">$ getlast +ng 1 2 data &gt; /dev/null 2&gt; data2
+      <pre class="prettyprint">$ getlast +ng 1 2 data &gt; /dev/null 2&gt; data2
 $ cat data2
 0000007               セロリ 20060201 117
 0000007               セロリ 20060202 136
@@ -165,7 +165,7 @@ $ </pre>
       <p><a href="ctail.html">ctail(1)</a>、<a href="getfirst.html">getfirst(1)</a>、<a href="tcat.html">tcat(1)</a>、<a href="ycat.html">ycat(1)</a></p>
     </div>
 
-    <div id="lastmodified">last modified: 2012-19-01 16:08:01</div>
+    <div id="lastmodified">last modified: 2014-08-13 16:01:13</div>
 
     <div id="footer">Contact us: uecinfo@usp-lab.com<br/>Copyright (c) 2012,2013 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
   </div>

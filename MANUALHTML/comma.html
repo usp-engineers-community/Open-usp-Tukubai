@@ -117,7 +117,7 @@ Version	: Thu Dec 15 13:46:38 JST 2011</pre>
 
       <h3>【例1】</h3>
 
-      <pre class="cmd">$ cat data
+      <pre class="prettyprint">$ cat data
 20060201 296030 6710000
 20060202 1300100 3130000
 20060203 309500 20100
@@ -126,7 +126,7 @@ Version	: Thu Dec 15 13:46:38 JST 2011</pre>
 20060206 771100 400000
 $ </pre>
 
-      <pre class="cmd">$ comma 2 3 data
+      <pre class="prettyprint">$ comma 2 3 data
 20060201 296,030 6,710,000
 20060202 1,300,100 3,130,000
 20060203 309,500 20,100
@@ -135,7 +135,7 @@ $ </pre>
 20060206 771,100 400,000
 $ </pre>
 
-      <pre class="cmd">$ comma -4 2 3 data	←4桁カンマ
+      <pre class="prettyprint">$ comma -4 2 3 data	←4桁カンマ
 20060201 29,6030 671,0000
 20060202 130,0100 313,0000
 20060203 30,9500 2,0100
@@ -148,7 +148,7 @@ $ </pre>
 
       <p>+hオプションを使用すると1行目の行を除いてカンマを追加する。先頭行が項目名などの場合に使用する。+2hや+3hのように数字を指定すると、2行目または3行目以降の行にカンマを追加するようになる。</p>
 
-      <pre class="cmd">
+      <pre class="prettyprint">
 $ cat data		←元データ：先頭行に項目(ヘッダー)がついている
 年月日 売上高 発注高
 20060201 296030 6710000
@@ -159,7 +159,7 @@ $ cat data		←元データ：先頭行に項目(ヘッダー)がついている
 20060206 771100 400000
 $ </pre>
 
-      <pre class="cmd">
+      <pre class="prettyprint">
 $ comma +h 2 3 data		←先頭行を除いてカンマ変換する
 年月日 売上高 発注高
 20060201 296,030 6,710,000
@@ -174,11 +174,11 @@ $ </pre>
 
       <p>数字の文字列を直接引数に指定してカンマを追加することができる。</p>
 
-      <pre class="cmd">$ comma -d 1234567
+      <pre class="prettyprint">$ comma -d 1234567
 1,234,567
 $ </pre>
 
-      <pre class="cmd">$ comma -d4 1234567
+      <pre class="prettyprint">$ comma -d4 1234567
 123,4567
 $ </pre>
 
@@ -195,7 +195,7 @@ $ </pre>
       <p><a href="keta.html">keta(1)</a></p>
     </div>
 
-    <div id="lastmodified">last modified: 2012-19-01 16:08:01</div>
+    <div id="lastmodified">last modified: 2014-08-13 16:01:13</div>
 
     <div id="footer">Contact us: uecinfo@usp-lab.com<br/>Copyright (c) 2012,2013 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
   </div>

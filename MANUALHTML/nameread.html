@@ -120,7 +120,7 @@ Version	: Thu Dec 15 13:46:38 JST 2011</pre>
 
       <h3>【例】</h3>
 
-      <pre class="cmd">$ cat namefile
+      <pre class="prettyprint">$ cat namefile
 A usp
 B usp laboratory
 C
@@ -128,67 +128,67 @@ $ </pre>
 
       <p>通常の出力</p>
 
-      <pre class="cmd">$ nameread A namefile
+      <pre class="prettyprint">$ nameread A namefile
 usp
 $ </pre>
 
       <p><a href="name-format.html">ネーム形式(5)</a>のデータは空白を含む</p>
 
-      <pre class="cmd">$ nameread B namefile
+      <pre class="prettyprint">$ nameread B namefile
 usp laboratory
 $ </pre>
 
       <p>空白を変換したいときは-dオプションを使用</p>
 
-      <pre class="cmd">$ nameread -d_ B namefile
+      <pre class="prettyprint">$ nameread -d_ B namefile
 usp_laboratory
 $ </pre>
 
       <p>空白を削除したいときは-dオプションを引数なしで指定</p>
 
-      <pre class="cmd">$ nameread -d B namefile
+      <pre class="prettyprint">$ nameread -d B namefile
 usplaboratory
 $ </pre>
 
       <p>名前のみ存在している場合には空行を出力</p>
 
-      <pre class="cmd">$ nameread C namefile
+      <pre class="prettyprint">$ nameread C namefile
 
 $ </pre>
 
       <p>ヌルデータを初期化する場合は-iオプションを使用</p>
 
-      <pre class="cmd">$ namread -i @@@ C namefile
+      <pre class="prettyprint">$ namread -i @@@ C namefile
 @@@
 $ </pre>
 
       <p>名前が存在しない場合には何も出力しない</p>
 
-      <pre class="cmd">$ nameread D namefile
+      <pre class="prettyprint">$ nameread D namefile
 $ </pre>
 
       <p>名前も一緒に出力するには-lオプションを使用</p>
 
-      <pre class="cmd">$ nameread -l A namefile
+      <pre class="prettyprint">$ nameread -l A namefile
 A usp
 $ </pre>
 
       <p>-eオプションを指定することで正規表現を利用可能</p>
 
-      <pre class="cmd">$ cat namefile2
+      <pre class="prettyprint">$ cat namefile2
 A01 1
 A02 2
 A03 3
 A10 5
 $ </pre>
 
-      <pre class="cmd">$ nameread -e '^A0[0-9]$' namefile2
+      <pre class="prettyprint">$ nameread -e '^A0[0-9]$' namefile2
 1
 2
 3
 $ </pre>
 
-      <pre class="cmd">$ nameread -el '^A0[0-9]$' namefile2
+      <pre class="prettyprint">$ nameread -el '^A0[0-9]$' namefile2
 A01 1
 A02 2
 A03 3
@@ -201,7 +201,7 @@ $ </pre>
 
     </div>
 
-    <div id="lastmodified">last modified: 2013-06-15 20:04:15</div>
+    <div id="lastmodified">last modified: 2014-08-13 16:01:13</div>
 
     <div id="footer">Contact us: uecinfo@usp-lab.com<br/>Copyright (c) 2012,2013 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
   </div>

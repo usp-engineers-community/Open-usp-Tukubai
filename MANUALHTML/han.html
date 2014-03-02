@@ -119,13 +119,13 @@ Version	: Thu Dec 15 13:46:38 JST 2011
       <h3>【例1】</h3>
 
       <p>引数のファイルの指定したフィールドの中身を半角に変換する。</p>
-      <pre class="cmd">$ cat data
+      <pre class="prettyprint">$ cat data
 これは データ である。
 Ｔｈｉｓ ｉｓ ｄａｔａ
 １２３４ ５６７ ８９０
 $ </pre>
 
-      <pre class="cmd">$ han 1 2 3 data
+      <pre class="prettyprint">$ han 1 2 3 data
 これは ﾃﾞｰﾀ である｡
 This is data
 1234 567 890
@@ -135,13 +135,13 @@ $ </pre>
 
       <p>フィールドを指定しないと行全体を半角にする。全角スペースは半角スペースになる。</p>
 
-      <pre class="cmd">$ cat data2
+      <pre class="prettyprint">$ cat data2
 これはデータである。
 全角　スペース　データも変換する。
 １２３456７８９
 $ </pre>
 
-      <pre class="cmd">$ han data2
+      <pre class="prettyprint">$ han data2
 これはﾃﾞｰﾀである｡
 全角 スペース ﾃﾞｰﾀも変換する。
 123456789</pre>
@@ -150,7 +150,7 @@ $ </pre>
 
       <p>-dオプションを使用すると、引数で指定した文字列の全角部分を半角に変えて出力させることができる。</p>
 
-      <pre class="cmd">$ han -d カタカナＡＢＣ１２３
+      <pre class="prettyprint">$ han -d カタカナＡＢＣ１２３
 ｶﾀｶﾅABC123
 $ </pre>
 
@@ -160,7 +160,7 @@ $ </pre>
 
     </div>
 
-    <div id="lastmodified">last modified: 2012-19-01 16:08:01</div>
+    <div id="lastmodified">last modified: 2014-08-13 16:01:13</div>
 
     <div id="footer">Contact us: uecinfo@usp-lab.com<br/>Copyright (c) 2012,2013 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
   </div>

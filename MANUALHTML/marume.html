@@ -116,7 +116,7 @@ Version	: Thu Dec 15 13:46:38 JST 2011</pre>
 
       <h3>【例1】</h3>
 
-      <pre class="cmd">$ cat data
+      <pre class="prettyprint">$ cat data
 01 0.3418 1.5283 9.0023 7.1234 1234
 02 3.1242 7.1423 6.5861 2.7735 1235
 03 6.8254 2.6144 4.3234 3.4231 -1234
@@ -125,7 +125,7 @@ $ </pre>
 
       <p>第2フィールドを整数へ四捨五入、第3フィールドを小数点下1桁で四捨五入、第4フィールドを小数点下2桁で四捨五入、第5フィールドを小数点下3桁で四捨五入、第6フィールドを1の位で四捨五入して出力すると次のようになる。</p>
 
-      <pre class="cmd">$ marume 2.0 3.1 4.2 5.3 6.01 data
+      <pre class="prettyprint">$ marume 2.0 3.1 4.2 5.3 6.01 data
 01 0 1.5 9.00 7.123 1230
 02 3 7.1 6.59 2.774 1240
 03 7 2.6 4.32 3.423 -1230
@@ -136,7 +136,7 @@ $ </pre>
 
       <p>例1をすべて四捨五入から切る上げに変更すると次のようになる。</p>
 
-      <pre class="cmd">$ marume +age 2.0 3.1 4.2 5.3 6.01 data
+      <pre class="prettyprint">$ marume +age 2.0 3.1 4.2 5.3 6.01 data
 01 1 1.6 9.01 7.124 1240
 02 4 7.2 6.59 2.774 1240
 03 7 2.7 4.33 3.424 -1240
@@ -147,7 +147,7 @@ $ </pre>
 
       <p>例1をすべて四捨五入から切り下げに変更すると次のようになる。</p>
 
-      <pre class="cmd">$ marume -sage 2.0 3.1 4.2 5.3 6.01 data
+      <pre class="prettyprint">$ marume -sage 2.0 3.1 4.2 5.3 6.01 data
 01 0 1.5 9.00 7.123 1230
 02 3 7.1 6.58 2.773 1230
 03 6 2.6 4.32 3.423 -1230
@@ -165,7 +165,7 @@ $ </pre>
 
     </div>
 
-    <div id="lastmodified">last modified: 2012-19-01 16:08:01</div>
+    <div id="lastmodified">last modified: 2014-08-13 16:01:13</div>
 
     <div id="footer">Contact us: uecinfo@usp-lab.com<br/>Copyright (c) 2012,2013 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
   </div>

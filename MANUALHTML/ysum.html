@@ -117,7 +117,7 @@ Version	: Thu Dec 15 13:46:38 JST 2011</pre>
 
       <h3>【例1】</h3>
 
-      <pre class="cmd">$ cat data
+      <pre class="prettyprint">$ cat data
 0000000 浜地______ 50 F 91 59 20 76 54	←番号 氏名 年齢 性別 教科別点数A B C D E
 0000001 鈴田______ 50 F 46 39 8  5  21
 0000003 杉山______ 26 F 30 50 71 36 30
@@ -128,7 +128,7 @@ $ </pre>
 
       <p>教科別の点数(5フィールド目以降)を集計して最終フィールドの次に追加する。</p>
 
-      <pre class="cmd">$ ysum num=4 data
+      <pre class="prettyprint">$ ysum num=4 data
 0000000 浜地______ 50 F 91 59 20 76 54 300
 0000001 鈴田______ 50 F 46 39 8  5  21 119
 0000003 杉山______ 26 F 30 50 71 36 30 217
@@ -143,7 +143,7 @@ $ </pre>
 
       <p>先頭行を飛ばして教科別の点数(5フィールド目以降)を集計して最終フィールドの次に追加するには次のようにコマンドを実行する。</p>
 
-      <pre class="cmd">$ cat data
+      <pre class="prettyprint">$ cat data
 0000000 浜地______ 50 F 91 59 20 76 54	←番号 氏名 年齢 性別 教科別点数A B C D
 0000001 鈴田______ 50 F 46 39 8  5  21
 0000003 杉山______ 26 F 30 50 71 36 30
@@ -152,7 +152,7 @@ $ </pre>
 0000007 梶川______ 42 F 50 2  33 15 62
 $ </pre>
 
-      <pre class="cmd">$ ysum +h num=4 data |  <a href="keta.html">keta</a>
+      <pre class="prettyprint">$ ysum +h num=4 data |  <a href="keta.html">keta</a>
 No       氏名 年齢 性別  A  B  C  D  E   @	←先頭行には@がつく
 0000000 浜地______   50    F 91 59 20 76 54 300
 0000001 鈴田______   50    F 46 39  8  5 21 119
@@ -168,7 +168,7 @@ $ </pre>
 
     </div>
 
-    <div id="lastmodified">last modified: 2012-19-01 16:08:01</div>
+    <div id="lastmodified">last modified: 2014-08-13 16:01:13</div>
 
     <div id="footer">Contact us: uecinfo@usp-lab.com<br/>Copyright (c) 2012,2013 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
   </div>

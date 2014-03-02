@@ -124,14 +124,14 @@ Version	: Thu Dec 15 13:46:38 JST 2011</pre>
 
       <h3>【例1】基本パターン</h3>
 
-      <pre class="cmd">$ cat <a href="master-file.html">master</a>
+      <pre class="prettyprint">$ cat <a href="master-file.html">master</a>
 0000003 杉山______ 26 F
 0000005 崎村______ 50 F
 0000007 梶川______ 42 F
 0000010 柳本______ 50 F
 $ </pre>
 
-      <pre class="cmd">$ cat kekka
+      <pre class="prettyprint">$ cat kekka
 0000000 91 59 20 76 54
 0000001 46 39 8  5  21
 0000003 30 50 71 36 30
@@ -146,7 +146,7 @@ $ </pre>
 
       <p><a href="master-file.html">master</a>に存在しない行は次のように*で補完して出力される。</p>
 
-      <pre class="cmd">$ join2 key=1 <a href="master-file.html">master</a> kekka
+      <pre class="prettyprint">$ join2 key=1 <a href="master-file.html">master</a> kekka
 0000000 ********** ** * 91 59 20 76 54
 0000001 ********** ** * 46 39 8  5  21
 0000003 杉山______ 26 F 30 50 71 36 30
@@ -163,14 +163,14 @@ $ </pre>
 
       <p>左から順に連続した複数のフィールドをキーに指定する場合次のようになる。第2、第3フィールドでキーが一致するかどうかをチェックしている。</a>
 
-      <pre class="cmd">$ cat <a href="master-file.html">master</a>
+      <pre class="prettyprint">$ cat <a href="master-file.html">master</a>
 A 0000003 杉山______ 26 F
 A 0000005 崎村______ 50 F
 B 0000007 梶川______ 42 F
 C 0000010 柳本______ 50 F
 $ </pre>
 
-      <pre class="cmd">$ cat kekka
+      <pre class="prettyprint">$ cat kekka
 1 A 0000000 91 59 20 76 54
 2 A 0000001 46 39 8  5  21
 3 A 0000003 30 50 71 36 30
@@ -183,7 +183,7 @@ $ </pre>
 10 C 0000011 92 56 83 96 75
 $ </pre>
 
-      <pre class="cmd">$ join2 key=2/3 <a href="master-file.html">master</a> kekka
+      <pre class="prettyprint">$ join2 key=2/3 <a href="master-file.html">master</a> kekka
 1 A 0000000 ********** ** * 91 59 20 76 54
 2 A 0000001 ********** ** * 46 39 8  5  21
 3 A 0000003 杉山______ 26 F 30 50 71 36 30
@@ -200,14 +200,14 @@ $ </pre>
 
       <p>+&lt;string&gt;はダミーデータとして補完する文字を指定するオプション。+の後に補完で使用する文字を指定する。</p>
 
-      <pre class="cmd">$ cat <a href="master-file.html">master</a>
+      <pre class="prettyprint">$ cat <a href="master-file.html">master</a>
 0000003 杉山______ 26 F
 0000005 崎村______ 50 F
 0000007 梶川______ 42 F
 0000010 柳本______ 50 F
 $ </pre>
 
-      <pre class="cmd">$ cat kekka
+      <pre class="prettyprint">$ cat kekka
 0000000 91 59 20 76 54
 0000001 46 39 8  5  21
 0000003 30 50 71 36 30
@@ -220,7 +220,7 @@ $ </pre>
 0000011 92 56 83 96 75
 $ </pre>
 
-      <pre class="cmd">$ join2 +@ key=1 <a href="master-file.html">master</a> kekka
+      <pre class="prettyprint">$ join2 +@ key=1 <a href="master-file.html">master</a> kekka
 0000000 @ @ @ 91 59 20 76 54
 0000001 @ @ @ 46 39 8  5  21
 0000003 杉山______ 26 F 30 50 71 36 30
@@ -237,13 +237,13 @@ $ </pre>
 
       <p><a href="master-file.html">master</a>が0バイトの時は何も連結せず<a href="transaction-file.html">tran</a>そのものを出力する。</p>
 
-      <pre class="cmd">$ : &gt; <a href="master-file.html">master</a>
+      <pre class="prettyprint">$ : &gt; <a href="master-file.html">master</a>
 $ join2 key=1 <a href="master-file.html">master</a> <a href="transaction-file.html">tran</a> &gt; data
 $ cmp <a href="transaction-file.html">tran</a> data		←同じデータが出力される</pre>
 
       <p><a href="master-file.html">master</a>のフィールドを保証したい時は、例えば次のようなコードを書く。</p>
 
-      <pre class="cmd">$ [ ! -s <a href="master-file.html">master</a> ] &amp;&amp; echo 0000000 0 &gt; <a href="master-file.html">master</a>
+      <pre class="prettyprint">$ [ ! -s <a href="master-file.html">master</a> ] &amp;&amp; echo 0000000 0 &gt; <a href="master-file.html">master</a>
 $ join2 key=1 <a href="master-file.html">master</a> <a href="transaction-file.html">tran</a></pre>
 
       <h3>【関連項目】</h3>
@@ -252,7 +252,7 @@ $ join2 key=1 <a href="master-file.html">master</a> <a href="transaction-file.ht
 
     </div>
 
-    <div id="lastmodified">last modified: 2013-13-15 19:04:15</div>
+    <div id="lastmodified">last modified: 2014-08-13 16:01:13</div>
 
     <div id="footer">Contact us: uecinfo@usp-lab.com<br/>Copyright (c) 2012,2013 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
   </div>
