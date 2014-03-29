@@ -123,6 +123,7 @@ done
 cat << FIN > $tmp-ver
 python3.1
 python3.2
+python3.3
 FIN
 
 cat $tmp-ver	|
