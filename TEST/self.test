@@ -123,6 +123,14 @@ diff $tmp-ans $tmp-out
 ###########################################
 #TEST7
 
+cat << FIN > $tmp-in
+0000000 浜地______ 50 F 91 59 20 76 54
+0000001 鈴田______ 50 F 46 39 8  5  21
+0000003 江頭______ 26 F 30 50 71 36 30
+0000004 白土______ 40 M 58 71 20 10 6
+0000005 崎村______ 50 F 82 79 16 21 80
+FIN
+
 cat << FIN > $tmp-out
 0000000 59 54
 0000001 39 21
@@ -133,7 +141,7 @@ FIN
 
 ${com} 1 NF-3 NF $tmp-in > $tmp-ans
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST7 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST7-1 error"
 
 ###########################################
 #TEST7-2
@@ -264,6 +272,22 @@ ${com} NF.3.2 < $tmp-in > $tmp-ans
 
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST17-2 error"
+
+###########################################
+#TEST18 全角をデリミタにしない
+
+cat << FIN > $tmp-in
+1　2
+FIN
+
+cat << FIN > $tmp-out
+1　2
+FIN
+
+${com} 1 < $tmp-in > $tmp-ans
+
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST18 error"
 
 rm -f $tmp-*
 echo "${com}" OK
