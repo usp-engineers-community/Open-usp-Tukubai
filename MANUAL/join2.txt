@@ -4,20 +4,22 @@ join2(1)
 
 【名前】
 
-join2 : トランザクションファイルにマスターファイルを連結
+join2 : トランザクションファイルにマスタファイルを連結(一致しなかった行はダミー
+データへ置換)
 
 【書式】
 
-Usage   : join2 [-d<string>] [+<string>] key=<key> <master_file> <trans_file>
+Usage   : join2 [-d<string>] [+<string>] key=<key> <master> <tran>
 Version : Thu Dec 15 13:46:38 JST 2011
-          UTF-8
 
 【説明】
 
-テキストファイルtranのkey=<n>で指定したキーフィールドがマスターファイルmasterの
-第1フィールド(キーフィールド)と一致した行をtranから抽出し、masterの情報を連結し
-て出力する。一致しない行はダミーデータ*を連結して出力する。ダミーデータは別途-d
-オプションにて指定することもできる。
+tranのkey=<n>で指定したキーフィールドがmasterの第1フィールド(キーフィールド)と
+一致した行をtranから抽出し、masterの情報を連結して出力する。一致しない行はダミ
+ーデータ*を連結して出力する。ダミーデータは-dオプションにて指定できる。
+
+masterに-を指定すると標準入力をマスタファイルとする。tranが無指定かまたは-が指
+定されている場合には、標準入力がトランザクションファイルとなる。
 
 masterの第1フィールドおよびtranの第<n>フィールドは必ず昇順で整列されていること
 が条件となる。また、masterはキーフィールド(第1フィールド)がユニークでなければな
@@ -25,7 +27,15 @@ masterの第1フィールドおよびtranの第<n>フィールドは必ず昇順
 制約はなく、キーフィールド(第<n>フィールド)が同じ値の行はいくつあっても構わない
 。
 
-キーに選択するフィールドは複数指定することも可能。
+masterの第1フィールドおよびtranの第<n>フィールドは必ず昇順で整列されていること
+が条件となる。また、masterのキーフィールド(第1フィールド)はユニークでなければな
+らない。(第1フィールドが同じ値をもつ行が複数あってはならない)。tranについてはこ
+の制約はなく、キーフィールド(第<n>フィールド)が同じ値を行はいくつあっても構わな
+い。
+
+tranでキーが整列されていないものはjoin2(1)では処理できない。その場合は一旦tran
+を整列してからjoin2(1)で処理するか、join2(1)のかわりにcjoin2(1)を使って処理すれ
+ばよい。
 
 【例1】基本パターン
 
@@ -155,8 +165,9 @@ $ join2 key=1 master tran
 
 【関連項目】
 
-join0(1)、join1(1)
+cjoin0(1)、cjoin1(1)、cjoin2(1)、join0(1)、join1(1)、loopj(1)、loopx(1)、up3(1)
+、マスタファイル(5)、トランザクションファイル(5)
 
-last modified: 2013-04-15 19:37:42
+last modified: 2014-01-13 16:01:13
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012,2013 Universal Shell Programming Laboratory All Rights Reserved.
+Copyright (c) 2012-2014 Universal Shell Programming Laboratory All Rights

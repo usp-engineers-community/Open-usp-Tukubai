@@ -47,7 +47,7 @@ $
 
 【例2】
 
-+ngオプションを指定すると、同じキーフィールドの値を持つ行の最初の行以外を標準
+"+ng"オプションを指定すると、同じキーフィールドの値を持つ行の最初の行以外を標準
 エラー出力に出力する。
 
 $ getfirst +ng 1 2 data > /dev/null 2> data2
@@ -66,7 +66,7 @@ $
 
 【例3】
 
-+ngオプションに<fd>を指定すると、標準エラー出力のかわりに<fd>への出力が実施さ
++ng オプションに<fd>を指定すると、標準エラー出力のかわりに<fd>への出力が実施さ
 れる。
 
 $ getfirst +ng4 1 2 data > /dev/null 4> data2
@@ -96,6 +96,6 @@ $
 
 ctail(1)、getlast(1)、tcat(1)、ycat(1)
 
-last modified: 2013-04-15 19:34:31
+last modified: 2014-01-13 16:01:13
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012,2013 Universal Shell Programming Laboratory All Rights Reserved.
+Copyright (c) 2012-2014 Universal Shell Programming Laboratory All Rights

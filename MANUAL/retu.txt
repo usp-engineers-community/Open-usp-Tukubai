@@ -67,7 +67,7 @@ $
 
 【例3】
 
--fオプションを使用するとファイル名と行数をそれぞれ表示する。
+-fオプションを使用するとファイル名と列数をそれぞれ表示する。
 
 $ retu -f data1 data2 data3
 data1 2
@@ -79,7 +79,7 @@ data3 1
 data3 2
 $
 
-【コメント】
+【備考】
 
 ファイル名に-を指定すると標準入力からのデータ読み込みを期待する。
 
@@ -89,6 +89,6 @@ $ cat data2 | retu -f data1 - data3
 
 count(1)、gyo(1)、juni(1)、rank(1)
 
-last modified: 2013-04-15 20:08:14
+last modified: 2014-01-13 16:01:13
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012,2013 Universal Shell Programming Laboratory All Rights Reserved.
+Copyright (c) 2012-2014 Universal Shell Programming Laboratory All Rights

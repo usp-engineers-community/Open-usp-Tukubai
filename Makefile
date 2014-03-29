@@ -1,6 +1,6 @@
 # The MIT License
 #
-# Copyright (C) 2012, 2013 Universal Shell Programming Laboratory
+# Copyright (C) 2012-2014 Universal Shell Programming Laboratory
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -31,37 +31,10 @@ HTMDIR=		${DATDIR}/html
 PDFDIR=		${DATDIR}/pdf
 DOCDIR=		${DATDIR}/doc
 
-COMMANDS=	calclock cgi-name check_attr_name check_need_name \
-		cjoin0 cjoin1 cjoin2 comma count ctail dayslash \
-		delf divsen filehame formhame getfirst getlast gyo han \
-		join0 join1 join2 juni kasan keta keycut \
-		loopj loopx map marume mdate mime-read mojihame nameread \
-		plus rank ratio retu self sm2 sm4 sm5 tarr tateyoko tcat \
-		unmap up3 yarr ycat yobi ysum zen \
-		man2
-MANUAL=		calclock.txt cgi-name.txt check_attr_name.txt \
-		check_need_name.txt cjoin0.txt cjoin1.txt cjoin2.txt \
-		comma.txt count.txt ctail.txt dayslash.txt delf.txt \
-		divsen.txt filehame.txt formhame.txt getfirst.txt \
-		getlast.txt gyo.txt han.txt join0.txt join1.txt \
-		join2.txt juni.txt kasan.txt keta.txt keycut.txt \
-		loopj.txt loopx.txt map.txt marume.txt mdate.txt \
-		mime-read.txt mojihame.txt nameread.txt plus.txt rank.txt \
-		ratio.txt retu.txt self.txt sm2.txt sm4.txt sm5.txt \
-		tarr.txt tateyoko.txt tcat.txt unmap.txt up3.txt yarr.txt \
-		ycat.txt yobi.txt ysum.txt zen.txt
-HTML=		calclock.html cgi-name.html check_attr_name.html \
-		check_need_name.html cjoin0.html cjoin1.html cjoin2.html \
-		comma.html count.html ctail.html dayslash.html delf.html \
-		divsen.html filehame.html formhame.html getfirst.html \
-		getlast.html gyo.html han.html join0.html join1.html \
-		join2.html juni.html kasan.html keta.html keycut.html \
-		loopj.html loopx.html map.html marume.html mdate.html \
-		mime-read.html mojihame.html nameread.html plus.html rank.html \
-		ratio.html retu.html self.html sm2.html sm4.html sm5.html \
-		tarr.html tateyoko.html tcat.html unmap.html up3.html yarr.html \
-		ycat.html yobi.html ysum.html zen.html index.html
-DOC=		INSTALL LICENSE README
+COMMANDS=	calclock cgi-name check_attr_name check_need_name cjoin0 cjoin1 cjoin2 comma count ctail dayslash delf divsen filehame formhame getfirst getlast gyo han join0 join1 join2 juni kasan keta keycut loopj loopx maezero man2 map marume mdate mime-read mojihame nameread numchar plus rank ratio retu self sm2 sm4 sm5 tarr tateyoko tcat unmap up3 yarr ycat yobi ysum zen
+MANUAL=		calclock.txt cgi-name.txt check_attr_name.txt check_need_name.txt cjoin0.txt cjoin1.txt cjoin2.txt comma.txt count.txt ctail.txt dayslash.txt delf.txt divsen.txt field-format.txt filehame.txt formhame.txt getfirst.txt getlast.txt gyo.txt han.txt join0.txt join1.txt join2.txt juni.txt kasan.txt keta.txt keycut.txt lcalc.txt lineup.txt loopj.txt loopx.txt maezero.txt map.txt marume.txt master-file.txt mdate.txt mime-read.txt mojihame.txt name-file.txt name-format.txt nameread.txt numchar.txt plus.txt rank.txt ratio.txt retu.txt self.txt sisu.txt sm2.txt sm4.txt sm5.txt sorter.txt tag-format.txt tarr.txt tateyoko.txt tcat.txt transaction-file.txt unmap.txt up3.txt yarr.txt ycat.txt yobi.txt ysum.txt zen.txt
+HTML=		calclock.html cgi-name.html check_attr_name.html check_need_name.html cjoin0.html cjoin1.html cjoin2.html comma.html count.html ctail.html dayslash.html delf.html divsen.html field-format.html filehame.html formhame.html getfirst.html getlast.html gyo.html han.html index.html join0.html join1.html join2.html juni.html kasan.html keta.html keycut.html lcalc.html lineup.html loopj.html loopx.html maezero.html map.html marume.html master-file.html mdate.html mime-read.html mojihame.html name-file.html name-format.html nameread.html plus.html rank.html ratio.html retu.html self.html sisu.html sm2.html sm4.html sm5.html sorter.html tag-format.html tarr.html tateyoko.html tcat.html transaction-file.html unmap.html up3.html yarr.html ycat.html yobi.html ysum.html zen.html
+DOC=		HOWTOINSTALL LICENSE README
 
 INSTALL?=	/usr/bin/install
 MKDIR?=		/bin/mkdir -p
@@ -74,6 +47,17 @@ INSTALL_PROGRAM=${INSTALL} -m ${BINMODE}
 INSTALL_DOCS=	${INSTALL} -m ${DOCMODE}
 BINMODE=	555
 DOCMODE=	444
+
+all:
+	@echo "Run 'make install' to install"
+	@echo "    LOCALBASE=${LOCALBASE}"
+	@echo "    BINDIR=${BINDIR}"
+	@echo "    TUKDIR=${LOCALBASE}/share/${NAME}"
+	@echo "    DATDIR=${TUKDIR}/devel"
+	@echo "    MANDIR=${DATDIR}/man"
+	@echo "    HTMDIR=${DATDIR}/html"
+	@echo "    PDFDIR=${DATDIR}/pdf"
+	@echo "    DOCDIR=${DATDIR}/doc"
 
 install:
 	${MKDIR} ${BINDIR}
@@ -161,11 +145,10 @@ deinstall: uninstall
 
 package: clean
 	${MKDIR} ${NAME}-${TODAY}
-	cp -Rp COMMANDS MANUAL MANUALHTML MANUALPDF \
-	   INSTALL LICENSE Makefile README \
-	   ${NAME}-${TODAY}
+	cp -Rp COMMANDS MANUAL MANUALHTML MANUALPDF HOWTOINSTALL LICENSE Makefile README ${NAME}-${TODAY}
 	tar vcf ${NAME}-${TODAY}.tar ${NAME}-${TODAY}
 	bzip2 ${NAME}-${TODAY}.tar
+	${RM} ${NAME}-${TODAY}
 
 clean:
 	rm -rf ${NAME}-${TODAY}*

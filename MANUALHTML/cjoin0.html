@@ -128,13 +128,13 @@ Version	: Fri Jul 27 20:09:40 JST 2012</pre>
 
       <p>成績ファイルkekkaから<a href="master-file.html">master</a>に登録されている4人のデータを抽出する。</p>
 
-      <pre class="cmd">$ cat <a href="master-file.html">master</a>
+      <pre class="prettyprint">$ cat <a href="master-file.html">master</a>
 0000003 杉山______ 26 F
 0000005 崎村______ 50 F
 0000007 梶川______ 42 F
 $ </pre>
 
-      <pre class="cmd">$ cat kekka
+      <pre class="prettyprint">$ cat kekka
 0000005 82 79 16 21 80
 0000001 46 39 8  5  21
 0000004 58 71 20 10 6
@@ -145,7 +145,7 @@ $ </pre>
 
       <p>kekkaの第1フィールドが<a href="master-file.html">master</a>ファイルに存在する行のみ抽出する。</p>
 
-      <pre class="cmd">$ cjoin0 key=1 <a href="master-file.html">master</a> kekka
+      <pre class="prettyprint">$ cjoin0 key=1 <a href="master-file.html">master</a> kekka
 0000005 82 79 16 21 80
 0000003 30 50 71 36 30
 0000007 50 2  33 15 62
@@ -153,7 +153,7 @@ $ </pre>
 
       <h3>【例2】+ngオプションの使い方</h3>
 
-      <pre class="cmd">
+      <pre class="prettyprint">
 $ cjoin0 +ng key=1 master kekka &gt; ok 2&gt; ng
 $ cat ng
 0000001 46 39 8  5  21
@@ -163,7 +163,7 @@ $ </pre>
 
       <h3>【例3】標準入力の使い方</h3>
 
-      <pre class="cmd">$ cat kekka | cjoin0 +ng key=1 master &gt; ok 2&gt; ng
+      <pre class="prettyprint">$ cat kekka | cjoin0 +ng key=1 master &gt; ok 2&gt; ng
 $ cat kekka | cjoin0 +ng key=1 master - &gt; ok 2&gt; ng
 $ cat master | cjoin0 +ng key=1 - tran &gt; ok 2&gt; ng</pre>
 
@@ -173,7 +173,7 @@ $ cat master | cjoin0 +ng key=1 - tran &gt; ok 2&gt; ng</pre>
 
     </div>
 
-    <div id="lastmodified">last modified: 2012-24-02 11:08:02</div>
+    <div id="lastmodified">last modified: 2014-08-13 16:01:13</div>
 
     <div id="footer">Contact us: uecinfo@usp-lab.com<br/>Copyright (c) 2012,2013 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
   </div>

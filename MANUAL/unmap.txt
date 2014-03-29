@@ -23,12 +23,12 @@ map(1)と逆の動作をする。
 表データを縦型ファイルに変換する。num=<n>の値は縦キーのフィールド数を表す。
 
 $ cat data
-  *   * 01/01 01/02
+*   * 01/01 01/02
 001 a店   103   157
 002 b店   210   237
 $
 
-$ unmap num=2 data | keta
+$ unmap num=2 data |  keta
 001 a店 01/01 103
 001 a店 01/02 157
 002 b店 01/01 210
@@ -40,7 +40,7 @@ $
 データ部が複数種ある場合は、複数列にマッピングする。
 
 $ cat data
-  * * 1日目 2日目 3日目 4日目 5日目 6日目 7日目
+* * 1日目 2日目 3日目 4日目 5日目 6日目 7日目
 a店 A   103   157    62   131   189   350   412
 a店 B    62    94    30    84   111    20   301
 b店 A   210   237   150   198   259   421   589
@@ -51,13 +51,13 @@ d店 A    75    72    34    74    91    98   101
 d店 B    48    42    19    43    51    69    90
 $
 
-$ unmap num=1 data | keta
+$ unmap num=1 data |  keta
 a店 1日目 103 62
 a店 2日目 157 94
 a店 3日目 62 30
 a店 4日目 131 84
-       ・
-       ・
+・
+・
 d店 6日目 98 69
 d店 7日目 101 90
 $
@@ -66,6 +66,6 @@ $
 
 map(1)、tateyoko(1)
 
-last modified: 2013-04-15 20:26:27
+last modified: 2014-01-13 16:01:13
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012,2013 Universal Shell Programming Laboratory All Rights Reserved.
+Copyright (c) 2012-2014 Universal Shell Programming Laboratory All Rights

@@ -121,14 +121,14 @@ Version	: Thu Dec 15 13:46:38 JST 2011</pre>
 
       <h3>【例1】通常のチェック</h3>
 
-      <pre class="cmd">$ cat check_file
+      <pre class="prettyprint">$ cat check_file
 A
 B
 C
 D
 $ </pre>
 
-      <pre class="cmd">$ cat check_file2		←checkとcheck2は同等
+      <pre class="prettyprint">$ cat check_file2		←checkとcheck2は同等
 A need
 B need
 C need
@@ -137,7 +137,7 @@ E _
 F _
 $ </pre>
 
-      <pre class="cmd">$ cat name_file
+      <pre class="prettyprint">$ cat name_file
 A _
 B 12345
 C abcde
@@ -145,7 +145,7 @@ D_001 _
 D_002 xxx
 $ </pre>
 
-      <pre class="cmd">$ check_need_name check_file name_file
+      <pre class="prettyprint">$ check_need_name check_file name_file
 A
 D_001
 $ echo $?
@@ -154,14 +154,14 @@ $ </pre>
 
       <h3>【例2】--blank オプションでヌルデータを指定する。</h3>
 
-      <pre class="cmd">$ cat data2
+      <pre class="prettyprint">$ cat data2
 A @
 B 1
 C 2
 D 3
 $ </pre>
 
-      <pre class="cmd">$ check_need_name --blank @ check data
+      <pre class="prettyprint">$ check_need_name --blank @ check data
 A
 $ echo $?
 1
@@ -172,7 +172,7 @@ $ </pre>
       <p><a href="name-format.html">ネーム形式(5)</a></p>
     </div>
 
-    <div id="lastmodified">last modified: 2012-19-01 16:08:01</div>
+    <div id="lastmodified">last modified: 2014-08-13 16:01:13</div>
 
     <div id="footer">Contact us: uecinfo@usp-lab.com<br/>Copyright (c) 2012,2013 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
   </div>

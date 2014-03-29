@@ -8,8 +8,8 @@ marume : 四捨五入、切り上げ、切り捨て
 
 【書式】
 
-Usage   : marume [+age|-sage] <f1.d1> <f2.d2> .. <file>
-Version : Sat Jul 13 17:11:48 JST 2013
+Usage   : marume [+age| -sage] <f1.d1> <f2.d2> .. <file>
+Version : Thu Dec 15 13:46:38 JST 2011
 
 【説明】
 
@@ -70,6 +70,6 @@ $
 
 divsen(1)
 
-last modified: 2013-04-15 19:47:03
+last modified: 2014-01-13 16:01:13
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012,2013 Universal Shell Programming Laboratory All Rights Reserved.
+Copyright (c) 2012-2014 Universal Shell Programming Laboratory All Rights

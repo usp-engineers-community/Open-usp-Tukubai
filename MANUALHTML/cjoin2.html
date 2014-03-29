@@ -124,13 +124,13 @@ Version	: Fri Jul 27 21:03:24 JST 2012</pre>
 
       <h3>【例1】基本パターン</h3>
 
-      <pre class="cmd">$ cat master
+      <pre class="prettyprint">$ cat master
 0000003 杉山______ 26 F
 0000005 崎村______ 50 F
 0000007 梶川______ 42 F
 $ </pre>
 
-      <pre class="cmd">$ cat tran
+      <pre class="prettyprint">$ cat tran
 0000005 82 79 16 21 80
 0000001 46 39 8  5  21
 0000004 58 71 20 10 6
@@ -139,7 +139,7 @@ $ </pre>
 0000007 50 2  33 15 62
 $ </pre>
 
-      <pre class="cmd">
+      <pre class="prettyprint">
 $ cjoin2 key=1 master tran &gt; ok
 $ cat ok
 0000005 崎村______ 50 F 82 79 16 21 80
@@ -152,7 +152,7 @@ $ </pre>
 
       <h3>【例2】+dオプションの使い方</h3>
 
-      <pre class="cmd">
+      <pre class="prettyprint">
 $ cjoin2 -d@@ key=1 master tran &gt; ok
 $ cat ok
 0000005 崎村______ 50 F 82 79 16 21 80
@@ -165,7 +165,7 @@ $ </pre>
 
       <h3>【例3】標準入力の使い方</h3>
 
-      <pre class="cmd">$ cat tran | cjoin2 +ng key=1 master
+      <pre class="prettyprint">$ cat tran | cjoin2 +ng key=1 master
 $ cat tran | cjoin2 +ng key=1 master -
 $ cat master | cjoin2 +ng key=1 - tran</pre>
 
@@ -173,7 +173,7 @@ $ cat master | cjoin2 +ng key=1 - tran</pre>
 
     </div>
 
-    <div id="lastmodified">last modified: 2012-42-02 11:08:02</div>
+    <div id="lastmodified">last modified: 2014-08-13 16:01:13</div>
 
     <div id="footer">Contact us: uecinfo@usp-lab.com<br/>Copyright (c) 2012,2013 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
   </div>

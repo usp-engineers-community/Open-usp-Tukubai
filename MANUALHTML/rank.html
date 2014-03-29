@@ -118,7 +118,7 @@ Version	: Thu Dec 15 13:46:38 JST 2011</pre>
 
       <p>引数を何も指定しないときは、単純に行番号を追加する。</p>
 
-      <pre class="cmd">$ cat data
+      <pre class="prettyprint">$ cat data
 JPN 杉山______ 26
 JPN 崎村______ 27
 JPN 梶川______ 27
@@ -129,7 +129,7 @@ USA SAM_______ 29
 USA TOM_______ 35
 $ </pre>
 
-      <pre class="cmd">$ rank data
+      <pre class="prettyprint">$ rank data
 1 JPN 杉山______ 26
 2 JPN 崎村______ 27
 3 JPN 梶川______ 27
@@ -144,7 +144,7 @@ $ </pre>
 
       <p>ref=&lt;ref&gt;で参照フィールドを指定したときは、参照フィールドが変化した行で、階数を1に初期化する。ref=1/2 ref=3@2/5 などの連続・不連続のフィールドを指定することも可能。</p>
 
-      <pre class="cmd">$ rank ref=1 data
+      <pre class="prettyprint">$ rank ref=1 data
 1 JPN 杉山______ 26
 2 JPN 崎村______ 27
 3 JPN 梶川______ 27
@@ -159,7 +159,7 @@ $ </pre>
 
       <p>key=&lt;key&gt;で値フィールドを1つだけ指定できる。この場合、値が同じフィールドを持つ行には同じ階数が追加される。次の行には、はじめから数えた階数が追加される。</p>
 
-      <pre class="cmd">$ rank key=3 data
+      <pre class="prettyprint">$ rank key=3 data
 1 JPN 杉山______ 26
 2 JPN 崎村______ 27
 2 JPN 梶川______ 27
@@ -174,7 +174,7 @@ $ </pre>
 
       <p>参照キーが変化するところで、行番号が初期化され、かつ同じ値フィールドを持つ行には同じ階数が追加される。</p>
 
-      <pre class="cmd">$ rank ref=1 key=3 data
+      <pre class="prettyprint">$ rank ref=1 key=3 data
 1 JPN 杉山______ 26
 2 JPN 崎村______ 27
 2 JPN 梶川______ 27
@@ -197,7 +197,7 @@ $ </pre>
 
     </div>
 
-    <div id="lastmodified">last modified: 2012-19-01 16:08:01</div>
+    <div id="lastmodified">last modified: 2014-08-13 16:01:13</div>
 
     <div id="footer">Contact us: uecinfo@usp-lab.com<br/>Copyright (c) 2012,2013 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
   </div>

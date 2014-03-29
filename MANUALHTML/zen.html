@@ -121,13 +121,13 @@ OpenUSP (LINUX+FREEBSD/PYTHON2.4/UTF-8)</pre>
 
       <p>引数のファイルの指定したフィールドの中身を全角に変換する。</p>
 
-      <pre class="cmd">$ cat data
+      <pre class="prettyprint">$ cat data
 これは ﾃﾞｰﾀ です。
 This is data
 123 456 7890
 $ </pre>
 
-      <pre class="cmd">$ zen 1 2 3 data
+      <pre class="prettyprint">$ zen 1 2 3 data
 これは データ です。
 Ｔｈｉｓ ｉｓ ｄａｔａ
 １２３ ４５６ ７８９０
@@ -137,7 +137,7 @@ $ </pre>
 
       <p>フィールドを指定しない場合は行全体を全角にする。半角空白も全角空白に変換する。</p>
 
-      <pre class="cmd">$ cat data
+      <pre class="prettyprint">$ cat data
 1 2 3
 $ cat data | zen
 １　２　３
@@ -147,7 +147,7 @@ $ </pre>
 
       <p>zen -k &lt;file&gt;の場合、&lt;file&gt;の半角カタカナだけ全角にする。メールの表題や本文には半角カナは使えないため、このフィルタを使用して前処理を実施する。</p>
 
-      <pre class="cmd">$ cat data2
+      <pre class="prettyprint">$ cat data2
 123ｱｲｳｴｵ
 $ cat data2 | zen -k
 123アイウエオ
@@ -157,7 +157,7 @@ $ </pre>
 
       <p>-dオプションは引数で指定された文字列の半角の部分を全角に変えて出力する。</p>
 
-      <pre class="cmd">$ zen -d ｶﾀｶﾅABC123		←半角文字を引数で渡す。
+      <pre class="prettyprint">$ zen -d ｶﾀｶﾅABC123		←半角文字を引数で渡す。
 カタカナＡＢＣ１２３		←すべて全角にして出力
 $ </pre>
 
@@ -167,7 +167,7 @@ $ </pre>
 
     </div>
 
-    <div id="lastmodified">last modified: 2013-38-16 16:04:16</div>
+    <div id="lastmodified">last modified: 2014-08-13 16:01:13</div>
 
     <div id="footer">Contact us: uecinfo@usp-lab.com<br/>Copyright (c) 2012,2013 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
   </div>

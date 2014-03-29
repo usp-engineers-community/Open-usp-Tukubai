@@ -116,11 +116,11 @@ Version	: Thu Dec 15 13:46:38 JST 2011</pre>
 
       <h3>【例】</h3>
 
-      <pre class="cmd">$ plus 1 2 3 4
+      <pre class="prettyprint">$ plus 1 2 3 4
 10
 $ </pre>
 
-      <pre class="cmd">$ plus 1.21 2.345 -2.524
+      <pre class="prettyprint">$ plus 1.21 2.345 -2.524
 1.031
 $ </pre>
 
@@ -128,9 +128,9 @@ $ </pre>
 
       <p>パイプ処理の直後、パイプ各行のコマンドの結果ステータスを足し算して、0ならばすべて正常終了、異なればエラー終了である、といった判定処理に利用される。この使い方は${PIPESTATUS[@]}が提供されている<a href="/SHELL_TIPS/CGI/SHELL_TIPS.CGI?POMPA=DOC_bash">bash</a>などに限定される。</p>
 
-      <pre class="cmd">$ <a href="comma.html">comma</a>n1 |  <a href="comma.html">comma</a>nd2 | <a href="comma.html">comma</a>nd3 | ... &gt; result</pre>
+      <pre class="prettyprint">$ <a href="comma.html">comma</a>n1 |  <a href="comma.html">comma</a>nd2 | <a href="comma.html">comma</a>nd3 | ... &gt; result</pre>
 
-      <pre class="cmd">$ [ $plus ${PIPESTATUS[@]}) -ne 0 ] &amp;&amp; exit</pre>
+      <pre class="prettyprint">$ [ $plus ${PIPESTATUS[@]}) -ne 0 ] &amp;&amp; exit</pre>
 
       <h3>【関連項目】</h3>
 
@@ -138,7 +138,7 @@ $ </pre>
 
     </div>
 
-    <div id="lastmodified">last modified: 2013-33-27 13:02:27</div>
+    <div id="lastmodified">last modified: 2014-08-13 16:01:13</div>
 
     <div id="footer">Contact us: uecinfo@usp-lab.com<br/>Copyright (c) 2012,2013 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
   </div>

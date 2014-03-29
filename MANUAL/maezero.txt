@@ -1,0 +1,65 @@
+Tukubaiオンラインコマンドマニュアル
+
+maezero(1)
+
+【名前】
+
+maezero : 前にゼロをつける
+
+【書式】
+
+Usage   : maezero <f1.w1> <f2.w2> .. <file>
+Option  : --ngthrough <str>
+Version : Mon Dec  9 17:52:22 JST 2013
+
+【説明】
+
+引数のファイルまたは標準入力ファイルの指定フィールドを指定した桁数にて前ゼロパ
+ディングを行う。
+
+【例1】
+
+$ at data
+12 345 6789
+$ maezero 1.5 2.6 data
+00012 000345 6789
+$
+
+【例2】
+
+指定フィールドの内容が--ngthroughオプションで指定した文字列の場合は前ゼロパディ
+ングを行わない。
+
+$ maezero --ngthrough 345 1.5 2.6 data
+00012 345 6789
+$
+
+【例3】
+
+続したフィールドを指定することができる。
+
+$ maezero 1.6/3.6 data
+000012 000345 006789
+$
+
+【例4】
+
+フィールド指定にNFやNF-<n>を使うことがでる。
+
+$ maezero NF-1.6 data
+12 000345 6789
+$
+
+【備考】
+
+maezero(1)コマンドはフィールドの内容に関しては何もチェックしていない。またフィ
+ールドの長さがすでに指定桁数を越えている時はそのフィールドに関しては処理を行わ
+ない。なお、指定フィールドは昇順になっている必要がある。
+
+【関連項目】
+
+フィールド形式(5)
+
+last modified: 2014-02-27 18:02:27
+Contact us: uecinfo@usp-lab.com
+Copyright (c) 2012-2014 Universal Shell Programming Laboratory All Rights

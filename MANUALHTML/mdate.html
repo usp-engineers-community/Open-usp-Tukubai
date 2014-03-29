@@ -142,65 +142,65 @@ Version : Wed Dec 28 15:32:10 JST 2011</pre>
 
       <h3>【例1】dif先の日付、月の情報を出力</h3>
 
-      <pre class="cmd">$ mdate 20090912/+5
+      <pre class="prettyprint">$ mdate 20090912/+5
 20090917
 $ </pre>
 
-      <pre class="cmd">$ mdate 200909m/+5
+      <pre class="prettyprint">$ mdate 200909m/+5
 201002
 $ </pre>
 
       <h3>【例2】dif先までの連続した日付、月の情報を出力</h3>
 
-      <pre class="cmd">$ mdate -e 20090912/+5
+      <pre class="prettyprint">$ mdate -e 20090912/+5
 20090912 20090913 20090914 20090915 20090916 20090917
 $ </pre>
 
-      <pre class="cmd">$ mdate -e 200909m/+5
+      <pre class="prettyprint">$ mdate -e 200909m/+5
 200909 200910 200911 200912 201001 201002
 $ </pre>
 
       <h3>【例3】日付、月の差を出力</h3>
 
-      <pre class="cmd">$ mdate 20090917 20090912
+      <pre class="prettyprint">$ mdate 20090917 20090912
 5
 $ </pre>
 
-      <pre class="cmd">$ mdate 201002m 200909m
+      <pre class="prettyprint">$ mdate 201002m 200909m
 5
 $ </pre>
 
       <h3>【例4】日付、月の範囲を連続出力</h3>
 
-      <pre class="cmd">$ mdate -e 20090912 20090917
+      <pre class="prettyprint">$ mdate -e 20090912 20090917
 20090912 20090913 20090914 20090915 20090916 20090917
 $ </pre>
 
-      <pre class="cmd">$ mdate -e 200909m 201002m
+      <pre class="prettyprint">$ mdate -e 200909m 201002m
 200909 200910 200911 200912 201001 201002
 $ </pre>
 
       <h3>【例5】フィルターモード : dif先の日付、月の情報を挿入</h3>
 
-      <pre class="cmd">$ cat date_data
+      <pre class="prettyprint">$ cat date_data
 A 20090901 B
 A 20090902 B
 A 20090903 B
 $ </pre>
 
-      <pre class="cmd">$ mdate -f 2/+5 date_data
+      <pre class="prettyprint">$ mdate -f 2/+5 date_data
 A 20090901 20090906 B
 A 20090902 20090907 B
 A 20090903 20090908 B
 $ </pre>
 
-      <pre class="cmd">$ cat month_data
+      <pre class="prettyprint">$ cat month_data
 A 200909 B
 A 200910 B
 A 200911 B
 $ </pre>
 
-      <pre class="cmd">$ mdate -f 2m/+5 month_data
+      <pre class="prettyprint">$ mdate -f 2m/+5 month_data
 A 200909 201002 B
 A 200910 201003 B
 A 200911 201004 B
@@ -208,25 +208,25 @@ $ </pre>
 
       <h3>【例6】フィルターモード : dif先までの連続した日付、週、月の情報を挿入</h3>
 
-      <pre class="cmd">$ cat date_data
+      <pre class="prettyprint">$ cat date_data
 A 20090901 B
 A 20090902 B
 A 20090903 B
 $ </pre>
 
-      <pre class="cmd">$ mdate -f -e 2/+5 date_data
+      <pre class="prettyprint">$ mdate -f -e 2/+5 date_data
 A 20090901 20090902 20090903 20090904 20090905 20090906 B
 A 20090902 20090903 20090904 20090905 20090906 20090907 B
 A 20090903 20090904 20090905 20090906 20090907 20090908 B
 $ </pre>
 
-      <pre class="cmd">$ cat month_data
+      <pre class="prettyprint">$ cat month_data
 A 200909 B
 A 200910 B
 A 200911 B
 $ </pre>
 
-      <pre class="cmd">$ mdate -f -e 2m/+5 month_data
+      <pre class="prettyprint">$ mdate -f -e 2m/+5 month_data
 A 200909 200910 200911 200912 201001 201002 B
 A 200910 200911 200912 201001 201002 201003 B
 A 200911 200912 201001 201002 201003 201004 B
@@ -238,7 +238,7 @@ $ </pre>
 
     </div>
 
-    <div id="lastmodified">last modified: 2013-21-16 17:04:16</div>
+    <div id="lastmodified">last modified: 2014-08-13 16:01:13</div>
 
     <div id="footer">Contact us: uecinfo@usp-lab.com<br/>Copyright (c) 2012,2013 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
   </div>

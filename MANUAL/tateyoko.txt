@@ -43,7 +43,7 @@ B 10/02 5
 B 10/03 6
 $
 
-$ map num=1 data | keta
+$ map num=1 data |  keta
 * 10/01 10/02 10/03
 A     1     2     3
 B     4     5     6
@@ -64,6 +64,6 @@ tateyoko(1)は指定ファイルを一旦すべてメモリへ展開する。
 
 map(1)、unmap(1)
 
-last modified: 2013-04-15 20:22:43
+last modified: 2014-01-13 16:01:13
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012,2013 Universal Shell Programming Laboratory All Rights Reserved.
+Copyright (c) 2012-2014 Universal Shell Programming Laboratory All Rights

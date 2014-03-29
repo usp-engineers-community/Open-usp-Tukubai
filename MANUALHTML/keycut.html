@@ -122,7 +122,7 @@ Version	: Thu Dec 15 13:46:38 JST 2011
 
       <h3>【例1】基本的な使用方法</h3>
 
-      <pre class="cmd">$ cat data
+      <pre class="prettyprint">$ cat data
 01 埼玉県 03 熊谷市 82 0 23 84 10
 01 埼玉県 01 さいたま市 91 59 20 76 54
 02 東京都 04 新宿区 30 50 71 36 30
@@ -133,40 +133,40 @@ Version	: Thu Dec 15 13:46:38 JST 2011
 04 神奈川県 16 小田原市 45 21 24 39 03
 $ </pre>
 
-      <pre class="cmd">$ keycut data.%1 data</pre>
+      <pre class="prettyprint">$ keycut data.%1 data</pre>
 
-      <pre class="cmd">$ ls -l data.*
+      <pre class="prettyprint">$ ls -l data.*
 -rw-r--r-- 1 usp usp 87 2009-02-19 11:14 data.01	←4つのファイルに分割
 -rw-r--r-- 1 usp usp 82 2009-02-19 11:14 data.02
 -rw-r--r-- 1 usp usp 77 2009-02-19 11:14 data.03
 -rw-r--r-- 1 usp usp 91 2009-02-19 11:14 data.04
 $ </pre>
 
-      <pre class="cmd">$ cat data.01
+      <pre class="prettyprint">$ cat data.01
 01 埼玉県 03 熊谷市 82 0 23 84 10
 01 埼玉県 01 さいたま市 91 59 20 76 54
 $ </pre>
 
-      <pre class="cmd">$ cat data.02
+      <pre class="prettyprint">$ cat data.02
 02 東京都 04 新宿区 30 50 71 36 30
 02 東京都 05 中央区 78 13 44 28 51
 $ </pre>
 
-      <pre class="cmd">$ cat data.03
+      <pre class="prettyprint">$ cat data.03
 03 千葉県 10 千葉市 52 91 44 9 0
 03 千葉県 12 柏市 95 60 35 93 76
 $ </pre>
 
-      <pre class="cmd">$ cat data.04
+      <pre class="prettyprint">$ cat data.04
 04 神奈川県 13 横浜市 92 56 83 96 75
 04 神奈川県 16 小田原市 45 21 24 39 03
 $ </pre>
 
       <h3>【例2】サブストリング指定</h3>
 
-      <pre class="cmd">$ keycut data.%1.2.1 data</pre>
+      <pre class="prettyprint">$ keycut data.%1.2.1 data</pre>
 
-      <pre class="cmd">$ ls -l data.*
+      <pre class="prettyprint">$ ls -l data.*
 -rw-r--r-- 1 usp usp 87 2009-02-19 11:15 data.1
 -rw-r--r-- 1 usp usp 82 2009-02-19 11:15 data.2
 -rw-r--r-- 1 usp usp 77 2009-02-19 11:15 data.3
@@ -177,18 +177,18 @@ $ </pre>
 
       <p>-aオプションを指定すると分割先ファイルは追記されるようになる。分割先ファイルがないときは新たに作成される。このオプションを指定しない場合にはファイルは上書きとなる。</p>
 
-      <pre class="cmd">$ keycut data.%1 data</pre>
+      <pre class="prettyprint">$ keycut data.%1 data</pre>
 
-      <pre class="cmd">$ keycut -a data.%1 data</pre>
+      <pre class="prettyprint">$ keycut -a data.%1 data</pre>
 
-      <pre class="cmd">$ ls -l data.*
+      <pre class="prettyprint">$ ls -l data.*
 -rw-r--r-- 1 usp usp 174 2009-02-19 11:16 data.01
 -rw-r--r-- 1 usp usp 164 2009-02-19 11:16 data.02
 -rw-r--r-- 1 usp usp 154 2009-02-19 11:16 data.03
 -rw-r--r-- 1 usp usp 182 2009-02-19 11:16 data.04
 $ </pre>
 
-      <pre class="cmd">$ cat data.01
+      <pre class="prettyprint">$ cat data.01
 01 埼玉県 03 熊谷市 82 0 23 84 10
 01 埼玉県 01 さいたま市 91 59 20 76 54
 01 埼玉県 03 熊谷市 82 0 23 84 10
@@ -199,16 +199,16 @@ $ </pre>
 
       <p>-dオプションを指定すると、キーフィールドを除いた行を分割先ファイルに作成するようになる。キーフィールド指定が%1.2.1等のサブストリング指定であっても、キーフィールド全体(この例だと第1フィールド全体)が取り除かれる。</p>
 
-      <pre class="cmd">$ keycut -d data.%1 data</pre>
+      <pre class="prettyprint">$ keycut -d data.%1 data</pre>
 
-      <pre class="cmd">$ ls -l data.*
+      <pre class="prettyprint">$ ls -l data.*
 -rw-r--r-- 1 usp usp 81 2009-02-19 13:13 data.01
 -rw-r--r-- 1 usp usp 76 2009-02-19 13:13 data.02
 -rw-r--r-- 1 usp usp 71 2009-02-19 13:13 data.03
 -rw-r--r-- 1 usp usp 85 2009-02-19 13:13 data.04
 $ </pre>
 
-      <pre class="cmd">$ cat data.01
+      <pre class="prettyprint">$ cat data.01
 埼玉県 03 熊谷市 82 0 23 84 10
 埼玉県 01 さいたま市 91 59 20 76 54
 $ </pre>
@@ -217,16 +217,16 @@ $ </pre>
 
       <p>-zオプションを指定すると、出力ファイルがGzip圧縮形式になる。</p>
 
-      <pre class="cmd">$ keycut -z data.%1.gz data</pre>
+      <pre class="prettyprint">$ keycut -z data.%1.gz data</pre>
 
-      <pre class="cmd">$ ls -l data.*
+      <pre class="prettyprint">$ ls -l data.*
 -rw-r--r-- 1 usp usp  98 2009-02-19 13:17 data.01.gz
 -rw-r--r-- 1 usp usp  94 2009-02-19 13:17 data.02.gz
 -rw-r--r-- 1 usp usp  82 2009-02-19 13:17 data.03.gz
 -rw-r--r-- 1 usp usp 100 2009-02-19 13:17 data.04.gz
 $ </pre>
 
-      <pre class="cmd">$ gunzip &lt; data.01.gz
+      <pre class="prettyprint">$ gunzip &lt; data.01.gz
 01 埼玉県 03 熊谷市 82 0 23 84 10
 01 埼玉県 01 さいたま市 91 59 20 76 54
 $ </pre>
@@ -235,15 +235,18 @@ $ </pre>
 
       <p>keycut.cはzlibライブラリを使用している。コンパイル時は次のようにオプションが必要。</p>
 
-      <pre class="cmd">$ cckeycut.c -lz -o /home/TOOLkeycut</pre>
+      <pre class="prettyprint">$ cckeycut.c -lz -o /home/TOOLkeycut</pre>
 
       <h3>【備考2】</h3>
 
       <p>-aオプションと-zオプションを併用したときは、すでに存在する圧縮ファイルに圧縮ファイルが追記される。生成されるファイルはgunzip(1)コマンドで展開できるが、仕様的に正しい動作はどうかは未調査。</p>
 
+      <h3>【関連項目】</h3>
+
+      <p><a href="sorter.html">sorter(1)</a>、<a href="master-file.html">マスタファイル(5)</a>、<a href="transaction-file.html">トランザクションファイル(5)</a></p>
     </div>
 
-    <div id="lastmodified">last modified: 2012-19-01 16:08:01</div>
+    <div id="lastmodified">last modified: 2014-29-27 17:02:27</div>
 
     <div id="footer">Contact us: uecinfo@usp-lab.com<br/>Copyright (c) 2012,2013 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
   </div>

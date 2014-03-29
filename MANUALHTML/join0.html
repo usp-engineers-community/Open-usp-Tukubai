@@ -128,14 +128,14 @@ Version	: Thu Dec 15 13:46:38 JST 2011</pre>
 
       <p>成績ファイルkekkaから<a href="master-file.html">master</a>に登録されている4人のデータを抽出する。</p>
 
-      <pre class="cmd">$ cat <a href="master-file.html">master</a>
+      <pre class="prettyprint">$ cat <a href="master-file.html">master</a>
 0000003 杉山______ 26 F
 0000005 崎村______ 50 F
 0000007 梶川______ 42 F
 0000010 柳本______ 50 F
 $ </pre>
 
-      <pre class="cmd">$ cat kekka
+      <pre class="prettyprint">$ cat kekka
 0000000 91 59 20 76 54
 0000001 46 39 8  5  21
 0000003 30 50 71 36 30
@@ -150,7 +150,7 @@ $ </pre>
 
       <p>kekkaの第1フィールドが<a href="master-file.html">master</a>ファイルに存在する行のみ抽出する。</p>
 
-      <pre class="cmd">$ join0 key=1 <a href="master-file.html">master</a> kekka
+      <pre class="prettyprint">$ join0 key=1 <a href="master-file.html">master</a> kekka
 0000003 30 50 71 36 30
 0000005 82 79 16 21 80
 0000007 50 2  33 15 62
@@ -161,14 +161,14 @@ $ </pre>
 
       <p>左から順に複数のフィールドに連続するキーを指定できる。例えば<a href="master-file.html">master</a>ファイルに第2フィールドと第3フィールドの順にフィールドキーが存在する行のみ抽出する場合、次のようになる。</p>
 
-      <pre class="cmd">$ cat <a href="master-file.html">master</a>
+      <pre class="prettyprint">$ cat <a href="master-file.html">master</a>
 A 0000003 杉山______ 26 F
 A 0000005 崎村______ 50 F
 B 0000007 梶川______ 42 F
 C 0000010 柳本______ 50 F
 $ </pre>
 
-      <pre class="cmd">$ cat kekka
+      <pre class="prettyprint">$ cat kekka
 1 A 0000000 91 59 20 76 54
 2 A 0000001 46 39 8  5  21
 3 A 0000003 30 50 71 36 30
@@ -181,7 +181,7 @@ $ </pre>
 10 C 0000011 92 56 83 96 75
 $ </pre>
 
-      <pre class="cmd">$ join0 key=2/3 <a href="master-file.html">master</a> kekka &gt; data
+      <pre class="prettyprint">$ join0 key=2/3 <a href="master-file.html">master</a> kekka &gt; data
 3 A 0000003 30 50 71 36 30
 5 A 0000005 82 79 16 21 80
 6 B 0000007 50 2  33 15 62
@@ -190,20 +190,20 @@ $ </pre>
 
       <p>左から順に連続していない複数のフィールドをキーに指定することも可能。この場合は複数のキーフィールドを@でつなげて指定する。</p>
 
-      <pre class="cmd">$ join0 key=3@1 <a href="master-file.html">master</a> <a href="transaction-file.html">tran</a></pre>
+      <pre class="prettyprint">$ join0 key=3@1 <a href="master-file.html">master</a> <a href="transaction-file.html">tran</a></pre>
 
       <h3>【例3】+ngオプション</h3>
 
       <p><a href="master-file.html">master</a>とキーが一致しない"<a href="transaction-file.html">tran</a>"の行を抽出することも可能。キーに一致する行は標準出力に、一致しない行は標準エラー出力に出力される。</p>
 
-      <pre class="cmd">$ cat <a href="master-file.html">master</a>
+      <pre class="prettyprint">$ cat <a href="master-file.html">master</a>
 0000003 杉山______ 26 F
 0000005 崎村______ 50 F
 0000007 梶川______ 42 F
 0000010 柳本______ 50 F
 $ </pre>
 
-      <pre class="cmd">$ cat kekka
+      <pre class="prettyprint">$ cat kekka
 0000000 91 59 20 76 54
 0000001 46 39 8  5  21
 0000003 30 50 71 36 30
@@ -218,7 +218,7 @@ $ </pre>
 
       <p>成績ファイルkekkaから<a href="master-file.html">master</a>に存在する4人のデータと、その他のデータとをそれぞれ抽出する。</p>
 
-      <pre class="cmd">$ join0 +ng key=1 <a href="master-file.html">master</a> kekka &gt; ok-data 2&gt; ng-data
+      <pre class="prettyprint">$ join0 +ng key=1 <a href="master-file.html">master</a> kekka &gt; ok-data 2&gt; ng-data
 $ cat ok-data		←一致したデータ
 0000003 30 50 71 36 30
 0000005 82 79 16 21 80
@@ -237,27 +237,27 @@ $ </pre>
 
       <p>ファイル名を-にすることにより標準入力から<a href="master-file.html">master</a>や<a href="transaction-file.html">tran</a>を読むことができる。<a href="join1.html">join1(1)</a>や<a href="join2.html">join2(1)</a>も同様。<a href="transaction-file.html">tran</a>の-を省略した場合も標準入力から<a href="transaction-file.html">tran</a>を読み込む。</p>
 
-      <pre class="cmd">$ cat <a href="master-file.html">master</a> | join0 key=1 - <a href="transaction-file.html">tran</a></pre>
+      <pre class="prettyprint">$ cat <a href="master-file.html">master</a> | join0 key=1 - <a href="transaction-file.html">tran</a></pre>
 
-      <pre class="cmd">$ cat <a href="transaction-file.html">tran</a> | join0 key=1 <a href="master-file.html">master</a> -</pre>
+      <pre class="prettyprint">$ cat <a href="transaction-file.html">tran</a> | join0 key=1 <a href="master-file.html">master</a> -</pre>
 
-      <pre class="cmd">$ cat <a href="transaction-file.html">tran</a> | join0 key=1 <a href="master-file.html">master</a>		←-を省略可能</pre>
+      <pre class="prettyprint">$ cat <a href="transaction-file.html">tran</a> | join0 key=1 <a href="master-file.html">master</a>		←-を省略可能</pre>
 
       <h3>【コラム1】+ngオプションのコメント - <a href="join1.html">join1(1)</a>も同様</h3>
 
       <p>不一致のデータをパイプで次のコマンドへつなぐ場合は次のように記述する。</p>
 
-      <pre class="cmd">$ join0 +ng key=1 <a href="master-file.html">master</a> <a href="transaction-file.html">tran</a> 2&gt;&amp;1 1&gt; ok-data |  次のコマンド</pre>
+      <pre class="prettyprint">$ join0 +ng key=1 <a href="master-file.html">master</a> <a href="transaction-file.html">tran</a> 2&gt;&amp;1 1&gt; ok-data |  次のコマンド</pre>
 
       <p>不一致のデータのみ出力したい場合には、一致データを/dev/nullへ出力させれば良い。</p>
 
-      <pre class="cmd">$ join0 +ng key=1 <a href="master-file.html">master</a> <a href="transaction-file.html">tran</a> &gt; /dev/null 2&gt; ng-data</pre>
+      <pre class="prettyprint">$ join0 +ng key=1 <a href="master-file.html">master</a> <a href="transaction-file.html">tran</a> &gt; /dev/null 2&gt; ng-data</pre>
 
       <h3>【コラム2】</h3>
 
       <p><a href="join0.html">join0(1)</a>および<a href="join1.html">join1(1)</a>は<a href="master-file.html">master</a>と同じキーフィールドを持つ<a href="transaction-file.html">tran</a>の行を出力するが、パイプの目詰まりを起こさないように<a href="master-file.html">master</a>を読み終わったあと読み残した<a href="transaction-file.html">tran</a>についても最後まで読むように動作する。</p>
 
-      <pre class="cmd">$ cat bigfile | join0 key=1 <a href="master-file.html">master</a> &gt; ok-data</pre>
+      <pre class="prettyprint">$ cat bigfile | join0 key=1 <a href="master-file.html">master</a> &gt; ok-data</pre>
 
       <h3>【備考】</h3>
 
@@ -269,7 +269,7 @@ $ </pre>
 
     </div>
 
-    <div id="lastmodified">last modified: 2012-04-02 11:08:02</div>
+    <div id="lastmodified">last modified: 2014-08-13 16:01:13</div>
 
     <div id="footer">Contact us: uecinfo@usp-lab.com<br/>Copyright (c) 2012,2013 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
   </div>

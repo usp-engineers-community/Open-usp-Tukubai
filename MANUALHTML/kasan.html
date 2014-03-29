@@ -118,7 +118,7 @@ Version	: Thu Dec 15 13:46:38 JST 2011</pre>
 
       <p>店別の累計の仕入れ値を算出する。ここでは4フィールド目の値を加算して5フィールド目に挿入する。</p>
 
-      <pre class="cmd">$ cat data
+      <pre class="prettyprint">$ cat data
 a店 1日目 103 62		←店名 日付 売れ数 仕入数
 a店 2日目 157 94
 a店 3日目 62 30
@@ -128,7 +128,7 @@ a店 6日目 350 20
 a店 7日目 412 301
 $ </pre>
 
-      <pre class="cmd">$ kasan key=4 data
+      <pre class="prettyprint">$ kasan key=4 data
 a店 1日目 103 62 62
 a店 2日目 157 94 156
 a店 3日目 62 30 186
@@ -142,7 +142,7 @@ $ </pre>
 
       <p>あるフィールドの値が変わった場所で加算をリセットする場合は、そのリセットのキーとなるフィールドをref=で指定する。たとえば店別の累計仕入数を算出する場合には、次のように1フィールド目が変更されるごとに加算をリセットする。</p>
 
-      <pre class="cmd">$ cat data
+      <pre class="prettyprint">$ cat data
 a店 1日目 103 62		←店名 日付 売れ数 仕入数
 a店 2日目 157 94
 a店 3日目 62 30
@@ -157,7 +157,7 @@ c店 3日目 38 21
 c店 4日目 81 48
 $ </pre>
 
-      <pre class="cmd">$ kasan ref=1 key=4 data
+      <pre class="prettyprint">$ kasan ref=1 key=4 data
 a店 1日目 103 62 62
 a店 2日目 157 94 156
 a店 3日目 62 30 186
@@ -176,7 +176,7 @@ $ </pre>
 
       <p>元データのフィールドをその加算値と置き換えて出力する場合は+rオプションを使用する。たとえば仕入れ数を累計仕入れ数に置き換えるのであれば、この場合であれば4フィールド目の加算値を4フィールド目に出力するようにすれば良い。</p>
 
-      <pre class="cmd">$ cat data		←店名 日付 売れ数 仕入数
+      <pre class="prettyprint">$ cat data		←店名 日付 売れ数 仕入数
 a店 1日目 103 62
 a店 2日目 157 94
 a店 3日目 62 30
@@ -186,7 +186,7 @@ a店 6日目 350 20
 a店 7日目 412 301
 $ </pre>
 
-      <pre class="cmd">$ kasan +r key=4 data
+      <pre class="prettyprint">$ kasan +r key=4 data
 a店 1日目 103 62
 a店 2日目 157 156
 a店 3日目 62 186
@@ -200,7 +200,7 @@ $ </pre>
 
       <p>小数点のあるデータを加算する場合、それまでの行にある最大小数桁数に合わせて出力するようになる。</p>
 
-      <pre class="cmd">$ cat data
+      <pre class="prettyprint">$ cat data
 A 1
 A 1.2
 A 1.23
@@ -209,7 +209,7 @@ B 2.34
 B 3
 $ </pre>
 
-      <pre class="cmd">$ kasan ref=1 key=2 data
+      <pre class="prettyprint">$ kasan ref=1 key=2 data
 A 1 1
 A 1.2 2.2
 A 1.23 3.43
@@ -222,17 +222,17 @@ $ </pre>
 
       <p>key=&lt;pos&gt;で指定できるのは数値、範囲(/)、列挙(@)、NF NF-&lt;n&gt;である。</p>
 
-      <pre class="cmd">$ kasan key=1 data</pre>
+      <pre class="prettyprint">$ kasan key=1 data</pre>
 
       <p>第2から第3フィールドの各フィールドを加算し、加算値をそれぞれのフィールドの直後に挿入するには次のようにコマンドを実行する。</p>
 
-      <pre class="cmd">$ cat data
+      <pre class="prettyprint">$ cat data
 A 1 2
 A 3 4
 A 5 6
 $ </pre>
 
-      <pre class="cmd">$ kasan key=2/3 data
+      <pre class="prettyprint">$ kasan key=2/3 data
 A 1 1 2 2
 A 3 4 4 6
 A 5 9 6 12
@@ -240,13 +240,13 @@ $ </pre>
 
       <p>第2フィールドと第4フィールドの各フィールドを加算し、加算値をそれぞれのフィールドの直後に挿入するには次のようにコマンドを実行する。</p>
 
-      <pre class="cmd">$ kasan key=2@4 data</pre>
+      <pre class="prettyprint">$ kasan key=2@4 data</pre>
 
       <p>次のようにNFも指定できる。</p>
 
-      <pre class="cmd">$ kasan key=NF data</pre>
+      <pre class="prettyprint">$ kasan key=NF data</pre>
 
-      <pre class="cmd">$ kasan key=NF-2 data</pre>
+      <pre class="prettyprint">$ kasan key=NF-2 data</pre>
 
       <h3>【関連項目】</h3>
 
@@ -254,7 +254,7 @@ $ </pre>
 
     </div>
 
-    <div id="lastmodified">last modified: 2012-19-01 16:08:01</div>
+    <div id="lastmodified">last modified: 2014-08-13 16:01:13</div>
 
     <div id="footer">Contact us: uecinfo@usp-lab.com<br/>Copyright (c) 2012,2013 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
   </div>

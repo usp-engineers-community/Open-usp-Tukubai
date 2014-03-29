@@ -9,10 +9,10 @@ zen : 全角へ変換
 【書式】
 
 Usage   : zen <f1> <f2> .. <file>
-        : zen [-k] <file>
-        : zen -d <string>
+: zen [-k] <file>
+: zen -d <string>
 Version : Fri Oct 21 11:26:06 JST 2011
-          OpenUSP (LINUX+FREEBSD/PYTHON2.4/UTF-8)
+OpenUSP (LINUX+FREEBSD/PYTHON2.4/UTF-8)
 
 【説明】
 
@@ -68,6 +68,6 @@ $
 
 han(1)
 
-last modified: 2013-04-15 20:33:10
+last modified: 2014-01-13 16:01:13
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012,2013 Universal Shell Programming Laboratory All Rights Reserved.
+Copyright (c) 2012-2014 Universal Shell Programming Laboratory All Rights

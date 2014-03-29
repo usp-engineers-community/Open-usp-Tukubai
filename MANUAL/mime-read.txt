@@ -15,7 +15,7 @@ Version : Thu Dec 15 13:46:38 JST 2011
 【説明】
 
 MIME形式のファイル<MIME-file>ファイルの各セクションの中から、name="<name>"の記
-述があるパートを見つけだし、その部分のデータを出力する。-vを指定した場合はすべ
+述があるパートを見つけだし、その部分のデータを出力する。-v を指定した場合はすべ
 てのname="..."を対象として名前の一覧を出力する。
 
 【例】
@@ -26,8 +26,8 @@ $ mime-read abc.xls mime-file > abc.xls
 
 【関連項目】
 
-cgi-read(1)、nameread(1)
+cgi-name(1)、nameread(1)
 
-last modified: 2013-04-15 19:53:06
+last modified: 2014-01-13 16:01:13
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012,2013 Universal Shell Programming Laboratory All Rights Reserved.
+Copyright (c) 2012-2014 Universal Shell Programming Laboratory All Rights

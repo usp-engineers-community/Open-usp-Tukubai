@@ -129,7 +129,7 @@ Version : Thu Mar 21 21:57:55 JST 2013</pre>
 
       <h3>【例1】</h3>
 
-      <pre class="cmd">$ cat data
+      <pre class="prettyprint">$ cat data
 0001 0000007 20060201 20060206 117 8335 -145
 0001 0000007 20060203 20060206 221 15470 0
 0001 0000007 20060205 20060206 85 5950 0
@@ -142,8 +142,8 @@ $ </pre>
 
       <p>4フィールド目と3フィールド目を変換し、その間の差分の日数を求めるには次のようにコマンドを実行する。</p>
 
-      <pre class="cmd">$ calclock 3 4 - &lt; data         |\
-tee data2                       |\
+      <pre class="prettyprint">$ calclock 3 4 - &lt; data         |
+tee data2                       |
 awk '{print ($6-$4)/86400}'     &gt; data3
 $ cat data2
 0001 0000007 20060201 1138752000 20060206 1139184000 117 8335 -145
@@ -169,7 +169,7 @@ $ </pre>
 
       <p>-rオプションを使用すると、指定したフィールドの値(1970年1月1日0時0分0秒からの秒数)を通常の年月日時分秒の14桁の表記に変換する。年月日のみのフォーマットにする場合は、出力後awk(1)のsubstr()やself(1)で上8桁を切り出す。</p>
 
-      <pre class="cmd">$ cat data
+      <pre class="prettyprint">$ cat data
 0001 0000007 20060201 117 8335 -145
 0001 0000007 20060203 221 15470 0
 0001 0000007 20060205 85 5950 0
@@ -182,11 +182,11 @@ $ </pre>
 
       <p>3フィールド目の各日の3日後の日付を求めるには、次のようにコマンドを実行する。</p>
 
-      <pre class="cmd">$ calclock 3 data               |\
-awk '{print $4+86400*3}'        |\
-tee data2                       |\
-calclock -r 1 -                 |\
-tee data3                       |\
+      <pre class="prettyprint">$ calclock 3 data               |
+awk '{print $4+86400*3}'        |
+tee data2                       |
+calclock -r 1 -                 |
+tee data3                       |
 self 2.1.8                      &gt; data4
 $ cat data2
 1138978800
@@ -223,7 +223,7 @@ $ </pre>
 
     </div>
 
-    <div id="lastmodified">last modified: 2013-28-16 17:04:16</div>
+    <div id="lastmodified">last modified: 2014-08-13 16:01:13</div>
 
     <div id="footer">Contact us: uecinfo@usp-lab.com<br/>Copyright (c) 2012,2013 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
   </div>
