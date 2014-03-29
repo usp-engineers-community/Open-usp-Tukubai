@@ -121,7 +121,7 @@ Version	: Thu Dec 15 13:46:38 JST 2011
 
       <p>引数で指定したファイルの各フィールド毎に最大桁数を判断して桁数を自動出力する。</p>
 
-      <pre class="cmd">$ cat data
+      <pre class="prettyprint">$ cat data
 01 埼玉県 01 さいたま市 91 59 20 76 54
 01 埼玉県 02 川越市 46 39 8 5 21
 01 埼玉県 03 熊谷市 82 0 23 84 10
@@ -130,7 +130,7 @@ Version	: Thu Dec 15 13:46:38 JST 2011
 04 神奈川県 13 横浜市 92 56 83 96 75
 $ </pre>
 
-      <pre class="cmd">$ keta data		←右詰め
+      <pre class="prettyprint">$ keta data		←右詰め
 01   埼玉県 01 さいたま市 91 59 20 76 54
 01   埼玉県 02     川越市 46 39  8  5 21
 01   埼玉県 03     熊谷市 82  0 23 84 10
@@ -139,7 +139,7 @@ $ </pre>
 04 神奈川県 13     横浜市 92 56 83 96 75
 $ </pre>
 
-      <pre class="cmd">$ keta -- data		←左詰め
+      <pre class="prettyprint">$ keta -- data		←左詰め
 01 埼玉県   01 さいたま市 91 59 20 76 54
 01 埼玉県   02 川越市     46 39 8  5  21
 01 埼玉県   03 熊谷市     82 0  23 84 10
@@ -160,13 +160,13 @@ $ </pre>
 
       <p>なお、桁数は半角での文字数で指定する。大文字の場合は半角2文字分の指定が必要である。keta 4は半角では4文字分、全角では2文字分になる。次のコマンドで例1と同じ出力が得られる。</p>
 
-      <pre class="cmd">$ keta 2 8 2 10 2 2 2 2 2 data</pre>
+      <pre class="prettyprint">$ keta 2 8 2 10 2 2 2 2 2 data</pre>
 
       <h3>【例3】</h3>
 
       <p>通常は桁は右詰めで出力されるが、左詰めで出力する場合は桁数に-をつけて指定すれば良い。例えば第2フィールドと第4フィールドを左詰めにして出力するには次のようにコマンドを実行する。</p>
 
-      <pre class="cmd">$ keta 2 -8 2 -10 2 2 2 2 2 data
+      <pre class="prettyprint">$ keta 2 -8 2 -10 2 2 2 2 2 data
 01 埼玉県   01 さいたま市 91 59 20 76 54
 01 埼玉県   02 川越市     46 39  8  5 21
 01 埼玉県   03 熊谷市     82  0 23 84 10
@@ -179,21 +179,21 @@ $ </pre>
 
       <p>同じ桁数を連続したフィールドに指定する場合は&lt;桁数x連続するフィールド数&gt;と表記することができる。keta 3x4はketa 3 3 3 3と同じ意味を持つ。フィールド数にはNF(1行のフィールド数)を使用しNF-xxと指定できる。次のコマンドで例3と同じ出力が得られる。</p>
 
-      <pre class="cmd">$ keta 2 -8 2 -10 2x5 data</pre>
+      <pre class="prettyprint">$ keta 2 -8 2 -10 2x5 data</pre>
 
-      <pre class="cmd">$ keta 2 -8 2 -10 2xNF-4 data</pre>
+      <pre class="prettyprint">$ keta 2 -8 2 -10 2xNF-4 data</pre>
 
       <h3>【例5】</h3>
 
       <p>-vオプションを使用するとファイルの各フィールドの最大桁数を表示させることができる。</p>
 
-      <pre class="cmd">$ keta -v data
+      <pre class="prettyprint">$ keta -v data
 2 8 2 10 2 2 2 2 2
 $ </pre>
 
       <p>次のコマンドで例1と同じ出力が得られる。</p>
 
-      <pre class="cmd">$ keta $keta -v data) data</pre>
+      <pre class="prettyprint">$ keta $keta -v data) data</pre>
 
       <h3>【関連項目】</h3>
 
@@ -201,7 +201,7 @@ $ </pre>
 
     </div>
 
-    <div id="lastmodified">last modified: 2012-19-01 16:08:01</div>
+    <div id="lastmodified">last modified: 2014-08-13 16:01:13</div>
 
     <div id="footer">Contact us: uecinfo@usp-lab.com<br/>Copyright (c) 2012,2013 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
   </div>

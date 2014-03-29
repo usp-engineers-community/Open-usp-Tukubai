@@ -135,18 +135,18 @@ Version	: Sat Jan 24 13:30:10 JST 2009</pre>
 
       <p>templateの中にある%1 %2 %3 ...の部分に、dataのフィールド(左上から右下に順番に%1 %2 %3 ...に対応)を読んで置換する。</p>
 
-      <pre class="cmd">$ cat data
+      <pre class="prettyprint">$ cat data
 a b
 c d
 $ </pre>
 
-      <pre class="cmd">$ cat template
+      <pre class="prettyprint">$ cat template
 1st=%1
 2nd=%2
 3rd=%3 4th=%4
 $ </pre>
 
-      <pre class="cmd">$ mojihame template data
+      <pre class="prettyprint">$ mojihame template data
 1st=a
 2nd=b
 3rd=c 4th=d
@@ -156,24 +156,24 @@ $ </pre>
 
       <p>デフォルトでは@というデータはヌル文字列として置換される。このデフォルトを変更するには-dオプションを使用する。-dオプションを単独で使用した場合には、ヌル文字列に置換する機能は無効になる。</p>
 
-      <pre class="cmd">$ cat data
+      <pre class="prettyprint">$ cat data
 a @
 @ d
 $ </pre>
 
-      <pre class="cmd">$ cat template
+      <pre class="prettyprint">$ cat template
 1st=%1
 2nd=%2
 3rd=%3 4th=%4
 $ </pre>
 
-      <pre class="cmd">$ mojihame template data
+      <pre class="prettyprint">$ mojihame template data
 1st=a
 2nd=
 3rd= 4th=d
 $ </pre>
 
-      <pre class="cmd">$ mojihame -da template data
+      <pre class="prettyprint">$ mojihame -da template data
 1st=
 2nd=@
 3rd=@ 4th=d
@@ -183,24 +183,24 @@ $ </pre>
 
       <p>dataは1行単位に読み込まれ、行の各フィールドが%1 %2 ...に対応する。次の行が読み込まれるときは再びtemplateが使用され、データがはめ込まれ出力される。この使い方は旧mojihameの-rと互換性がある。mojihame -rは将来廃止される。</p>
 
-      <pre class="cmd">$ cat data
+      <pre class="prettyprint">$ cat data
 a b c d
 w x y z
 $ </pre>
 
-      <pre class="cmd">$ cat template
+      <pre class="prettyprint">$ cat template
 1st=%1 2nd=%2
 3rd=%3 4th=%4
 $ </pre>
 
-      <pre class="cmd">$ mojihame -l template data
+      <pre class="prettyprint">$ mojihame -l template data
 1st=a 2nd=b
 3rd=c 4th=d
 1st=w 2nd=x
 3rd=y 4th=z
 $ </pre>
 
-      <pre class="cmd">$ mojihame -r template data
+      <pre class="prettyprint">$ mojihame -r template data
 1st=a 2nd=b
 3rd=c 4th=d
 1st=w 2nd=x
@@ -211,12 +211,12 @@ $ </pre>
 
       <p>-lオプションで引数(ラベル)を指定した場合、templateのラベルで囲まれた行のみにデータが繰り返しはめ込まれる。このときラベルを含む行は出力されない。また、ラベルにはさまれていない前後の部分は何も変換されず、そのまま出力される。ラベルはtemplate内部に2回だけ記述可能で、それぞれはめ込み対象の開始行と終了行とみなされる。指定ラベルは部分一致でラベル行と判断するので注意が必要。</p>
 
-      <pre class="cmd">$ cat data
+      <pre class="prettyprint">$ cat data
 a b
 y z
 $ </pre>
 
-      <pre class="cmd">$ cat template
+      <pre class="prettyprint">$ cat template
 header %1
 LABEL
 1st=%1 2nd=%2
@@ -224,7 +224,7 @@ LABEL
 footer %2
 $ </pre>
 
-      <pre class="cmd">$ mojihame -lLABEL template data
+      <pre class="prettyprint">$ mojihame -lLABEL template data
 header %1
 1st=a 2nd=b
 1st=y 2nd=z
@@ -235,23 +235,23 @@ $ </pre>
 
       <p>-lオプションを繰り返し使用することにより、プルダウンなどのHTMLを簡易に生成することができる。指定ラベルはtemplateに1組しか認められていないので、次の例のように内側のラベルから順番に値をはめていくという手順でコマンドを実行する。</p>
 
-      <pre class="cmd">$ cat member
+      <pre class="prettyprint">$ cat member
 佐藤
 鈴木
 $ </pre>
 
-      <pre class="cmd">$ cat kbn1
+      <pre class="prettyprint">$ cat kbn1
 東京
 大阪
 横浜
 $ </pre>
 
-      <pre class="cmd">$ cat kbn2
+      <pre class="prettyprint">$ cat kbn2
 男
 女
 $ </pre>
 
-      <pre class="cmd">$ cat template
+      <pre class="prettyprint">$ cat template
 MEMBER
 氏名＝%1
 K1
@@ -263,7 +263,7 @@ K2
 MEMBER
 $ </pre>
 
-      <pre class="cmd">$ mojihame -lK1 template kbn1 |   mojihame -lK2 - kbn2 | mojihame -lMEMBER - member
+      <pre class="prettyprint">$ mojihame -lK1 template kbn1 |   mojihame -lK2 - kbn2 | mojihame -lMEMBER - member
 氏名＝佐藤
 地名＝東京
 地名＝大阪
@@ -283,14 +283,14 @@ $ </pre>
 
       <p>デフォルトでは@というデータはヌル文字列として置換される。このデフォルトを変更するには-d オプションを使用する。-d オプションは-lオプションの後に指定する必要がある。</p>
 
-      <pre class="cmd">$ mojihame -lLABEL -dx template data</pre>
+      <pre class="prettyprint">$ mojihame -lLABEL -dx template data</pre>
 
 
       <h3>【例7】階層データ</h3>
 
       <p>-hオプションは階層的にデータのはめ込みを実施する。templateにおいて階層的ラベルに囲まれた部分に現れる%数字がdataの階層的キーフィールドに対応する。</p>
 
-      <pre class="cmd">$ cat data
+      <pre class="prettyprint">$ cat data
 山田 東京 10:00
 山田 大阪 20:00
 山田 横浜 09:30
@@ -300,7 +300,7 @@ $ </pre>
 
       <p>次のtemplateの場合、LABEL-1に囲まれているのは%1、LABEL-1に囲まれている部分にさらにLABEL-2があり、LABEL-2で囲まれている部分に%2と%3がある。このとき、第1フィールドが変化する回数だけ、LABEL-1で囲まれている部分が繰り返し値がはめられ、LABEL-2で囲まれている部分は、同じ第1フィールドの値を持つ第2、第3フィールドの行の数だけ繰り返し値がはめられる。</p>
 
-      <pre class="cmd">$ mojihame -hLABEL template dat
+      <pre class="prettyprint">$ mojihame -hLABEL template dat
 表題 %1
 氏名＝山田
 地名＝東京 時刻＝10:00
@@ -311,7 +311,7 @@ $ </pre>
 地名＝神戸 時刻＝15:30
 $ </pre>
 
-      <pre class="cmd">$ cat template
+      <pre class="prettyprint">$ cat template
 表題 %1
 LABEL-1
 氏名＝%1
@@ -327,29 +327,29 @@ $ </pre>
 
       <p>デフォルトでは@はヌル文字列として置換される。文字を変更するには-dオプションを使う。-dオプションは-hや-lオプションの後に指定しなくてはならない。</p>
 
-      <pre class="cmd">$ mojihame -dx template data</pre>
+      <pre class="prettyprint">$ mojihame -dx template data</pre>
 
-      <pre class="cmd">$ mojihame -lLABEL -dx template data</pre>
+      <pre class="prettyprint">$ mojihame -lLABEL -dx template data</pre>
 
-      <pre class="cmd">$ mojihame -hLABEL -dx template data</pre>
+      <pre class="prettyprint">$ mojihame -hLABEL -dx template data</pre>
 
       <h3>【注意2】アンダースコアデータの扱い</h3>
 
       <p>データの中の_mojihame実行後には_に置換される。 エスケープのない_は半角スペースに置換される。
 
-      <pre class="cmd">$ cat template
+      <pre class="prettyprint">$ cat template
 &lt;input type="text" value="%1" /&gt;
 &lt;input type="text" value="%2" /&gt;
 &lt;input type="text" value="%3" /&gt;
 $ </pre>
 
-      <pre class="cmd">$ cat data
+      <pre class="prettyprint">$ cat data
 usp_lab
 usp_lab
 ________
 $ </pre>
 
-      <pre class="cmd">$ mojihame template data
+      <pre class="prettyprint">$ mojihame template data
 &lt;input type="text" value="usp lab" /&gt;
 &lt;input type="text" value="usp_lab" /&gt;
 &lt;input type="text" value="      __" /&gt;
@@ -368,7 +368,7 @@ $ </pre>
 
     </div>
 
-    <div id="lastmodified">last modified: 2013-31-16 17:04:16</div>
+    <div id="lastmodified">last modified: 2014-08-13 16:01:13</div>
 
     <div id="footer">Contact us: uecinfo@usp-lab.com<br/>Copyright (c) 2012,2013 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
   </div>

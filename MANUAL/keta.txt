@@ -104,12 +104,12 @@ $
 
 次のコマンドで例1と同じ出力が得られる。
 
-$ keta $(keta -v data) data
+$ keta $keta -v data) data
 
 【関連項目】
 
 comma(1)
 
-last modified: 2013-04-15 19:39:05
+last modified: 2014-01-13 16:01:13
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012,2013 Universal Shell Programming Laboratory All Rights Reserved.
+Copyright (c) 2012-2014 Universal Shell Programming Laboratory All Rights

@@ -33,7 +33,7 @@ $
 売数(第3フィールド)の店別構成比を求めて売数の次のフィールドに挿入するには、次の
 ようにコマンドを実行する。
 
-$ ratio key=3 data | keta
+$ ratio key=3 data |  keta
 a店 1日目 103 15.1  62          ←第4フィールドが構成比になっている
 b店 1日目 210 30.9 113
 c店 1日目  81 11.9  52
@@ -103,7 +103,7 @@ $
 先頭行を飛ばして売数(第3フィールド)の店別構成比を求めて売数の次のフィールドに挿
 入する。
 
-$ ratio +h key=3 data | keta
+$ ratio +h key=3 data |  keta
 店   日付 売数    @ 客数                ←先頭行はそのまま(計算しない)
 a店 1日目  103 15.1   62                ←第4フィールドが構成比になっている
 b店 1日目  210 30.9  113
@@ -126,7 +126,7 @@ $
 
 売数(第3フィールド)の店別構成比を小数点3桁まで求める。
 
-$ ratio -3 key=3 data | keta
+$ ratio -3 key=3 data |  keta
 a店 1日目 103 15.147  62
 b店 1日目 210 30.882 113
 c店 1日目  81 11.912  52
@@ -138,6 +138,6 @@ $
 
 kasan(1)、plus(1)、sm2(1)、sm4(1)、sm5(1)、ysum(1)
 
-last modified: 2013-04-15 20:07:48
+last modified: 2014-01-13 16:01:13
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012,2013 Universal Shell Programming Laboratory All Rights Reserved.
+Copyright (c) 2012-2014 Universal Shell Programming Laboratory All Rights

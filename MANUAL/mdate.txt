@@ -10,8 +10,8 @@ mdate : 日付、週、月の処理
 
 Usage   :
 
- DIRECT-MODE
-   日付 mdate -y <yyyymmdd>                     : 曜日
+DIRECT-MODE
+日付    mdate -y <yyyymmdd>                     : 曜日
         mdate -e <yyyywwdd>/±<dif>              : dif 日先までの日付を連続出力
         mdate -e <yyyymmdd1> <yyyymmdd2>        : 日付の範囲を連続出力
         mdate <yyyywwdd>/±<dif>                 : dif 日先の日付
@@ -21,8 +21,8 @@ Usage   :
         mdate <yyyymm1>m <yyyymm2>m             : 月の差
         mdate -ly <yyyymm>m                     : 前年月
 
- FILTER-MODE
-   日付 mdate -f -y <f>                         : 曜日
+FILTER-MODE
+日付    mdate -f -y <f>                         : 曜日
         mdate -f -e <f>/±<dif>                  : dif 日先までの日付に展開
         mdate -f -e <f1> <f2>                   : 日付間の展開
         mdate -f <f>/±<dif>                     : dif 日先の日付
@@ -30,7 +30,7 @@ Usage   :
         mdate -f <f1> ±<f2>                     : 日付の加算
         mdate -f -e <f1> ±<f2>                  : 日付の加算または展開
         mdate -f -ly <f>                        : 前年日
-   月次 mdate -f -d <f>m                        : 日付を1ヶ月分出力
+月次    mdate -f -d <f>m                        : 日付を1ヶ月分出力
         mdate -f <f>m/±<dif>                    : dif 月先の月
         mdate -f -e <f>m ±<dif>                 : dif 月先の月まで展開
         mdate -f <f1>m <f2>m                    : 月の差
@@ -135,8 +135,8 @@ $
 
 【関連項目】
 
-calclock(1), dayslash(1), yobi(1)
+calclock(1)、dayslash(1)、yobi(1)
 
-last modified: 2013-04-15 19:52:33
+last modified: 2014-01-13 16:01:13
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012,2013 Universal Shell Programming Laboratory All Rights Reserved.
+Copyright (c) 2012-2014 Universal Shell Programming Laboratory All Rights

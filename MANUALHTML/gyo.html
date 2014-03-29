@@ -116,7 +116,7 @@ Version	: Thu Dec 15 13:46:38 JST 2011</pre>
 
       <h3>【例1】</h3>
 
-      <pre class="cmd">$ cat data
+      <pre class="prettyprint">$ cat data
 0000000 浜地______ 50 F 91 59 20 76 54
 0000001 鈴田______ 50 F 46 39 8  5  21
 0000003 杉山______ 26 F 30 50 71 36 30
@@ -125,7 +125,7 @@ Version	: Thu Dec 15 13:46:38 JST 2011</pre>
 0000007 梶川______ 42 F 50 2  33 15 62
 $ </pre>
 
-      <pre class="cmd">$ gyo data
+      <pre class="prettyprint">$ gyo data
 6
 $ </pre>
 
@@ -133,25 +133,25 @@ $ </pre>
 
       <p>複数のファイルの行数を一度にカウントできる。</p>
 
-      <pre class="cmd">$ cat data1
+      <pre class="prettyprint">$ cat data1
 1 file1
 2 file1
 3 file1
 $ </pre>
 
-      <pre class="cmd">$ cat data2
+      <pre class="prettyprint">$ cat data2
 1 file2
 2 file2
 $ </pre>
 
-      <pre class="cmd">$ cat data3
+      <pre class="prettyprint">$ cat data3
 1 file3
 2 file3
 3 file3
 4 file3
 $ </pre>
 
-      <pre class="cmd">$ gyo data1 data2 data3
+      <pre class="prettyprint">$ gyo data1 data2 data3
 3
 2
 4
@@ -161,7 +161,7 @@ $ </pre>
 
       <p>"-f"オプションを使用するとファイル名と行数をそれぞれ表示する。</p>
 
-      <pre class="cmd">$ gyo -f data1 data2 data3
+      <pre class="prettyprint">$ gyo -f data1 data2 data3
 data1 3
 data2 2
 data3 4
@@ -171,7 +171,7 @@ $ </pre>
 
       <p>ファイル名に - を指定すると標準入力ファイルを期待する。</p>
 
-      <pre class="cmd">$ cat data2 |  gyo -f data1 - data3
+      <pre class="prettyprint">$ cat data2 |  gyo -f data1 - data3
 data1 3
 data2 2
 data3 4
@@ -183,7 +183,7 @@ $ </pre>
 
     </div>
 
-    <div id="lastmodified">last modified: 2013-09-15 19:04:15</div>
+    <div id="lastmodified">last modified: 2014-08-13 16:01:13</div>
 
     <div id="footer">Contact us: uecinfo@usp-lab.com<br/>Copyright (c) 2012,2013 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
   </div>

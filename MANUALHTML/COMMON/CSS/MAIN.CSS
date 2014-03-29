@@ -133,15 +133,34 @@ body {
 
 #main h1 {
   font-size: 110%;
+  border-left: 7px solid #ccc;
+  border-right: 7px solid #ccc;
+  border-top: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
+  padding-left: 0.5em;
+  padding-top: 0.2em;
+  padding-bottom: 0.2em;
 }
 
 #main h2 {
   font-size: 90%;
+  border-left: 1px solid #ccc;
+  border-right: 1px solid #ccc;
+  border-top: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
+  padding-left: 0.5em;
+  padding-top: 0.2em;
+  padding-bottom: 0.2em;
 }
 
 #main h3 {
   font-size: 80%;
   color: #222222;
+  border-left: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
+  padding-left: 0.5em;
+  padding-top: 0.2em;
+  padding-bottom: 0.2em;
 }
 
 #main blockquote {
@@ -273,6 +292,11 @@ body {
   text-overflow: ellipsis;
 }
 
+/* google-code-prettify: line numbers on every line */
+li.L0, li.L1, li.L2, li.L3, li.L5, li.L6, li.L7, li.L8 {
+  list-style-type: decimal !important;
+}
+
 #main pre.license {
   margin-left: 2.0em;
   font-size: 80%;
@@ -326,8 +350,8 @@ body {
 }
 
 #main dl.cmdlist {
-  font-size: 90%;
   margin-left: 1em;
+  font-size: 90%;
 }
 
 #main dl.cmdlist dt {
@@ -335,7 +359,6 @@ body {
   line-height: 20px;
   margin-left: 0em;
   float: left;
-  font-size: 100%;
   clear: both;
 }
 
@@ -429,13 +452,33 @@ body {
   margin-left: 60px;
 }
 
+#main dl.compactlist {
+  font-size: 80%;
+  margin-left: 0.5em;
+}
+
+#main dl.compactlist dt {
+  width: 110px;
+  line-height: 18px;
+  margin-left: 0em;
+  float: left;
+  clear: both;
+}
+
+#main dl.compactlist dd {
+  width: auto;
+  line-height: 18px;
+  margin-bottom: 0px;
+  margin-left: 110px;
+}
+
 #main dl.bookorderlist {
   font-size: 90%;
   margin-left: 1em;
 }
 
 #main dl.bookorderlist dt {
-  width: 120px;
+  width: 60px;
   line-height: 23px;
   margin-left: 30px;
   float: left;
@@ -447,7 +490,7 @@ body {
   width: auto;
   line-height: 23px;
   margin-bottom: 0px;
-  margin-left: 150px;
+  margin-left: 90px;
 }
 
 #main dl.bookorderlist input {
@@ -515,16 +558,16 @@ body {
 }
 
 #main dl.kouzalist {
-  font-size: 90%;
+  font-size: 80%;
   margin-left: 1em;
 }
 
 #main dl.kouzalist dt {
-  width: 180px;
+  width: 350px;
   line-height: 23px;
   margin-left: 30px;
   float: left;
-  font-size: 100%;
+  font-size: 90%;
   clear: both;
 }
 
@@ -532,11 +575,11 @@ body {
   width: auto;
   line-height: 23px;
   margin-bottom: 0px;
-  margin-left: 210px;
+  margin-left: 350px;
 }
 
 #main dl.kouzalist input {
-  width: 310px;
+  width: 150px;
   margin-left: 10px;
 }
 
@@ -547,10 +590,6 @@ body {
 #main input.submit {
   width: 150px;
 }
-
-
-
-
 
 #main dl.questionnairelist {
   font-size: 90%;
@@ -564,7 +603,7 @@ body {
   margin-bottom: 0px;
   margin-left: 30px;
   float: left;
-  font-size: 100%;
+  font-size: 90%;
   clear: both;
 }
 
@@ -639,7 +678,7 @@ body {
   line-height: 30px;
   margin-left: 10px;
   float: left;
-  font-size: 100%;
+  font-size: 90%;
 }
 
 #main div.bookitem dl dd {
@@ -653,6 +692,7 @@ body {
 #main div.bookitem p {
   margin-left: 160px;
   margin-bottom: 0px;
+  font-size: 90%;
 }
 
 #main div.bookstore {
@@ -719,6 +759,12 @@ float: left;
 
 #main ul li {
   list-style: none;
+  font-size: 90%;
+  line-height: 1.3em;
+}
+
+#main ul.style li {
+  list-style: disc;
   font-size: 90%;
   line-height: 1.3em;
 }
@@ -846,7 +892,7 @@ div#pagenavigator ul {
 
 div#pagenavigator ul li {
   display: inline-block;
-  font-size: 90%;
+  font-size: 70%;
 
   word-spacing: normal;
 
@@ -881,7 +927,7 @@ div#pagenavigator ul li.opened {
 
 div#pagenavigator ul li a {
   display: inline-block;
-  width: 36px;
+  width: 25px;
   color: #FFFFFF;
   background-color: rgba(0, 0, 0, 0.0);
 }
