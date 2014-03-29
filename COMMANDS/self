@@ -154,7 +154,7 @@ class Operator:
 		self.out_sequence.append(params)
 
 	def output(self,line):
-		tokens = [line] + line.split()
+		tokens = [line] + [w for w in line.split(u" ") if w != "" ]
 		#0: 一行全体 1以降: 各フィールド
 
 		print(" ".join(
