@@ -1,0 +1,77 @@
+#!/usr/local/bin/bash -xv
+#
+# test script of loopj 
+#
+# usage: ./loopj.test <command dir> <python ver>
+
+name=loopj
+    
+tmp=/tmp/$$
+dir=$(dirname $0)/..
+cd $dir
+    
+com="$2 ./$1/${name}"
+[ "$1" = "" ] && com="./$1/${name}"
+
+ERROR_CHECK(){
+	[ "$(echo ${PIPESTATUS[@]} | tr -d ' 0')" = "" ] && return
+
+	echo $1
+	echo "$com" NG
+	rm -f $tmp-*
+	exit 1
+}
+
+###########################################
+#TEST1
+
+cat << FIN > $tmp-in1
+0000000 浜地______ a b
+0000001 鈴田______ c d
+0000003 杉山______ e fg
+0000004 白土______ h i
+0000005 崎村______ j kk
+FIN
+
+cat << FIN > $tmp-in2
+0000000 浜地______ あああ
+0000001 鈴田______ いいい
+0000004 白土______ 上田
+0000005 崎村______ おはようniceday
+FIN
+
+cat << FIN > $tmp-in3
+0000000 浜地______ 123
+0000001 鈴田______ 345
+0000003 杉山______ 4556
+0000004 白土______ あいう
+0000005 崎村______ ---
+FIN
+
+cat << FIN > $tmp-out
+0000000 浜地______ a b あああ 123
+0000001 鈴田______ c d いいい 345
+0000003 杉山______ e fg 0 4556
+0000004 白土______ h i 上田 あいう
+0000005 崎村______ j kk おはようniceday ---
+FIN
+
+${com} num=2 $tmp-in1 $tmp-in2 $tmp-in3 > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1.1 error"
+
+cat << FIN > $tmp-out
+0000000 浜地______ a b あああ 123
+0000001 鈴田______ c d いいい 345
+0000003 杉山______ e fg あああ 4556
+0000004 白土______ h i 上田 あいう
+0000005 崎村______ j kk おはようniceday ---
+FIN
+
+${com} -dあああ num=2 $tmp-in1 $tmp-in2 $tmp-in3 > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1.2 error"
+
+rm -f $tmp-*
+echo "${com}" OK
+exit 0
