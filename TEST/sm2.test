@@ -90,6 +90,36 @@ marume 3.3			> $tmp-ans
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST3.2 error"
 
+###########################################
+#TEST4 Support of Scientific Representation
+
+cat << FIN > $tmp-in
+-1.0e+1
+-1.0e+0
+FIN
+
+cat << FIN > $tmp-out
+-11
+FIN
+
+cat $tmp-in			|
+${com} 0 0 1 1			|
+marume 1.0 > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4 error"
+
+###########################################
+#TEST5 Invalid word
+
+cat << FIN > $tmp-in
+あ
+FIN
+
+cat $tmp-in	|
+${com} 0 0 1 1	> $tmp-ans
+#if exit status is zero, it's an error
+[ $? -eq 0 ] && ERROR_CHECK "TEST4 error"
+
 rm -f $tmp-*
 echo "${com}" OK
 exit 0

@@ -9,7 +9,7 @@ sm2 : キー単位での値の集計
 【書式】
 
 Usage   : sm2 [+count] <k1> <k2> <s1> <s2> <file>
-Version : Thu Dec 15 13:46:38 JST 2011
+Version : Wed Apr  2 19:22:38 JST 2014
 
 【説明】
 

@@ -29,7 +29,7 @@
 # THE SOFTWARE.
 
 _usage = "sm2 [+count] <k1> <k2> <s1> <s2> <file>"
-_version = "Fri Oct 21 11:26:06 JST 2011"
+_version = "Wed Apr  2 19:22:38 JST 2014"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
 _keypat = r'\d+|NF(-\d+)?$'
 
@@ -107,9 +107,9 @@ def open_file(n, mode = 'r'):
 # フィールド値の取得
 #
 def getval(line, n):
-	if re.match(r'(\+|-)?(\d+\.?|\d*\.\d+)$', line.getField(n)):
+	try:
 		return Decimal(line.getField(n))
-	else:
+	except:
 		error("数値変換できません。")
 
 #
