@@ -22,7 +22,7 @@
 
 NAME=		open-usp-tukubai
 
-LOCALBASE?=	/usr/local
+LOCALBASE?=	${STAGEDIR}/usr/local
 BINDIR?=	${LOCALBASE}/bin
 TUKDIR?=	${LOCALBASE}/share/${NAME}
 DATDIR?=	${TUKDIR}/devel
