@@ -106,7 +106,7 @@ while read com ; do
 	./formhame.test COMMANDS $com
 	./gyo.test COMMANDS $com
 	./kasan.test COMMANDS $com
-#	./keta.test COMMANDS $com
+	./keta.test COMMANDS $com
 	./keycut.test COMMANDS $com
 	./loopj.test COMMANDS $com
 	./loopx.test COMMANDS $com

@@ -15,7 +15,7 @@ written by Ryuichi Ueda
 
 The MIT License
 
-Copyright (C) 2013 Universal Shell Programming Laboratory
+Copyright (C) 2013-2014 Universal Shell Programming Laboratory
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -38,7 +38,7 @@ THE SOFTWARE.
 
 showUsage :: IO ()
 showUsage = do System.IO.hPutStr stderr ("Usage    : formhame <html_template> <data>\n" ++ 
-                "Thu Dec 12 23:26:27 JST 2013\n" ++
+		"Sat Sep 20 15:08:26 JST 2014\n" ++
                 "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
 
 data Opts = NormalOpts TemplateFile DataFile | Error String deriving Show
@@ -51,23 +51,42 @@ type DataFile = String
 main :: IO ()
 main = do args <- getArgs
           case args of
-              ["-h"]     -> showUsage
-              ["--help"] -> showUsage
-              _          -> main' (setOpts args) 
+              ["-h"]                   -> showUsage
+              ["--help"]               -> showUsage
+              [('-':'i':istr),('-':'d':dstr),f1,f2]    -> main' istr dstr f1 f2
+              [('-':'i':istr),('-':'d':dstr),f1]    -> main' istr dstr f1 "-"
+              [('-':'d':dstr),('-':'i':istr),f1,f2]    -> main' istr dstr f1 f2
+              [('-':'d':dstr),('-':'i':istr),f1]    -> main' istr dstr f1 "-"
+              [('-':'i':istr),f1,f2]    -> main' istr "" f1 f2
+              [('-':'i':istr),f1]    -> main' istr "" f1 "-"
+              [('-':'d':dstr),f1,f2]    -> main' "" dstr f1 f2
+              [('-':'d':dstr),f1]    -> main' "" dstr f1 "-"
+              [f1,f2]                  -> main' "" "" f1 f2
+              [f1]                     -> main' "" "" f1 "-"
 
-main' :: Opts -> IO ()
-main' (NormalOpts tempfile datafile) = do tempcs <- readF tempfile
-                                          datacs <- readF datafile
-                                          formhame ( readData (lines datacs) ) (lines tempcs)
+main' :: String-> String -> String -> String -> IO ()
+main' istr dstr tempfile datafile = do tempcs <- readF tempfile
+                                       datacs <- readF datafile
+                                       formhame ( readData istr dstr (lines datacs) ) (lines tempcs)
 
 readF :: String -> IO String
 readF "-" = getContents
 readF f = readFile f
 
-readData :: [String] -> [KeyValue]
-readData lns = map (f . words) lns
+readData :: String -> String -> [String] -> [KeyValue]
+readData istr dstr lns = map ( (fd dstr) . (fi istr) . f . words) lns
     where f (a:b:c) = (a,b)
           f (a:[])  = (a,"")
+          fi istr (a,b) = if istr == b then (a,"") else (a,b)
+          fd dstr (a,b) = (a,sub dstr b)
+
+sub :: String -> String -> String
+sub ""   str = str
+sub dstr str
+ | length dstr > length str = str
+ | otherwise = if dstr `isPrefixOf` str
+               then " " ++ (sub dstr $ drop (length dstr) str )
+               else (take 1 str ) ++ sub dstr (drop 1 str)
 
 formhame :: [KeyValue] -> [String] -> IO ()
 formhame _ [] = return ()
@@ -183,6 +202,7 @@ pickKvs []  _  = []
 pickKvs kvs ln = filter (\x -> f x ln) kvs
     where f (k,v) ln = isInfixOf ("name=\"" ++ k ++ "\"") ln
 
+{--
 setOpts :: [String] -> Opts
 setOpts as = case parse args "" ((unwords as) ++ " ") of
                   Right opt -> opt
@@ -196,3 +216,4 @@ args = do f1 <- try(filename) <|> return "-"
 filename = many1 ( try(letter) <|> try(digit) <|> symbol )
 
 symbol = oneOf "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
+--}
