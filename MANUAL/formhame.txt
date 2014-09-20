@@ -12,7 +12,7 @@ Usage   : formhame <html_template> <data>
 Option  : --form <formname>
         : -i<c>
         : -d<c>
-Version : Sun Mar 17 12:51:52 JST 2013
+Version : Sat Sep 20 15:08:26 JST 2014
 
 【説明】
 
@@ -93,12 +93,6 @@ $
  7. checkbox、radiobox、selectboxの複数選択の場合は、ネーム形式データ(5)は次の
     ように1つのタグに対して複行となる。
 
-name_radio a
-name_radio b
-name_checkbox x
-name_checkbox y
-name_pulldown pd1
-name_pulldown pd2
 
 【関連項目】
 
