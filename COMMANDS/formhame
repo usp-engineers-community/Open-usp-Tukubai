@@ -8,7 +8,7 @@
 #
 # The MIT License
 #
-# Copyright (C) 2011 Universal Shell Programming Laboratory
+# Copyright (C) 2011-2014 Universal Shell Programming Laboratory
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,7 @@
 # THE SOFTWARE.
 
 _usage = "formhame <html_template> <data>"
-_version = "Sun Mar 17 12:51:52 JST 2013"
+_version = "Sat Sep 20 15:08:26 JST 2014"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4+, 3.1, 3.2/UTF-8)"
 _option = ''': --form <formname>
 	  : -i<c>
@@ -220,7 +220,17 @@ def setValue(input_elem,namelist):
 #メイン関数
 if __name__ == '__main__':
 
+	istr = ""
+	dstr = ""
+	shift = 0
+
 	if len(sys.argv) < 3 :		usage()
+	if sys.argv[1][0:2] == "-i" or sys.argv[2][0:2] == "-i":
+		istr = sys.argv[1][2:]
+		shift += 1
+	if sys.argv[1][0:2] == "-d" or sys.argv[2][0:2] == "-d":
+		dstr = sys.argv[1][2:]
+		shift += 1
 	if sys.argv[1] == '--help' :	usage()
 	if sys.argv[1] == '--version':	usage()
 
@@ -228,16 +238,21 @@ if __name__ == '__main__':
 	sys.stdout = resetStdout()
 	sys.stderr = resetStderr()
 
-	html_file = openReadFile(sys.argv[1])
-	name_file = openReadFile(sys.argv[2])
+	html_file = openReadFile(sys.argv[1 + shift])
+	name_file = openReadFile(sys.argv[2 + shift])
 
 	namelist = []
 	
+	# nameファイルの読み取り
 	for line in name_file:
 		tokens = line.rstrip().split()
 
 		if len(tokens) >= 2: 	v = tokens[1]
 		else:			v = None
+
+		if v == istr:	v = None
+		if v != None and dstr != "":
+			v = v.replace(dstr,' ')
 
 		namelist.append((tokens[0], v))
 
