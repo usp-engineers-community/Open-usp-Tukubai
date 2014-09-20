@@ -29,7 +29,7 @@
 # THE SOFTWARE.
 
 _usage = "formhame <html_template> <data>"
-_version = "Sat Sep 20 15:08:26 JST 2014"
+_version = "Sat Sep 20 16:45:33 JST 2014"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4+, 3.1, 3.2/UTF-8)"
 _option = ''': --form <formname>
 	  : -i<c>
@@ -252,7 +252,9 @@ if __name__ == '__main__':
 
 		if v == istr:	v = None
 		if v != None and dstr != "":
+			v = v.replace("\\" + dstr,'\0')
 			v = v.replace(dstr,' ')
+			v = v.replace('\0',dstr)
 
 		namelist.append((tokens[0], v))
 

@@ -12,7 +12,7 @@ Usage   : formhame <html_template> <data>
 Option  : --form <formname>
         : -i<c>
         : -d<c>
-Version : Sat Sep 20 15:08:26 JST 2014
+Version : Sat Sep 20 16:45:33 JST 2014
 
 【説明】
 

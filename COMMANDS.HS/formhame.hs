@@ -38,7 +38,7 @@ THE SOFTWARE.
 
 showUsage :: IO ()
 showUsage = do System.IO.hPutStr stderr ("Usage    : formhame <html_template> <data>\n" ++ 
-		"Sat Sep 20 15:08:26 JST 2014\n" ++
+		"Sat Sep 20 16:45:33 JST 2014\n" ++
                 "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
 
 data Opts = NormalOpts TemplateFile DataFile | Error String deriving Show
@@ -83,10 +83,10 @@ readData istr dstr lns = map ( (fd dstr) . (fi istr) . f . words) lns
 sub :: String -> String -> String
 sub ""   str = str
 sub dstr str
- | length dstr > length str = str
- | otherwise = if dstr `isPrefixOf` str
-               then " " ++ (sub dstr $ drop (length dstr) str )
-               else (take 1 str ) ++ sub dstr (drop 1 str)
+ | length dstr > length str     = str
+ | ('\\':dstr) `isPrefixOf` str = dstr ++ (sub dstr $ drop (1 + length dstr) str )
+ | dstr `isPrefixOf` str        = " " ++ (sub dstr $ drop (length dstr) str )
+ | otherwise                    = (take 1 str ) ++ sub dstr (drop 1 str)
 
 formhame :: [KeyValue] -> [String] -> IO ()
 formhame _ [] = return ()
