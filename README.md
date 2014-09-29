@@ -2,7 +2,7 @@
                           info@usp-lab.com
                     Wed Aug  1 14:10:11 JST 2012
 
-<img src="https://travis-ci.org/ryuichiueda/Open-usp-Tukubai.svg?branch=master" />
+[![Build Status](https://travis-ci.org/ryuichiueda/Open-usp-Tukubai.svg?branch=master)](https://travis-ci.org/ryuichiueda/Open-usp-Tukubai)
 
 Open usp Tukubaiとは
 ====================
