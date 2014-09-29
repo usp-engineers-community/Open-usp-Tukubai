@@ -1,5 +1,3 @@
-#!/usr/local/bin/bash -xve
-
 #exec 2> /tmp/log.$(basename $0)
 
 ./TEST/cjoin0.test COMMANDS ""
