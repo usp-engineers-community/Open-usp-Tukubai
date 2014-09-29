@@ -1,4 +1,6 @@
 #exec 2> /tmp/log.$(basename $0)
+#
+PATH=$PATH:./COMMANDS
 
 #Python version test
 bash ./TEST/calclock.test COMMANDS $com
