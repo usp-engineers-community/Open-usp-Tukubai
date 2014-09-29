@@ -2,6 +2,8 @@
                           info@usp-lab.com
                     Wed Aug  1 14:10:11 JST 2012
 
+[![Build Status](https://travis-ci.org/ryuichiueda/Open-usp-Tukubai.svg?branch=master)](https://travis-ci.org/ryuichiueda/Open-usp-Tukubai)
+
 Open usp Tukubaiとは
 ====================
 
@@ -82,5 +84,3 @@ Open up TukubaiはThe MIT Licenseに基づき、USP研究所が無償で配布
 こと。
 
 ※ユニケージはユニバーサル・シェル・プログラミング研究所の登録商標。
-
-https://travis-ci.org/ryuichiueda/Open-usp-Tukubai.svg?branch=master
