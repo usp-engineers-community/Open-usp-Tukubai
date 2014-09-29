@@ -1,9 +1,42 @@
 #exec 2> /tmp/log.$(basename $0)
 
 #Python version test
-bash ./TEST/cjoin0.test COMMANDS "" || exit 1
-
-exit 0
+bash ./TEST/calclock.test COMMANDS $com
+bash ./TEST/cjoin0.test COMMANDS $com
+bash ./TEST/cjoin1.test COMMANDS $com
+bash ./TEST/cjoin2.test COMMANDS $com
+bash ./TEST/ctail.test COMMANDS $com
+bash ./TEST/count.test COMMANDS $com
+bash ./TEST/getlast.test COMMANDS $com
+bash ./TEST/getfirst.test COMMANDS $com
+bash ./TEST/getlast.test COMMANDS $com
+bash ./TEST/tateyoko.test COMMANDS $com
+bash ./TEST/sm2.test COMMANDS $com
+bash ./TEST/cgi-name.test COMMANDS $com
+bash ./TEST/dayslash.test COMMANDS $com
+bash ./TEST/ycat.test COMMANDS $com
+bash ./TEST/yarr.test COMMANDS $com
+bash ./TEST/plus.test COMMANDS $com
+bash ./TEST/self.test COMMANDS $com
+bash ./TEST/tarr.test COMMANDS $com
+bash ./TEST/delf.test COMMANDS $com
+bash ./TEST/check_need_name.test COMMANDS $com
+bash ./TEST/join0.test COMMANDS $com
+bash ./TEST/join1.test COMMANDS $com
+bash ./TEST/join2.test COMMANDS $com
+bash ./TEST/filehame.test COMMANDS $com
+bash ./TEST/formhame.test COMMANDS $com
+bash ./TEST/gyo.test COMMANDS $com
+bash ./TEST/kasan.test COMMANDS $com
+bash ./TEST/keta.test COMMANDS $com
+bash ./TEST/keycut.test COMMANDS $com
+bash ./TEST/loopj.test COMMANDS $com
+bash ./TEST/loopx.test COMMANDS $com
+bash ./TEST/maezero.test COMMANDS $com
+bash ./TEST/marume.test COMMANDS $com
+bash ./TEST/mdate.test COMMANDS $com
+bash ./TEST/nameread.test COMMANDS $com
+bash ./TEST/numchar.test COMMANDS $com
 
 tmp=/tmp/$$
 
