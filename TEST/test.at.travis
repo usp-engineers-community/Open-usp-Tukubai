@@ -1,186 +1,40 @@
-#exec 2> /tmp/log.$(basename $0)
-#
 PATH=$PATH:./COMMANDS
 
-#Python version test
-bash ./TEST/calclock.test COMMANDS "" || exit 1
-bash ./TEST/cjoin0.test COMMANDS "" || exit 1
-bash ./TEST/cjoin1.test COMMANDS "" || exit 1
-bash ./TEST/cjoin2.test COMMANDS "" || exit 1
-bash ./TEST/ctail.test COMMANDS "" || exit 1
-bash ./TEST/count.test COMMANDS "" || exit 1
-bash ./TEST/getlast.test COMMANDS "" || exit 1
-bash ./TEST/getfirst.test COMMANDS "" || exit 1
-bash ./TEST/getlast.test COMMANDS "" || exit 1
-bash ./TEST/tateyoko.test COMMANDS "" || exit 1
-bash ./TEST/sm2.test COMMANDS "" || exit 1
-bash ./TEST/cgi-name.test COMMANDS "" || exit 1
-bash ./TEST/dayslash.test COMMANDS "" || exit 1
-bash ./TEST/ycat.test COMMANDS "" || exit 1
-bash ./TEST/yarr.test COMMANDS "" || exit 1
-bash ./TEST/plus.test COMMANDS "" || exit 1
-bash ./TEST/self.test COMMANDS "" || exit 1
-bash ./TEST/tarr.test COMMANDS "" || exit 1
-bash ./TEST/delf.test COMMANDS "" || exit 1
-bash ./TEST/check_need_name.test COMMANDS "" || exit 1
-bash ./TEST/join0.test COMMANDS "" || exit 1
-bash ./TEST/join1.test COMMANDS "" || exit 1
-bash ./TEST/join2.test COMMANDS "" || exit 1
-bash ./TEST/filehame.test COMMANDS "" || exit 1
-bash ./TEST/formhame.test COMMANDS "" || exit 1
-bash ./TEST/gyo.test COMMANDS "" || exit 1
-bash ./TEST/kasan.test COMMANDS "" || exit 1
-bash ./TEST/keta.test COMMANDS "" || exit 1
-bash ./TEST/keycut.test COMMANDS "" || exit 1
-bash ./TEST/loopj.test COMMANDS "" || exit 1
-bash ./TEST/loopx.test COMMANDS "" || exit 1
-bash ./TEST/maezero.test COMMANDS "" || exit 1
-bash ./TEST/marume.test COMMANDS "" || exit 1
-bash ./TEST/mdate.test COMMANDS "" || exit 1
-bash ./TEST/nameread.test COMMANDS "" || exit 1
-bash ./TEST/numchar.test COMMANDS "" || exit 1
+bash ./TEST/calclock.test COMMANDS ""
+bash ./TEST/cjoin0.test COMMANDS ""
+bash ./TEST/cjoin1.test COMMANDS ""
+bash ./TEST/cjoin2.test COMMANDS ""
+bash ./TEST/ctail.test COMMANDS ""
+bash ./TEST/count.test COMMANDS ""
+bash ./TEST/getlast.test COMMANDS ""
+bash ./TEST/getfirst.test COMMANDS ""
+bash ./TEST/getlast.test COMMANDS ""
+bash ./TEST/tateyoko.test COMMANDS ""
+bash ./TEST/sm2.test COMMANDS ""
+bash ./TEST/cgi-name.test COMMANDS ""
+bash ./TEST/dayslash.test COMMANDS ""
+bash ./TEST/ycat.test COMMANDS ""
+bash ./TEST/yarr.test COMMANDS ""
+bash ./TEST/plus.test COMMANDS ""
+bash ./TEST/self.test COMMANDS ""
+bash ./TEST/tarr.test COMMANDS ""
+bash ./TEST/delf.test COMMANDS ""
+bash ./TEST/check_need_name.test COMMANDS ""
+bash ./TEST/join0.test COMMANDS ""
+bash ./TEST/join1.test COMMANDS ""
+bash ./TEST/join2.test COMMANDS ""
+bash ./TEST/filehame.test COMMANDS ""
+bash ./TEST/formhame.test COMMANDS ""
+bash ./TEST/gyo.test COMMANDS ""
+bash ./TEST/kasan.test COMMANDS ""
+bash ./TEST/keta.test COMMANDS ""
+bash ./TEST/keycut.test COMMANDS ""
+bash ./TEST/loopj.test COMMANDS ""
+bash ./TEST/loopx.test COMMANDS ""
+bash ./TEST/maezero.test COMMANDS ""
+bash ./TEST/marume.test COMMANDS ""
+bash ./TEST/mdate.test COMMANDS ""
+bash ./TEST/nameread.test COMMANDS ""
+bash ./TEST/numchar.test COMMANDS ""
 
-exit 0
-
-tmp=/tmp/$$
-
-dir=$(dirname $0)
-cd $dir
-
-#####################################
-#support of sh scripts
-
-# passed
-./cjoin0.test COMMANDS.SH ""
-./cjoin1.test COMMANDS.SH ""
-./delf.test COMMANDS.SH ""
-./self.test COMMANDS.SH ""
-./tateyoko.test COMMANDS.SH ""
-./sm2.test COMMANDS.SH ""
-./plus.test COMMANDS.SH ""
-./nameread.test COMMANDS.SH ""
-./keta.test COMMANDS.SH ""
-./filehame.test COMMANDS.SH ""
-./cgi-name.test COMMANDS.SH ""
-./ycat.test COMMANDS.SH ""
-./gyo.test COMMANDS.SH ""
-./retu.test COMMANDS.SH ""
-
-#####################################
-#support of haskell binary
-
-./cjoin0.test COMMANDS.HS ""
-./cjoin1.test COMMANDS.HS ""
-./cjoin2.test COMMANDS.HS ""
-./ctail.test COMMANDS.HS ""
-./calclock.test COMMANDS.HS ""
-./cgi-name.test COMMANDS.HS ""
-./check_need_name.test COMMANDS.HS ""
-./comma.test COMMANDS.HS ""
-./count.test COMMANDS.HS ""
-./dayslash.test COMMANDS.HS ""
-./divsen.test COMMANDS.HS ""
-./getfirst.test COMMANDS.HS ""
-./getlast.test COMMANDS.HS ""
-./delf.test COMMANDS.HS ""
-./divsen.test COMMANDS.HS ""
-./filehame.test COMMANDS.HS ""
-./gyo.test COMMANDS.HS ""
-./han.test COMMANDS.HS ""
-./join0.test COMMANDS.HS ""
-./join1.test COMMANDS.HS ""
-./join2.test COMMANDS.HS ""
-./juni.test COMMANDS.HS ""
-./kasan.test COMMANDS.HS ""
-./keta.test COMMANDS.HS ""
-./loopx.test COMMANDS.HS ""
-./formhame.hs.test COMMANDS.HS ""
-./maezero.test COMMANDS.HS ""
-./marume.test COMMANDS.HS ""
-./mdate.test COMMANDS.HS ""
-./ratio.test COMMANDS.HS ""
-./retu.test COMMANDS.HS ""
-./self.test COMMANDS.HS ""
-./sm2.test COMMANDS.HS ""
-./tarr.test COMMANDS.HS ""
-./tateyoko.test COMMANDS.HS ""
-./yarr.test COMMANDS.HS ""
-./zen.test COMMANDS.HS ""
-
-exit 0
-
-#####################################
-#support of 2.x
-
-cat << FIN > $tmp-ver
-python2.7
-python2.6
-python2.5
-python2.4
-FIN
-
-cat $tmp-ver	|
-while read com ; do
-	./calclock.test COMMANDS ""
-	./cjoin0.test COMMANDS ""
-	./cjoin1.test COMMANDS ""
-	./cjoin2.test COMMANDS ""
-	./ctail.test COMMANDS ""
-	./count.test COMMANDS ""
-	./getlast.test COMMANDS ""
-	./getfirst.test COMMANDS ""
-	./getlast.test COMMANDS ""
-	./tateyoko.test COMMANDS ""
-	./sm2.test COMMANDS ""
-	./cgi-name.test COMMANDS ""
-	./dayslash.test COMMANDS ""
-	./ycat.test COMMANDS ""
-	./yarr.test COMMANDS ""
-	./plus.test COMMANDS ""
-	./self.test COMMANDS ""
-	./tarr.test COMMANDS ""
-	./delf.test COMMANDS ""
-	./check_need_name.test COMMANDS ""
-	./join0.test COMMANDS ""
-	./join1.test COMMANDS ""
-	./join2.test COMMANDS ""
-	./filehame.test COMMANDS ""
-	./formhame.test COMMANDS ""
-	./gyo.test COMMANDS ""
-	./kasan.test COMMANDS ""
-	./keta.test COMMANDS ""
-	./keycut.test COMMANDS ""
-	./loopj.test COMMANDS ""
-	./loopx.test COMMANDS ""
-	./maezero.test COMMANDS ""
-	./marume.test COMMANDS ""
-	./mdate.test COMMANDS ""
-	./nameread.test COMMANDS ""
-	./numchar.test COMMANDS ""
-done
-
-#####################################
-#support of 3.x
-
-cat << FIN > $tmp-ver
-python3.1
-python3.2
-python3.3
-FIN
-
-cat $tmp-ver	|
-while read com ; do
-	./calclock.test COMMANDS ""
-	./check_need_name.test COMMANDS ""
-	./cjoin0.test COMMANDS ""
-	./cjoin1.test COMMANDS ""
-	./cjoin2.test COMMANDS ""
-	./dayslash.test COMMANDS ""
-	./filehame.test COMMANDS ""
-	./formhame.test COMMANDS ""
-	./self.test COMMANDS ""
-	./yarr.test COMMANDS ""
-done
-
-rm -f $tmp-*
 exit 0
