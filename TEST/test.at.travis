@@ -3,42 +3,42 @@
 PATH=$PATH:./COMMANDS
 
 #Python version test
-bash -vx ./TEST/calclock.test COMMANDS "" || exit 1
-bash -vx ./TEST/cjoin0.test COMMANDS "" || exit 1
-bash -vx ./TEST/cjoin1.test COMMANDS "" || exit 1
-bash -vx ./TEST/cjoin2.test COMMANDS "" || exit 1
-bash -vx ./TEST/ctail.test COMMANDS "" || exit 1
-bash -vx ./TEST/count.test COMMANDS "" || exit 1
-bash -vx ./TEST/getlast.test COMMANDS "" || exit 1
-bash -vx ./TEST/getfirst.test COMMANDS "" || exit 1
-bash -vx ./TEST/getlast.test COMMANDS "" || exit 1
-bash -vx ./TEST/tateyoko.test COMMANDS "" || exit 1
-bash -vx ./TEST/sm2.test COMMANDS "" || exit 1
-bash -vx ./TEST/cgi-name.test COMMANDS "" || exit 1
-bash -vx ./TEST/dayslash.test COMMANDS "" || exit 1
-bash -vx ./TEST/ycat.test COMMANDS "" || exit 1
-bash -vx ./TEST/yarr.test COMMANDS "" || exit 1
-bash -vx ./TEST/plus.test COMMANDS "" || exit 1
-bash -vx ./TEST/self.test COMMANDS "" || exit 1
-bash -vx ./TEST/tarr.test COMMANDS "" || exit 1
-bash -vx ./TEST/delf.test COMMANDS "" || exit 1
-bash -vx ./TEST/check_need_name.test COMMANDS "" || exit 1
-bash -vx ./TEST/join0.test COMMANDS "" || exit 1
-bash -vx ./TEST/join1.test COMMANDS "" || exit 1
-bash -vx ./TEST/join2.test COMMANDS "" || exit 1
-bash -vx ./TEST/filehame.test COMMANDS "" || exit 1
-bash -vx ./TEST/formhame.test COMMANDS "" || exit 1
-bash -vx ./TEST/gyo.test COMMANDS "" || exit 1
-bash -vx ./TEST/kasan.test COMMANDS "" || exit 1
-bash -vx ./TEST/keta.test COMMANDS "" || exit 1
-bash -vx ./TEST/keycut.test COMMANDS "" || exit 1
-bash -vx ./TEST/loopj.test COMMANDS "" || exit 1
-bash -vx ./TEST/loopx.test COMMANDS "" || exit 1
-bash -vx ./TEST/maezero.test COMMANDS "" || exit 1
-bash -vx ./TEST/marume.test COMMANDS "" || exit 1
-bash -vx ./TEST/mdate.test COMMANDS "" || exit 1
-bash -vx ./TEST/nameread.test COMMANDS "" || exit 1
-bash -vx ./TEST/numchar.test COMMANDS "" || exit 1
+bash ./TEST/calclock.test COMMANDS "" || exit 1
+bash ./TEST/cjoin0.test COMMANDS "" || exit 1
+bash ./TEST/cjoin1.test COMMANDS "" || exit 1
+bash ./TEST/cjoin2.test COMMANDS "" || exit 1
+bash ./TEST/ctail.test COMMANDS "" || exit 1
+bash ./TEST/count.test COMMANDS "" || exit 1
+bash ./TEST/getlast.test COMMANDS "" || exit 1
+bash ./TEST/getfirst.test COMMANDS "" || exit 1
+bash ./TEST/getlast.test COMMANDS "" || exit 1
+bash ./TEST/tateyoko.test COMMANDS "" || exit 1
+bash ./TEST/sm2.test COMMANDS "" || exit 1
+bash ./TEST/cgi-name.test COMMANDS "" || exit 1
+bash ./TEST/dayslash.test COMMANDS "" || exit 1
+bash ./TEST/ycat.test COMMANDS "" || exit 1
+bash ./TEST/yarr.test COMMANDS "" || exit 1
+bash ./TEST/plus.test COMMANDS "" || exit 1
+bash ./TEST/self.test COMMANDS "" || exit 1
+bash ./TEST/tarr.test COMMANDS "" || exit 1
+bash ./TEST/delf.test COMMANDS "" || exit 1
+bash ./TEST/check_need_name.test COMMANDS "" || exit 1
+bash ./TEST/join0.test COMMANDS "" || exit 1
+bash ./TEST/join1.test COMMANDS "" || exit 1
+bash ./TEST/join2.test COMMANDS "" || exit 1
+bash ./TEST/filehame.test COMMANDS "" || exit 1
+bash ./TEST/formhame.test COMMANDS "" || exit 1
+bash ./TEST/gyo.test COMMANDS "" || exit 1
+bash ./TEST/kasan.test COMMANDS "" || exit 1
+bash ./TEST/keta.test COMMANDS "" || exit 1
+bash ./TEST/keycut.test COMMANDS "" || exit 1
+bash ./TEST/loopj.test COMMANDS "" || exit 1
+bash ./TEST/loopx.test COMMANDS "" || exit 1
+bash ./TEST/maezero.test COMMANDS "" || exit 1
+bash ./TEST/marume.test COMMANDS "" || exit 1
+bash ./TEST/mdate.test COMMANDS "" || exit 1
+bash ./TEST/nameread.test COMMANDS "" || exit 1
+bash ./TEST/numchar.test COMMANDS "" || exit 1
 
 exit 0
 
