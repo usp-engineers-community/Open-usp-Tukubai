@@ -1,4 +1,4 @@
 language: python
 python:
  - "2.7"
-script: ./TEST/regress.all
+script: ./TEST/test.at.travis
