@@ -2,4 +2,4 @@ language: python
 python:
  - "2.7"
 script: 
- - sh -e ./TEST/test.at.travis
+ - sh ./TEST/test.at.travis
