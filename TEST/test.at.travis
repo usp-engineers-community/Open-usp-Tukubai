@@ -3,42 +3,44 @@
 PATH=$PATH:./COMMANDS
 
 #Python version test
-bash ./TEST/calclock.test COMMANDS $com
-bash ./TEST/cjoin0.test COMMANDS $com
-bash ./TEST/cjoin1.test COMMANDS $com
-bash ./TEST/cjoin2.test COMMANDS $com
-bash ./TEST/ctail.test COMMANDS $com
-bash ./TEST/count.test COMMANDS $com
-bash ./TEST/getlast.test COMMANDS $com
-bash ./TEST/getfirst.test COMMANDS $com
-bash ./TEST/getlast.test COMMANDS $com
-bash ./TEST/tateyoko.test COMMANDS $com
-bash ./TEST/sm2.test COMMANDS $com
-bash ./TEST/cgi-name.test COMMANDS $com
-bash ./TEST/dayslash.test COMMANDS $com
-bash ./TEST/ycat.test COMMANDS $com
-bash ./TEST/yarr.test COMMANDS $com
-bash ./TEST/plus.test COMMANDS $com
-bash ./TEST/self.test COMMANDS $com
-bash ./TEST/tarr.test COMMANDS $com
-bash ./TEST/delf.test COMMANDS $com
-bash ./TEST/check_need_name.test COMMANDS $com
-bash ./TEST/join0.test COMMANDS $com
-bash ./TEST/join1.test COMMANDS $com
-bash ./TEST/join2.test COMMANDS $com
-bash ./TEST/filehame.test COMMANDS $com
-bash ./TEST/formhame.test COMMANDS $com
-bash ./TEST/gyo.test COMMANDS $com
-bash ./TEST/kasan.test COMMANDS $com
-bash ./TEST/keta.test COMMANDS $com
-bash ./TEST/keycut.test COMMANDS $com
-bash ./TEST/loopj.test COMMANDS $com
-bash ./TEST/loopx.test COMMANDS $com
-bash ./TEST/maezero.test COMMANDS $com
-bash ./TEST/marume.test COMMANDS $com
-bash ./TEST/mdate.test COMMANDS $com
-bash ./TEST/nameread.test COMMANDS $com
-bash ./TEST/numchar.test COMMANDS $com
+bash ./TEST/calclock.test COMMANDS ""
+bash ./TEST/cjoin0.test COMMANDS ""
+bash ./TEST/cjoin1.test COMMANDS ""
+bash ./TEST/cjoin2.test COMMANDS ""
+bash ./TEST/ctail.test COMMANDS ""
+bash ./TEST/count.test COMMANDS ""
+bash ./TEST/getlast.test COMMANDS ""
+bash ./TEST/getfirst.test COMMANDS ""
+bash ./TEST/getlast.test COMMANDS ""
+bash ./TEST/tateyoko.test COMMANDS ""
+bash ./TEST/sm2.test COMMANDS ""
+bash ./TEST/cgi-name.test COMMANDS ""
+bash ./TEST/dayslash.test COMMANDS ""
+bash ./TEST/ycat.test COMMANDS ""
+bash ./TEST/yarr.test COMMANDS ""
+bash ./TEST/plus.test COMMANDS ""
+bash ./TEST/self.test COMMANDS ""
+bash ./TEST/tarr.test COMMANDS ""
+bash ./TEST/delf.test COMMANDS ""
+bash ./TEST/check_need_name.test COMMANDS ""
+bash ./TEST/join0.test COMMANDS ""
+bash ./TEST/join1.test COMMANDS ""
+bash ./TEST/join2.test COMMANDS ""
+bash ./TEST/filehame.test COMMANDS ""
+bash ./TEST/formhame.test COMMANDS ""
+bash ./TEST/gyo.test COMMANDS ""
+bash ./TEST/kasan.test COMMANDS ""
+bash ./TEST/keta.test COMMANDS ""
+bash ./TEST/keycut.test COMMANDS ""
+bash ./TEST/loopj.test COMMANDS ""
+bash ./TEST/loopx.test COMMANDS ""
+bash ./TEST/maezero.test COMMANDS ""
+bash ./TEST/marume.test COMMANDS ""
+bash ./TEST/mdate.test COMMANDS ""
+bash ./TEST/nameread.test COMMANDS ""
+bash ./TEST/numchar.test COMMANDS ""
+
+exit 0
 
 tmp=/tmp/$$
 
@@ -105,6 +107,8 @@ cd $dir
 ./yarr.test COMMANDS.HS ""
 ./zen.test COMMANDS.HS ""
 
+exit 0
+
 #####################################
 #support of 2.x
 
@@ -117,42 +121,42 @@ FIN
 
 cat $tmp-ver	|
 while read com ; do
-	./calclock.test COMMANDS $com
-	./cjoin0.test COMMANDS $com
-	./cjoin1.test COMMANDS $com
-	./cjoin2.test COMMANDS $com
-	./ctail.test COMMANDS $com
-	./count.test COMMANDS $com
-	./getlast.test COMMANDS $com
-	./getfirst.test COMMANDS $com
-	./getlast.test COMMANDS $com
-	./tateyoko.test COMMANDS $com
-	./sm2.test COMMANDS $com
-	./cgi-name.test COMMANDS $com
-	./dayslash.test COMMANDS $com
-	./ycat.test COMMANDS $com
-	./yarr.test COMMANDS $com
-	./plus.test COMMANDS $com
-	./self.test COMMANDS $com
-	./tarr.test COMMANDS $com
-	./delf.test COMMANDS $com
-	./check_need_name.test COMMANDS $com
-	./join0.test COMMANDS $com
-	./join1.test COMMANDS $com
-	./join2.test COMMANDS $com
-	./filehame.test COMMANDS $com
-	./formhame.test COMMANDS $com
-	./gyo.test COMMANDS $com
-	./kasan.test COMMANDS $com
-	./keta.test COMMANDS $com
-	./keycut.test COMMANDS $com
-	./loopj.test COMMANDS $com
-	./loopx.test COMMANDS $com
-	./maezero.test COMMANDS $com
-	./marume.test COMMANDS $com
-	./mdate.test COMMANDS $com
-	./nameread.test COMMANDS $com
-	./numchar.test COMMANDS $com
+	./calclock.test COMMANDS ""
+	./cjoin0.test COMMANDS ""
+	./cjoin1.test COMMANDS ""
+	./cjoin2.test COMMANDS ""
+	./ctail.test COMMANDS ""
+	./count.test COMMANDS ""
+	./getlast.test COMMANDS ""
+	./getfirst.test COMMANDS ""
+	./getlast.test COMMANDS ""
+	./tateyoko.test COMMANDS ""
+	./sm2.test COMMANDS ""
+	./cgi-name.test COMMANDS ""
+	./dayslash.test COMMANDS ""
+	./ycat.test COMMANDS ""
+	./yarr.test COMMANDS ""
+	./plus.test COMMANDS ""
+	./self.test COMMANDS ""
+	./tarr.test COMMANDS ""
+	./delf.test COMMANDS ""
+	./check_need_name.test COMMANDS ""
+	./join0.test COMMANDS ""
+	./join1.test COMMANDS ""
+	./join2.test COMMANDS ""
+	./filehame.test COMMANDS ""
+	./formhame.test COMMANDS ""
+	./gyo.test COMMANDS ""
+	./kasan.test COMMANDS ""
+	./keta.test COMMANDS ""
+	./keycut.test COMMANDS ""
+	./loopj.test COMMANDS ""
+	./loopx.test COMMANDS ""
+	./maezero.test COMMANDS ""
+	./marume.test COMMANDS ""
+	./mdate.test COMMANDS ""
+	./nameread.test COMMANDS ""
+	./numchar.test COMMANDS ""
 done
 
 #####################################
@@ -166,16 +170,16 @@ FIN
 
 cat $tmp-ver	|
 while read com ; do
-	./calclock.test COMMANDS $com
-	./check_need_name.test COMMANDS $com
-	./cjoin0.test COMMANDS $com
-	./cjoin1.test COMMANDS $com
-	./cjoin2.test COMMANDS $com
-	./dayslash.test COMMANDS $com
-	./filehame.test COMMANDS $com
-	./formhame.test COMMANDS $com
-	./self.test COMMANDS $com
-	./yarr.test COMMANDS $com
+	./calclock.test COMMANDS ""
+	./check_need_name.test COMMANDS ""
+	./cjoin0.test COMMANDS ""
+	./cjoin1.test COMMANDS ""
+	./cjoin2.test COMMANDS ""
+	./dayslash.test COMMANDS ""
+	./filehame.test COMMANDS ""
+	./formhame.test COMMANDS ""
+	./self.test COMMANDS ""
+	./yarr.test COMMANDS ""
 done
 
 rm -f $tmp-*
