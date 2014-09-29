@@ -1,6 +1,6 @@
 #exec 2> /tmp/log.$(basename $0)
 
-./TEST/cjoin0.test COMMANDS ""
+bash ./TEST/cjoin0.test COMMANDS "" || exit 1
 
 exit 0
 
