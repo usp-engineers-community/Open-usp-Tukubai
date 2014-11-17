@@ -111,6 +111,7 @@ while read com ; do
 	./loopj.test COMMANDS $com
 	./loopx.test COMMANDS $com
 	./maezero.test COMMANDS $com
+	./map.test COMMANDS $com
 	./marume.test COMMANDS $com
 	./mdate.test COMMANDS $com
 	./nameread.test COMMANDS $com
