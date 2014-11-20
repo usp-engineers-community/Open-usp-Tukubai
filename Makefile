@@ -152,3 +152,5 @@ package: clean
 
 clean:
 	rm -rf ${NAME}-${TODAY}*
+
+.PHONY: install
