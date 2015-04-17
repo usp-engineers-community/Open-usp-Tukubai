@@ -118,7 +118,8 @@ FIN
 cat $tmp-in	|
 ${com} 0 0 1 1	> $tmp-ans
 #if exit status is zero, it's an error
-[ $? -eq 0 ] && ERROR_CHECK "TEST4 error"
+[ $? -eq 0 ] && false || true
+ERROR_CHECK "TEST5 error"
 
 rm -f $tmp-*
 echo "${com}" OK

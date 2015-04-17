@@ -1,0 +1,46 @@
+#!/usr/local/bin/bash -xv
+#
+# test script of map 
+#
+# usage: ./map.test <command path>
+
+name=map
+    
+tmp=/tmp/$$
+dir=$(dirname $0)/..
+cd $dir
+    
+com="$2 ./$1/${name}"
+[ "$1" = "" ] && com="./$1/${name}"
+
+ERROR_CHECK(){
+	[ "$(echo ${PIPESTATUS[@]} | tr -d ' 0')" = "" ] && return
+
+	echo $1
+	echo "$com" NG
+	rm -f $tmp-*
+	exit 1
+}
+
+###########################################
+#TEST1
+
+cat << FIN > $tmp-in
+a あ 1
+b い 2
+b う 3
+FIN
+
+cat << FIN > $tmp-out
+* あ い う
+a 1 0 0
+b 0 2 3
+FIN
+
+${com} num=1 $tmp-in > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1 error"
+
+rm -f $tmp-*
+echo "${com}" OK
+exit 0

@@ -2,9 +2,10 @@ import System.Environment
 import System.IO
 import Text.ParserCombinators.Parsec
 import Control.Monad
-import Data.ByteString.Lazy.Char8 as BS hiding (length,take,drop,filter,head,zip)
+import qualified Data.ByteString.Lazy.Char8 as BS --hiding (length,take,drop,filter,head,zip,map,takeWhile)
 import Control.Applicative hiding ((<|>), many)
 import Text.Printf
+import Text.Read
 
 {--
 sm2（Open usp Tukubai）
@@ -57,26 +58,44 @@ mainProc count k1 k2 v1 v2 str = BS.putStr $ BS.unlines $ decode count $ calc rs
                                  where lns = BS.lines str
                                        rs = [ makeRecord (myWords ln) k1 k2 v1 v2 | ln <- lns ]
 
-data Record = Record BS.ByteString Int [Double]
+data Record = Record BS.ByteString Int [Integer]
+intBase = 10^100 :: Integer
+doubleBase = fromIntegral intBase
 
 makeRecord :: [BS.ByteString] -> Int -> Int -> Int -> Int -> Record
 makeRecord ws  0  0 v1 v2 = Record (BS.pack "") 1 values
                             where vws = take (v2-v1+1) $ drop (v1-1) ws
-                                  values = [ read (BS.unpack v)::Double | v <- vws ]
+                                  values = map strToNum vws
 makeRecord ws k1 k2 v1 v2 = Record key 1 values
                             where key = BS.unwords $ take (k2-k1+1) $ drop (k1-1) ws
                                   vws = take (v2-v1+1) $ drop (v1-1) ws
-                                  values = [ read (BS.unpack v)::Double | v <- vws ]
+                                  values = map strToNum vws
+
+strToNum :: BS.ByteString -> Integer
+strToNum str = if mi == Nothing then todouble str else toint mi
+    where mi = readMaybe $ BS.unpack str
+          todouble str = round $ (read (BS.unpack str)::Double ) * doubleBase
+          toint (Just n) = (fromIntegral n ) * intBase
 
 decode :: Bool -> [Record] -> [BS.ByteString]
 decode count rs = [decode' count r | r <- rs]
 
 decode' :: Bool -> Record -> BS.ByteString
-decode' False (Record k n vs) = BS.unwords [k,showValues vs]
-decode' True  (Record k n vs) = BS.unwords [k,BS.pack $ show n,showValues vs]
+decode' count (Record k n vs) 
+ | k == BS.pack "" = BS.unwords vs' 
+ | otherwise       = BS.unwords (k:vs')
+    where vs' = if count then (BS.pack $ show n):[showValues vs] else [showValues vs]
 
-showValues :: [Double] -> BS.ByteString
-showValues vs = BS.pack $ Prelude.unwords [ printf "%f" v | v <- vs ]
+showValues :: [Integer] -> BS.ByteString
+showValues vs = BS.unwords [ vToStr v | v <- vs ]
+
+vToStr :: Integer -> BS.ByteString
+vToStr v = BS.pack $ if allZero sdec then s1 else s2
+    where s = show v
+          allZero str = (length $ takeWhile (== '0') str) == length str
+          sdec = drop ((length s) - 100) s
+          s1 = take ((length s) - 100) s
+          s2 = printf "%f" $ (fromIntegral v) / doubleBase
 
 calc :: [Record] -> [Record]
 calc (r:[])                                 = [r]
@@ -84,7 +103,7 @@ calc ((Record k n vs):(Record kn _ vns):rs) = if k == kn
                                               then calc ((Record k (n+1) (pls vs vns)):rs) 
                                               else (Record k n vs) : calc ((Record kn 1 vns):rs)
 
-pls :: [Double] -> [Double] -> [Double]
+pls :: [Integer] -> [Integer] -> [Integer]
 pls a b = [ (fst p) + (snd p) | p <- (zip a b) ]
                       
 readF :: String -> IO BS.ByteString
