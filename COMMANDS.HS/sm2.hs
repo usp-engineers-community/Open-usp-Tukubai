@@ -90,12 +90,13 @@ showValues :: [Integer] -> BS.ByteString
 showValues vs = BS.unwords [ vToStr v | v <- vs ]
 
 vToStr :: Integer -> BS.ByteString
-vToStr v = BS.pack $ if allZero sdec then s1 else s2
+vToStr v = BS.pack $ if allZero sdec then s3 else s2
     where s = show v
           allZero str = (length $ takeWhile (== '0') str) == length str
           sdec = drop ((length s) - 100) s
           s1 = take ((length s) - 100) s
           s2 = printf "%f" $ (fromIntegral v) / doubleBase
+          s3 = if s1 == "" then "0" else s1
 
 calc :: [Record] -> [Record]
 calc (r:[])                                 = [r]
