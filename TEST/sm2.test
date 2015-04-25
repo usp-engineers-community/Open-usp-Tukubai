@@ -121,6 +121,33 @@ ${com} 0 0 1 1	> $tmp-ans
 [ $? -eq 0 ] && false || true
 ERROR_CHECK "TEST5 error"
 
+###########################################
+#TEST6 a bugfix (The value disappears when the value is zero. )
+
+cat << FIN > $tmp-in
+a 1
+a 3
+a 2
+b 0
+b 0
+c 5
+c 6
+d 0
+d 2
+FIN
+
+cat << FIN > $tmp-out
+a 6
+b 0
+c 11
+d 2
+FIN
+
+cat $tmp-in	|
+${com} 1 1 2 2	|
+diff - $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST6 error"
+
 rm -f $tmp-*
 echo "${com}" OK
 exit 0

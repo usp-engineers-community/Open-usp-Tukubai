@@ -1,4 +1,4 @@
-#!/usr/local/bin/bash -xv
+#!/usr/local/bin/bash 
 #
 # test script of join0
 #
@@ -103,6 +103,50 @@ FIN
 ${com} key=2/3 $tmp-master $tmp-tran > $tmp-ans
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST3 error"
+
+###########################################
+#TEST4
+
+cat << FIN > $tmp-tran
+2 73900
+3 77204045
+4 100887035
+5 17844598
+7 4068131
+8 864000
+9 1731501
+10 506000
+11 2482922
+12 12697028
+FIN
+
+cat << FIN > $tmp-master
+2 aaa
+3 bbb
+4 ccc
+5 ddd
+6 eee 
+7 fff
+8 ggg
+9 hhh
+10 iii
+11 jjj
+12 kkk
+FIN
+
+cat << FIN > $tmp-out
+2 73900
+3 77204045
+4 100887035
+5 17844598
+7 4068131
+8 864000
+9 1731501
+FIN
+
+${com} key=1 $tmp-master $tmp-tran > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4 error"
 
 rm -f $tmp-*
 echo "${com}" OK
