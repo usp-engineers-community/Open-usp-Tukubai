@@ -58,6 +58,7 @@ cd $dir
 ./maezero.test COMMANDS.HS ""
 ./marume.test COMMANDS.HS ""
 ./mdate.test COMMANDS.HS ""
+./plus.test COMMANDS.HS ""
 ./ratio.test COMMANDS.HS ""
 ./retu.test COMMANDS.HS ""
 ./self.test COMMANDS.HS ""
