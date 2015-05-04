@@ -56,15 +56,22 @@ def combine(left,right,out):
 
 #読み込みファイルを返す。標準入力だったら一度tmpに落とす
 def openReadFile(file_name):
-	if file_name != "-":
-		try:	return open(file_name,'r')
-		except:	error("ファイルを開けません。")
+	if file_name == "-":
+		tmp = tempfile.TemporaryFile()
+		for line in sys.stdin:
+			tmp.write(line)
 
-	tmp = tempfile.TemporaryFile()
-	for line in sys.stdin:
-		tmp.write(line)
+		return tmp
+	elif '/dev/fd/' in file_name:
+		f = open(file_name,'r')
+		tmp = tempfile.TemporaryFile()
+		for line in f:
+			tmp.write(line)
 
-	return tmp
+		return tmp
+	try:	return open(file_name,'r')
+	except:	error("ファイルを開けません。")
+
 	
 if __name__ == '__main__':
 	filenames = sys.argv[1:]

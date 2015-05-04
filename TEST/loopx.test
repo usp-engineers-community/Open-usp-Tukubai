@@ -127,6 +127,23 @@ diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST3 error"
 
 
+###########################################
+#TEST4
+
+cat << FIN > $tmp-out
+1 1
+1 2
+1 3
+2 1
+2 2
+2 3
+FIN
+
+${com} <(seq 1 2) <(seq 1 3) > $tmp-ans
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4.1 error"
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4.2 error"
+
 rm -f $tmp-*
 echo "${com}" OK
 exit 0
