@@ -1,4 +1,4 @@
-               Universal Shell Programming Laboratory
+﻿               Universal Shell Programming Laboratory
                           info@usp-lab.com
                     Wed Aug  1 14:10:11 JST 2012
 
@@ -22,7 +22,7 @@ Open usp Tukubaiのサポート(有償)、商用版Tukubaiに関するお問合�
 
 ダウンロードページ
 
-- [https:///uec.usp-lab.com/tukubai_download](https:///uec.usp-lab.com/tukubai_download)
+- [https://uec.usp-lab.com/tukubai_download](https://uec.usp-lab.com/tukubai_download)
 
 GitHub
 
