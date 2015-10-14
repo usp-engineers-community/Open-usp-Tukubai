@@ -1,0 +1,8 @@
+# Last Update   :       2015/10/15
+# Author        :       kunst1080
+#
+# Install       :       ./build.sh && pacman -U open-usp-tukubai-HEAD-1-any.pkg.tar.xz
+#               :       curl -L -O https://github.com/usp-engineers-community/Open-usp-Tukubai/raw/master/pacman/open-usp-tukubai-HEAD-1-any.pkg.tar.xz && pacman -U open-usp-tukubai-HEAD-1-any.pkg.tar.xz
+#
+# Uninstall     :       pacman -R open-usp-tukubai
+#
