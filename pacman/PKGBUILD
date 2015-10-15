@@ -1,0 +1,20 @@
+name='open-usp-tukubai'
+
+pkgname="${name}"
+pkgver='HEAD'
+pkgrel='1'
+pkgdesc="Open usp Tukubai"
+arch=('any')
+url="https://github.com/usp-engineers-community/Open-usp-Tukubai"
+license=('MIT')
+depends=('python')
+source=(
+  "${name}::git://github.com/usp-engineers-community/Open-usp-Tukubai.git"
+)
+md5sums=('SKIP')
+
+package() {
+  mkdir -p "${pkgdir}/usr/bin"
+  cd "${srcdir}/${name}"
+  cp COMMANDS/* "${pkgdir}/usr/bin/"
+}
