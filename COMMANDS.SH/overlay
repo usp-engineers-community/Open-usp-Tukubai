@@ -46,6 +46,8 @@ PRINT_USAGE()	{
 
 [ 0 -eq "$#" ]	&& PRINT_USAGE
 
+[ "-h" = "$1" ]	&& PRINT_USAGE
+
 if echo "$1" | grep -q '^-r' ; then
     touch "$tmp-rflag"
     shift
