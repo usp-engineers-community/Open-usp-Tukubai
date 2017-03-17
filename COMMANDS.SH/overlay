@@ -46,6 +46,24 @@ PRINT_USAGE()	{
 
 [ 0 -eq "$#" ]	&& PRINT_USAGE
 
+if echo "$1" | grep -q '^-r' ; then
+    touch "$tmp-rflag"
+    shift
+    ERROR_EXIT "ERROR not yet"
+fi
+
+if echo "$1" | grep -q '^-f' ; then
+    touch "$tmp-fflag"
+    shift
+    ERROR_EXIT "ERROR not yet"
+fi
+
+if echo "$1" | grep -q '^-m' ; then
+    touch "$tmp-mflag"
+    shift
+    ERROR_EXIT "ERROR not yet"
+fi
+
 seq 1 "$#"	|
     while read n ; do
 	[ "$1" ]	||
