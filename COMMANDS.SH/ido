@@ -1,0 +1,122 @@
+#!/usr/bin/env bash
+#
+# ido  : テキストの位置を移動する
+#
+#|Usage   : ido <y> <x> <file>
+#|          ido -f[<padstr>] <lines> <cols> <file>
+#|Version : Mon Mar 18 07:54:16 JST 2013
+# Auther  : Nakamura Kazztaka(kaznak@gmail.com)
+#
+
+set -Cu
+
+LANG=C
+
+pname="$(basename "$0")"
+stime="$(date +%Y%m%d%H%M%S)"
+tmp="/tmp/$pname.$stime.$$"
+
+trap 'rm -f $tmp-*' EXIT
+
+MSG()	{
+    echo "$pname $stime $$" "$@"	>&2
+}
+
+ERROR_CHECK()	{
+    [ ! -e "$tmp-error" ]	&&
+	echo "${PIPESTATUS[@]}"	|
+	    awk '{ s = 0; for(i=1;i<=NF;i++){ s += $(i) }; print s }'	|
+	    grep -q '^0$'
+}
+
+ERROR_EXIT()	{
+    MSG "$@"
+    exit 1
+}
+
+PRINT_USAGE()	{
+    grep '^#|' "$0"	|
+	sed 's/#|//'	>&2
+    exit 0
+}
+
+######################################################################
+
+[ "$#" -gt 0 ]	||
+    PRINT_USAGE
+
+echo "$1"	|
+    grep -q '^-h'	&&
+    PRINT_USAGE
+
+[ "$#" -gt 0 ]	&&
+    echo "$1"	|
+	{ grep '^-f'; true ; }	|
+	tee "$tmp-ispad"	|
+	sed -e 's/^-f//'	|
+	tr -d '\n'		> "$tmp-padstr"
+ERROR_CHECK	||	ERROR_EXIT "ERROR fatal at $LINENO"
+
+if [ -s "$tmp-ispad" ] ; then
+    shift
+    
+    if [ ! -s "$tmp-padstr" ] ; then
+	[ "$#" -gt 0 ]
+	ERROR_CHECK	|| ERROR_EXIT	"ERROR bad argument, padstr null"
+
+	printf "%s" "$1"	>| "$tmp-padstr"
+	ERROR_CHECK	||	ERROR_EXIT "ERROR fatal at $LINENO"
+
+	shift
+
+	awk 'NR>1{ exit(1) }' "$tmp-padstr"	||
+	    ERROR_EXIT "ERROR bad argument, padstr contains newline character"
+    fi
+fi
+
+if [ ! "$#" -gt 0 ] ;then
+    MSG	"ERROR bad artument, liens null"
+    PRINT_USAGE
+fi
+
+dY="$1"
+dX="${2:-"0"}"
+
+echo "$dY"	|
+    grep -Eq '^[0-9]+$'	||
+    ERROR_EXIT "ERROR bad argument, lines not a positive integer"
+
+echo "$dX"	|
+    grep -Eq '^[0-9]+$'	||
+    ERROR_EXIT "ERROR bad argument, cols not apositive integer"
+
+######################################################################
+
+# Prepare Pad
+if [ -s "$tmp-padstr" ] ; then
+    yes "$(cat "$tmp-padstr")" ; true
+else
+    yes "" ; true
+fi			|
+    if [ 0 -ne "$dX" ] ; then
+	head -n "$dX"
+    else
+	:
+    fi			|
+    tr '\n' ' '		> "$tmp-xpad"
+ERROR_CHECK	||	ERROR_EXIT "ERROR fatal at $LINENO"
+
+# Output
+{
+    if [ 0 -ne "$dY" ] ; then
+	{ yes "$(cat "$tmp-xpad")" ; true ; }	|
+	    head -n "$dY"
+	ERROR_CHECK	||	ERROR_EXIT "ERROR fatal at $LINENO"
+    fi
+
+    awk '{ print "'"$(cat "$tmp-xpad")"'" $0 }'
+    ERROR_CHECK	||	ERROR_EXIT "ERROR fatal at $LINENO"
+}
+
+######################################################################
+exit 0
