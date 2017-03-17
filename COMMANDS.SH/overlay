@@ -59,36 +59,49 @@ if echo "$1" | grep -q '^-f' ; then
 fi
 
 if echo "$1" | grep -q '^-m' ; then
+    [ -e "$tmp-fflag" ]	||
+	ERROR_EXIT "ERROR -f option not issued"
+
     touch "$tmp-mflag"
     shift
     ERROR_EXIT "ERROR not yet"
 fi
 
-seq 1 "$#"	|
-    while read n ; do
-	[ "$1" ]	||
-	    ERROR_EXIT "ERROR null file name"
+######################################################################
+
+for n in $(seq 1 "$#") ; do
+    [ "$1" ]	||
+	ERROR_EXIT "ERROR null file name"
+    [ "-" = "$1" ] && [ -e "$tmp-stdin" ]	&&
+	ERROR_EXIT "ERROR two stdin"
+
+    [ "-" = "$1" ] &&
+	touch "$tmp-stdin"
+    ERROR_CHECK	|| ERROR_EXIT "ERROR fatal $LINENO"
+
+    [ "-" = "$1" ]	||
 	[ -f "$1" ]	||
-	    ERROR_EXIT "ERROR file $1 does not exist"
+	ERROR_EXIT "ERROR file $1 does not exist"
 
-	mkfifo "$tmp-inf.fifo.$n"
-	ERROR_CHECK	|| ERROR_EXIT "ERROR fatal $LINENO"
+    mkfifo "$tmp-inf.fifo.$n"
+    ERROR_CHECK	|| ERROR_EXIT "ERROR fatal $LINENO"
 
+    cat "$1"	|
 	awk  -v FS="" '
-	{ for(i = 1; i <= NF; i++) print NR, i, '"$n"', $(i)  }' "$1"	> "$tmp-inf.fifo.$n"	&
-	ERROR_CHECK	|| ERROR_EXIT "ERROR fatal $LINENO"
+	{	for(i = 1; i <= NF; i++)
+			print NR, i, '"$n"', $(i)
+	}'	> "$tmp-inf.fifo.$n"	&
+    ERROR_CHECK	|| ERROR_EXIT "ERROR fatal $LINENO"
 
-	echo "$tmp-inf.fifo.$n"
-	ERROR_CHECK	|| ERROR_EXIT "ERROR fatal $LINENO"
+    echo "$tmp-inf.fifo.$n"
+    ERROR_CHECK	|| ERROR_EXIT "ERROR fatal $LINENO"
 
-	shift
-    done	> "$tmp-inf.fifo.lst"
+    shift
+done	> "$tmp-inf.fifo.lst"
 ERROR_CHECK	|| ERROR_EXIT "ERROR fatal $LINENO"
 
 [ -s "$tmp-inf.fifo.lst" ]	||
     ERROR_CHECK	|| ERROR_EXIT "ERROR no input file"
-
-######################################################################
 
 xargs sort -m -k1n -k2n -k3n	< "$tmp-inf.fifo.lst"	|
     awk -v FS=" " '
