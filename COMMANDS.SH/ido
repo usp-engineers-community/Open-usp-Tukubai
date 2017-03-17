@@ -61,17 +61,12 @@ if [ -s "$tmp-ispad" ] ; then
     shift
     
     if [ ! -s "$tmp-padstr" ] ; then
-	[ "$#" -gt 0 ]
-	ERROR_CHECK	|| ERROR_EXIT	"ERROR bad argument, padstr null"
-
-	printf "%s" "$1"	>| "$tmp-padstr"
+	echo "@"	>| "$tmp-padstr"
 	ERROR_CHECK	||	ERROR_EXIT "ERROR fatal at $LINENO"
-
-	shift
-
-	awk 'NR>1{ exit(1) }' "$tmp-padstr"	||
-	    ERROR_EXIT "ERROR bad argument, padstr contains newline character"
     fi
+
+    awk 'NR>1{ exit(1) }' "$tmp-padstr"	||
+	ERROR_EXIT "ERROR bad argument, padstr contains newline character"
 fi
 
 if [ ! "$#" -gt 0 ] ;then
