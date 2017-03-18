@@ -1,0 +1,122 @@
+#!/usr/bin/env bash
+#
+# overlay : 二つのテキストファイルを重ねあわせる
+#
+#|Usage   : overlay basefile overfile
+#|        : overlay -r basefile overfile
+#|        : overlay -f [-m<meta-str>] basefile overfile
+#|Version : Mon Mar 18 16:57:50 JST 2013
+#|          UTF-8
+# Auther  : Nakamura Kazztaka(kaznak@gmail.com)
+#
+
+set -Cu
+
+LANG=C
+
+pname="$(basename "$0")"
+stime="$(date +%Y%m%d%H%M%S)"
+tmp="/tmp/$pname.$stime.$$"
+
+trap 'rm -f $tmp-*' EXIT
+
+MSG()	{
+    echo "$pname $stime $$ $@"	>&2
+}
+
+ERROR_CHECK()	{
+    [ ! -e "$tmp-error" ]	&&
+	echo "${PIPESTATUS[@]}"	|
+	    awk '{ s = 0; for(i=1;i<=NF;i++){ s += $(i) }; print s }'	|
+	    grep -q '^0$'
+}
+
+ERROR_EXIT()	{
+    MSG "$@"
+    exit 1
+}
+
+PRINT_USAGE()	{
+    grep '^#|' "$0"	|
+	sed 's/#|//'	>&2
+    exit 0
+}
+
+######################################################################
+
+[ 0 -eq "$#" ]	&& PRINT_USAGE
+
+[ "-h" = "$1" ]	&& PRINT_USAGE
+
+if echo "$1" | grep -q '^-r' ; then
+    touch "$tmp-rflag"
+    shift
+    ERROR_EXIT "ERROR not yet"
+fi
+
+if echo "$1" | grep -q '^-f' ; then
+    touch "$tmp-fflag"
+    shift
+    ERROR_EXIT "ERROR not yet"
+fi
+
+if echo "$1" | grep -q '^-m' ; then
+    [ -e "$tmp-fflag" ]	||
+	ERROR_EXIT "ERROR -f option not issued"
+
+    touch "$tmp-mflag"
+    shift
+    ERROR_EXIT "ERROR not yet"
+fi
+
+######################################################################
+
+for n in $(seq 1 "$#") ; do
+    [ "$1" ]	||
+	ERROR_EXIT "ERROR null file name"
+    [ "-" = "$1" ] && [ -e "$tmp-stdin" ]	&&
+	ERROR_EXIT "ERROR two stdin"
+
+    [ "-" = "$1" ] &&
+	touch "$tmp-stdin"
+    ERROR_CHECK	|| ERROR_EXIT "ERROR fatal $LINENO"
+
+    [ "-" = "$1" ]	||
+	[ -f "$1" ]	||
+	ERROR_EXIT "ERROR file $1 does not exist"
+
+    mkfifo "$tmp-inf.fifo.$n"
+    ERROR_CHECK	|| ERROR_EXIT "ERROR fatal $LINENO"
+
+    cat "$1"	|
+	awk  -v FS="" '
+	{	for(i = 1; i <= NF; i++)
+			print NR, i, '"$n"', $(i)
+	}'	> "$tmp-inf.fifo.$n"	&
+    ERROR_CHECK	|| ERROR_EXIT "ERROR fatal $LINENO"
+
+    echo "$tmp-inf.fifo.$n"
+    ERROR_CHECK	|| ERROR_EXIT "ERROR fatal $LINENO"
+
+    shift
+done	> "$tmp-inf.fifo.lst"
+ERROR_CHECK	|| ERROR_EXIT "ERROR fatal $LINENO"
+
+[ -s "$tmp-inf.fifo.lst" ]	||
+    ERROR_CHECK	|| ERROR_EXIT "ERROR no input file"
+
+xargs sort -m -k1n -k2n -k3n	< "$tmp-inf.fifo.lst"	|
+    awk -v FS=" " '
+	!(ln==$1&&cl==$2)&&NR!=1{	print ln, cl, ch	}
+	!(ln==$1&&cl==$2)||NR==1{	ln = $1 ; cl = $2 ; ch = ($4==""?" ":$4) ;	}
+	(ln==$1&&cl==$2)&&$4!=""{	ch = $4 ;	}
+	END{				print ln, cl, ch	}'	|
+    awk		'
+	ln!=$1&&NR!=1	{	for(i = 0; i < $1 - ln; i++)	printf("\n")	}
+	ln!=$1||NR==1	{	ln = $1 ; }
+	ln==$1		{	printf("%s", ($3==""?" ":$3))	}
+	END		{	printf("\n")	}'
+ERROR_CHECK	|| ERROR_EXIT "ERROR fatal $LINENO"
+
+######################################################################
+exit 0
