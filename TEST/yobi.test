@@ -1,0 +1,98 @@
+#!/bin/bash
+#!/usr/local/bin/bash -xv # コマンド処理系の変更例
+#
+# test script of yobi
+#
+# usage: [<test-path>/]yobi.test [<command-path> [<python-version>]]
+#
+#            <test-path>は
+#                    「現ディレクトリーからみた」本スクリプトの相対パス
+#                    または本スクリプトの完全パス
+#                    省略時は現ディレクトリーを仮定する
+#            <command-path>は
+#                    「本スクリプトのディレクトリーからみた」test対象コマンドの相対パス
+#                    またはtest対象コマンドの完全パス
+#                    省略時は本スクリプトと同じディレクトリーを仮定する
+#                    値があるときまたは空値（""）で省略を示したときはあとにつづく<python-version>を指定できる
+#            <python-version>は
+#                    使用するpython処理系のversion（minor versionまで指定可）を指定する
+#                    （例 python2 python2.6 phthon3 python3.4など）
+#                    単にpythonとしたときは現実行環境下でのdefault versionのpythonを使用する
+#                    文字列"python"は大文字/小文字の区別をしない
+#                    省略時はpythonを仮定する
+name=yobi # test対象コマンドの名前
+testpath=$(dirname $0) # 本スクリプト実行コマンドの先頭部($0)から本スクリプトのディレトリー名をとりだす
+cd $testpath # 本スクリプトのあるディレクトリーへ移動
+if test "$2" = ""; # <python-version>($2)がなければ
+	then pythonversion="python" # default versionのpythonとする
+	else pythonversion="$2" # <python-version>($2)があれば指定versionのpythonとする
+fi
+if test "$1" = ""; # <command-path>($1)がなければ
+	then commandpath="." # test対象コマンドは現ディレクトリーにある
+	else commandpath="$1" # <command-path>($1)があればtest対象コマンドは指定のディレクトリーにある
+fi
+com="${pythonversion} ${commandpath}/${name}" # python処理系によるtest対象コマンド実行の先頭部
+tmp=/tmp/$$
+
+ERROR_CHECK(){
+	[ "$(echo ${PIPESTATUS[@]} | tr -d ' 0')" = "" ] && return
+	echo $1
+	echo "${pythonversion} ${name}" NG
+	rm -f $tmp-*
+	exit 1
+}
+
+###########################################
+#TEST1
+# 読み込んだファイルの指定したフィールドの年月日の曜日のコードを
+# 指定したフィールドの次のフィールドに挿入して出力する
+
+cat << FIN > $tmp-in
+0001 0000007 20060201 117 8335 -145
+0001 0000007 20060203 221 15470 0
+0001 0000007 20060205 85 5950 0
+0001 0000007 20060206 293 20527 -17
+0001 0000007 20060207 445 31150 0
+0002 0000007 20060208 150 11768 -1268
+0002 0000007 20060209 588 41160 0
+0002 0000007 20060210 444 31080 0
+FIN
+
+cat << FIN > $tmp-out
+0001 0000007 20060201 3 117 8335 -145
+0001 0000007 20060203 5 221 15470 0
+0001 0000007 20060205 0 85 5950 0
+0001 0000007 20060206 1 293 20527 -17
+0001 0000007 20060207 2 445 31150 0
+0002 0000007 20060208 3 150 11768 -1268
+0002 0000007 20060209 4 588 41160 0
+0002 0000007 20060210 5 444 31080 0
+FIN
+
+${com} 3 $tmp-in > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1 error"
+
+###########################################
+#TEST2
+# -eオプションを指定すると英語表記の曜日を挿入して出力する
+
+cat << FIN > $tmp-out
+0001 0000007 20060201 Wed 117 8335 -145
+0001 0000007 20060203 Fri 221 15470 0
+0001 0000007 20060205 Sun 85 5950 0
+0001 0000007 20060206 Mon 293 20527 -17
+0001 0000007 20060207 Tue 445 31150 0
+0002 0000007 20060208 Wed 150 11768 -1268
+0002 0000007 20060209 Thu 588 41160 0
+0002 0000007 20060210 Fri 444 31080 0
+FIN
+
+${com} -e 3 $tmp-in > $tmp-ans
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2 error"
+
+###########################################
+
+rm -f $tmp-*
+echo "${pythonversion} ${name}" OK
+exit 0
