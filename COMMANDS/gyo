@@ -28,6 +28,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from __future__ import print_function
+
 _usage = "gyo [-f] <file>"
 _version = "Fri Oct 21 11:26:06 JST 2011"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
@@ -36,9 +38,9 @@ import os
 import sys
 
 def printUsage():
-	print >> sys.stderr , "Usage    :", _usage
-	print >> sys.stderr , "Version  :", _version
-	print >> sys.stderr , "          ", _code
+	print("Usage    :", _usage, file=sys.stderr)
+	print("Version  :", _version, file=sys.stderr)
+	print("          ", _code, file=sys.stderr)
 	sys.exit(1)
 
 def prefixEqual(prefix,token):
@@ -50,7 +52,7 @@ def prefixEqual(prefix,token):
 	return False
 
 def die(message):
-	print >> sys.stderr, "Error[gyo] :", message
+	print("Error[gyo] :", message, file=sys.stderr)
 	sys.exit(1)
 
 def count(filename):
@@ -103,5 +105,5 @@ if __name__ == '__main__':
 	for f in files:
 		n = count(f)
 		if n != None:
-			if mode == "normal":	print n
-			else:			print f,n
+			if mode == "normal":	print(n)
+			else:			print(f,n)
