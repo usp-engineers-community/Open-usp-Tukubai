@@ -1,53 +1,77 @@
-#!/usr/local/bin/bash -xv
+#!/bin/bash
+#!/usr/local/bin/bash -xv # コマンド処理系の変更例
 #
-# test script of zen 
+# test script of zen
 #
-# usage: ./zen.test <dir> <interpreter>
-
-name=zen
-
+# usage: [<test-path>/]zen.test [<command-path> [<python-version>]]
+#
+#            <test-path>は
+#                    「現ディレクトリーからみた」本スクリプトの相対パス
+#                    または本スクリプトの完全パス
+#                    省略時は現ディレクトリーを仮定する
+#            <command-path>は
+#                    「本スクリプトのディレクトリーからみた」test対象コマンドの相対パス
+#                    またはtest対象コマンドの完全パス
+#                    省略時は本スクリプトと同じディレクトリーを仮定する
+#                    値があるときまたは空値（""）で省略を示したときはあとにつづく<python-version>を指定できる
+#            <python-version>は
+#                    使用するpython処理系のversion（minor versionまで指定可）を指定する
+#                    （例 python2 python2.6 phthon3 python3.4など）
+#                    単にpythonとしたときは現実行環境下でのdefault versionのpythonを使用する
+#                    文字列"python"は大文字/小文字の区別をしない
+#                    省略時はpythonを仮定する
+name=zen # test対象コマンドの名前
+testpath=$(dirname $0) # 本スクリプト実行コマンドの先頭部($0)から本スクリプトのディレトリー名をとりだす
+cd $testpath # 本スクリプトのあるディレクトリーへ移動
+if test "$2" = ""; # <python-version>($2)がなければ
+	then pythonversion="python" # default versionのpythonとする
+	else pythonversion="$2" # <python-version>($2)があれば指定versionのpythonとする
+fi
+if test "$1" = ""; # <command-path>($1)がなければ
+	then commandpath="." # test対象コマンドは現ディレクトリーにある
+	else commandpath="$1" # <command-path>($1)があればtest対象コマンドは指定のディレクトリーにある
+fi
+com="${pythonversion} ${commandpath}/${name}" # python処理系によるtest対象コマンド実行の先頭部
 tmp=/tmp/$$
-dir=$(dirname $0)/..
-cd $dir
-
-com="$2 ./$1/${name}"
-[ "$1" = "" ] && com="./$1/${name}"
 
 ERROR_CHECK(){
 	[ "$(echo ${PIPESTATUS[@]} | tr -d ' 0')" = "" ] && return
-
 	echo $1
-	echo "$com" NG
+	echo "${pythonversion} ${name}" NG
 	rm -f $tmp-*
 	exit 1
 }
 
 ###########################################
 #TEST1
+#「¥」→「￥」の変換試験
 
-cat << 'FIN' > $tmp-in
-ｱｲｳ\ﾎﾞﾎﾞﾎﾞ
+cat << FIN > $tmp-in
+ｱｲｳ¥
 aBC
 FIN
 
 cat << FIN > $tmp-out
-アイウ＼ボボボ
+アイウ￥
 ａＢＣ
 FIN
 
+# 「¥」（U+00a5）半角円記号→「￥」（U+ffe5）全角円記号
 ${com} $tmp-in > $tmp-ans
+
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST1 error"
 
 ###########################################
 #TEST2
+# フィールド指定
 
 cat << FIN > $tmp-in
-001 ｱｲｳ エオ
+001 abcｱｲｳ ｴｵxyz
 FIN
 
 cat << FIN > $tmp-out
-001 アイウ エオ
+001 ａｂｃアイウ ｴｵxyz
 FIN
 
 ${com} 2 $tmp-in > $tmp-ans
@@ -58,6 +82,188 @@ cat $tmp-in | ${com} 2 > $tmp-ans
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST2.2 error"
 
+###########################################
+#TEST2k
+# -k指定
+
+cat << FIN > $tmp-in
+001 abcｱｲｳ ｴｵxyz
+FIN
+
+cat << FIN > $tmp-out
+001 abcアイウ エオxyz
+FIN
+
+${com} -k $tmp-in > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2k-1 error"
+
+cat $tmp-in | ${com} -k > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2k-2 error"
+
+###########################################
+#TEST3
+# 「\」→「＼」の変換試験
+# 「~」→「～」の変換試験
+
+cat << FIN > $tmp-in
+ｱｲｳ\\~
+aBC
+FIN
+
+cat << FIN > $tmp-out
+アイウ＼～
+ａＢＣ
+FIN
+
+# 「\」（U+005C）半角バックスラッシュ→「＼」（U+ff3c）全角バックスラッシュ
+# 「~」（U+007E）半角チルダ→「～」（U+ff5e）全角チルダ
+${com} $tmp-in > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3 error"
+
+###########################################
+#TEST4
+# -d指定
+
+cat << FIN > $tmp-out
+００１　ａｂｃアイウ＼　エオｘｙｚ
+FIN
+
+${com} -d "001 abcｱｲｳ\\ ｴｵxyz" > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4 error"
+
+###########################################
+#TEST5
+# 半角英数記号→全角英数記号の全試験
+
+cat << FIN > $tmp-in
+ !"#$%&'()*+,-./
+0123456789:;<=>?
+@ABCDEFGHIJKLMNO
+PQRSTUVWXYZ[\\]^_
+\`abcdefghijklmno
+pqrstuvwxyz{|}~
+FIN
+
+cat << FIN > $tmp-out
+　！＂＃＄％＆＇（）＊＋，－．／
+０１２３４５６７８９：；＜＝＞？
+＠ＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯ
+ＰＱＲＳＴＵＶＷＸＹＺ［＼］＾＿
+｀ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏ
+ｐｑｒｓｔｕｖｗｘｙｚ｛｜｝～
+FIN
+
+# 「\」（U+005C）半角バックスラッシュ→「＼」（U+ff3c）全角バックスラッシュ
+# 「~」（U+007E）半角チルダ→「～」（U+ff5e）全角チルダ
+${com} $tmp-in > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5 error"
+
+###########################################
+#TEST6
+# 半角カタカナ記号→全角カタカナ記号の全試験
+
+cat << FIN > $tmp-in
+ｱ ｲ ｳ ｴ ｵ
+ｶ ｷ ｸ ｹ ｺ
+ｻ ｼ ｽ ｾ ｿ
+ﾀ ﾁ ﾂ ﾃ ﾄ
+ﾅ ﾆ ﾇ ﾈ ﾉ
+ﾊ ﾋ ﾌ ﾍ ﾎ
+ﾏ ﾐ ﾑ ﾒ ﾓ
+ﾔ ﾕ ﾖ
+ﾗ ﾘ ﾙ ﾚ ﾛ
+ﾜ ｦ ﾝ
+ｳﾞ
+ｶﾞ ｷﾞ ｸﾞ ｹﾞ ｺﾞ
+ｻﾞ ｼﾞ ｽﾞ ｾﾞ ｿﾞ
+ﾀﾞ ﾁﾞ ﾂﾞ ﾃﾞ ﾄﾞ
+ﾊﾞ ﾋﾞ ﾌﾞ ﾍﾞ ﾎﾞ
+ﾊﾟ ﾋﾟ ﾌﾟ ﾍﾟ ﾎﾟ
+ｧ ｨ ｩ ｪ ｫ
+ｬ ｭ ｮ ｯ
+｡ ｢ ｣ ､ ･ ｰ ﾞ ﾟ
+ｶﾟ ｷﾟ ｸﾟ ｹﾟ ｺﾟ
+ｾﾟ ﾂﾟ ﾄﾟ
+ﾜﾞ ｦﾞ
+FIN
+
+cat << FIN > $tmp-out
+ア　イ　ウ　エ　オ
+カ　キ　ク　ケ　コ
+サ　シ　ス　セ　ソ
+タ　チ　ツ　テ　ト
+ナ　ニ　ヌ　ネ　ノ
+ハ　ヒ　フ　ヘ　ホ
+マ　ミ　ム　メ　モ
+ヤ　ユ　ヨ
+ラ　リ　ル　レ　ロ
+ワ　ヲ　ン
+ヴ
+ガ　ギ　グ　ゲ　ゴ
+ザ　ジ　ズ　ゼ　ゾ
+ダ　ヂ　ヅ　デ　ド
+バ　ビ　ブ　ベ　ボ
+パ　ピ　プ　ペ　ポ
+ァ　ィ　ゥ　ェ　ォ
+ャ　ュ　ョ　ッ
+。　「　」　、　・　ー　゛　゜
+カ゚　キ゚　ク゚　ケ゚　コ゚
+セ゚　ツ゚　ト゚
+ヷ　ヺ
+FIN
+
+${com} $tmp-in > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST6 error"
+
+###########################################
+#TEST7
+# 半角ハングル→全角ハングルの全試験
+
+cat << FIN > $tmp-in
+ﾠﾡﾢﾣﾤﾥﾦﾧﾨﾩﾪﾫﾬﾭﾮﾯ
+ﾰﾱﾲﾳﾴﾵﾶﾷﾸﾹﾺﾻﾼﾽﾾￂ
+ￃￄￅￆￇￊￋￌￍￎￏￒￓￔￕￖ
+ￗￚￛￜ
+FIN
+
+cat << FIN > $tmp-out
+ㅤㄱㄲㄳㄴㄵㄶㄷㄸㄹㄺㄻㄼㄽㄾㄿ
+ㅀㅁㅂㅃㅄㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎㅏ
+ㅐㅑㅒㅓㅔㅕㅖㅗㅘㅙㅚㅛㅜㅝㅞㅟ
+ㅠㅡㅢㅣ
+FIN
+
+${com} $tmp-in > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST7 error"
+
+###########################################
+#TEST8
+# その他半角記号→その他全角記号の全試験
+
+cat << FIN > $tmp-in
+¢£¬‾¯¦¥₩
+￨￩￪￫￬￭￮
+FIN
+
+cat << FIN > $tmp-out
+￠￡￢￣￣￤￥￦
+│←↑→↓■○
+FIN
+
+# 「‾」半角オーバーライン（U+203e）→「￣」全角マクロン（U+ffe3）
+# 「¯」半角マクロン（U+00af）→「￣」全角マクロン（U+ffe3）
+# 「¥」（U+00a5）半角円記号→「￥」（U+ffe5）全角円記号
+${com} $tmp-in > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST8 error"
+
 rm -f $tmp-*
-echo "${com}" OK
+echo "${pythonversion} ${name}" OK
 exit 0
