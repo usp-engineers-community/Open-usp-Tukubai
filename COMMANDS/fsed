@@ -1,0 +1,169 @@
+#!/usr/bin/env python
+#coding: utf-8
+#
+# fsed フィールドの文字列の置換（Open usp Tukubai版）
+# 
+# designed by Nobuaki Tounaka
+#
+# The MIT License
+#
+# Copyright (C) 2011 Universal Shell Programming Laboratory
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+from __future__ import print_function
+import re
+import sys
+
+_usage = "fsed [-e|-i] 's/<org>/<new>/<n>'... <file>"
+_version = "Fri Oct 21 11:26:06 JST 2011"
+_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
+
+def error(msg, *arg):
+	print('Error[fsed] :', msg % arg, file=sys.stderr)
+	sys.exit(1)
+
+def usage():
+	print("Usage   :", _usage, file=sys.stderr)
+	print("Version :", _version, file=sys.stderr)
+	print("         ", _code, file=sys.stderr)
+	sys.exit(1)
+
+#
+# 入力ファイルオープン
+def open_file(filename, mode = 'r'):
+
+	if filename=='-' or filename == None: # ファイル名が'-'または省略なら標準入力とする
+		file = sys.stdin
+	else:
+		try:
+			file = open(filename, mode)
+		except:
+			error("ファイル '%s' をオープンできません。", filename)
+	return file
+
+#
+# 改行符号（\r\n）の削除関数
+def rm_eol(line):
+
+	return line.rstrip('\n').rstrip('\r')
+
+#
+# 文字列置換関数
+def replace(field,org,dst):
+
+	return field.replace(org,dst)
+
+#
+# 文字列置換関数2（置換リストによる）
+def replacebylist(fields,replist):
+
+	for reppair in replist: # 置換リストの上から順に置換を実行
+		reoption=reppair[0]
+		reptuple=reppair[1]
+		# 置換フィールドの範囲を決める
+		if reptuple[2]=="g":
+			start_fieldnum=0
+			end_fieldnum=len(fields)
+		else:
+			fieldnum=int(reptuple[2])
+			start_fieldnum=fieldnum-1
+			end_fieldnum=fieldnum
+		# 指定されたフィールドに対して置換を実行する
+		for fieldnum in range(start_fieldnum,end_fieldnum):
+			if reoption!="": # 正規表現を使う
+				if reoption=="i": reptuple[0]="(?i)"+reptuple[0] # -iオプション（大文字/小文字の区別をしない）
+				fields[fieldnum]= \
+					re.sub(reptuple[0],reptuple[1],fields[fieldnum])
+			else:
+				fields[fieldnum]= \
+					replace(fields[fieldnum], \
+					reptuple[0],reptuple[1])
+	return fields
+
+#
+# main
+
+if __name__ == '__main__':
+
+	# コマンドの説明表示
+	if len(sys.argv) <= 1 \
+	 or sys.argv[1] == '--help' \
+	 or sys.argv[1] == '--version':
+		usage()
+
+	# パラメータ解析
+	org, dst, filename= None, None, '-' # default値
+	numparam=0
+	count=0
+	reppairs=[]
+	while len(sys.argv) > 1:
+		if sys.argv[1].startswith("-") and len(sys.argv[1])>1: # オプション
+			if sys.argv[1][1:] in ["e","i"]:
+				reoption=sys.argv[1][1:]
+			else:
+				error("オプションの値(%s)が不正です",sys.argv[1])
+			del(sys.argv[1]) # popup
+			reppairs.append([reoption,sys.argv[1]])
+		else:
+			reppairs.append(["",sys.argv[1]])
+		del(sys.argv[1]) # popup
+
+	# パラメータ検査
+	if len(reppairs)>1:
+		if reppairs[-1][0]=="": # 最後の組に[-e|-i]オプションがない
+			filename=reppairs[-1][1] # 最後の組の第2要素をfile名とする
+			reppairs.pop() # 置換指定リストからはずす
+		# 最後の組に[-e|-i]オプションがあるときはファイル指定が省略されていると解釈する
+	elif len(reppairs)<1:
+		error("パラメータの数が足りません")
+
+	# 置換リストを作成する
+	replist=[]
+	for reppair in reppairs:
+		repstring=reppair[1]
+		delm=repstring[1] # 置換指定の区切り文字を第2文字からとる
+		reptuple=repstring.split(delm,3) # 区切り文字で4分割する
+		if reptuple[0]!='s':
+			error("置換指定の先頭要素('%s')が's'以外です",reptuple[0])
+		if reptuple[3]!="g":
+			if not reptuple[3].isdigit():
+				error("置換指定の最終要素('%s')が'g'でも数字でもありません",reptuple[0])
+		reptuple.pop(0) # 置換指定の先頭要素（'s'）を除去
+		replist.append([reppair[0],reptuple])
+
+	# 置換対象ファイルを開く
+	file=open_file(filename)
+
+	# 置換対象ファイルを読む
+	for line in file:
+		line=rm_eol(line)
+		# 置換リストを渡して置換を実行する
+		fields=line.split()
+		fields=replacebylist(fields,replist)
+		outputline=''
+		for field in fields:
+			outputline+=field+' '
+		print(outputline.rstrip())
+
+	# 置換対象ファイルを閉じる
+	file.close()
+
+	# 終了
+	sys.exit(0)
