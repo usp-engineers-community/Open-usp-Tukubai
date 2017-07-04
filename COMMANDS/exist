@@ -1,0 +1,93 @@
+#!/usr/bin/env python
+#coding: utf-8
+#
+# exist   : 複数ファイルの存在チェック（Open usp Tukubai版）
+# 
+# designed by Nobuaki Tounaka
+#
+# The MIT License
+#
+# Copyright (C) 2011 Universal Shell Programming Laboratory
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+from __future__ import print_function
+import sys
+import os.path
+
+_usage = "exist [-v] <file1> <file2> ..."
+_version = "Fri Oct 21 11:26:06 JST 2011"
+_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
+
+def error(msg, *arg):
+	print('Error[exist] :', msg % arg, file=sys.stderr)
+	sys.exit(1)
+
+def usage():
+	print("Usage   :", _usage, file=sys.stderr)
+	print("Version :", _version, file=sys.stderr)
+	print("         ", _code, file=sys.stderr)
+	sys.exit(1)
+
+#
+# main
+
+if __name__ == '__main__':
+
+	v=False # default値
+
+	# コマンドの説明表示
+	if len(sys.argv) <= 1 \
+	 or sys.argv[1] == '--help' \
+	 or sys.argv[1] == '--version':
+		usage()
+
+	# パラメータ解析
+	numparam=0
+	miniparam=1
+	filenames=[]
+	while len(sys.argv) > 1:
+		if sys.argv[1]=="-v": # vパラメータ
+			if v:
+				error("vパラメータが重複しています")
+			v=True
+		else:
+			# ワイルドカード/メタキャラクタによるファイル名はshellで展開できるものは展開されてくる
+			# 展開しても一致しないときはワイルドカード込みのファイル名でやってくる
+			filenames.append(sys.argv[1])
+			numparam+=1
+		del(sys.argv[1]) # popup
+
+	# パラメータ検査
+	if numparam<miniparam:
+		error("パラメータの数が足りません")
+
+	for filename in filenames:
+		# ワイルドキャラクタがパラメータ（ファイル名）に残っているか？
+		if "*" in filename or "?" in filename:
+			# ワイルドキャラクタでファイル名の展開ができない（ひとつもhitしない）ときは異常終了する
+			sys.exit(1)
+		# メタキャラクタで展開したファイル名の存在検査
+		if os.path.isfile(filename): 
+			if v: print(filename) # -v指定のときはhitしたファイル名を表示
+		else: # メタキャラクタで展開したファイル名が存在しないときは異常終了する
+			sys.exit(1)
+
+	# 終了
+	sys.exit(0)
