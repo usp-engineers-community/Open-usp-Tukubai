@@ -139,6 +139,34 @@ def getDummyStr(master):
 
 	field_num = len(max_str.split(" "))
 	
+#
+# 直接入力文字列の前処理
+#
+#  Python3においてコマンドラインからの直接入力文字列中にUnicode符号位置がU+FFFFを超えるコードがあると
+#  Unicode文字に正しく変換されない場合があることへの対処をする
+#  Python2においてはUTF8からUnicode文字への通常の変換処理をする
+def utf2ucs(instr):
+	if sys.version_info < (3, 0):	# Python2なら
+		try:
+			outstr=unicode(instr, 'utf_8')	# utf8からunicdoeへ変換する
+		except:
+			die("不当なマルチバイト文字が含まれています。")
+		return outstr
+	outstr=""	# 出力文字列
+	intlist=[]	# 作業用整数リスト
+	for char in instr:
+		if ord(char)>=0xdc00 and ord(char)<=0xdcff:	# 文字の符号位置がU+DCxxの範囲にあったら「UTF8もどき」
+			intlist.append(ord(char)-0xdc00)	# 0xdc00のげたをはずして整数リストに入れる
+		else:	# 通常文字がきたら
+			if len(intlist)>0:	# ここまでに「UTF8もどき」列を変換した整数リストがあったら
+				# bytesに変換してutf8からUCSへの変換をして出力文字列に追加
+				outstr+= bytes(intlist).decode("utf_8")
+				intlist=[]	# 整数リストを再初期化
+			outstr+=char	# 新しくきた通常文字を出力文字列に追加
+	# 「UTF8もどき」列を変換した整数リストが残っていたら
+	# bytesに変換してutf8からUCSへの変換をして出力文字列に追加
+	if len(intlist)>0:	outstr+= bytes(intlist).decode("utf_8")
+	return outstr
 
 #メイン関数
 if __name__ == '__main__':
@@ -159,6 +187,10 @@ if __name__ == '__main__':
 	elif sys.argv[1][0] == '-' and sys.argv[1][1] == 'd':
 		dummy_string = sys.argv[1][2:]
 		del sys.argv[1]
+
+	# dummy_string処理
+	if dummy_string!=None:
+		dummy_string=utf2ucs(dummy_string)
 
 	# keyオプションを解析
 	if sys.argv[1][0:4] == 'key=':
