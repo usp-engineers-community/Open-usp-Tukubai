@@ -28,6 +28,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from __future__ import print_function
+
 _usage = "kasan [+r] [ref=<ref>] key=<n> <file>"
 _version = "Fri Oct 21 11:26:06 JST 2011"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
@@ -44,13 +46,13 @@ import sys
 from decimal import Decimal
 
 def error(msg, *arg):
-	print >> sys.stderr, 'Error[kasan] :', msg % arg
+	print('Error[kasan] :', msg % arg, file=sys.stderr)
 	sys.exit(1)
 
 def usage():
-	print >> sys.stderr, "Usage   :", _usage
-	print >> sys.stderr, "Version :", _version
-	print >> sys.stderr, "         ", _code
+	print("Usage   :", _usage, file=sys.stderr)
+	print("Version :", _version, file=sys.stderr)
+	print("         ", _code, file=sys.stderr)
 	sys.exit(1)
 
 class FieldLine:
@@ -158,10 +160,31 @@ def getkey(line, arg):
 		if sep == '@':
 			key += [ n ]
 		elif key[-1] <= n:
-			key += range(key[-1] + 1, n + 1)
+			key += list(range(key[-1] + 1, n + 1))
 		else:
-			key += range(key[-1] - 1, n - 1, -1)
+			key += list(range(key[-1] - 1, n - 1, -1))
 	return key
+
+#
+# 加算の実行
+#
+def execsum(line,key,ref,sum,replace):
+	last_key=''
+	endchar=' '
+	for i in range(1, line.size() + 1):
+		if i==line.size():	# loop終端のとき
+			endchar=''
+		if i in key:
+			if not replace:
+				print(line.getField(i), end=' ')	# ここでは末尾の調整はしない
+			sum[i] += getval(line, i)
+			print(sum[i], end=endchar)	# 末尾の調整
+		else:
+			print(line.getField(i), end=endchar)	# 末尾の調整
+	print()
+	if ref:
+		last_key = line.getField(ref[0], ref[1])
+	return last_key
 
 #
 #メイン関数
@@ -215,9 +238,7 @@ if __name__ == '__main__':
 		ref = []
 	if key == None:
 		usage()
-	for x in zip(key, key[1:]):
-		if x[0] >= x[1]:
-			error("key 引数が正しくありません。");
+	key=sorted(set(key)) # 集合化（set())によってリストの重複を解消してから昇順化(sort())
 	kmax = max(key)
 	if line.size() < kmax:
 		error("フィールドが足りません。")
@@ -226,17 +247,7 @@ if __name__ == '__main__':
 	# 合計の初期化
 	#
 	sum = [ 0 for i in range(kmax + 1) ]
-	for i in range(1, line.size() + 1):
-		if i in key:
-			if not replace:
-				print line.getField(i),
-			sum[i] += getval(line, i)
-			print sum[i],
-		else:
-			print line.getField(i),
-	print
-	if ref:
-		last_key = line.getField(ref[0], ref[1])
+	last_key=execsum(line,key,ref,sum,replace)
 
 	#
 	# メインループ
@@ -247,16 +258,6 @@ if __name__ == '__main__':
 			error("フィールドが足りません。")
 		if ref and last_key != line.getField(ref[0], ref[1]):
 			sum = [ 0 for i in range(kmax + 1) ]
-		for i in range(1, line.size() + 1):
-			if i in key:
-				if not replace:
-					print line.getField(i),
-				sum[i] += getval(line, i)
-				print sum[i],
-			else:
-				print line.getField(i),
-		print
-		if ref:
-			last_key = line.getField(ref[0], ref[1])
+		last_key=execsum(line,key,ref,sum,replace)
 
 	sys.exit(0)
