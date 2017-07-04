@@ -1,0 +1,328 @@
+#!/bin/bash
+#!/usr/local/bin/bash -xv # コマンド処理系の変更例
+#
+# test script of check_attr_name
+#
+# usage: [<test-path>/]check_attr_name.test [<command-path> [<python-version>]]
+#
+#            <test-path>は
+#                    「現ディレクトリーからみた」本スクリプトの相対パス
+#                    または本スクリプトの完全パス
+#                    省略時は現ディレクトリーを仮定する
+#            <command-path>は
+#                    「本スクリプトのディレクトリーからみた」test対象コマンドの相対パス
+#                    またはtest対象コマンドの完全パス
+#                    省略時は本スクリプトと同じディレクトリーを仮定する
+#                    値があるときまたは空値（""）で省略を示したときはあとにつづく<python-version>を指定できる
+#            <python-version>は
+#                    使用するpython処理系のversion（minor versionまで指定可）を指定する
+#                    （例 python2 python2.6 phthon3 python3.4など）
+#                    単にpythonとしたときは現実行環境下でのdefault versionのpythonを使用する
+#                    文字列"python"は大文字/小文字の区別をしない
+#                    省略時はpythonを仮定する
+name=check_attr_name # test対象コマンドの名前
+testpath=$(dirname $0) # 本スクリプト実行コマンドの先頭部($0)から本スクリプトのディレトリー名をとりだす
+cd $testpath # 本スクリプトのあるディレクトリーへ移動
+if test "$2" = ""; # <python-version>($2)がなければ
+	then pythonversion="python" # default versionのpythonとする
+	else pythonversion="$2" # <python-version>($2)があれば指定versionのpythonとする
+fi
+if test "$1" = ""; # <command-path>($1)がなければ
+	then commandpath="." # test対象コマンドは現ディレクトリーにある
+	else commandpath="$1" # <command-path>($1)があればtest対象コマンドは指定のディレクトリーにある
+fi
+com="${pythonversion} ${commandpath}/${name}" # python処理系によるtest対象コマンド実行の先頭部
+tmp=/tmp/$$
+
+ERROR_CHECK(){
+	[ "$(echo ${PIPESTATUS[@]} | tr -d ' 0')" = "" ] && return
+	echo $1
+	echo "${pythonversion} ${name}" NG
+	rm -f $tmp-*
+	exit 1
+}
+
+###########################################
+#TEST1
+# 通常のチェック
+
+cat << FIN > $tmp-check
+A N3
+B n4
+C x3
+D X6
+E Z14
+F z8
+FIN
+
+cat << FIN > $tmp-data
+A 200
+B 12345
+C abcde
+D_001 xxxxxx
+D_002 xxxxx
+D_003 xxxx
+E あいうえお漢字
+F アイウエオ
+FIN
+
+cat << FIN > $tmp-out
+B n4
+C x3
+D_002 X6
+D_003 X6
+F z8
+FIN
+
+${com} $tmp-check $tmp-data >$tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1 error"
+
+###########################################
+#TEST2
+# --through オプションでチェックしない値を指定する
+
+cat  << FIN > $tmp-data2
+A 200
+B _
+C _
+D_001 xxxxxx
+D_002 _
+D_003 _
+FIN
+
+cat << FIN > $tmp-out
+FIN
+
+${com}  --through _ $tmp-check $tmp-data2 > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2 error"
+
+######################################################################################
+#追加TEST1-1
+# 代用対/結合文字列/IVS/SVSの処理検査
+
+cat << FIN > $tmp-check
+A N3
+B n4
+C x3
+D X6
+E Z4
+F Z4
+G Z4
+H Z4
+I Z4
+J Z4
+K Z4
+L Z4
+M Z4
+N Z4
+O Z4
+P Z4
+Q Z4
+R Z10
+FIN
+
+cat << FIN > $tmp-data
+A 200
+B 12345
+C abcde
+D_001 xxxxxx
+D_002 xxxxx
+D_003 xxxx
+E 吉田
+F 𠮷田
+G 今川
+H 𫝆川
+I 𫝆󠄁川
+J 渡邊
+K 渡邊󠄊
+L 渡邊󠄋
+M 渡邊󠄌
+N 神山
+O 神︀山
+P 羽田
+Q 羽︀田
+R か゚き゚く゚け゚こ゚
+FIN
+
+# $tmp-dataの説明
+#E 吉田 #吉(U+5409)
+#F 𠮷田 #𠮷(U+20BB7)代用対では𠮷(U+D842-U+DFB7)
+#G 今川 #今(U+4ECA)
+#H 𫝆川 #𫝆(U+2B746)代用対では𫝆(U+D86D-U+DF46)
+#I 𫝆󠄁川 #IVSの例で𫝆󠄁(U+2B746_U+E0101)代用対では𫝆󠄁(U+D86D-U+DF46_U+DB40-U+DD01)
+#J 渡邊 #邊(U+908A)
+#K 渡邊󠄊 #IVSの例で邊󠄊(U+908A_U+E010A)代用対では邊󠄊(U+908A_U+DB40-U+DD0A)
+#L 渡邊󠄋 #IVSの例で邊󠄋(U+908A_U+E010B)代用対では邊󠄋(U+908A_U+DB40-U+DD0B)
+#M 渡邊󠄌 #IVSの例で邊󠄌(U+908A_U+E010C)代用対では邊󠄌(U+908A_U+DB40-U+DD0C)
+#N 神山 #神(U+795E)
+#O 神︀山 #SVSの例で神︀(U+795E_U+FE00)
+#P 羽田 #羽(U+7FBD)
+#Q 羽︀田 #SVSの例で羽︀(U+7FBD_U+FE00)
+#R か゚き゚く゚け゚こ゚ #結合文字列の例でか゚(U+304B_U+309A)き゚(U+304D_U+309A)く゚(U+304F_U+309A)け゚(U+3051_U+309A)こ゚(U+3053_U+309A)
+
+# 文字の正しい表示には適切なfontの使用が求められる
+# Unicode符号位置を「字(U+xxxx)」の形式で表現する（符号位置が第2面のときは「字(U+xxxxx)」）
+# 代用対は「字(U+xxxx-U+yyyy)」の形式で表現する
+# 結合文字列/IVS/SVSは「字(U+xxxx_U+yyyy)」の形式で表現する
+
+cat << FIN > $tmp-out
+B n4
+C x3
+D_002 X6
+D_003 X6
+FIN
+
+${com} $tmp-check $tmp-data > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "追加TEST1-1 error"
+
+###########################################
+#追加TEST1-2
+# 代用対/結合文字列/IVS/SVSの処理検査ngwordあり
+
+cat << FIN > $tmp-check
+A N3
+B n4
+C x3
+D X6
+E Z4
+F Z4
+G Z4
+H Z4
+I Z4
+J Z4
+K Z4
+L Z4
+M Z4
+N Z4
+O Z4
+P Z4
+Q Z4
+R Z10
+FIN
+
+cat << FIN > $tmp-data
+A 200
+B 12345
+C abcde
+D_001 xxxxxx
+D_002 xxxxx
+D_003 xxxx
+E 吉田
+F 𠮷田
+G 今川
+H 𫝆川
+I 𫝆󠄁川
+J 渡邊
+K 渡邊󠄊
+L 渡邊󠄋
+M 渡邊󠄌
+N 神山
+O 神︀山
+P 羽田
+Q 羽︀田
+R か゚き゚く゚け゚こ゚
+FIN
+
+cat << FIN > $tmp-ngword
+邊󠄊 ア
+FIN
+
+# ngwordの説明
+#邊󠄊 ア #IVSの例で邊󠄊(U+908A_U+E010A)代用対では邊󠄊(U+908A_U+DB40-U+DD0A)
+# これにより「K 渡邊󠄊」はngword「邊󠄊」を含むので「K Z4」はエラーとなる
+
+cat << FIN > $tmp-out
+B n4
+C x3
+D_002 X6
+D_003 X6
+K Z4
+FIN
+
+${com} --ngword $tmp-ngword $tmp-check $tmp-data		> $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "追加TEST1-2 error"
+
+###########################################
+#追加TEST2
+# 各種検査
+
+cat << FIN > $tmp-check
+n n4
+N N4
+s s4
+S S4
+f f1.1
+F F1.2
+v v1.1
+V V1.2
+e e4
+E E4
+a a4
+A A4
+h h4
+H H4
+z z4
+Z Z4
+k k8
+K K8
+x x4
+X X4
+c c4
+C C4
+o o4
+O O4
+j j18
+J J18
+FIN
+
+cat << FIN > $tmp-data
+n 123
+N 1234
+s +123
+S +1234
+f 1.0
+F 1.00
+v +1.0
+V +1.00
+e abc
+E abcd
+a a12
+A a123
+h ｶﾀｶ
+H abｶﾀ
+z 全
+Z 全角
+k アアア
+K カタカナ
+x a1+
+X a1+-
+c 550
+C 2345
+o ABC
+O ABCD
+j 東京都千代田区渡邊󠄊-1
+J 東京都千代田区渡邊󠄊
+FIN
+
+#	s S は数字部分の桁数を指定する
+#	f F v V	の桁数は「整数部.小数部」で指定する
+#	c C の区別はない (各桁の和+偶数桁の2倍和)%==0 を検査している
+
+#j 東京都千代田区渡邊󠄊-1 #IVSの例で邊󠄊(U+908A_U+E010A)代用対では邊󠄊(U+908A_U+DB40-U+DD0A)
+#J 東京都千代田区渡邉󠄗 #IVSの例で邊󠄊(U+908A_U+E010A)代用対では邊󠄊(U+908A_U+DB40-U+DD0A)
+
+cat << FIN > $tmp-out
+j j18
+FIN
+
+${com} $tmp-check $tmp-data		> $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "追加TEST2 error"
+
+rm -f $tmp-*
+echo "${pythonversion} ${name}" OK
+exit 0
