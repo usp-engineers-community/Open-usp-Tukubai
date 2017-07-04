@@ -1,0 +1,173 @@
+#!/usr/bin/env python
+#coding: utf-8
+#
+# check_dble_name : name 形式データの重複チェックをする（Open usp Tukubai版）
+# 
+# designed by Nobuaki Tounaka
+#
+# The MIT License
+#
+# Copyright (C) 2011 Universal Shell Programming Laboratory
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+from __future__ import print_function
+import sys
+import itertools
+
+_usage = "check_dble_name <check_file> <name_file>"
+_usage2 = "[--through <string>]"
+_version = "Fri Oct 21 11:26:06 JST 2011"
+_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
+
+def error(msg, *arg):
+	print('Error[check_dble_name] :', msg % arg, file=sys.stderr)
+	sys.exit(1)
+
+def usage():
+	print("Usage   :", _usage, file=sys.stderr)
+	print("        :", _usage2, file=sys.stderr)
+	print("Version :", _version, file=sys.stderr)
+	print("         ", _code, file=sys.stderr)
+	sys.exit(1)
+
+# ファイルオープン
+def open_file(filename, mode = 'r'):
+	# 入力でファイル名が'-'または省略なら標準入力とする
+	if mode=="r" and (filename=='-' or filename == None): 
+		file = sys.stdin
+	else: # その他の入力ファイルのとき
+		try:
+			file = open(filename, mode)
+		except:
+			error("ファイル '%s' をオープンできません。", filename)
+	return file
+
+# 改行符号（\r\n）の削除関数
+def rm_eol(line):
+	return line.rstrip('\n').rstrip('\r')
+
+# tag部からtag名を切り出す
+def gettag(string):
+	# tag部を"_"で区切ってtag名をとりだす
+	tailpos=string.find("_")
+	if tailpos>=0:
+		return string[0:tailpos]
+	else: # みつからないとき
+		return string
+
+# main
+
+if __name__ == '__main__':
+
+	ret_code = 0 # default値
+
+	# コマンドの説明表示
+	if len(sys.argv) <= 1 \
+	 or sys.argv[1] == '--help' \
+	 or sys.argv[1] == '--version':
+		usage()
+
+	# パラメータ解析
+	numparam=0
+	minparam=2
+	maxparam=2
+	through_string=[]
+	while len(sys.argv) > 1:
+		if sys.argv[1].startswith("--through"): # throughパラメータ
+			del(sys.argv[1]) # popup
+			if len(sys.argv)<2:
+				error("--throughパラメータの値がありません")
+			through_string.append(sys.argv[1])
+		else:
+			numparam+=1
+			if numparam==1: # expression
+				check_filename=sys.argv[1]
+			elif numparam==2: # name
+				name_filename=sys.argv[1]
+		del(sys.argv[1]) # popup
+
+	# パラメータ検査
+	if numparam<minparam:
+		error("パラメータの数が足りません")
+	if numparam>maxparam:
+		error("パラメータの数が多すぎます")
+
+	# throughオプションの指定がなかったときはdefault値を使う
+	if len(through_string)==0:
+		through_string.append("_")
+
+	# checkファイルを開く
+	checkfile=open_file(check_filename)
+	checklist=[]
+	# checkファイルをすべて読み込む
+	for line in checkfile:
+		line=rm_eol(line)
+		fields=line.split()
+		if len(fields)!=1:
+			error("checkファイルのフィールド数が1ではありません")
+		checklist.append(fields[0]) # checkするtag名を記憶する
+	if len(checklist)==0:
+		error("checkファイルが空です")
+	# checkファイルを閉じる
+	checkfile.close()
+
+	# nameファイルを開く
+	namefile=open_file(name_filename)
+	namefilelines=[]
+	namelist=[]
+	# nameファイルをすべて読み込む
+	for line in namefile:
+		line=rm_eol(line)
+		fields=line.split(' ',1) # 最初の半角空白で行を2分割する
+		if len(fields)!=2:
+			error("nameファイルのフィールド数が2ではありません")
+		namefilelines.append(fields) # 全フィールドを記憶する
+		namelist.append(fields[0])
+	# name部の重複検査をする
+	if len(namelist)!=len(set(namelist)):
+		error("nameファイルのname部に重複があります")
+	if len(namefilelines)==0:
+		error("nameファイルが空です")
+	# nameファイルを閉じる
+	namefile.close()
+
+	# nameファイルの各行の組み合わせに対しcheckファイルにあるtagのデータを総当たりで比較する
+	dblelist=[]
+	for pair in itertools.combinations(namefilelines,2): # nameファイルの各行の組み合わせを列挙
+		tag1=gettag(pair[0][0])
+		tag2=gettag(pair[1][0])
+		data1=pair[0][1]
+		data2=pair[1][1]
+		if not tag1 in checklist: continue # tag名がchecklistになければskipする
+		if not tag2 in checklist: continue # tag名がchecklistになければskipする
+		if data1 in through_string: continue # データがthrough文字列ならskipする
+		if data2 in through_string: continue # データがthrough文字列ならskipする
+		if tag1==tag2 and data1==data2: # 重複発見
+			ret_code=1
+			# 重複リストへ追加
+			dblelist.append(pair[0][0])
+			dblelist.append(pair[1][0])
+
+	dblelist=sorted(set(dblelist),key=dblelist.index) # 集合化によってリストの重複を解消し元のリストにおける出現位置をキーとしてsort
+	for name in dblelist:
+		print(name)
+
+	# 終了
+	sys.exit(ret_code)
