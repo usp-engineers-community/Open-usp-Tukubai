@@ -28,6 +28,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from __future__ import print_function
+
 _usage = "getfirst [+ng<fd>] <n1> <n2> <file>"
 _version = "Fri Oct 21 11:26:06 JST 2011"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
@@ -37,13 +39,13 @@ import os
 import sys
 
 def error(msg, *arg):
-	print >> sys.stderr, 'Error[getfirst] :', msg % arg
+	print('Error[getfirst] :', msg % arg, file=sys.stderr)
 	sys.exit(1)
 
 def usage():
-	print >> sys.stderr, "Usage   :", _usage
-	print >> sys.stderr, "Version :", _version
-	print >> sys.stderr, "         ", _code
+	print("Usage   :", _usage, file=sys.stderr)
+	print("Version :", _version, file=sys.stderr)
+	print("         ", _code, file=sys.stderr)
 	sys.exit(1)
 
 class FieldLine:
@@ -139,7 +141,7 @@ if __name__ == '__main__':
 		n1 = int(sys.argv[1])
 		n2 = int(sys.argv[2])
 		if n1 > n2:
-			raise 'argument error'
+			error("フィールド番号が正しくありません。")
 	except:
 		usage()
 
@@ -153,9 +155,9 @@ if __name__ == '__main__':
 		line = FieldLine(line)
 		key = line.getField(n1, n2)
 		if key != oldkey:
-			print line.getField(0)
+			print(line.getField(0))
 			oldkey = key;
 		elif ngfile:
-			print >>ngfile, line.getField(0)
+			print(line.getField(0), file=ngfile)
 
 	sys.exit(0)
