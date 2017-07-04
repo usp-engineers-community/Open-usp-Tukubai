@@ -1,0 +1,200 @@
+#!/bin/bash
+#!/usr/local/bin/bash -xv # コマンド処理系の変更例
+#
+# test script of join1x
+#
+# usage: [<test-path>/]calclock.test [<command-path> [<python-version>]]
+#
+#            <test-path>は
+#                    「現ディレクトリーからみた」本スクリプトの相対パス
+#                    または本スクリプトの完全パス
+#                    省略時は現ディレクトリーを仮定する
+#            <command-path>は
+#                    「本スクリプトのディレクトリーからみた」test対象コマンドの相対パス
+#                    またはtest対象コマンドの完全パス
+#                    省略時は本スクリプトと同じディレクトリーを仮定する
+#                    値があるときまたは空値（""）で省略を示したときはあとにつづく<python-version>を指定できる
+#            <python-version>は
+#                    使用するpython処理系のversion（minor versionまで指定可）を指定する
+#                    （例 python2 python2.6 phthon3 python3.4など）
+#                    単にpythonとしたときは現実行環境下でのdefault versionのpythonを使用する
+#                    文字列"python"は大文字/小文字の区別をしない
+#                    省略時はpythonを仮定する
+name=join1x # test対象コマンドの名前
+testpath=$(dirname $0) # 本スクリプト実行コマンドの先頭部($0)から本スクリプトのディレトリー名をとりだす
+cd $testpath # 本スクリプトのあるディレクトリーへ移動
+if test "$2" = ""; # <python-version>($2)がなければ
+	then pythonversion="python" # default versionのpythonとする
+	else pythonversion="$2" # <python-version>($2)があれば指定versionのpythonとする
+fi
+if test "$1" = ""; # <command-path>($1)がなければ
+	then commandpath="." # test対象コマンドは現ディレクトリーにある
+	else commandpath="$1" # <command-path>($1)があればtest対象コマンドは指定のディレクトリーにある
+fi
+com="${pythonversion} ${commandpath}/${name}" # python処理系によるtest対象コマンド実行の先頭部
+tmp=/tmp/$$
+
+ERROR_CHECK(){
+	[ "$(echo ${PIPESTATUS[@]} | tr -d ' 0')" = "" ] && return
+	echo $1
+	echo "${pythonversion} ${name}" NG
+	rm -f $tmp-*
+	exit 1
+}
+
+###########################################
+# TEST1
+# 通常の連結
+
+cat << FIN > $tmp-master
+1 東京1
+1 東京2
+2 大阪1
+2 大阪2
+FIN
+
+cat << FIN > $tmp-tran
+1 新宿
+1 上野
+2 梅田
+2 難波
+2 京橋
+3 金山
+3 栄
+3 熱田
+4 博多
+4 天神
+FIN
+
+cat << FIN > $tmp-ok-out
+1 東京1 新宿
+1 東京2 新宿
+1 東京1 上野
+1 東京2 上野
+2 大阪1 梅田
+2 大阪2 梅田
+2 大阪1 難波
+2 大阪2 難波
+2 大阪1 京橋
+2 大阪2 京橋
+FIN
+
+${com} key=1 $tmp-master $tmp-tran >$tmp-ans
+diff $tmp-ans $tmp-ok-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1 error"
+
+###########################################
+# TEST2
+# +ng オプションの使い方
+
+cat << FIN > $tmp-ng-out
+3 金山
+3 栄
+3 熱田
+4 博多
+4 天神
+FIN
+
+${com} +ng3 key=1 $tmp-master $tmp-tran > $tmp-ok-data 3> $tmp-ng-data
+
+diff $tmp-ok-data $tmp-ok-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2-1 error"
+diff $tmp-ng-data $tmp-ng-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2-2 error"
+
+#ng指定で<fd> を省略すると、マッチしないレコードは標準エラー出力へ出力します。
+${com} +ng key=1 $tmp-master $tmp-tran > $tmp-ok-data 2> $tmp-ng-data
+
+diff $tmp-ok-data $tmp-ok-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2-3 error"
+diff $tmp-ng-data $tmp-ng-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2-4 error"
+
+###########################################
+# TEST2追加1
+# masterをstdinから入力
+
+cat $tmp-master | ${com} +ng3 key=1 - $tmp-tran  >$tmp-ok-data 3>$tmp-ng-data
+diff $tmp-ok-data $tmp-ok-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2追加1-1 error"
+
+diff $tmp-ng-data $tmp-ng-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2追加1-2 error"
+
+###########################################
+# TEST2追加2
+# tranをstdinから入力
+
+cat $tmp-tran | ${com} +ng3 key=1 $tmp-master  >$tmp-ok-data 3>$tmp-ng-data
+diff $tmp-ok-data $tmp-ok-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2追加2-1 error"
+
+diff $tmp-ng-data $tmp-ng-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2追加2-2 error"
+
+###########################################
+# TEST3
+# 連続するキーフィールドの場合
+
+cat << FIN > $tmp-master
+A A nameA1
+A A nameA2
+A B nameAB
+FIN
+
+cat << FIN > $tmp-tran
+x x A A x x
+x x A B x x
+x x B A x x
+FIN
+
+cat << FIN > $tmp-data
+x x A A nameA1 x x
+x x A A nameA2 x x
+x x A B nameAB x x
+FIN
+
+${com} key=3/4 $tmp-master $tmp-tran > $tmp-ok
+diff $tmp-ok $tmp-data
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3 error"
+
+###########################################
+# TEST4
+# 離れたキーフィールドの場合(通常は使用しません)
+
+cat << FIN > $tmp-master
+B a A nameA1
+B b A nameA2
+C c A nameAC
+FIN
+
+cat << FIN > $tmp-tran
+x B z A x
+x C x A x
+x A w B x
+x B y C x
+FIN
+
+cat << FIN > $tmp-data
+x B z A a nameA1 x
+x B z A b nameA2 x
+x C x A c nameAC x
+FIN
+
+${com} key=4@2 $tmp-master $tmp-tran > $tmp-ok
+diff $tmp-ok $tmp-data
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4 error"
+
+###########################################
+# 追加TEST1
+# キーリストの重複解消試験
+
+${com} key=4@2@2@4@4@2 $tmp-master $tmp-tran > $tmp-ok
+diff $tmp-ok $tmp-data
+[ $? -eq 0 ] ; ERROR_CHECK "追加TEST1 error"
+###########################################
+
+rm -f $tmp-*
+echo "${pythonversion} ${name}" OK
+
+exit 0
