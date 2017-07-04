@@ -1,0 +1,259 @@
+#!/usr/bin/env python
+#coding: utf-8
+#
+# check_cmp_name : name 形式データの値の大小関係をチェックする（Open usp Tukubai版）
+# 
+# designed by Nobuaki Tounaka
+#
+# The MIT License
+#
+# Copyright (C) 2011 Universal Shell Programming Laboratory
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+from __future__ import print_function
+import sys
+import os
+import itertools
+
+_usage = "check_cmp_name <expression> <name_file>"
+_usage2 = "[--through <string>]"
+_version = "Fri Oct 21 11:26:06 JST 2011"
+_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
+
+def error(msg, *arg):
+	print('Error[check_cmp_name] :', msg % arg, file=sys.stderr)
+	sys.exit(1)
+
+def usage():
+	print("Usage   :", _usage, file=sys.stderr)
+	print("        :", _usage2, file=sys.stderr)
+	print("Version :", _version, file=sys.stderr)
+	print("         ", _code, file=sys.stderr)
+	sys.exit(1)
+
+# ファイルオープン
+def open_file(filename, mode = 'r'):
+	# 入力でファイル名が'-'または省略なら標準入力とする
+	if mode=="r" and (filename=='-' or filename == None): 
+		file = sys.stdin
+	else: # その他の入力ファイルのとき
+		try:
+			file = open(filename, mode)
+		except:
+			error("ファイル '%s' をオープンできません。", filename)
+	return file
+
+# 改行符号（\r\n）の削除関数
+def rm_eol(line):
+	return line.rstrip('\n').rstrip('\r')
+
+# 比較関数
+def compare(expression_type,lterm,lstring,rterm,rstring,op,lvalue,rvalue,through_string):
+	# expression_typeが"tn"または"nt"のとき
+	#  lterm/lvalueはexpressionの左辺の文字列とこれを変換した数値
+	#  rterm/rvalueはexpressionの右辺の文字列とこれを変換した数値
+	# expression_typeが"tt"のときは
+	#  lterm/lvalueは比較元のnameファイルからとりだした行の第1項とこれを変換した数値
+	#  rterm/rvalueは比較先のnameファイルからとりだした行の第2項とこれを変換した数値
+	# opは比較演算子
+	# lstring/rstringはnameファイルからとりだした行の第1項と第2項
+
+	# lstring/rstringを"_"で区切ってtag名とその後を分離して"head"と"tail"にする
+	tailpos=lstring.find("_")
+	if tailpos>=0:
+		lstring_head=lstring[0:tailpos]
+		lstring_tail=lstring[tailpos+1:]
+	else: # みつからないとき
+		lstring_head=lstring
+		lstring_tail=""
+	tailpos=rstring.find("_")
+	if tailpos>=0:
+		rstring_head=rstring[0:tailpos]
+		rstring_tail=rstring[tailpos+1:]
+	else:
+		rstring_head=rstring
+		rstring_tail=""
+
+	# expressionが"tag名 比較演算子 数値"のとき
+	if expression_type=="tn" and lstring_head==lterm: # データ行第1項のtag名がexpressionの第1項に等しい
+		if rstring in through_string: return True # 比較をskip
+		try:
+			lvalue=float(rstring) # 第2項を数値に変換
+		except:
+			error("nameファイルの中のデータ('%s')は数値ではありません",rstring)
+	# expressionが"数値 比較演算子 tag名"のとき
+	elif expression_type=="nt" and lstring_head==rterm: # データ行第1項のtag名がexpressionの第2項に等しい
+		if rstring in through_string: return True # 比較をskip
+		try:
+			rvalue=float(rstring) # 第2項を数値に変換
+		except:
+			error("nameファイルの中のデータ('%s')は数値ではありません",rstring)
+	# expressionが"tag名 比較演算子 tag名"のとき
+	# 比較元と比較先でheadの組がexpressionのtag名の組と一致しtailが同一（グループ）のとき比較を実行する
+	elif expression_type!="tt" or lterm!=lstring_head or rterm!=rstring_head \
+		or lstring_tail!=rstring_tail:
+		return True # 一致しないときは比較をしない
+
+	# 左右両辺の数値を得たので比較の実行をする
+	if op=="-EQ" and lvalue==rvalue: return True
+	if op=="-NE" and not lvalue==rvalue: return True
+	if op=="-GE" and lvalue>=rvalue: return True
+	if op=="-GT" and lvalue>rvalue: return True
+	if op=="-LE" and lvalue<=rvalue: return True
+	if op=="-LT" and lvalue<rvalue: return True
+
+	# 比較で不成立（False）となった
+	print(lstring) # nameファイルの第1項を出力
+	if expression_type=="tt": # "tag名 比較演算子 tag名"のときは両方のtagを出力
+		print(rstring)
+	return False # 比較をして条件を満たさなかった
+
+# main
+
+if __name__ == '__main__':
+
+	ret_code = 0 # default値
+	operators=["-EQ", "-NE", "-GE", "-GT", "-LE", "-LT"] 
+
+	# コマンドの説明表示
+	if len(sys.argv) <= 1 \
+	 or sys.argv[1] == '--help' \
+	 or sys.argv[1] == '--version':
+		usage()
+
+	# パラメータ解析
+	numparam=0
+	minparam=2
+	maxparam=2
+	through_string=[]
+	while len(sys.argv) > 1:
+		if sys.argv[1].startswith("--through"): # throughパラメータ
+			del(sys.argv[1]) # popup
+			if len(sys.argv)<2:
+				error("--throughパラメータの値がありません")
+			through_string.append(sys.argv[1])
+		else:
+			numparam+=1
+			if numparam==1: # expression
+				expression_string=sys.argv[1]
+			elif numparam==2: # name
+				name_filename=sys.argv[1]
+		del(sys.argv[1]) # popup
+
+	# パラメータ検査
+	if numparam<minparam:
+		error("パラメータの数が足りません")
+	if numparam>maxparam:
+		error("パラメータの数が多すぎます")
+	# throughオプションの指定がなかったときはdefault値を使う
+	if len(through_string)==0:
+		through_string.append("_")
+
+	# expressionの検査
+	lterm,rterm="",""
+	lvalue,rvalue=0,0
+	expression=expression_string.split()
+	if len(expression) != 3: error("expressionの形式('%s')が不正です",expression_string)
+	op=expression[1].upper() # 比較演算子
+
+	if not op in operators:
+		error("expressionの比較演算子('%s')が不正です",op)
+	try:
+		lvalue=float(expression[0])
+	except:
+		lterm="tag" # 左辺は数値ではなくtag名
+	try:
+		rvalue=float(expression[2])
+	except:
+		rterm="tag" # 右辺は数値ではなくtag名
+	# expressionの第1項と第3項がともにtag名のとき
+	if lterm=="tag" and rterm=="tag":
+		expression_type="tt" # "tag名 比較演算子 tag名"
+	# expressionの第1項または第3項がtag名のとき
+	elif lterm=="tag" and not rterm=="tag":
+		expression_type="tn" # "tag名 比較演算子 数値"
+	elif not lterm=="tag" and rterm=="tag":
+		expression_type="nt" # 数値 比較演算子 tag名"
+	# expressionの第1項と第3項がともに数値のとき
+	else:
+		error("expressionの第1項と第3項がともに数値です")
+
+	# expressionの左辺と右辺を記録する
+	lterm=expression[0]
+	rterm=expression[2]
+
+	# nameファイルを開く
+	namefile=open_file(name_filename)
+
+	namedict={}
+	keys=[]
+	values=[]
+	# nameファイルをすべて読み込む
+	for line in namefile:
+		line=rm_eol(line)
+		fields=line.split(' ',1) # 最初の半角空白で行を2分割する
+		if len(fields)!=2:
+			error("nameファイルのフィールド数が2ではありません")
+		# nameファイルにおけるnameの重複検査
+		if fields[0] in namedict:
+			error("nameファイルのname部に重複があります")
+		# namedictへ追加
+		namedict[fields[0]]=fields[1]
+	if len(namedict)==0:
+		error("nameファイルが空です")
+	# nameファイルを閉じる
+	namefile.close()
+
+	namelist=namedict.keys()
+	# expression_typeが"tt"ならnameファイルの各行の組み合わせに対し総当たりで比較する
+	if expression_type=="tt":
+		count=0
+		for pair in itertools.product(namelist,namelist): # nameファイル各行の総当たり組み合わせを列挙
+			name1=pair[0]
+			name2=pair[1]
+			if name1==name2: continue # 同一要素の組はskipする
+			# レコードから比較用の数値を得て左辺値とする
+			if namedict[name1] in through_string: continue # data部がthrough文字列ならskipする
+			try:
+				lvalue=float(namedict[name1])
+			except:
+				error("nameファイルの第2項('%s')が数値ではありません",namedict[name1])
+			# レコードから比較用の数値を得て右辺値とする
+			if namedict[name2] in through_string: continue # data部がthrough文字列ならskipする
+			try:
+				rvalue=float(namedict[name2])
+			except:
+				error("nameファイルの第2項('%s')が数値ではありません",namedict[name2])
+			# 比較する
+			match=compare(expression_type,lterm,name1,rterm,name2,op,lvalue,rvalue,through_string)
+			if not match: ret_code=1
+
+	# expression_typeが"tn"または"nt"ならnameファイルを走査して各行個別に比較する
+	else:
+		if expression_type=="tn":
+			rvalue=float(rterm) # 共通する右辺値を得る（左辺値は各個にcompare()内で得る）
+		elif expression_type=="nt":
+			lvalue=float(lterm) # 共通する左辺値を得る（右辺値は各個にcompare()内で得る）
+		for name in namelist:
+			match=compare(expression_type,lterm,name,rterm,namedict[name],op,lvalue,rvalue,through_string)
+			if not match: ret_code=1
+
+	# 終了
+	sys.exit(ret_code)
