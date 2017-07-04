@@ -1,23 +1,43 @@
-#!/usr/local/bin/bash -xv
+#!/bin/bash
+#!/usr/local/bin/bash -xv # コマンド処理系の変更例
 #
-# test script of map 
+# test script of map
 #
-# usage: ./map.test <command path>
-
-name=map
-    
+# usage: [<test-path>/]map.test [<command-path> [<python-version>]]
+#
+#            <test-path>は
+#                    「現ディレクトリーからみた」本スクリプトの相対パス
+#                    または本スクリプトの完全パス
+#                    省略時は現ディレクトリーを仮定する
+#            <command-path>は
+#                    「本スクリプトのディレクトリーからみた」test対象コマンドの相対パス
+#                    またはtest対象コマンドの完全パス
+#                    省略時は本スクリプトと同じディレクトリーを仮定する
+#                    値があるときまたは空値（""）で省略を示したときはあとにつづく<python-version>を指定できる
+#            <python-version>は
+#                    使用するpython処理系のversion（minor versionまで指定可）を指定する
+#                    （例 python2 python2.6 phthon3 python3.4など）
+#                    単にpythonとしたときは現実行環境下でのdefault versionのpythonを使用する
+#                    文字列"python"は大文字/小文字の区別をしない
+#                    省略時はpythonを仮定する
+name=map # test対象コマンドの名前
+testpath=$(dirname $0) # 本スクリプト実行コマンドの先頭部($0)から本スクリプトのディレトリー名をとりだす
+cd $testpath # 本スクリプトのあるディレクトリーへ移動
+if test "$2" = ""; # <python-version>($2)がなければ
+	then pythonversion="python" # default versionのpythonとする
+	else pythonversion="$2" # <python-version>($2)があれば指定versionのpythonとする
+fi
+if test "$1" = ""; # <command-path>($1)がなければ
+	then commandpath="." # test対象コマンドは現ディレクトリーにある
+	else commandpath="$1" # <command-path>($1)があればtest対象コマンドは指定のディレクトリーにある
+fi
+com="${pythonversion} ${commandpath}/${name}" # python処理系によるtest対象コマンド実行の先頭部
 tmp=/tmp/$$
-dir=$(dirname $0)/..
-cd $dir
-    
-com="$2 ./$1/${name}"
-[ "$1" = "" ] && com="./$1/${name}"
 
 ERROR_CHECK(){
 	[ "$(echo ${PIPESTATUS[@]} | tr -d ' 0')" = "" ] && return
-
 	echo $1
-	echo "$com" NG
+	echo "${pythonversion} ${name}" NG
 	rm -f $tmp-*
 	exit 1
 }
@@ -41,6 +61,393 @@ ${com} num=1 $tmp-in > $tmp-ans
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST1 error"
 
+###########################################
+#TEST2
+# stdin入力
+
+cat << FIN > $tmp-in
+a あ 1
+b い 2
+b う 3
+FIN
+
+cat << FIN > $tmp-out
+* あ い う
+a 1 0 0
+b 0 2 3
+FIN
+
+cat $tmp-in | ${com} num=1 > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2 error"
+
+###########################################
+#TEST-E1
+# 例1
+# numの値は縦キーの最後のフィールドを指し示す2を指定する
+
+cat << FIN > $tmp-in
+001 a店 01/01 103
+001 a店 01/02 157
+002 b店 01/01 210
+002 b店 01/02 237
+FIN
+
+cat << FIN > $tmp-out
+* * 01/01 01/02
+001 a店 103 157
+002 b店 210 237
+FIN
+
+${com} num=2 $tmp-in > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST-E1 error"
+
+###########################################
+#TEST-E2
+# 例2
+# データに欠落がある場合、データが存在しない場所に値0が補完される。
+
+cat << FIN > $tmp-in
+001 a店 01/01 103
+002 b店 01/02 237
+FIN
+
+cat << FIN > $tmp-out
+* * 01/01 01/02
+001 a店 103 0
+002 b店 0 237
+FIN
+
+${com} num=2 $tmp-in > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST-E2 error"
+
+###########################################
+#TEST-E3
+# 例3
+# データ部が複数列ある場合には複数行にマッピングが実施される
+# この時、各行にはA B C ...と順にインデックスが追加される。
+
+cat << FIN > $tmp-in
+a店 1日目 103 62
+a店 2日目 157 94
+a店 3日目 62 30
+a店 4日目 131 84
+a店 5日目 189 111
+a店 6日目 350 20
+a店 7日目 412 301
+b店 1日目 210 113
+b店 2日目 237 121
+b店 3日目 150 82
+b店 4日目 198 105
+b店 5日目 259 189
+b店 6日目 421 287
+b店 7日目 589 493
+c店 1日目 81 52
+c店 2日目 76 49
+c店 3日目 38 21
+c店 4日目 81 48
+c店 5日目 98 61
+c店 6日目 109 91
+c店 7日目 136 110
+d店 1日目 75 48
+d店 2日目 72 42
+d店 3日目 34 19
+d店 4日目 74 43
+d店 5日目 91 51
+d店 6日目 98 69
+d店 7日目 101 90
+FIN
+
+cat << FIN > $tmp-out
+* * 1日目 2日目 3日目 4日目 5日目 6日目 7日目
+a店 A 103 157 62 131 189 350 412
+a店 B 62 94 30 84 111 20 301
+b店 A 210 237 150 198 259 421 589
+b店 B 113 121 82 105 189 287 493
+c店 A 81 76 38 81 98 109 136
+c店 B 52 49 21 48 61 91 110
+d店 A 75 72 34 74 91 98 101
+d店 B 48 42 19 43 51 69 90
+FIN
+
+${com} num=1 $tmp-in > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST-E3 error"
+
+###########################################
+#TEST-E4
+# 例4
+# 例3の結果をさらにsed(1)コマンドでAを売数、Bを客数に置換すると次のような表になる
+
+cat << FIN > $tmp-out
+* * 1日目 2日目 3日目 4日目 5日目 6日目 7日目
+a店 売数 103 157 62 131 189 350 412
+a店 客数 62 94 30 84 111 20 301
+b店 売数 210 237 150 198 259 421 589
+b店 客数 113 121 82 105 189 287 493
+c店 売数 81 76 38 81 98 109 136
+c店 客数 52 49 21 48 61 91 110
+d店 売数 75 72 34 74 91 98 101
+d店 客数 48 42 19 43 51 69 90
+FIN
+
+${com} num=1 $tmp-in | sed -e 's/A/売数/1' -e 's/B/客数/1' > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST-E4 error"
+
+###########################################
+#TEST-E5
+# 例5
+# +yarrオプションを指定することでデータ部の複数列を横に展開することができる。
+
+cat << FIN > $tmp-out
+* 1日目 1日目 2日目 2日目 3日目 3日目 4日目 4日目 5日目 5日目 6日目 6日目 7日目 7日目
+* a b a b a b a b a b a b a b
+a店 103 62 157 94 62 30 131 84 189 111 350 20 412 301
+b店 210 113 237 121 150 82 198 105 259 189 421 287 589 493
+c店 81 52 76 49 38 21 81 48 98 61 109 91 136 110
+d店 75 48 72 42 34 19 74 43 91 51 98 69 101 90
+FIN
+
+cat << FIN > $tmp-out2
+* 1日目 1日目 2日目 2日目 3日目 3日目 4日目 4日目 5日目 5日目 6日目 6日目 7日目 7日目
+* 売数 客数 売数 客数 売数 客数 売数 客数 売数 客数 売数 客数 売数 客数
+a店 103 62 157 94 62 30 131 84 189 111 350 20 412 301
+b店 210 113 237 121 150 82 198 105 259 189 421 287 589 493
+c店 81 52 76 49 38 21 81 48 98 61 109 91 136 110
+d店 75 48 72 42 34 19 74 43 91 51 98 69 101 90
+FIN
+
+${com} +yarr num=1 $tmp-in > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST-E5-1 error"
+
+${com} +yarr num=1 $tmp-in | sed -e '2s/a/売数/g' -e '2s/b/客数/g' > $tmp-ans
+diff $tmp-ans $tmp-out2
+[ $? -eq 0 ] ; ERROR_CHECK "TEST-E5-2 error"
+
+# 横インデックスが不要な場合には+arrオプションを使用する。
+
+cat << FIN > $tmp-out3
+* 1日目 1日目 2日目 2日目 3日目 3日目 4日目 4日目 5日目 5日目 6日目 6日目 7日目 7日目
+a店 103 62 157 94 62 30 131 84 189 111 350 20 412 301
+b店 210 113 237 121 150 82 198 105 259 189 421 287 589 493
+c店 81 52 76 49 38 21 81 48 98 61 109 91 136 110
+d店 75 48 72 42 34 19 74 43 91 51 98 69 101 90
+FIN
+
+${com} +arr num=1 $tmp-in > $tmp-ans
+diff $tmp-ans $tmp-out3
+[ $? -eq 0 ] ; ERROR_CHECK "TEST-E5-3 error"
+
+###########################################
+#TEST-E6
+# 例6
+# -mオプションで補完文字を指定できる。デフォルトは0。
+
+cat << FIN > $tmp-in
+A a 1
+A b 2
+B a 4
+FIN
+
+cat << FIN > $tmp-out
+* a b
+A 1 2
+B 4 @
+FIN
+
+${com} -m@ num=1 $tmp-in > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST-E6 error"
+
+###########################################
+#TEST-E7
+# 例7
+# -<数値>オプションを妻うことで<数値>フィールド分ずつmap(1)を実施することができる。
+# <数値>はデータ部のフィールド数の約数である必要がある。
+
+#↓データ部を1 2 3と4 5 6というように3つずmapしたい
+cat << FIN > $tmp-in
+X x 1 2 3 4 5 6
+X y 1 2 3 4 5 6
+Y x 1 2 3 4 5 6
+Y y 1 2 3 4 5 6
+FIN
+
+cat << FIN > $tmp-out
+* * x x y y
+* * a b a b
+X A 1 4 1 4
+X B 2 5 2 5
+X C 3 6 3 6
+Y A 1 4 1 4
+Y B 2 5 2 5
+Y C 3 6 3 6
+FIN
+
+${com} -3 num=1 $tmp-in > $tmp-ans	# 3フィールド分ずmap(1)する
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST-E7-1 error"
+
+cat << FIN > $tmp-out2
+* * x x x y y y
+* * a b c a b c
+X A 1 2 3 1 2 3
+X B 4 5 6 4 5 6
+Y A 1 2 3 1 2 3
+Y B 4 5 6 4 5 6
+FIN
+
+${com} +yarr -3 num=1 $tmp-in > $tmp-ans	# +yarrの場合、3フィールド分ずつ折り返し
+diff $tmp-ans $tmp-out2
+[ $? -eq 0 ] ; ERROR_CHECK "TEST-E7-2 error"
+
+###########################################
+#TEST-E8
+# 例8
+# num=<n>x<m>で縦キー<n>個、横キー<m>個にすることができる。横キーはヘッダー<m>行に展開される。
+
+cat << FIN > $tmp-in
+X1 Y1 Z1 1 8
+X1 Y1 Z2 2 7
+X1 Y2 Z1 3 6
+X1 Y2 Z2 4 5
+X2 Y1 Z1 5 4
+X2 Y1 Z2 6 3
+X2 Y2 Z1 7 2
+X2 Y2 Z2 8 1
+FIN
+
+# ↓横ヘッダーが2行になる
+cat << FIN > $tmp-out
+* * Y1 Y1 Y2 Y2
+* * Z1 Z2 Z1 Z2
+X1 A 1 2 3 4
+X1 B 8 7 6 5
+X2 A 5 6 7 8
+X2 B 4 3 2 1
+FIN
+
+${com}  num=1x2 $tmp-in > $tmp-ans
+
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST-E8-1 error"
+
+# ↓横ヘッダーが2行になる
+cat << FIN > $tmp-out2
+* Y1 Y1 Y1 Y1 Y2 Y2 Y2 Y2
+* Z1 Z1 Z2 Z2 Z1 Z1 Z2 Z2
+* a b a b a b a b
+X1 1 8 2 7 3 6 4 5
+X2 5 4 6 3 7 2 8 1
+FIN
+
+${com} +yarr num=1x2 $tmp-in > $tmp-ans
+
+diff $tmp-ans $tmp-out2
+[ $? -eq 0 ] ; ERROR_CHECK "TEST-E8-2 error"
+
+###########################################
+#TEST-E9
+# 例9
+# -<数字>オプションとnum=<n>x<m>を組み合わせると次のように動作する。
+
+cat << FIN > $tmp-in
+X1 Y1 Z1 1 8 4 5 6 7
+X1 Y1 Z2 2 7 4 5 6 7
+X1 Y2 Z1 3 6 4 5 6 7
+X1 Y2 Z2 4 5 4 5 6 7
+X2 Y1 Z1 5 4 4 5 6 7
+X2 Y1 Z2 6 3 4 5 6 7
+X2 Y2 Z1 7 2 4 5 6 7
+X2 Y2 Z2 8 1 4 5 6 7
+FIN
+
+cat << FIN > $tmp-out
+* * Y1 Y1 Y1 Y1 Y2 Y2 Y2 Y2
+* * Z1 Z1 Z2 Z2 Z1 Z1 Z2 Z2
+* * a b a b a b a b
+X1 A 1 5 2 5 3 5 4 5
+X1 B 8 6 7 6 6 6 5 6
+X1 C 4 7 4 7 4 7 4 7
+X2 A 5 5 6 5 7 5 8 5
+X2 B 4 6 3 6 2 6 1 6
+X2 C 4 7 4 7 4 7 4 7
+FIN
+
+${com} -3 num=1x2 $tmp-in > $tmp-ans
+
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST-E9-1 error"
+
+cat << FIN > $tmp-out2
+* * Y1 Y1 Y1 Y1 Y1 Y1 Y2 Y2 Y2 Y2 Y2 Y2
+* * Z1 Z1 Z1 Z2 Z2 Z2 Z1 Z1 Z1 Z2 Z2 Z2
+* * a b c a b c a b c a b c
+X1 A 1 8 4 2 7 4 3 6 4 4 5 4
+X1 B 5 6 7 5 6 7 5 6 7 5 6 7
+X2 A 5 4 4 6 3 4 7 2 4 8 1 4
+X2 B 5 6 7 5 6 7 5 6 7 5 6 7
+FIN
+
+${com} +yarr -3 num=1x2 $tmp-in > $tmp-ans
+
+diff $tmp-ans $tmp-out2
+[ $? -eq 0 ] ; ERROR_CHECK "TEST-E9-2 error"
+
+###########################################
+#TEST-E10
+# 例10
+# -nオプションを指定すると、付加するインデックスが数値になる
+# -nを付けない場合にはアルファベットwが使われるのでインデックス数が26個までという制限があるが、
+# -nを指定した場合にはインデックスが26個に制限されず、データ部が多い場合もマップすることができる。
+
+cat << FIN > $tmp-in
+X1 Y1 A1 A2 A3 A4 A5 A6 A7 A8 A9 A10 A11 A12 A13 A14 A15 A16 A17 A18 A19 A20 A21 A22 A23 A24 A25 A26 A27
+X1 Y2 B1 B2 B3 B4 B5 B6 B7 B8 B9 B10 B11 B12 B13 B14 B15 B16 B17 B18 B19 B20 B21 B22 B23 B24 B25 B26 B27
+X1 Y3 C1 C2 C3 C4 C5 C6 C7 C8 C9 C10 C11 C12 C13 C14 C15 C16 C17 C18 C19 C20 C21 C22 C23 C24 C25 C26 C27
+FIN
+
+cat << FIN > $tmp-out
+* * Y1 Y2 Y3
+X1 1 A1 B1 C1
+X1 2 A2 B2 C2
+X1 3 A3 B3 C3
+X1 4 A4 B4 C4
+X1 5 A5 B5 C5
+X1 6 A6 B6 C6
+X1 7 A7 B7 C7
+X1 8 A8 B8 C8
+X1 9 A9 B9 C9
+X1 10 A10 B10 C10
+X1 11 A11 B11 C11
+X1 12 A12 B12 C12
+X1 13 A13 B13 C13
+X1 14 A14 B14 C14
+X1 15 A15 B15 C15
+X1 16 A16 B16 C16
+X1 17 A17 B17 C17
+X1 18 A18 B18 C18
+X1 19 A19 B19 C19
+X1 20 A20 B20 C20
+X1 21 A21 B21 C21
+X1 22 A22 B22 C22
+X1 23 A23 B23 C23
+X1 24 A24 B24 C24
+X1 25 A25 B25 C25
+X1 26 A26 B26 C26
+X1 27 A27 B27 C27
+FIN
+
+${com} -n num=1 $tmp-in > $tmp-ans
+
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST-E10 error"
+
+
 rm -f $tmp-*
-echo "${com}" OK
+echo "${pythonversion} ${name}" OK
 exit 0
