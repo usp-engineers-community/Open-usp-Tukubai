@@ -1,0 +1,188 @@
+#!/bin/bash
+#!/usr/local/bin/bash -xv # コマンド処理系の変更例
+#
+# test script of unmap
+#
+# usage: [<test-path>/]unmap.test [<command-path> [<python-version>]]
+#
+#            <test-path>は
+#                    「現ディレクトリーからみた」本スクリプトの相対パス
+#                    または本スクリプトの完全パス
+#                    省略時は現ディレクトリーを仮定する
+#            <command-path>は
+#                    「本スクリプトのディレクトリーからみた」test対象コマンドの相対パス
+#                    またはtest対象コマンドの完全パス
+#                    省略時は本スクリプトと同じディレクトリーを仮定する
+#                    値があるときまたは空値（""）で省略を示したときはあとにつづく<python-version>を指定できる
+#            <python-version>は
+#                    使用するpython処理系のversion（minor versionまで指定可）を指定する
+#                    （例 python2 python2.6 phthon3 python3.4など）
+#                    単にpythonとしたときは現実行環境下でのdefault versionのpythonを使用する
+#                    文字列"python"は大文字/小文字の区別をしない
+#                    省略時はpythonを仮定する
+name=unmap # test対象コマンドの名前
+testpath=$(dirname $0) # 本スクリプト実行コマンドの先頭部($0)から本スクリプトのディレトリー名をとりだす
+cd $testpath # 本スクリプトのあるディレクトリーへ移動
+if test "$2" = ""; # <python-version>($2)がなければ
+	then pythonversion="python" # default versionのpythonとする
+	else pythonversion="$2" # <python-version>($2)があれば指定versionのpythonとする
+fi
+if test "$1" = ""; # <command-path>($1)がなければ
+	then commandpath="." # test対象コマンドは現ディレクトリーにある
+	else commandpath="$1" # <command-path>($1)があればtest対象コマンドは指定のディレクトリーにある
+fi
+com="${pythonversion} ${commandpath}/${name}" # python処理系によるtest対象コマンド実行の先頭部
+tmp=/tmp/$$
+
+ERROR_CHECK(){
+	[ "$(echo ${PIPESTATUS[@]} | tr -d ' 0')" = "" ] && return
+	echo $1
+	echo "${pythonversion} ${name}" NG
+	rm -f $tmp-*
+	exit 1
+}
+
+###########################################
+#TEST1
+
+cat << FIN > $tmp-in
+* あ い う
+a 1 0 0
+b 0 2 3
+FIN
+
+cat << FIN > $tmp-out
+a あ 1
+a い 0
+a う 0
+b あ 0
+b い 2
+b う 3
+FIN
+
+${com} num=1 $tmp-in > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1 error"
+
+###########################################
+#TEST2
+# stdin入力
+
+cat $tmp-in | ${com} num=1 > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2 error"
+
+###########################################
+#TEST-E1
+# 例1
+# numの値は縦キーの最後のフィールドを指し示す2を指定する
+
+cat << FIN > $tmp-in
+* * 01/01 01/02
+001 a店 103 157
+002 b店 210 237
+FIN
+
+cat << FIN > $tmp-out
+001 a店 01/01 103
+001 a店 01/02 157
+002 b店 01/01 210
+002 b店 01/02 237
+FIN
+
+${com} num=2 $tmp-in > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST-E1 error"
+
+###########################################
+#TEST-E2
+# 例2
+# データ部が複数種ある場合には複数列にマッピングが実施される
+# 第2列にはA B C ...と順にインデックスが付いている。
+
+cat << FIN > $tmp-in
+* * 1日目 2日目 3日目 4日目 5日目 6日目 7日目
+a店 A 103 157 62 131 189 350 412
+a店 B 62 94 30 84 111 20 301
+b店 A 210 237 150 198 259 421 589
+b店 B 113 121 82 105 189 287 493
+c店 A 81 76 38 81 98 109 136
+c店 B 52 49 21 48 61 91 110
+d店 A 75 72 34 74 91 98 101
+d店 B 48 42 19 43 51 69 90
+FIN
+
+cat << FIN > $tmp-out
+a店 1日目 103 62
+a店 2日目 157 94
+a店 3日目 62 30
+a店 4日目 131 84
+a店 5日目 189 111
+a店 6日目 350 20
+a店 7日目 412 301
+b店 1日目 210 113
+b店 2日目 237 121
+b店 3日目 150 82
+b店 4日目 198 105
+b店 5日目 259 189
+b店 6日目 421 287
+b店 7日目 589 493
+c店 1日目 81 52
+c店 2日目 76 49
+c店 3日目 38 21
+c店 4日目 81 48
+c店 5日目 98 61
+c店 6日目 109 91
+c店 7日目 136 110
+d店 1日目 75 48
+d店 2日目 72 42
+d店 3日目 34 19
+d店 4日目 74 43
+d店 5日目 91 51
+d店 6日目 98 69
+d店 7日目 101 90
+FIN
+
+${com} num=1 $tmp-in > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST-E2 error"
+
+###########################################
+
+###########################################
+#TEST-E3
+# 例3
+# +yarrオプションを指定することでインデックスの行がついた入力をすることができる。
+
+cat << FIN > $tmp-in
+* 1日目 1日目 2日目 2日目 3日目 3日目 4日目 4日目 5日目 5日目 6日目 6日目 7日目 7日目
+* a b a b a b a b a b a b a b
+a店 103 62 157 94 62 30 131 84 189 111 350 20 412 301
+b店 210 113 237 121 150 82 198 105 259 189 421 287 589 493
+c店 81 52 76 49 38 21 81 48 98 61 109 91 136 110
+d店 75 48 72 42 34 19 74 43 91 51 98 69 101 90
+FIN
+
+${com} +yarr num=1 $tmp-in > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST-E5-1 error"
+
+
+# インデックスの行がない場合には+arrオプションを使用する。
+
+cat << FIN > $tmp-in2
+* 1日目 1日目 2日目 2日目 3日目 3日目 4日目 4日目 5日目 5日目 6日目 6日目 7日目 7日目
+a店 103 62 157 94 62 30 131 84 189 111 350 20 412 301
+b店 210 113 237 121 150 82 198 105 259 189 421 287 589 493
+c店 81 52 76 49 38 21 81 48 98 61 109 91 136 110
+d店 75 48 72 42 34 19 74 43 91 51 98 69 101 90
+FIN
+
+${com} +arr num=1 $tmp-in2 > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST-E5-2 error"
+
+
+rm -f $tmp-*
+echo "${pythonversion} ${name}" OK
+exit 0
