@@ -28,6 +28,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from __future__ import print_function
+
 _usage = "mojihame <template> <data>            (通常)"
 _usage1 = "mojihame -l <label> <template> <data> (行単位)"
 _usage2 = "mojihame -h <label> <template> <data> (階層データ)"
@@ -40,16 +42,16 @@ import os
 import sys
 
 def error(msg, *arg):
-	print >> sys.stderr, 'Error[mojihame] :', msg % arg
+	print('Error[mojihame] :', msg % arg, file=sys.stderr)
 	sys.exit(1)
 
 def usage():
-	print >> sys.stderr, "Usage   :", _usage
-	print >> sys.stderr, "        :", _usage1
-	print >> sys.stderr, "        :", _usage2
-	print >> sys.stderr, "Option  :", _option
-	print >> sys.stderr, "Version :", _version
-	print >> sys.stderr, "         ", _code
+	print("Usage   :", _usage, file=sys.stderr)
+	print("        :", _usage1, file=sys.stderr)
+	print("        :", _usage2, file=sys.stderr)
+	print("Option  :", _option, file=sys.stderr)
+	print("Version :", _version, file=sys.stderr)
+	print("         ", _code, file=sys.stderr)
 	sys.exit(1)
 
 class FieldLine:
@@ -191,6 +193,28 @@ def do_hier(tmpl, label, data, top):
 			repl_put(''.join(tail).split('%'), blk[0])
 
 #
+# 直接入力文字列の前処理
+#
+#  Python3においてコマンドラインからの直接入力文字列中にUnicode符号位置がU+FFFFを超えるコードがあると
+#  Unicode文字に正しく変換されない場合があることへの対処をする
+def utf2ucs(instr):
+	outstr=""	# 出力文字列
+	intlist=[]	# 作業用整数リスト
+	for char in instr:
+		if ord(char)>=0xdc00 and ord(char)<=0xdcff:	# 文字の符号位置がU+DCxxの範囲にあったら「UTF8もどき」
+			intlist.append(ord(char)-0xdc00)	# 0xdc00のげたをはずして整数リストに入れる
+		else:	# 通常文字がきたら
+			if len(intlist)>0:	# ここまでに「UTF8もどき」列を変換した整数リストがあったら
+				# bytesに変換してutf8からUCSへの変換をして出力文字列に追加
+				outstr+= bytes(intlist).decode("utf_8")
+				intlist=[]	# 整数リストを再初期化
+			outstr+=char	# 新しくきた通常文字を出力文字列に追加
+	# 「UTF8もどき」列を変換した整数リストが残っていたら
+	# bytesに変換してutf8からUCSへの変換をして出力文字列に追加
+	if len(intlist)>0:	outstr+= bytes(intlist).decode("utf_8")
+	return outstr
+
+#
 #メイン関数
 #
 if __name__ == '__main__':
@@ -234,6 +258,9 @@ if __name__ == '__main__':
 
 	if len(sys.argv) < 2:
 		usage()
+
+	if null != '@' and sys.version_info >= (3, 0):
+		null=utf2ucs(null)	# Python3のときは直接入力文字列の前処理をする
 
 	#
 	# 入力ファイルオープン
