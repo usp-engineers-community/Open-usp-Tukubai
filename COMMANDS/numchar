@@ -27,6 +27,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from __future__ import print_function
+
 _usage = "numchar < <file>"
 _version = "Tue Sep 10 11:38:19 JST 2013"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
@@ -37,14 +39,26 @@ import sys
 import codecs
 
 def error(msg, *arg):
-	print >> sys.stderr, 'Error[numchar] :', msg % arg
+	print('Error[numchar] :', msg % arg, file=sys.stderr)
 	sys.exit(1)
 
 def usage():
-	print >> sys.stderr, "Usage   :", _usage
-	print >> sys.stderr, "Version :", _version
-	print >> sys.stderr, "         ", _code
+	print("Usage   :", _usage, file=sys.stderr)
+	print("Version :", _version, file=sys.stderr)
+	print("         ", _code, file=sys.stderr)
 	sys.exit(1)
+
+# 文字からコードポイントを得てリストに追加する
+def append_codepoint(c,numlist):
+	cp=ord(c)
+	if cp <= 0xffff:	# サロゲードペアの各コードユニットはここで処理される
+		return numlist.append(cp)
+	# U+ffff超のunicode文字はサロゲートペアに変換してコードユニット対にする
+	cp -= 0x10000
+	high = cp >> 10   | 0xD800
+	low  = cp & 0x3FF | 0xDC00
+	numlist+=[high,low]
+	return numlist
 
 def openReadFile(file_name):
         if file_name != "-":
@@ -59,5 +73,6 @@ def openReadFile(file_name):
 if __name__ == '__main__':
 
 	for line in openReadFile("-"):
-		print "".join([ "&#x%x;" % ord(c) for c in line.rstrip() ])
-
+		numlist=[]
+		for c in line.rstrip(): append_codepoint(c,numlist)
+		print("".join(map(lambda num: "&#x%x;" % num, numlist)))
