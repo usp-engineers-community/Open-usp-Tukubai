@@ -1,0 +1,245 @@
+#!/usr/bin/env python
+#coding: utf-8
+#
+# 1bai : 前0をとる（Open usp Tukubai版）
+# 
+# designed by Nobuaki Tounaka
+#
+# The MIT License
+#
+# Copyright (C) 2011 Universal Shell Programming Laboratory
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+from __future__ import print_function
+import sys
+
+_usage = "1bai [-r] f1 f2 .. file"
+_usage2 = "1bai -d[r] string"
+_version = "Fri Oct 21 11:26:06 JST 2011"
+_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
+
+def error(msg, *arg):
+	print('Error[1bai] :', msg % arg, file=sys.stderr)
+	sys.exit(1)
+
+def usage():
+	print("Usage   :", _usage, file=sys.stderr)
+	print("        :", _usage2, file=sys.stderr)
+	print("Version :", _version, file=sys.stderr)
+	print("         ", _code, file=sys.stderr)
+	sys.exit(1)
+
+# ファイルオープン
+def open_file(filename, mode = 'r'):
+	# 入力でファイル名が'-'または省略なら標準入力とする
+	if mode=="r" and (filename=='-' or filename == None): 
+		file = sys.stdin
+	else:
+		try:
+			file = open(filename, mode)
+		except:
+			error("ファイル '%s' をオープンできません。", filename)
+	return file
+
+# 改行符号（\r\n）の削除関数
+def rm_eol(line):
+	return line.rstrip('\n').rstrip('\r')
+
+# （NFを含むかもしれない）フィールド要素を整数に変換する
+def intwithNF(str,NF):
+	# フィールド要素にNFを含むとき
+	if str=="NF":
+		return NF
+	elif str.startswith("NF-"):
+		str=str[3:]
+		try:
+			fieldnum=NF-int(str)
+		except:
+			error("キー指定のNF-n形式が不正です")
+	# NFを含まないとき
+	else:
+		try:
+			fieldnum=int(str)
+		except:
+			error("キー指定が整数ではありません")
+	if fieldnum<=0:
+		error("キー指定が0または負数です")
+	if fieldnum>NF:
+		error("フィールド指定がレコードのフィールド数を超えています")
+	return fieldnum
+
+# フィールド指定文字列からフィールドリストを作る（NFは確定値が渡されてくる）
+def GetKeyList(key,NF):
+	keylist=[]
+	# <n1/n2>形式
+	if "/" in key:
+		keystrlist=key.split("/")
+		if len(keystrlist)>2:
+			error("フィールド指定が不正です")
+		for str in keystrlist:
+			keylist.append(intwithNF(str,NF))
+		if keylist[0]<keylist[1]: # 昇順のとき
+			keylist=list(range(keylist[0],keylist[1]+1))
+		else: # 降順のとき
+			keylist=list(range(keylist[0],keylist[1]-1,-1))
+	#  <n1@n2@...>形式
+	elif "@" in key:
+		keystrlist=key.split("@")
+		for str in keystrlist:
+			keylist.append(intwithNF(str,NF))
+	#  <n>形式
+	else:
+		keylist.append(intwithNF(key,NF))
+	return keylist
+
+# 出力行の作成
+def MakeLine(fields):
+	outputline=""
+	for i in range(len(fields)):
+		outputline+=fields[i]+" "
+	outputline=outputline.rstrip()
+	return outputline
+
+# 前0の削除/小数点以下の後0の削除/符号処理/-r指定による正負反転
+def CripZero(field,r):
+	# format検査
+	try:
+		float(field)
+	except:
+		error("%sは数値ではありません",field)
+	if field.upper().find("E")>0: # 浮動小数点数は排除する
+		error("%sは整数でも固定小数点数でもありません",field)
+
+	# 負符号の記憶と削除
+	negative=False
+	if field[0]=="-":
+		negative=True
+		field=field.lstrip("-")
+
+	# 正符号の削除
+	else: field=field.lstrip("+")
+
+	# 前0と後0の削除
+	field=field.lstrip("0") # 前0の削除
+	if field.startswith("."): field="0"+field # 小数点で始まるときは前に0を付ける
+	if field.find(".")>=0:    field=field.rstrip("0") # 小数点を含むとき後0を削除
+	field=field.rstrip(".") # 小数点で終るときは整数とする
+	if field=="": return "0" # 0ならそのまま返す
+
+	# 負符号を復元する
+	if negative: field="-"+field
+
+	# 正負反転
+	if r: # 指定あり
+		# 数値化し正負反転し文字列に戻す
+		if field.find(".")>0: # 小数点付き
+			field=str(-float(field))
+		else: # 整数
+			field=str(-int(field))
+
+	return field
+
+# main
+
+if __name__ == '__main__':
+
+	r,d = False, False # default値
+
+	# コマンドの説明表示
+	if len(sys.argv) <= 1 \
+	 or sys.argv[1] == '--help' \
+	 or sys.argv[1] == '--version':
+		usage()
+
+	# パラメータ解析
+	numparam=0
+	minparam=1
+	fieldstrs=[]
+	fieldnums=[]
+	while len(sys.argv) > 1:
+		if sys.argv[1].startswith("-r"): # -rで始まるオプション
+			if r:
+				error("-rオプションが重複しています")
+			else: r=True
+			if sys.argv[1][2:]=="d": # -rdオプション
+				if d:
+					error("-dオプションが重複しています")
+				d=True
+			elif not sys.argv[1]=="-r": # -rオプション
+				error("%sは無効なオプションです",sys.argv[1])
+		elif sys.argv[1].startswith("-d"): # -dで始まるオプション
+			if d:
+				error("-dオプションが重複しています")
+			else: d=True
+			if sys.argv[1][2:]=="r": # -drオプション
+				if r:
+					error("-rオプションが重複しています")
+				r=True
+			elif not sys.argv[1]=="-d": # -dオプション
+				error("%sは無効なオプションです",sys.argv[1])
+		else:
+			fieldstrs.append(sys.argv[1]) # -r/-d以外をとりあえずリストに追加
+			numparam+=1
+		del(sys.argv[1]) # popup
+
+	# パラメータ検査
+	if numparam<minparam:
+		error("パラメータの数が足りません")
+	# -rオプションと-dオプション
+	if d:
+		string=fieldstrs.pop() # -r/-d以外の最後のパラメータをとって編集対象文字列とする
+	else:
+		filename=fieldstrs.pop() # -r/-d以外の最後のパラメータをとってファイル名とする
+
+	# ファイルに対する処理
+	if not d:
+		# 入力ファイルを開く
+		file=open_file(filename)
+
+		inputfields=[]
+		linecount=0
+
+		for line in file: # 入力ファイルを読む
+			line=rm_eol(line)
+			inputfields=line.split()
+
+			# 最初の行だけの処理
+			if linecount==0: 
+				NF=len(inputfields) # NFの値が確定した
+				# フィールド番号リストを得る
+				for fieldstr in fieldstrs:
+					fields=GetKeyList(fieldstr,NF)
+					for field in fields:
+						fieldnums.append(field)
+				# フィールド番号リストの重複解消
+				fieldnums=sorted(set(fieldnums),key=fieldnums.index) # 集合化によってリストの重複を解消し元のリストにおける出現位置をキーとしてsort
+
+			# 指定フィールドに対して前0の削除/小数点以下の後0の削除/符号処理/正負反転処理をする
+			for fieldnum in fieldnums:
+				inputfields[fieldnum-1]=CripZero(inputfields[fieldnum-1],r)
+			print(MakeLine(inputfields))
+			linecount+=1
+
+	# -d指定で文字列に対する直接処理
+	else:
+		print(CripZero(string,r))
+
+	# 終了
+	sys.exit(0)
