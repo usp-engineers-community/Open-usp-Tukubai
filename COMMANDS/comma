@@ -28,6 +28,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from __future__ import print_function
+
 _usage = "comma [+<n>h][-4] <f1> <f2> ... <file>"
 _usage1 = "comma -d[4] <string>"
 _version = "Fri Oct 21 11:26:06 JST 2011"
@@ -41,14 +43,14 @@ import os
 import sys
 
 def error(msg, *arg):
-	print >> sys.stderr, 'Error[comma] :', msg % arg
+	print('Error[comma] :', msg % arg, file=sys.stderr)
 	sys.exit(1)
 
 def usage():
-	print >> sys.stderr, "Usage   :", _usage
-	print >> sys.stderr, "        :", _usage1
-	print >> sys.stderr, "Version :", _version
-	print >> sys.stderr, "         ", _code
+	print("Usage   :", _usage, file=sys.stderr)
+	print("        :", _usage1, file=sys.stderr)
+	print("Version :", _version, file=sys.stderr)
+	print("         ", _code, file=sys.stderr)
 	sys.exit(1)
 
 class FieldLine:
@@ -118,9 +120,10 @@ def comma(str, four):
 		l = 4
 	else:
 		l = 3
-	str = ' ' * ((len(str) + l - 1) / l * l - len(str)) + str
-	str = re.sub('(.{%d})' % l, r',\1', str)
-	return re.sub('^, *', '', str)
+
+	r=re.match(r'[-+]?((\d+)(\.\d*)?|\.\d+)([eE][-+]?\d+)?\Z',str)
+	if not r: error("フィールド値が数値の形式ではありません。")
+	return str[:r.start(2)]+re.sub('^,','',re.sub('(\d{%d})' % l, r'\1,', r.group(2)[::-1])[::-1])+str[r.end(2):]
 
 #
 #メイン関数
@@ -138,7 +141,7 @@ if __name__ == '__main__':
 	if re.match(r'-d4?$', sys.argv[1]):
 		if len(sys.argv) != 3:
 			usage()
-		print comma(sys.argv[2], sys.argv[1][-1] == '4')
+		print(comma(sys.argv[2], sys.argv[1][-1] == '4'))
 		sys.exit(0)
 
 	#
@@ -182,7 +185,7 @@ if __name__ == '__main__':
 		line = file.readline()
 		if not line:
 			sys.exit(0)
-		print line,
+		print(line, end='')
 
 	#
 	# メインループ
@@ -204,7 +207,7 @@ if __name__ == '__main__':
 				f2 = line.getFieldNum(r.group(4))
 				if f1 > f2:
 					error("フィールド位置が昇順になっていません。")
-				key += range(f1, f2 + 1)
+				key += list(range(f1, f2 + 1))
 			else:
 				key += [ f1 ]
 		if max(key) > nf:
@@ -219,10 +222,12 @@ if __name__ == '__main__':
 		f = key[:]
 		for i in range(1, nf + 1):
 			if not f or i < f[0]:
-				print line.getField(i),
+				print(line.getField(i),end='')
+				if i<nf:print(' ',end='')
 				continue
-			print comma(line.getField(i), four),
+			print(comma(line.getField(i), four),end='')
+			if i<nf:print(' ',end='')
 			del f[0]
-		print
+		print()
 
 	sys.exit(0)
