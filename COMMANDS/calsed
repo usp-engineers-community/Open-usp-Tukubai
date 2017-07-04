@@ -1,0 +1,191 @@
+#!/usr/bin/env python
+#coding: utf-8
+#
+# calsed 軽いsed（Open usp Tukubai版）
+# 
+# designed by Nobuaki Tounaka
+#
+# The MIT License
+#
+# Copyright (C) 2011 Universal Shell Programming Laboratory
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+from __future__ import print_function
+import sys
+
+_usage = "calsed <org> <dst> [<file>]"
+_usage2 = "calsed -f <script> [<file>]"
+_option = "-n<string>"
+_option2 = "-s<c>"
+_version = "Fri Oct 21 11:26:06 JST 2011"
+_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
+
+def error(msg, *arg):
+	print('Error[calsed] :', msg % arg, file=sys.stderr)
+	sys.exit(1)
+
+def usage():
+	print("Usage   :", _usage, file=sys.stderr)
+	print("         ", _usage2, file=sys.stderr)
+	print("Option  :", _option, file=sys.stderr)
+	print("         ", _option2, file=sys.stderr)
+	print("Version :", _version, file=sys.stderr)
+	print("         ", _code, file=sys.stderr)
+	sys.exit(1)
+
+#
+# 入力ファイルオープン
+def open_file(filename, mode = 'r'):
+
+	if filename=='-' or filename == None: # ファイル名が'-'または省略なら標準入力とする
+		file = sys.stdin
+	else:
+		try:
+			file = open(filename, mode)
+		except:
+			error("ファイル '%s' をオープンできません。", filename)
+	return file
+
+#
+# 改行符号（\r\n）の削除関数
+def rm_eol(line):
+
+	return line.rstrip('\n').rstrip('\r')
+
+#
+# 文字列置換関数
+def replace(line,org,dst,n,s):
+
+	# 置換後文字列についてnull文字への変換準備
+	if n: # nオプションがあるときは
+		tonull=n; # null文字へ置換する文字列を変更
+	else:
+		tonull='@' # 置換後文字列のdefault値
+	# 置換後文字列について空白文字への変換準備
+	if s: # sオプションがあるときは
+		thedst=dst.replace(s,' ') # 置換後文字列中のsオプション指定文字列を半角空白にする
+	else:
+		thedst=dst
+	# 置換を実行
+	if dst==tonull: # null文字への置換指定（sオプションによる置換後文字列修正前のもので判断）
+		return line.replace(org,'')
+	else: # 通常の置換（sオプションがあれば置換後文字列修正後のものを使用）
+		return line.replace(org,thedst)
+
+#
+# 文字列置換関数2（置換リストによる）
+def replacebylist(line,replists,n,s):
+
+	for reptuple in replists: # 置換リストの上から順に置換を実行
+		line=replace(line,reptuple[0],reptuple[1],n,s)
+	return line
+
+#
+# main
+
+if __name__ == '__main__':
+
+	# コマンドの説明表示
+	if len(sys.argv) <= 1 \
+	 or sys.argv[1] == '--help' \
+	 or sys.argv[1] == '--version':
+		usage()
+
+	# パラメータ解析
+	org, dst, filename, f, n, s = None, None, None, None, None, None # default値
+	numparam=0
+	miniparam=2
+	while len(sys.argv) > 1:
+		if sys.argv[1] == "-f": # fパラメータ
+			del(sys.argv[1]) # popup
+			if len(sys.argv)==1:
+				error("fパラメータの値がありません")
+			if f:
+				error("fパラメータが重複しています")
+			f=sys.argv[1]
+			miniparam=0
+		elif sys.argv[1][:2] == "-n": # nオプション
+			if n:
+				error("nオプションが重複しています")
+			if len(sys.argv[1])<3:
+				error("nオプションの値がありません")
+			n=sys.argv[1][2:]
+		elif sys.argv[1][:2] == "-s": # sオプション
+			if s:
+				error("sオプションが重複しています")
+			if len(sys.argv[1])<3:
+				error("sオプションの値がありません")
+			if len(sys.argv[1])>3:
+				error("sオプションの値が2文字以上です")
+			s=sys.argv[1][2]
+		else:
+			numparam+=1
+			if numparam==1:
+				org=sys.argv[1] # orgパラメラ－タ（仮）
+			elif numparam==2:
+				dst=sys.argv[1] # dstパラメータ
+			else:
+				filename=sys.argv[1] # fileパラメータ
+		del(sys.argv[1]) # popup
+
+	# パラメータ検査
+	if numparam<miniparam:
+		error("パラメータの数が足りません")
+	if f: # fオプションがあるとき
+		if numparam>1:
+			error("fオプション指定のときのパラメータの数が多すぎます")
+		if org: # calsed -f <script> <file> の形式のとき
+			filename=org # 第1パラメータ（org（仮））をfilenameに読み替える
+	else:
+		if numparam>3:
+			error("パラメータの数が多すぎます")
+
+	# fオプション指定のときは置換リストを置換リストファイルから読み込む
+	if f:
+		file2=open_file(f) # 置換リストファイルを開く
+		replists=[]
+		# 置換リストファイルを読む
+		for line in file2:
+			line=rm_eol(line)
+			if line=='': continue # 空行は処理しない
+			# この行の組を置換リストに追加する
+			replist=line.split(' ',1) # 最初の半角空白で行を2分割する
+			if len(replist)==1: # 要素がひとつのときは第2要素としてnullを置く
+				replist.append("")
+			replists.append(replist)
+		file2.close() # 置換リストファイルを閉じる
+
+	# 置換対象ファイルを開く
+	file=open_file(filename)
+	# 置換対象ファイルを読む
+	for line in file:
+		line=rm_eol(line)
+		if not f: # fオプションがないときはパラメータで置換を指定する
+			line=replace(line,org,dst,n,s)
+		else: # fオプション指定のときは置換リストを渡す
+			line=replacebylist(line,replists,n,s)
+		# 置換結果を出力
+		print(line)
+
+	# 置換対象ファイルを閉じる
+	file.close()
+
+	# 終了
+	sys.exit(0)
