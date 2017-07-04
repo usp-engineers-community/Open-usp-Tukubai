@@ -28,6 +28,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from __future__ import print_function
+
 _usage = "cgi-name [-d<c>][-i<string>] <param_file>"
 _option = "         [--template <html>]"
 _version = "Fri Oct 21 11:26:06 JST 2011"
@@ -36,16 +38,17 @@ _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
 import re
 import os
 import sys
+import base64
 
 def error(msg, *arg):
-	print >> sys.stderr, 'Error[check_need_name] :', msg % arg
+	print('Error[check_need_name] :', msg % arg, file=sys.stderr)
 	sys.exit(1)
 
 def usage():
-	print >> sys.stderr, "Usage   :", _usage
-	print >> sys.stderr, "Option  :", _option
-	print >> sys.stderr, "Version :", _version
-	print >> sys.stderr, "         ", _code
+	print("Usage   :", _usage, file=sys.stderr)
+	print("Option  :", _option, file=sys.stderr)
+	print("Version :", _version, file=sys.stderr)
+	print("         ", _code, file=sys.stderr)
 	sys.exit(1)
 
 #
@@ -118,6 +121,28 @@ def del_name(name, n):
 		del name[i]
 
 #
+# 直接入力文字列の前処理
+#
+#  Python3においてコマンドラインからの直接入力文字列中にUnicode符号位置がU+FFFFを超えるコードがあると
+#  Unicode文字に正しく変換されない場合があることへの対処をする
+def utf2ucs(instr):
+	outstr=""	# 出力文字列
+	intlist=[]	# 作業用整数リスト
+	for char in instr:
+		if ord(char)>=0xdc00 and ord(char)<=0xdcff:	# 文字の符号位置がU+DCxxの範囲にあったら「UTF8もどき」
+			intlist.append(ord(char)-0xdc00)	# 0xdc00のげたをはずして整数リストに入れる
+		else:	# 通常文字がきたら
+			if len(intlist)>0:	# ここまでに「UTF8もどき」列を変換した整数リストがあったら
+				# bytesに変換してutf8からUCSへの変換をして出力文字列に追加
+				outstr+= bytes(intlist).decode("utf_8")
+				intlist=[]	# 整数リストを再初期化
+			outstr+=char	# 新しくきた通常文字を出力文字列に追加
+	# 「UTF8もどき」列を変換した整数リストが残っていたら
+	# bytesに変換してutf8からUCSへの変換をして出力文字列に追加
+	if len(intlist)>0:	outstr+= bytes(intlist).decode("utf_8")
+	return outstr
+
+#
 #メイン関数
 #
 if __name__ == '__main__':
@@ -151,13 +176,15 @@ if __name__ == '__main__':
 			else:
 				null = sys.argv[2]
 				del(sys.argv[2])
-		elif sys.argv[1][1] == 'd':
+		elif sys.argv[1][1] == 'd':	# 半角空白置換の指定
 			blank = sys.argv[1][2:]
+			if sys.version_info >= (3, 0):	# Python3なら
+				blank=utf2ucs(blank)	# 直接入力文字列の前処理をする
 		else:
 			c = sys.argv[1][i]
 			if c < '\x21' or c > '\x7e':
 				c = hex(ord(c))
-			print >>sys.stderr, "不明なオプション文字です: %s" % c
+			print("不明なオプション文字です: %s" % c, file=sys.stderr)
 			usage()
 		del(sys.argv[1])
 
@@ -167,25 +194,28 @@ if __name__ == '__main__':
 	for token in re.split(r'[&\n\r]+', open_file(1, True).readline()):
 		r = re.match(r'([^=]+)=(.*)', token)
 		if r:
-			print r.group(1),
+			print(r.group(1), end=' ')
 			del_name(name, r.group(1))
 			d = r.group(2)
 			d = re.sub(r'\+', ' ', d)
 			d = re.sub(r'%0D%0A', r'\\n', d)
-			d = re.sub(r'%([0-9A-F]{2})', lambda x: chr(int(x.group(1), 16)), d)
+			if sys.version_info >= (3, 0):
+				d=re.sub(r'(%([0-9A-F]{2}))+', lambda x: str(base64.b16decode(re.sub(r'%', '', x.group(0))),"utf8","replace"),d)
+			else:
+				d = re.sub(r'%([0-9A-F]{2})', lambda x: chr(int(x.group(1), 16)), d)
 			d = re.sub(r' ', blank, d)
 			d = d or null
 			if d:
-				print d,
-			print
+				print(d, end='')
+			print()
 
 	#
 	# 出力されなかった name を出力
 	#
 	for n in name:
-		print re.sub(r'_%\d+$', '', n),
+		print(re.sub(r'_%\d+$', '', n), end=' ')
 		if null:
-			print null,
-		print
+			print(null, end='')
+		print()
 
 	sys.exit(0)
