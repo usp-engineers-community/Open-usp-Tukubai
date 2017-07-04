@@ -29,10 +29,9 @@
 # THE SOFTWARE.
 
 _usage = "formhame <html_template> <data>"
-_version = "Sat Sep 20 16:45:33 JST 2014"
+_version = "Sun Mar 17 12:51:52 JST 2013"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4+, 3.1, 3.2/UTF-8)"
-_option = ''': --form <formname>
-	  : -i<c>
+_option = ''': -i<c>
 	  : -d<c>'''
 
 
@@ -76,7 +75,7 @@ def resetStderr():
 	return codecs.getwriter('utf-8')(sys.stderr.detach())
 
 def getAttr(elem,attr):
-	tmp = elem.split(attr + '="')
+	tmp = elem.lower().split(attr + '="')
 	if len(tmp) < 2:
 		return None
 
@@ -106,7 +105,7 @@ def getBlock(line,html_file,tagname):
 	lines = [ line ]
 	for line in html_file:
 		line = line.rstrip()
-		if line[-len(endtag):] == endtag:
+		if line.lower()[-len(endtag):] == endtag:
 			lines.append(line)
 			return "\n".join(lines),None
 
@@ -140,15 +139,15 @@ def setRadioValue(input_elem,namelist):
 	new_value = getANameValue(namelist,name)
 
 	if value == new_value:
-		if "checked" not in input_elem:
+		if "checked" not in input_elem.lower():
 			tmp = input_elem.replace("/>",' checked="checked" />')
-			ans = tmp.replace("  value="," value=")
+			ans = re.sub('  (value|VALUE)',' value',tmp)
 		else:
 			ans = input_elem
 	else:
-		if "checked" in input_elem:
-			tmp = input_elem.replace('checked="checked"',"")
-			ans = tmp.replace('checked',"")
+		if "checked" in input_elem.lower():
+			tmp = re.sub('(checked|CHECKED)="(checked|CHECKED)"',"",input_elem)
+			ans = re.sub('(checked|CHECKED)','',tmp) # 非XHTML仕様対応
 		else:
 			ans = input_elem
 
@@ -167,9 +166,10 @@ def setTextValue(input_elem,namelist):
 	if value == None:
 		ans = input_elem.replace("/>",new_value + "/>")
 	else:
-		ans = re.sub('value="[^"]*"',new_value,input_elem)
+		ans = re.sub('(value|VALUE)="[^"]*"',new_value,input_elem)
 
-	print(ans.replace('  value="',' value="'))
+	ans=re.sub('  (value|VALUE)',' value',ans)
+	print(ans)
 
 def setTextAreaValue(input_elem,namelist):
 	name = getAttr(input_elem,"name")
@@ -192,30 +192,59 @@ def setSelectValue(input_elem,namelist):
 	for line in input_elem.split("\n"):
 		value = getAttr(line,"value")
 		if value in new_values:
-			if "selected" not in line:
+			if "selected" not in line.lower():
 				line = line.replace('>',' selected="selected">',1)
 		else:
-			if "selected" in line:
-				line = line.replace('selected="selected"',"")
-				line = line.replace('selected',"")
+			if "selected" in line.lower():
+				line = re.sub('(selected|SELECTED)="(selected|SELECTED)"',"",line)
+				line = re.sub('(selected|SELECTED)',"",line) # 非XHTML仕様対応
 
 		print(line)
-		
+
 
 def setValue(input_elem,namelist):
-	if 'type="text"' in input_elem:
+	input_elem_lower=input_elem.lower()
+	if 'type="text"' in input_elem.lower():
 		setTextValue(input_elem,namelist)
-	elif 'type="hidden"' in input_elem:
+	elif 'type="hidden"' in input_elem.lower():
 		setTextValue(input_elem,namelist)
-	elif 'type="submit"' in input_elem:
+	elif 'type="submit"' in input_elem.lower():
 		setTextValue(input_elem,namelist)
-	elif 'type="radio"' in input_elem:
+	elif 'type="radio"' in input_elem.lower():
 		setRadioValue(input_elem,namelist)
-	elif 'type="checkbox"' in input_elem:
+	elif 'type="checkbox"' in input_elem.lower():
 		setRadioValue(input_elem,namelist)
 	else:
 		print(input_elem)
 
+#
+# 直接入力文字列の前処理
+#
+#  Python3においてコマンドラインからの直接入力文字列中にUnicode符号位置がU+FFFFを超えるコードがあると
+#  Unicode文字に正しく変換されない場合があることへの対処をする
+#  Python2においてはUTF8からUnicode文字への通常の変換処理をする
+def utf2ucs(instr):
+	if sys.version_info < (3, 0):	# Python2なら
+		try:
+			outstr=unicode(instr, 'utf_8')	# utf8からunicdoeへ変換する
+		except:
+			die("不当なマルチバイト文字が含まれています。")
+		return outstr
+	outstr=""	# 出力文字列
+	intlist=[]	# 作業用整数リスト
+	for char in instr:
+		if ord(char)>=0xdc00 and ord(char)<=0xdcff:	# 文字の符号位置がU+DCxxの範囲にあったら「UTF8もどき」
+			intlist.append(ord(char)-0xdc00)	# 0xdc00のげたをはずして整数リストに入れる
+		else:	# 通常文字がきたら
+			if len(intlist)>0:	# ここまでに「UTF8もどき」列を変換した整数リストがあったら
+				# bytesに変換してutf8からUCSへの変換をして出力文字列に追加
+				outstr+= bytes(intlist).decode("utf_8")
+				intlist=[]	# 整数リストを再初期化
+			outstr+=char	# 新しくきた通常文字を出力文字列に追加
+	# 「UTF8もどき」列を変換した整数リストが残っていたら
+	# bytesに変換してutf8からUCSへの変換をして出力文字列に追加
+	if len(intlist)>0:	outstr+= bytes(intlist).decode("utf_8")
+	return outstr
 
 #メイン関数
 if __name__ == '__main__':
@@ -227,9 +256,11 @@ if __name__ == '__main__':
 	if len(sys.argv) < 3 :		usage()
 	if sys.argv[1][0:2] == "-i" or sys.argv[2][0:2] == "-i":
 		istr = sys.argv[1][2:]
+		istr=utf2ucs(istr)
 		shift += 1
 	if sys.argv[1][0:2] == "-d" or sys.argv[2][0:2] == "-d":
 		dstr = sys.argv[1][2:]
+		dstr=utf2ucs(dstr)
 		shift += 1
 	if sys.argv[1] == '--help' :	usage()
 	if sys.argv[1] == '--version':	usage()
@@ -258,16 +289,17 @@ if __name__ == '__main__':
 
 		namelist.append((tokens[0], v))
 
-	line = html_file.readline().rstrip()
+	line = html_file.readline()
 	residual = None
-	while line or residual:
-		if "<input " in line:
+	while line:
+		line=line.rstrip()
+		if "<input " in line.lower():
 			input_elem,residual = getInputBlock(line,html_file)
 			setValue(input_elem,namelist)
-		elif "<select" in line:
+		elif "<select" in line.lower():
 			input_elem,residual = getBlock(line,html_file,"select")
 			setSelectValue(input_elem,namelist)
-		elif "<textarea" in line:
+		elif "<textarea" in line.lower():
 			input_elem,residual = getBlock(line,html_file,"textarea")
 			setTextAreaValue(input_elem,namelist)
 		else:
@@ -277,4 +309,4 @@ if __name__ == '__main__':
 			line = residual
 			residual = None
 		else:
-			line = html_file.readline().rstrip()
+			line = html_file.readline()
