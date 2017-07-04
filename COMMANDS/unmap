@@ -28,6 +28,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from __future__ import print_function
+
 _usage = "unmap       num=<n>x<m> <file>"
 _usage1 = "unmap +yarr num=<n>x<m> <file>"
 _usage2 = "unmap +arr  num=<n>x<m> <file>"
@@ -43,15 +45,15 @@ import sys
 import stat
 
 def error(msg, *arg):
-	print >> sys.stderr, 'Error[unmap] :', msg % arg
+	print('Error[unmap] :', msg % arg, file=sys.stderr)
 	sys.exit(1)
 
 def usage():
-	print >> sys.stderr, "Usage   :", _usage
-	print >> sys.stderr, "        :", _usage1
-	print >> sys.stderr, "        :", _usage2
-	print >> sys.stderr, "Version :", _version
-	print >> sys.stderr, "         ", _code
+	print("Usage   :", _usage, file=sys.stderr)
+	print("        :", _usage1, file=sys.stderr)
+	print("        :", _usage2, file=sys.stderr)
+	print("Version :", _version, file=sys.stderr)
+	print("         ", _code, file=sys.stderr)
 	sys.exit(1)
 
 class FieldLine:
@@ -195,22 +197,28 @@ def read_block(file, first, line, num_x, subkey, nfld, nline):
 #
 def putblk_array(tkey, ykey, block, L, nline):
 	for (i, yk) in enumerate(ykey):
-		print tkey, yk, 
+		endchar=' '
+		print(tkey, yk, end=endchar) 
 		for j in range(nline):
+			endchar=' '
 			for k in range(L):
-				print block[j][L * i + k],
-		print
+				if k==L-1: endchar=''
+				print(block[j][L * i + k], end=endchar)
+		print()
 
 #
 # ブロックの出力 (+yarr / +arr 無し)
 #
 def putblk_normal(tkey, ykey, block, L, nline):
 	for (i, yk) in enumerate(ykey):
-		print tkey, yk, 
+		endchar=' '
+		print(tkey, yk, end=endchar) 
 		for j in range(L):
+			endchar=' '
 			for k in range(nline):
-				print block[k][L * i + j],
-		print
+				if k==nline-1: endchar=''
+				print(block[k][L * i + j], end=endchar)
+		print()
 
 #
 # unmap 処理 (+yarr / +arr 有り)
