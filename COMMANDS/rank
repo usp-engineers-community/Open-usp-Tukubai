@@ -28,6 +28,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from __future__ import print_function
+
 _usage = "rank [ref=<ref>] [key=<key>] <file>"
 _version = "Fri Oct 21 11:26:06 JST 2011"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
@@ -45,13 +47,13 @@ def round(x, n):
 	return x.quantize(Decimal('.1') ** n)
 
 def error(msg, *arg):
-	print >> sys.stderr, 'Error[ratio] :', msg % arg
+	print('Error[ratio] :', msg % arg, file=sys.stderr)
 	sys.exit(1)
 
 def usage():
-	print >> sys.stderr, "Usage   :", _usage
-	print >> sys.stderr, "Version :", _version
-	print >> sys.stderr, "         ", _code
+	print("Usage   :", _usage, file=sys.stderr)
+	print("Version :", _version, file=sys.stderr)
+	print("         ", _code, file=sys.stderr)
 	sys.exit(1)
 
 class FieldLine:
@@ -120,9 +122,9 @@ def keystr(line, key):
 #
 if __name__ == '__main__':
 
-        if len(sys.argv) > 1 \
-         and (sys.argv[1] == '--help' \
-          or sys.argv[1] == '--version'):
+	if len(sys.argv) > 1 \
+		and (sys.argv[1] == '--help' \
+		or sys.argv[1] == '--version'):
 		usage()
 
 	#
@@ -140,12 +142,13 @@ if __name__ == '__main__':
 			n = int(r.group(1))
 			if sep == '@':
 				ref += [ n ]
-			elif key[-1] <= n:
-				ref += range(ref[-1] + 1, n + 1)
+			elif ref[-1] <= n:
+				ref += list(range(ref[-1] + 1, n + 1))
 			else:
-				ref += range(ref[-1] - 1, n - 1, -1)
+				ref += list(range(ref[-1] - 1, n - 1, -1))
 		if min(ref) == 0:
 			error("ref 引数が0です。")
+		ref=sorted(set(ref)) # 集合化（set())によってリストの重複を解消してから昇順化(sort())（2016年04月14日(木)11時54分23秒）
 		ref_max = max(ref)
 		del sys.argv[1]
 	else:
@@ -179,14 +182,16 @@ if __name__ == '__main__':
 		if ref and line.size() < ref_max \
 		 or key and line.size() < key:
 			error("フィールドが足りません。")
-		elif ref and keystr(line, ref) != last_ref:
+		elif ref and keystr(line, ref) != last_ref:	# ref指定がありかつref指定のフィールド値が変化したときリセット
 			n, nn, last_ref, last_key = 0, 0, keystr(line, ref), ''
-		n += 1
-		if not key:
+		n += 1	# 行番号
+		if not key:	# key指定がないとき行番号を階数とする
 			nn = n
-		elif line.getField(key) != last_key:
+		
+		elif line.getField(key) != last_key: # key指定がありかつkey値が変化したとき行番号を階数とする
 			last_key = line.getField(key)
 			nn = n
-		print nn, line.getField(0)
+		# key値が変化しないとき階数は前に進まない
+		print(nn, line.getField(0))
 
 	sys.exit(0)
