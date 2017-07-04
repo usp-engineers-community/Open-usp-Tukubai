@@ -1,0 +1,384 @@
+#!/bin/bash
+#!/usr/local/bin/bash -xv # コマンド処理系の変更例
+#
+# test script of ulock
+#
+# usage: [<test-path>/]calclock.test [<command-path> [<python-version>]]
+#
+#            <test-path>は
+#                    「現ディレクトリーからみた」本スクリプトの相対パス
+#                    または本スクリプトの完全パス
+#                    省略時は現ディレクトリーを仮定する
+#            <command-path>は
+#                    「本スクリプトのディレクトリーからみた」test対象コマンドの相対パス
+#                    またはtest対象コマンドの完全パス
+#                    省略時は本スクリプトと同じディレクトリーを仮定する
+#                    値があるときまたは空値（""）で省略を示したときはあとにつづく<python-version>を指定できる
+#            <python-version>は
+#                    使用するpython処理系のversion（minor versionまで指定可）を指定する
+#                    （例 python2 python2.6 phthon3 python3.4など）
+#                    単にpythonとしたときは現実行環境下でのdefault versionのpythonを使用する
+#                    文字列"python"は大文字/小文字の区別をしない
+#                    省略時はpythonを仮定する
+name=ulock # test対象コマンドの名前
+testpath=$(dirname $0) # 本スクリプト実行コマンドの先頭部($0)から本スクリプトのディレトリー名をとりだす
+cd $testpath # 本スクリプトのあるディレクトリーへ移動
+if test "$2" = ""; # <python-version>($2)がなければ
+	then pythonversion="python" # default versionのpythonとする
+	else pythonversion="$2" # <python-version>($2)があれば指定versionのpythonとする
+fi
+if test "$1" = ""; # <command-path>($1)がなければ
+	then commandpath="." # test対象コマンドは現ディレクトリーにある
+	else commandpath="$1" # <command-path>($1)があればtest対象コマンドは指定のディレクトリーにある
+fi
+com="${pythonversion} ${commandpath}/${name}" # python処理系によるtest対象コマンド実行の先頭部
+tmp=/tmp/$$
+
+ERROR_CHECK(){
+	[ "$(echo ${PIPESTATUS[@]} | tr -d ' 0')" = "" ] && return
+	echo $1
+	echo "${pythonversion} ${name}" NG
+	rm -f $tmp-*
+	exit 1
+}
+
+###########################################
+readlock(){
+	DELAY="0"
+	EXECTIME="10"
+	TIMEOUT="60"
+	if [ $# -gt 0 ]; then DELAY=$1; fi
+	if [ $# -gt 1 ]; then EXECTIME=$2; fi
+	if [ $# -gt 2 ]; then TIMEOUT=$3; fi
+	sleep $DELAY
+
+	echo 読み込みロック開始
+	if ${com}  -r lockfile counterfile "echo 読み込み処理開始; sleep $EXECTIME; echo 読み込み処理終了" --timeout=$TIMEOUT; then
+		# 読み込み処理
+		echo 読み込みロック成功
+	else
+		echo 読み込みロック失敗
+	fi
+}
+
+writelock(){
+	DELAY="0"
+	EXECTIME="10"
+	TIMEOUT="60"
+	if [ $# -gt 0 ]; then DELAY=$1; fi
+	if [ $# -gt 1 ]; then EXECTIME=$2; fi
+	if [ $# -gt 2 ]; then TIMEOUT=$3; fi
+	sleep $DELAY
+
+	echo 書き込みロック開始（counter-fileあり）
+	if ${com}  -w lockfile counterfile --timeout=$TIMEOUT --invalid=60; then
+		# 書き込み処理
+		echo 書き込みロック成功
+		echo 書き込み処理中
+		sleep $EXECTIME
+		echo 書き込み処理終了
+	else
+		echo 書き込みロック失敗
+	fi
+	rm -f lockfile # lockfileをはずす
+}
+
+writelock_nc(){
+	DELAY="0"
+	EXECTIME="10"
+	TIMEOUT="60"
+	if [ $# -gt 0 ]; then DELAY=$1; fi
+	if [ $# -gt 1 ]; then EXECTIME=$2; fi
+	if [ $# -gt 2 ]; then TIMEOUT=$3; fi
+	sleep $DELAY
+
+	echo 書き込みロック開始（counter-fileなし）
+	if ${com}  -w lockfile --timeout=$TIMEOUT --invalid=60; then
+		# 書き込み処理
+		echo 書き込みロック成功
+		echo 書き込み処理中
+		sleep $EXECTIME
+		echo 書き込み処理終了
+	else
+		echo 書き込みロック失敗
+	fi
+	rm -f lockfile # lockfileをはずす
+}
+
+writelock_full(){
+	DELAY="0"
+	EXECTIME="10"
+	TIMEOUT="60"
+	if [ $# -gt 0 ]; then DELAY=$1; fi
+	if [ $# -gt 1 ]; then EXECTIME=$2; fi
+	if [ $# -gt 2 ]; then TIMEOUT=$3; fi
+	sleep $DELAY
+
+	echo 問答無用ロック開始
+	if ${com}  lockfile --timeout=$TIMEOUT --invalid=60; then
+		# 書き込み処理
+		echo 問答無用ロック成功
+		echo 問答無用処理中
+		sleep $EXECTIME
+		echo 問答無用処理終了
+	else
+		echo 問答無用ロック失敗
+	fi
+	rm -f lockfile # lockfileをはずす
+}
+
+remake(){
+# lockfileとcounterfileを削除する
+rm -f lockfile
+rm -f counterfile
+echo a >counterfile
+}
+
+###########################################
+cat << FIN > $tmp-out1
+問答無用ロック開始
+問答無用ロック成功
+問答無用処理中
+問答無用処理終了
+FIN
+
+cat << FIN > $tmp-out2
+書き込みロック開始（counter-fileあり）
+書き込みロック成功
+書き込み処理中
+書き込み処理終了
+FIN
+
+cat << FIN > $tmp-out3
+書き込みロック開始（counter-fileなし）
+書き込みロック成功
+書き込み処理中
+書き込み処理終了
+FIN
+
+cat << FIN > $tmp-out4
+読み込みロック開始
+読み込み処理開始
+読み込み処理終了
+読み込みロック成功
+FIN
+
+###########################################
+# TEST0 完全排他区間
+# 完全排他区間の設定 処理時間6秒
+# 4秒遅れてふたつ目の完全排他区間の設定 処理時間5秒
+
+remake
+
+# 並列実行
+writelock_full  0 6 >$tmp-ans1 & # 即時（時刻0秒）に開始 読み書き処理6秒
+writelock_full 4 5 60 >$tmp-ans2 & # 4秒後（時刻4秒）に試行開始 先行する完全排他区関（時刻5秒までつづく）の解除を2秒待って 読み書き処理5秒
+
+# 処理の流れ（概略）
+# 時刻
+# 0     ｜←完全排他区間開始
+# 1     ｜
+# 2     ｜読み書き処理
+# 3     ｜
+# 4     ｜      ：（待ち）←完全排他区間試行開始
+# 5     ↓      ：（待ち）
+# 6             ｜←完全排他区間開始
+# 7             ｜
+# 8             ｜読み書き処理
+# 9             ｜
+# 10            ↓
+# 11
+# 12
+
+# 並列実行処理が終るまで待つ
+wait
+
+diff $tmp-ans1 $tmp-out1
+[ $? -eq 0 ] ; ERROR_CHECK "TEST0-1 error"
+
+diff $tmp-ans2 $tmp-out1
+[ $? -eq 0 ] ; ERROR_CHECK "TEST0-2 error"
+
+###########################################
+# TEST1
+# 読み込みlock 処理6秒
+# 最初の読み込みlockから4秒遅れてcounterfileありの書き込みlockをする 処理4秒 
+# 最初の読み込みlockから8秒遅れて読み込みlockを試みる 処理3秒
+# （註）並列処理の実行状況によって（2番目の）書き込みlockが失敗することがあるのでそのときは再試行してみる
+
+remake
+
+# 並列実行
+readlock  0 6 60 >$tmp-ans1 & # 即時（時刻0秒）に開始 読み込み処理6秒
+writelock 4 4 60 >$tmp-ans2 & # 4秒後（時刻4秒）に試行開始 先行する読み込みlock（時刻5秒までつづく）の解除を2秒待って 書き込み処理4秒
+readlock  8 3 60 >$tmp-ans3 & # 8秒後（時刻8秒）に試行開始 先行する書き込みlock（時刻9秒までつづく）の解除を2秒待って 読み込み処理3秒
+
+# 処理の流れ（概略）
+# 時刻
+# 0     ｜←読み込みlock開始
+# 1     ｜
+# 2     ｜読み込み処理
+# 3     ｜
+# 4     ｜      ：（待ち）←書き込みlock試行開始
+# 5     ↓      ：（待ち）
+# 6             ｜←書き込みlock開始
+# 7             ｜書き込み処理
+# 8             ｜             ：（待ち）←読み込みlock試行開始
+# 9             ↓             ：（待ち）
+# 10                           ｜←読み込みlock開始
+# 11                           ｜読み込み処理
+# 12                           ↓
+
+# 並列実行処理が終るまで待つ
+wait
+
+diff $tmp-ans1 $tmp-out4
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1-1 error"
+
+diff $tmp-ans2 $tmp-out2
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1-2 error"
+
+diff $tmp-ans3 $tmp-out4
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1-3 error"
+
+###########################################
+# TEST2
+# 読み込みlockを実行
+# 最初の読み込みlockから2秒遅れてふたつめの読み込みlock試行をする
+# 最初の読み込みlockから5秒遅れてcounterfileありの書き込みlockを試行
+# 書き込みlockはふたつの先行する読み込みlockの解除を最大60秒待ってから排他的に10秒のコマンド実行
+
+remake
+
+# 並列実行
+readlock >$tmp-ans1 & # 即時開始 処理10秒
+readlock 2 >$tmp-ans2 & # 2秒後に試行開始 処理10秒
+writelock 5 >$tmp-ans3 & # 5秒後に試行開始し 先行するふたつの読み込みlockの解除を最大60秒待って書き込みlockをする 処理10秒
+
+# 処理の流れ（概略）
+# 時刻
+# 0     ｜←読み込みlock開始
+# 1     ｜読み込み処理
+# 2     ｜     ｜←読み込みlock開始
+# 3     ｜     ｜読み込み処理
+# 4     ｜     ｜
+# 5     ｜     ｜     ：（待ち）←書込みlock試行開始
+# 6     ｜     ｜     ：（待ち）
+# 7     ｜     ｜     ：（待ち）
+# 8     ｜     ｜     ：（待ち）
+# 9     ↓     ｜     ：（待ち）
+# 10           ｜     ：（待ち）
+# 11           ↓     ：（待ち）
+# 12                  ｜←書み込みlock開始
+# 13                  ｜
+# 14                  ｜
+# 15                  ｜
+# 16                  ｜
+# 17                  ｜書き込み処理
+# 18                  ｜
+# 19                  ｜
+# 20                  ｜
+# 21                  ↓
+
+# 並列実行処理が終るまで待つ
+wait
+
+diff $tmp-ans1 $tmp-out4
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2-1 error"
+
+diff $tmp-ans2 $tmp-out4
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2-2 error"
+
+diff $tmp-ans3 $tmp-out2
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2-3 error"
+
+###########################################
+# TEST3
+# 書き込みlockを実行
+# 最初の書き込みlock試行開始の3秒後に読み込みlockの試行開始
+# 最初の書き込みlockに5秒遅れてcounter-fileなしの書き込みlockの試行を開始する
+# 読み込みlockは最初の書き込みlockの処理終了を待って処理を開始する
+# ふたつめの書き込みlockは先行する書き込みlockの処理終了を待って（次の読み込みlockは無視して）処理にかかる
+
+remake
+
+# 並列実行
+writelock 0 10 >$tmp-ans1 & # 即時開始 処理10秒
+readlock 3 10 30 >$tmp-ans2 & # 3秒後に試行開始 処理10秒 最大30秒待ち
+writelock_nc 5 10 >$tmp-ans3 & # 5秒後に試行開始 処理10秒 counter-fileなしで先行するreadlockを無視し最初の書き込みlockの解除を待って書き込みlockをする
+
+# 処理の流れ（概略）その１（最初の書き込みlock解除直後の時点で読み込みlockが先に処理を開始した場合）
+# 時刻
+# 0     ｜←書き込みlock開始
+# 1     ｜書き込み処理
+# 2     ｜
+# 3     ｜     ：（待ち）←読み込みlock試行開始
+# 4     ｜     ：（待ち）
+# 5     ｜     ：（待ち）           ：（待ち）←書込みlock試行開始
+# 6     ｜     ：（待ち）           ：（待ち）
+# 7     ｜     ：（待ち）           ：（待ち）
+# 8     ｜     ：（待ち）           ：（待ち）
+# 9     ↓     ：（待ち）           ：（待ち）
+# 10           ｜読み込みlock開始   ｜書き込みlock開始
+# 11           ｜                   ｜
+# 12           ｜                   ｜
+# 13           ｜                   ｜
+# 14           ｜                   ｜
+# 15           ｜読み込み処理       ｜書き込み処理
+# 16           ｜                   ｜
+# 17           ｜                   ｜
+# 18           ｜                   ｜
+# 19           ↓                   ↓
+
+# 処理の流れ（概略）その2（最初の書き込みlock解除直後の時点でふたつめの書き込みlockが先に処理を開始した場合）
+# 時刻
+# 0     ｜←書き込みlock開始
+# 1     ｜書き込み処理
+# 2     ｜
+# 3     ｜     ：（待ち）←読み込みlock試行開始
+# 4     ｜     ：（待ち）
+# 5     ｜     ：（待ち）           ：（待ち）←書込みlock試行開始
+# 6     ｜     ：（待ち）           ：（待ち）
+# 7     ｜     ：（待ち）           ：（待ち）
+# 8     ｜     ：（待ち）           ：（待ち）
+# 9     ↓     ：（待ち）           ：（待ち）
+# 10           ：（待ち）           ｜書き込みlock開始
+# 11           ：（待ち）           ｜
+# 12           ：（待ち）           ｜
+# 13           ：（待ち）           ｜
+# 14           ：（待ち）           ｜
+# 15           ：（待ち）           ｜書き込み処理
+# 16           ：（待ち）           ｜
+# 17           ：（待ち）           ｜
+# 18           ：（待ち）           ｜
+# 19           ：（待ち）           ↓
+# 20           ｜読み込みlock開始
+# 21           ｜
+# 22           ｜
+# 23           ｜
+# 24           ｜
+# 25           ｜読み込み処理
+# 26           ｜
+# 27           ｜
+# 28           ｜
+# 29           ↓
+
+# 並列実行処理が終るまで待つ
+wait
+
+diff $tmp-ans1 $tmp-out2
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-1 error"
+
+diff $tmp-ans2 $tmp-out4
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-2 error"
+
+diff $tmp-ans3 $tmp-out3
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-3 error"
+
+###########################################
+rm -f lockfile
+rm -f counterfile
+rm -f $tmp-*
+echo "${pythonversion} ${name}" OK
+
+exit 0
