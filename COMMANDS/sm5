@@ -28,10 +28,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from __future__ import print_function
+
 _usage = "sm5 [+h] <d1> <d2> <s1> <s2> <file>"
 _version = "Fri Oct 21 11:26:06 JST 2011"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
 _keypat = r'\d+|NF(-\d+)?$'
+wide_class = ["W","F","A"]	# 全角文字クラス
 
 DUMMY_CHAR = '@'
 
@@ -39,15 +42,16 @@ import re
 import os
 import sys
 from decimal import Decimal
+import unicodedata
 
 def error(msg, *arg):
-	print >> sys.stderr, 'Error[sm5] :', msg % arg
+	print('Error[sm5] :', msg % arg, file=sys.stderr)
 	sys.exit(1)
 
 def usage():
-	print >> sys.stderr, "Usage   :", _usage
-	print >> sys.stderr, "Version :", _version
-	print >> sys.stderr, "         ", _code
+	print("Usage   :", _usage, file=sys.stderr)
+	print("Version :", _version, file=sys.stderr)
+	print("         ", _code, file=sys.stderr)
 	sys.exit(1)
 
 class FieldLine:
@@ -96,22 +100,167 @@ class FieldLine:
 # unicode 変換
 #
 def to_unicode(s):
+	if sys.version_info >= (3, 0): return s
 	try:
 		return unicode(s, 'utf_8')
 	except:
 		error("不当なマルチバイト文字が含まれています。")
 
 #
+# 代用対前半部の判定
+#
+def isHighSurrogate(cp):
+	if 0xd800 <= cp and cp <= 0xdbff: return True
+	else:                             return False
+
+#
+# 代用対後半部の判定
+#
+def isLowSurrogate(cp):
+	if 0xdc00 <= cp and cp <= 0xdfff: return True
+	else:                             return False
+
+#
+# UCS2の判定
+#
+def isUCS2():
+	if sys.maxunicode==0xFFFF: return True
+	else:                      return False
+
+#
+# unicodedata.east_asian_width()「東アジアの文字幅」の修正版
+#
+def east_asian_width(c):
+	if len(c)>=2: return unicodedata.east_asian_width(c)	# UCS2で代用対が与えられたとき
+	# unicodedata.east_asian_width()は半角オーバ－ライン「‾」（U+203e）に対して
+	# A（Ambiguous; 曖昧=ギリシャ文字/ロシア文字と同様に全角扱いされる）を返すので
+	# Na（Narrow; 狭=半角英数記号）に準ずるものと修正する
+	elif ord(c)==0x203e: return 'Na'
+	else:                return unicodedata.east_asian_width(c)
+
+#
+# 半角判定
+#
+def isHalfWidth(c):
+	# 文字のEast_Asian_Width特性検査でFまたはWまたはAならば
+	# F/W/A = Wide（全角英数記号） Full（漢字 ひらがな 全角カタカナ） Ambiguous（ロシア文字 ギリシャ文字）
+	if east_asian_width(c) in wide_class: return False	# 全角
+	else:                                 return True	# それ以外は半角
+
+#
+# 合成可能文字の判定
+#
+def isCombiningDiacriticalMark(cp):
+	# unicodeにおける合成可能文字のブロック内か？
+		#	0x3099 0x309a	仮名文字の合成可能濁点と合成可能半濁点
+		#	0x0300-0x036F	ダイアクリティカルマーク（合成可能）
+		#	0x1AB0-0x1AFF	ダイアクリティカルマーク（合成可能）拡張
+		#	0x1DC0-0x1DFF	ダイアクリティカルマーク（合成可能）補助
+		#	0x20D0-0x20FF	記号用ダイアクリティカルマーク（合成可能）
+		#	0xFE20-0xFE2F	半記号（合成可能）
+	if cp == 0x3099 or cp == 0x309a or \
+		0x0300<=cp and cp <=0x036F or \
+		0x1AB0<=cp and cp <=0x1AFF or \
+		0x1DC0<=cp and cp <=0x1DFF or \
+		0x20D0<=cp and cp <=0x20FF or \
+		0xFE20<=cp and cp <=0xFE2F:
+		return True
+	else:	return False
+
+#
+# 異体字選択子（vaiation selector）の判定
+#
+def isVariationSelector(cp):
+	# unicodeにおける異体字選択子のブロック内か？
+		#	0xFE00-0xFE0F	Variation Selectors Supplement	字形選択子補助（SVS用）
+		#	0xE0100-0xE01EF	Variation Selectors	字形選択子（IVS用）
+	if  0xFE00<=cp  and cp <=0xFE0F or \
+		0xE0100<=cp and cp <=0xE01EF:
+		return True
+	else:	return False
+
+#
 # 文字列の表示幅
 #
 def strwidth(s):
-	wid = 0
-	for c in to_unicode(s):
-		if c <= '\x7f' or c >= u'\uff61' and c <= u'\uff9f':
-			wid += 1
-		else:
-			wid += 2
+	wid = 0	# 表示幅の初期化
+	s=string2list(to_unicode(s))
+	# sは拡張文字列となった
+	for xchar in s:
+		if isHalfWidth(xchar[0]):	wid+=1	# 半角なら+1
+		else:	wid+=2	# 全角なら+2
 	return wid
+
+#
+# 文字列の分解
+#
+#	文字列を拡張文字の列に変換する	1文字が複数の符号位置であらわされている場合（代用対/結合文字/IVS/SVS）への対応
+#		分解結果はリストとなり各要素（拡張文字）は
+#			UCS2のときはリスト
+#				[ 通常文字または文字列としての代用対 , 結合文字または異体字選択子（2バイトまたは代用対）または空文字 ]
+#			UCS4のときは文字列
+#				文字列（通常文字に結合文字または異体字選択子が付くことがある）
+def string2list(s):
+	StringList=[]
+	if isUCS2():
+		surrogate_pair=False	# UCS2では代用対（surrogate pair）がありうる
+		prevchar=""
+		for c in s:
+			cp=ord(c)	# code point			
+			# 代用対（[D800～DBFF]+[DC00～DFFF]のペア）の存在を考慮する
+			if not surrogate_pair:	# 代用対の処理中でなければ
+				if isHighSurrogate(cp):	# 代用対の前半部なら
+					surrogate_pair=True	# surrogate pair starts
+					HighSurrogate=c
+					HighSurrogateCp=cp
+					continue
+				if isLowSurrogate(cp):	error("代用対の構成が無効です。")	# 代用対の後半部が単独で現れた
+				elif isCombiningDiacriticalMark(cp):	# 合成可能文字なら
+					if prevchar=="":	error("結合文字列の構成が無効です。")	# 空文字の次に合成可能文字が現われた
+					StringList.append([prevchar,c])	# 先行文字と合成可能文字の組を追加（合成可能文字は第0面のみにある）
+					prevchar=""
+				elif isVariationSelector(cp):	# 異体字選択子なら
+					if prevchar=="":	error("異体字列の構成が無効です。")	# 空文字の次に異体字選択子が現われた
+					StringList.append([prevchar,c])	# 先行文字とSVS用異体字選択子（2バイト）の組を追加
+					prevchar=""
+				else:	# 次となる普通の文字がきたら先行文字を単独で追加
+					if prevchar!="":
+						StringList.append([prevchar,""])	# 先行文字と空文字の組を追加
+					prevchar=c	# 先行文字とする
+			elif isLowSurrogate(cp):	# 代用対の処理中に代用対の後半部がきたら代用対の完成
+				surrogate_pair=False	# surrogate pair ends
+				sp=HighSurrogate+c	# 代用対を作る
+				uni = 0x10000 + (HighSurrogateCp - 0xD800) * 0x400 + (cp - 0xDC00);	# 代用対をdecodeする
+				if isVariationSelector(uni):	# 代用対が異体字選択子なら
+					if prevchar=="":	error("異体字列の構成が無効です。")	# 空文字の次に異体字選択子が現われた
+					StringList.append([prevchar,sp])	# 先行文字とIVS用異体字選択子（4バイト）の組を追加
+					prevchar=""
+				else:	# 先行文字があって次に文字としての代用対が来た
+					if prevchar!="":
+						StringList.append([prevchar,""])	# 先行文字と空文字の組を追加
+					prevchar=sp	# 代用対を先行文字とする
+			else:	error("代用対の構成が無効です。")	# 代用対の前半部の次に代用対後半部以外が現われた
+		if surrogate_pair: 	error("代用対の構成が無効です。")	# 代用対の前半部で文字列の終端に達した
+		if prevchar!="":
+			StringList.append([prevchar,""])	# 最後の先行文字と空文字の組を追加
+	else:	# UCS4
+		prevchar=""
+		for c in s:
+			cp=ord(c)	# code point
+			if isCombiningDiacriticalMark(cp):	# 合成可能文字なら
+				if prevchar=="":	error("結合文字列の構成が無効です。")	# 空文字の次に合成可能文字が現われた
+				StringList.append(prevchar+c)	# 先行文字と合成可能文字の列を追加
+				prevchar=""
+			elif isVariationSelector(cp):	# 異体字選択子なら
+				if prevchar=="":	error("異体字列の構成が無効です。")	# 空文字の次に異体字選択子が現われた
+				StringList.append(prevchar+c)	# 先行文字とIVS用異体字選択子（4バイト）の列を追加
+				prevchar=""
+			else:
+				if prevchar!="":	StringList.append(prevchar)	# 次となる普通の文字がきたら先行文字を単独で追加
+				prevchar=c	# 先行文字とする
+		if prevchar!="":
+			StringList.append(prevchar)	# 最後の先行文字を追加
+	return StringList
 
 #
 # 入力ファイルオープン
@@ -174,7 +323,7 @@ if __name__ == '__main__':
 		line = file.readline()
 		if not line:
 			sys.exit(0)
-		print line
+		print(line)
 
 	#
 	# １行入力
@@ -205,7 +354,7 @@ if __name__ == '__main__':
 	if not DUMMY_CHAR in line.getField(d1, d2):
 		for i in range(s1, s2 + 1):
 			sum[i] = getval(line, i)
-	print line.getField(0)
+	print(line.getField(0))
 
 	#
 	# メインループ
@@ -213,18 +362,18 @@ if __name__ == '__main__':
 	for line in file:
 		line = FieldLine(line)
 		if DUMMY_CHAR in line.getField(d1, d2):
-			print line.getField(0)
+			print(line.getField(0))
 			continue
 		for j in range(s1, s2 + 1):
 			sum[j] += getval(line, j)
-		print line.getField(0)
+		print(line.getField(0))
 
 	#
 	# 残り合計の出力
 	#
-	print dummy,
+	print(dummy, end=' ')
 	for i in range(s1, s2):
-		print sum[i],
-	print sum[s2]
+		print(sum[i], end=' ')
+	print(sum[s2])
 
 	sys.exit(0)
