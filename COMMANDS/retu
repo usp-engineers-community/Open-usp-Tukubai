@@ -28,6 +28,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from __future__ import print_function
+
 _usage = "retu [-f] <file>"
 _version = "Fri Oct 21 11:26:06 JST 2011"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
@@ -36,13 +38,13 @@ import os
 import sys
 
 def printUsage():
-	print >> sys.stderr , "Usage    :", _usage
-	print >> sys.stderr , "Version  :", _version
-	print >> sys.stderr , "          ", _code
+	print("Usage    :", _usage, file=sys.stderr)
+	print("Version  :", _version, file=sys.stderr)
+	print("          ", _code, file=sys.stderr)
 	sys.exit(1)
 
 def die(message):
-	print >> sys.stderr, "Error[retu] :", message
+	print("Error[retu] :", message, file=sys.stderr)
 	sys.exit(1)
 
 def openFile(filename):
@@ -71,7 +73,7 @@ def countNormal(filename):
 		tokens = [ t for t in line.rstrip().split(" ") if t != "" ]
 		num = len(tokens)
 		if num != prev_num:
-			print num
+			print(num)
 			prev_num = num
 		
 	file.close()
@@ -85,7 +87,7 @@ def countFile(filename):
 		tokens = [ t for t in line.rstrip().split(" ") if t != "" ]
 		num = len(tokens)
 		if num != prev_num:
-			print filename,num
+			print(filename,num)
 			prev_num = num
 		
 	file.close()
