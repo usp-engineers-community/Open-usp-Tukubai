@@ -28,6 +28,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from __future__ import print_function
+
 _usage = "divsen [-s] <f1> <f2> ... <file>"
 _version = "Fri Oct 21 11:26:06 JST 2011"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
@@ -44,13 +46,13 @@ def round(x, n):
 	return x.quantize(Decimal('.1') ** n)
 
 def error(msg, *arg):
-	print >> sys.stderr, 'Error[divsen] :', msg % arg
+	print('Error[divsen] :', msg % arg, file=sys.stderr)
 	sys.exit(1)
 
 def usage():
-	print >> sys.stderr, "Usage   :", _usage
-	print >> sys.stderr, "Version :", _version
-	print >> sys.stderr, "         ", _code
+	print("Usage   :", _usage, file=sys.stderr)
+	print("Version :", _version, file=sys.stderr)
+	print("         ", _code, file=sys.stderr)
 	sys.exit(1)
 
 class FieldLine:
@@ -122,14 +124,6 @@ def getval(line, n):
 		error("数値変換できません。")
 
 #
-# 百分率の計算
-#
-def percent(x, y, prec):
-	if x == 0:
-		return round(Decimal(0), prec)
-	return round(100 * x / y, prec)
-
-#
 #メイン関数
 #
 if __name__ == '__main__':
@@ -182,7 +176,7 @@ if __name__ == '__main__':
 			f2 = line.getFieldNum(r.group(4))
 			if f2 < f1:
 				error("フィールド位置が昇順になっていません。")
-			key += range(f1, f2 + 1)
+			key += list(range(f1, f2 + 1))
 		else:
 			key += [ f1 ]
 	if max(key) > nf:
@@ -197,18 +191,20 @@ if __name__ == '__main__':
 	while True:
 		f = key[:]
 		for i in range(1, nf + 1):
+			if i==nf  : endchar=''
+			else:       endchar=' '
 			if i < f[0]:
-				print line.getField(i),
+				print(line.getField(i), end=endchar)
 				continue
 			x = getval(line, i) / 1000
 			if preserve:
 				r = re.match(r'[^.]*\.?(\d*)', line.getField(i))
 				prec = len(r.group(1)) + 3
-				print '%.*f' % (prec, x),
+				print('%.*f' % (prec, x), end=endchar)
 			else:
-				print '%.0f' % round(x, 0),
+				print('%.0f' % round(x, 0), end=endchar)
 			del f[0]
-		print
+		print()
 		line = file.readline()
 		if not line:
 			sys.exit(0)
