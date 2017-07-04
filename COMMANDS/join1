@@ -28,6 +28,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from __future__ import print_function
+
 _usage = "join1 [+ng<fd>] key=<n> <master> <tran>"
 _version = "Fri Oct 21 11:26:06 JST 2011"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
@@ -40,13 +42,13 @@ import os
 import sys
 
 def error(msg, *arg):
-	print >> sys.stderr, 'Error[join1] :', msg % arg
+	print('Error[join1] :', msg % arg, file=sys.stderr)
 	sys.exit(1)
 
 def usage():
-	print >> sys.stderr, "Usage   :", _usage
-	print >> sys.stderr, "Version :", _version
-	print >> sys.stderr, "         ", _code
+	print("Usage   :", _usage, file=sys.stderr)
+	print("Version :", _version, file=sys.stderr)
+	print("         ", _code, file=sys.stderr)
 	sys.exit(1)
 
 class FieldLine:
@@ -127,12 +129,13 @@ def getkey(line, arg):
 		str = k.group(3)[1:]
 		k = re.match(_keypat, str)
 		n = line.getFieldNum(k.group(1))
-		if sep == '@':
+		if sep == '@':	# a@bのとき
 			key += [ n ]
-		elif key[-1] <= n:
-			key += range(key[-1] + 1, n + 1)
-		else:
-			key += range(key[-1] - 1, n - 1, -1)
+		elif key[-1] <= n:	# a/bで昇順のとき
+			key += list(range(key[-1] + 1, n + 1))
+		else:	# a/bで降順のとき
+			key += list(range(key[-1] - 1, n - 1, -1))
+	key=sorted(set(key),key=key.index) # 集合化によってリストの重複を解消し元のリストにおける出現位置をキーとしてsort
 	return key
 
 #
@@ -140,9 +143,9 @@ def getkey(line, arg):
 #
 def flush_tran(tran, ngfile, tline):
 	if ngfile:
-		print >> ngfile, tline.getField(0)
+		print(tline.getField(0), file=ngfile)
 		for tline in tran:
-			print >> ngfile, tline,
+			print(tline, end='', file=ngfile)	# tlineは改行付きなのでendは空とする
 	else:
 		for tline in tran:
 			pass
@@ -153,6 +156,12 @@ def flush_tran(tran, ngfile, tline):
 #
 def keystr(line, key):
 	return ' '.join(map(line.getField, key))
+
+#
+# 非キー文字列の抽出
+#
+def nonkeystr(line, key):
+	return ' '.join(map(line.getField, list(set(range(1,line.size()+1))-set(key))))
 
 #
 #メイン関数
@@ -210,7 +219,6 @@ if __name__ == '__main__':
 	ks = min(tkey)
 	ke = max(tkey)
 	mkey = [ t - ks + 1 for t in tkey ]
-
 	tkstr = keystr(tline, tkey)
 	mkstr = keystr(mline, mkey)
 
@@ -224,15 +232,15 @@ if __name__ == '__main__':
 				flush_tran(tran, ngfile, tline)
 			mline = FieldLine(mline)
 			mkstr = keystr(mline, mkey)
-		if tkstr == mkstr:
-			if ks > 1:
-				print tline.getHead(ks),
-			if ke < tline.size():
-				print mline.getField(0), tline.getTail(ke)
-			else:
-				print mline.getField(0)
+		if tkstr == mkstr:	# tranのキーとmasterのキーが一致した
+			print(tline.getHead(ke+1),end='')	# tranの先頭からキーリスト終了番号までのフィールドを出力
+			mnkstr=nonkeystr(mline, mkey)	# masterの非キーフィールドを連結文字列として取得
+			if len(mnkstr)>0: print(' '+mnkstr,end='')	# もしmasterの非キーフィールドがあれば出力
+			if ke < tline.size():	# もしtranに最終キー位置より後のフィールドがあれば
+				print(' '+tline.getTail(ke),end='')	# tranのキーフィールド超を出力
+			print()	# 改行して終り
 		elif ngfile:
-			print >> ngfile, tline.getField(0)
+			print(tline.getField(0), file=ngfile)
 		tline = tran.readline()
 		if not tline:
 			sys.exit(0)
