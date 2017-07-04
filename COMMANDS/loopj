@@ -28,6 +28,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from __future__ import print_function
+
 _usage = "loopj [-d<string>] num=<num> <file1> <file2> .."
 _version = "Fri Oct 21 11:26:06 JST 2011"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
@@ -41,13 +43,13 @@ import sys
 from getopt import getopt
 
 def error(msg, *arg):
-	print >> sys.stderr, 'Error[loopj] :', msg % arg
+	print('Error[loopj] :', msg % arg, file=sys.stderr)
 	sys.exit(1)
 
 def usage():
-	print >> sys.stderr, "Usage   :", _usage
-	print >> sys.stderr, "Version :", _version
-	print >> sys.stderr, "         ", _code
+	print("Usage   :", _usage, file=sys.stderr)
+	print("Version :", _version, file=sys.stderr)
+	print("         ", _code, file=sys.stderr)
 	sys.exit(1)
 
 class FieldLine:
@@ -119,27 +121,16 @@ def open_file(fname):
 # num= の解析
 #
 def getnum(arg):
-	k = re.match('num=' + _keypat, arg)
-	if k == None:
-		error("num 引数が正しくありません。");
-	key = [ int(k.group(1)) ]
-	while k.group(2) != '':
-		sep = k.group(2)[0]
-		str = k.group(2)[1:]
-		k = re.match(_keypat, str)
-		n = int(k.group(1))
-		if sep == '@':
-			key += [ n ]
-		elif key[-1] <= n:
-			key += range(key[-1] + 1, n + 1)
-		else:
-			key += range(key[-1] - 1, n - 1, -1)
-	if len(key) == 1:
-		return range(1, key[0] + 1)
-	elif min(key) == 1:
-		return key
-	else:
-		error("キーの値が正しくありません。")
+	# numパラメータは数値をひとつのみ指定する
+	numstr=arg[4:]
+	if numstr=='' :error("num 引数がありません。")
+	try:
+		num=int(numstr)	# num=のうしろをとって整数化する
+	except:
+		error("num 引数が整数ではありません。")
+	if num<1: error("num 引数が1未満です。")
+	key=list(range(1,num+1))	# 整数からリスト化する
+	return key
 
 #
 # ダミー文字列の生成
@@ -164,6 +155,28 @@ def minkey(key):
 		return None
 
 #
+# 直接入力文字列の前処理
+#
+#  Python3においてコマンドラインからの直接入力文字列中にUnicode符号位置がU+FFFFを超えるコードがあると
+#  Unicode文字に正しく変換されない場合があることへの対処をする
+def utf2ucs(instr):
+	outstr=""	# 出力文字列
+	intlist=[]	# 作業用整数リスト
+	for char in instr:
+		if ord(char)>=0xdc00 and ord(char)<=0xdcff:	# 文字の符号位置がU+DCxxの範囲にあったら「UTF8もどき」
+			intlist.append(ord(char)-0xdc00)	# 0xdc00のげたをはずして整数リストに入れる
+		else:	# 通常文字がきたら
+			if len(intlist)>0:	# ここまでに「UTF8もどき」列を変換した整数リストがあったら
+				# bytesに変換してutf8からUCSへの変換をして出力文字列に追加
+				outstr+= bytes(intlist).decode("utf_8")
+				intlist=[]	# 整数リストを再初期化
+			outstr+=char	# 新しくきた通常文字を出力文字列に追加
+	# 「UTF8もどき」列を変換した整数リストが残っていたら
+	# bytesに変換してutf8からUCSへの変換をして出力文字列に追加
+	if len(intlist)>0:	outstr+= bytes(intlist).decode("utf_8")
+	return outstr
+
+#
 #メイン関数
 #
 if __name__ == '__main__':
@@ -186,6 +199,9 @@ if __name__ == '__main__':
 			usage()
 	except:
 		usage()
+
+	if dstr != '0' and sys.version_info >= (3, 0):
+		dstr=utf2ucs(dstr)	# Python3のときは直接入力文字列の前処理をする
 
 	#
 	# num=<num>
@@ -218,19 +234,23 @@ if __name__ == '__main__':
 	eof = 0;
 	while eof < len(file):
 		k = minkey(kstr)
-		print k,
-		for i in range(len(file)):
-			if kstr[i] == k:
+		print(k, end='')
+		endchar=''
+		for i in range(len(file)):	# 指定fileの数だけloop
+			if i==len(file)-1:
+				endchar=''	# 最終fileのとき
+			if kstr[i] == k:	# keyが一致するとき
 				tail = line[i].getTail(max(key))
-				if tail:
-					print tail,
+				if tail:	# 最終キー超のフィールドがあれば
+					print(' '+tail, end=endchar)	# 区切り空白を先行させる
 				l = file[i].readline()
 				if l:
 					line[i] = FieldLine(l)
 					kstr[i] = keystr(line[i], key)
-				else:
+				else:	# i番目のfileはEOFに達した
 					kstr[i] = None
-					eof += 1
-			else:
-				print dummy[i],
-		print
+					eof += 1	# 処理ずみのfile数をcountup
+			else:	# keyが一致しないとき
+				if dummy[i]!='':	# dummy文字列があるときに限り（endchar付きで）出力する
+					print(' '+dummy[i], end=endchar)	# 区切り空白を先行させる
+		print()	# 最後のfile処理後に改行する
