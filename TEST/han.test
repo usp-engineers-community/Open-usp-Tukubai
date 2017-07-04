@@ -1,29 +1,50 @@
-#!/usr/local/bin/bash -xv
+#!/bin/bash
+#!/usr/local/bin/bash -xv # コマンド処理系の変更例
 #
-# test script of han 
+# test script of han
 #
-# usage: ./han.test <dir> <interpreter>
-
-name=han
-
+# usage: [<test-path>/]han.test [<command-path> [<python-version>]]
+#
+#            <test-path>は
+#                    「現ディレクトリーからみた」本スクリプトの相対パス
+#                    または本スクリプトの完全パス
+#                    省略時は現ディレクトリーを仮定する
+#            <command-path>は
+#                    「本スクリプトのディレクトリーからみた」test対象コマンドの相対パス
+#                    またはtest対象コマンドの完全パス
+#                    省略時は本スクリプトと同じディレクトリーを仮定する
+#                    値があるときまたは空値（""）で省略を示したときはあとにつづく<python-version>を指定できる
+#            <python-version>は
+#                    使用するpython処理系のversion（minor versionまで指定可）を指定する
+#                    （例 python2 python2.6 phthon3 python3.4など）
+#                    単にpythonとしたときは現実行環境下でのdefault versionのpythonを使用する
+#                    文字列"python"は大文字/小文字の区別をしない
+#                    省略時はpythonを仮定する
+name=han # test対象コマンドの名前
+testpath=$(dirname $0) # 本スクリプト実行コマンドの先頭部($0)から本スクリプトのディレトリー名をとりだす
+cd $testpath # 本スクリプトのあるディレクトリーへ移動
+if test "$2" = ""; # <python-version>($2)がなければ
+	then pythonversion="python" # default versionのpythonとする
+	else pythonversion="$2" # <python-version>($2)があれば指定versionのpythonとする
+fi
+if test "$1" = ""; # <command-path>($1)がなければ
+	then commandpath="." # test対象コマンドは現ディレクトリーにある
+	else commandpath="$1" # <command-path>($1)があればtest対象コマンドは指定のディレクトリーにある
+fi
+com="${pythonversion} ${commandpath}/${name}" # python処理系によるtest対象コマンド実行の先頭部
 tmp=/tmp/$$
-dir=$(dirname $0)/..
-cd $dir
-
-com="$2 ./$1/${name}"
-[ "$1" = "" ] && com="./$1/${name}"
 
 ERROR_CHECK(){
 	[ "$(echo ${PIPESTATUS[@]} | tr -d ' 0')" = "" ] && return
-
 	echo $1
-	echo "$com" NG
+	echo "${pythonversion} ${name}" NG
 	rm -f $tmp-*
 	exit 1
 }
 
 ###########################################
 #TEST1
+#「￥」→「¥」の変換試験
 
 cat << FIN > $tmp-in
 アイウ￥
@@ -35,19 +56,22 @@ cat << FIN > $tmp-out
 aBC
 FIN
 
+# 「￥」（U+ffe5）全角円記号→「¥」（U+00a5）半角円記号
 ${com} $tmp-in > $tmp-ans
+
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST1 error"
 
 ###########################################
 #TEST2
+# フィールド指定
 
 cat << FIN > $tmp-in
-001 アイウ エオ
+001 ａｂｃアイウ ｴｵxyz
 FIN
 
 cat << FIN > $tmp-out
-001 ｱｲｳ エオ
+001 abcｱｲｳ ｴｵxyz
 FIN
 
 ${com} 2 $tmp-in > $tmp-ans
@@ -58,6 +82,208 @@ cat $tmp-in | ${com} 2 > $tmp-ans
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST2.2 error"
 
+###########################################
+#TEST3
+# 「＼」→「\」の変換試験
+# 「～」→「~」の変換試験
+
+cat << FIN > $tmp-in
+アイウ＼～
+ａＢC
+FIN
+
+cat << FIN > $tmp-out
+ｱｲｳ\\~
+aBC
+FIN
+
+# 「＼」（U+ff3c）全角バックスラッシュ→「\」（U+005C）半角バックスラッシュ
+# 「～」（U+ff5e）全角チルダ→「~」（U+007E）半角チルダ
+${com} $tmp-in > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3 error"
+
+###########################################
+#TEST4
+# -d指定
+
+cat << FIN > $tmp-out
+001 abcｱｲｳ\\ ｴｵxyz
+FIN
+
+${com} -d "００１　ａｂｃアイウ＼　エオｘｙｚ" > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4 error"
+
+###########################################
+#TEST5
+# 全角英数記号→半角英数記号の全試験
+
+cat << FIN > $tmp-in
+　！＂＃＄％＆＇（）＊＋，－．／
+０１２３４５６７８９：；＜＝＞？
+＠ＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯ
+ＰＱＲＳＴＵＶＷＸＹＺ［＼］＾＿
+｀ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏ
+ｐｑｒｓｔｕｖｗｘｙｚ｛｜｝～
+FIN
+
+cat << FIN > $tmp-out
+ !"#$%&'()*+,-./
+0123456789:;<=>?
+@ABCDEFGHIJKLMNO
+PQRSTUVWXYZ[\\]^_
+\`abcdefghijklmno
+pqrstuvwxyz{|}~
+FIN
+
+# 「＼」（U+ff3c）全角バックスラッシュ→「\」（U+005C）半角バックスラッシュ
+# 「～」（U+ff5e）全角チルダ→「~」（U+007E）半角チルダ
+${com} $tmp-in > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5 error"
+
+###########################################
+#TEST6
+# 全角カタカナ記号→半角カタカナ記号の全試験
+# JIS X0213-2004で定義され半角カタカナに変換できる「カ゚キ゚ク゚ケ゚コ゚セ゚ツ゚ト゚ヷヺ」を追加
+
+cat << FIN > $tmp-in
+ア イ ウ エ オ
+カ キ ク ケ コ
+サ シ ス セ ソ
+タ チ ツ テ ト
+ナ ニ ヌ ネ ノ
+ハ ヒ フ ヘ ホ
+マ ミ ム メ モ
+ヤ ユ ヨ
+ラ リ ル レ ロ
+ワ ヲ ン
+ヴ
+ガ ギ グ ゲ ゴ
+ザ ジ ズ ゼ ゾ
+ダ ヂ ヅ デ ド
+バ ビ ブ ベ ボ
+パ ピ プ ペ ポ
+ァ ィ ゥ ェ ォ
+ャ ュ ョ ッ
+。 「 」 、 ・ ー ゛ ゜
+カ゚ キ゚ ク゚ ケ゚ コ゚
+セ゚ ツ゚ ト゚
+ヷ ヺ
+FIN
+
+cat << FIN > $tmp-out
+ｱ ｲ ｳ ｴ ｵ
+ｶ ｷ ｸ ｹ ｺ
+ｻ ｼ ｽ ｾ ｿ
+ﾀ ﾁ ﾂ ﾃ ﾄ
+ﾅ ﾆ ﾇ ﾈ ﾉ
+ﾊ ﾋ ﾌ ﾍ ﾎ
+ﾏ ﾐ ﾑ ﾒ ﾓ
+ﾔ ﾕ ﾖ
+ﾗ ﾘ ﾙ ﾚ ﾛ
+ﾜ ｦ ﾝ
+ｳﾞ
+ｶﾞ ｷﾞ ｸﾞ ｹﾞ ｺﾞ
+ｻﾞ ｼﾞ ｽﾞ ｾﾞ ｿﾞ
+ﾀﾞ ﾁﾞ ﾂﾞ ﾃﾞ ﾄﾞ
+ﾊﾞ ﾋﾞ ﾌﾞ ﾍﾞ ﾎﾞ
+ﾊﾟ ﾋﾟ ﾌﾟ ﾍﾟ ﾎﾟ
+ｧ ｨ ｩ ｪ ｫ
+ｬ ｭ ｮ ｯ
+｡ ｢ ｣ ､ ･ ｰ ﾞ ﾟ
+ｶﾟ ｷﾟ ｸﾟ ｹﾟ ｺﾟ
+ｾﾟ ﾂﾟ ﾄﾟ
+ﾜﾞ ｦﾞ
+FIN
+
+${com} $tmp-in > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST6 error"
+
+###########################################
+#TEST7
+# 全角ハングル→半角ハングルルの全試験
+
+cat << FIN > $tmp-in
+ㅤㄱㄲㄳㄴㄵㄶㄷㄸㄹㄺㄻㄼㄽㄾㄿ
+ㅀㅁㅂㅃㅄㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎㅏ
+ㅐㅑㅒㅓㅔㅕㅖㅗㅘㅙㅚㅛㅜㅝㅞㅟ
+ㅠㅡㅢㅣ
+FIN
+
+cat << FIN > $tmp-out
+ﾠﾡﾢﾣﾤﾥﾦﾧﾨﾩﾪﾫﾬﾭﾮﾯ
+ﾰﾱﾲﾳﾴﾵﾶﾷﾸﾹﾺﾻﾼﾽﾾￂ
+ￃￄￅￆￇￊￋￌￍￎￏￒￓￔￕￖ
+ￗￚￛￜ
+FIN
+
+${com} $tmp-in > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST7 error"
+
+###########################################
+#TEST8
+# その他全角記号→その他半角記号の全試験
+
+cat << FIN > $tmp-in
+￠￡￢￣￤￥￦
+│←↑→↓■○
+FIN
+
+cat << FIN > $tmp-out
+¢£¬‾¦¥₩
+￨￩￪￫￬￭￮
+FIN
+
+# 「￣」（U+ffe3）全角マクロン（=全角オーバーライン）→	「‾」（U+203E）半角オーバーライン
+# 「￥」（U+ffe5）全角円記号→「¥」（U+00a5）半角円記号
+${com} $tmp-in > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST8 error"
+
+###########################################
+#追加TEST1
+# 4バイト文字（Unicode符号位置がU+FFFF超のコードを含む文字）を与える
+
+cat << FIN > $tmp-in
+００１　ａｂｃアイウ＼　エオ神︀邊󠄊𠀋一　か゚１２３４５𠀋ｘｙｚ
+FIN
+
+cat << FIN > $tmp-out
+001 abcｱｲｳ\\ ｴｵ神︀邊󠄊𠀋一 か゚12345𠀋xyz
+FIN
+
+${com} $tmp-in > $tmp-ans
+
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "追加TEST1 error"
+
+# 「神︀」はSVSの例で神︀(U+795E_U+FE00)
+# 「邊󠄊」はIVSの例で邊󠄊(U+908A_U+E010A)代用対では邊󠄊(U+908A_U+DB40-U+DD0A)
+# 「𠀋」は𠀋(U+2000B)代用対では𠀋(U+D840-U+DC0B)
+# 「か゚」は結合文字列の例でか゚(U+304B_U+309A)
+
+###########################################
+#追加TEST2
+# -d指定で4バイト文字（Unicode符号位置がU+FFFF超のコードを含む文字）を与える
+
+cat << FIN > $tmp-out
+001 abcｱｲｳ\\ ｴｵ神︀邊󠄊𠀋一 か゚12345𠀋xyz
+FIN
+
+${com} -d "００１　ａｂｃアイウ＼　エオ神︀邊󠄊𠀋一　か゚１２３４５𠀋ｘｙｚ" > $tmp-ans
+
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "追加TEST2 error"
+
+# 「神︀」はSVSの例で神︀(U+795E_U+FE00)
+# 「邊󠄊」はIVSの例で邊󠄊(U+908A_U+E010A)代用対では邊󠄊(U+908A_U+DB40-U+DD0A)
+# 「𠀋」は𠀋(U+2000B)代用対では𠀋(U+D840-U+DC0B)
+# 「か゚」は結合文字列の例でか゚(U+304B_U+309A)
+
 rm -f $tmp-*
-echo "${com}" OK
+echo "${pythonversion} ${name}" OK
 exit 0
