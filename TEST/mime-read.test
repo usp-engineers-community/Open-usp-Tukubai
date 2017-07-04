@@ -1,0 +1,141 @@
+#!/bin/bash
+#!/usr/local/bin/bash -xv # コマンド処理系の変更例
+#
+# test script of mime-read
+#
+# usage: [<test-path>/]mime-read.test [<command-path> [<python-version>]]
+#
+#            <test-path>は
+#                    「現ディレクトリーからみた」本スクリプトの相対パス
+#                    または本スクリプトの完全パス
+#                    省略時は現ディレクトリーを仮定する
+#            <command-path>は
+#                    「本スクリプトのディレクトリーからみた」test対象コマンドの相対パス
+#                    またはtest対象コマンドの完全パス
+#                    省略時は本スクリプトと同じディレクトリーを仮定する
+#                    値があるときまたは空値（""）で省略を示したときはあとにつづく<python-version>を指定できる
+#            <python-version>は
+#                    使用するpython処理系のversion（minor versionまで指定可）を指定する
+#                    （例 python2 python2.6 phthon3 python3.4など）
+#                    単にpythonとしたときは現実行環境下でのdefault versionのpythonを使用する
+#                    文字列"python"は大文字/小文字の区別をしない
+#                    省略時はpythonを仮定する
+name=mime-read # test対象コマンドの名前
+testpath=$(dirname $0) # 本スクリプト実行コマンドの先頭部($0)から本スクリプトのディレトリー名をとりだす
+cd $testpath # 本スクリプトのあるディレクトリーへ移動
+if test "$2" = ""; # <python-version>($2)がなければ
+	then pythonversion="python" # default versionのpythonとする
+	else pythonversion="$2" # <python-version>($2)があれば指定versionのpythonとする
+fi
+if test "$1" = ""; # <command-path>($1)がなければ
+	then commandpath="." # test対象コマンドは現ディレクトリーにある
+	else commandpath="$1" # <command-path>($1)があればtest対象コマンドは指定のディレクトリーにある
+fi
+com="${pythonversion} ${commandpath}/${name}" # python処理系によるtest対象コマンド実行の先頭部
+tmp=/tmp/$$
+
+ERROR_CHECK(){
+	[ "$(echo ${PIPESTATUS[@]} | tr -d ' 0')" = "" ] && return
+	echo $1
+	echo "${pythonversion} ${name}" NG
+	rm -f $tmp-*
+	exit 1
+}
+
+###########################################
+#TEST1
+
+cat << FIN > $tmp-in
+Return-Path: tounaka@gmail.com
+Received: by conbox033-v id 53e9a3fa685e2e;
+	Tue, 12 Aug 2014 14:19:54 +0900
+Received: from conmx512.nifty.com (conmx512.nifty.com [172.16.169.198])
+	by conbox033-v.nifty.com (Postfix) with ESMTP id 3C4A85C0B4
+	for <togasi.masatomo@nifty.ne.jp>; Tue, 12 Aug 2014 14:19:54 +0900 (JST)
+Authentication-Results: nifty.com; spf=pass smtp.mailfrom=tounaka@gmail.com; sender-id=pass
+	 header.Sender=tounaka@gmail.com; dkim=pass header.i=@gmail.com
+Received: from mail-la0-f51.google.com (mail-la0-f51.google.com [209.85.215.51])
+	by conmx512.nifty.com  with ESMTP id s7C5JqCi017885
+	for <togasi.masatomo@nifty.ne.jp>; Tue, 12 Aug 2014 14:19:52 +0900
+X-Nifty-SrcIP: [209.85.215.51]
+Received: by mail-la0-f51.google.com with SMTP id pn19so7485082lab.10
+        for <togasi.masatomo@nifty.ne.jp>; Mon, 11 Aug 2014 22:19:51 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=mime-version:sender:date:message-id:subject:from:to:cc:content-type;
+        bh=eKZKB6mqEzSIaeEJgMsa20NXVXdpswOTyNeG9arPE0k=;
+        b=xnamAJVUxAHPqOHeozXHya0GR50O3rgeclhl3njEkmvyLyj+S+3vbDKQkvNF5+6WjJ
+         Ptl9IUgtUhXmL3s9oaCMTCmbJjCI//oG3UWRbPYlubFjd7YFOB/NXd7+CM99CkWz+4yl
+         xJ2f0gHgFYdY0l4N47UbSN21oUFgDpfUwg4aITp/JqtaN4Ujw/jQO+6eGfoATC48z5Hu
+         SwOes0Gqg6/elxK+Jzk5jpj1zkawic+9CjboJq8r3jLyllJ56xP3/Wk3/51HAMvy28tN
+         OT/vZhzbh2NcklH25DcvVIttczWnHsUH8beVbfgfXEskrnmpyQQoEHxQduSa33I/5ANd
+         EMuw==
+MIME-Version: 1.0
+X-Received: by 10.152.205.100 with SMTP id lf4mr1891686lac.8.1407820791395;
+ Mon, 11 Aug 2014 22:19:51 -0700 (PDT)
+Sender: tounaka@gmail.com
+Received: by 10.112.120.236 with HTTP; Mon, 11 Aug 2014 22:19:51 -0700 (PDT)
+Date: Tue, 12 Aug 2014 14:19:51 +0900
+X-Google-Sender-Auth: S3Ec6AhtmnJ8wMGWpZjrQ0CveV0
+Message-ID: <CABKUWYNG8Z7RdETqi=FsfYJGmnHxKoyzXxFgHedHezxcDLU=ew@mail.gmail.com>
+Subject: =?UTF-8?B?77yY5pyI44Gu6Kqy6aGM44Gn44GZ44CC?=
+From: =?UTF-8?B?55W25Luy5a+b5ZOy?= <tounaka@usp-lab.com>
+To: =?UTF-8?B?5Yao5qir6ZuF5paH?= <togasi.masatomo@nifty.ne.jp>
+Cc: Ken Okada <k-okada@usp-lab.com>
+Content-Type: multipart/mixed;
+		boundary=001a11349d262dd5d6050067d2e9
+
+--001a11349d262dd5d6050067d2e9
+Content-Type: multipart/alternative;
+		boundary="001a11349d262dd5d2050067d2e7"
+
+--001a11349d262dd5d2050067d2e7
+Content-Type: text/plain; charset=UTF-8;
+		name=test
+Content-Transfer-Encoding: base64
+
+55W25Luy44Gn44GZ44CC44GK5LiW6Kmx44Gr44Gq44KK44G+44GZ44CCDQoNCu+8mOaciOOBruiq
+sumhjOOBp+OBmeOBjOOAgeWFiOWbnuOBiuOBl+OCieOBm+OBl+OBn+OCiOOBhuOBq+OAgeS7iuW+
+--001a11349d262dd5d2050067d2e7
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: base64
+
+PGRpdiBkaXI9Imx0ciI+55W25Luy44Gn44GZ44CC44GK5LiW6Kmx44Gr44Gq44KK44G+44GZ44CC
+PGRpdj48YnI+PC9kaXY+PGRpdj7vvJjmnIjjga7oqrLpoYzjgafjgZnjgYzjgIHlhYjlm57jgYrj
+--001a11349d262dd5d2050067d2e7--
+--001a11349d262dd5d6050067d2e9
+Content-Type: application/zip;
+		name="20140812.zip"
+Content-Disposition: attachment; filename="20140812.zip"
+Content-Transfer-Encoding: binary
+X-Attachment-Id: f_hyqs55i80
+
+abc def--001a11349d262dd5d6050067d2e9--
+FIN
+
+cat << FIN > $tmp-out
+55W25Luy44Gn44GZ44CC44GK5LiW6Kmx44Gr44Gq44KK44G+44GZ44CCDQoNCu+8mOaciOOBruiq
+sumhjOOBp+OBmeOBjOOAgeWFiOWbnuOBiuOBl+OCieOBm+OBl+OBn+OCiOOBhuOBq+OAgeS7iuW+
+FIN
+
+${com}  test $tmp-in > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1 error"
+
+###########################################
+#TEST2
+
+cat << FIN > $tmp-out
+3 name=test
+5 name=20140812.zip
+5 filename=20140812.zip
+FIN
+
+${com}  -v $tmp-in > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2 error"
+
+###########################################
+rm -f $tmp-*
+echo "${pythonversion} ${name}" OK
+exit 0
