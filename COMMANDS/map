@@ -28,6 +28,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from __future__ import print_function
+
 _usage = "map       [-<l>] num=<n>x<m> <file>"
 _usage1 = "map +yarr [-<l>] num=<n>x<m> <file>"
 _usage2 = "map +arr  [-<l>] num=<n>x<m> <file>"
@@ -47,17 +49,17 @@ import stat
 import tempfile
 
 def error(msg, *arg):
-	print >> sys.stderr, 'Error[map] :', msg % arg
+	print('Error[map] :', msg % arg, file=sys.stderr)
 	sys.exit(1)
 
 def usage():
-	print >> sys.stderr, "Usage   :", _usage
-	print >> sys.stderr, "        :", _usage1
-	print >> sys.stderr, "        :", _usage2
-	print >> sys.stderr, "Option  :", _option
-	print >> sys.stderr, "        :", _option1
-	print >> sys.stderr, "Version :", _version
-	print >> sys.stderr, "         ", _code
+	print("Usage   :", _usage, file=sys.stderr)
+	print("        :", _usage1, file=sys.stderr)
+	print("        :", _usage2, file=sys.stderr)
+	print("Option  :", _option, file=sys.stderr)
+	print("        :", _option1, file=sys.stderr)
+	print("Version :", _version, file=sys.stderr)
+	print("         ", _code, file=sys.stderr)
 	sys.exit(1)
 
 class FieldLine:
@@ -140,16 +142,16 @@ def puthead(key_y, num_x, num_y, a, subkey_x, subkey_y):
 	if subkey_x:
 		num_x += 1
 	for i in range(num_y):
-		print ' '.join([ '*' ] * num_x),
+		print(' '.join([ '*' ] * num_x), end='')
 		for k in key_y:
-			print ' '.join([ k.split(' ')[i] ] * a),
-		print
+			print('',' '.join([ k.split(' ')[i] ] * a), end='')
+		print()
 	if subkey_y:
-		print ' '.join([ '*' ] * num_x),
+		print(' '.join([ '*' ] * num_x), end='')
 		for j in range(len(key_y)):
 			for k in range(a):
-				print gensub(k, subkey_y),
-		print
+				print('',gensub(k, subkey_y), end='')
+		print()
 
 #
 # ブロックの出力
@@ -158,12 +160,12 @@ def putblk(table, key_y_len, a, b, subkey, oldkey):
 	if not table:
 		return
 	for i in range(a):
-		print oldkey,
+		print(oldkey, end='')
 		if subkey:
-			print gensub(i, subkey),
+			print('',gensub(i, subkey), end='')
 		for j in range(b * key_y_len):
-			print table[i][j],
-		print
+			print('',table[i][j], end='')
+		print()
 
 #
 # map 処理 (+yarr / +arr 有り)
@@ -176,11 +178,11 @@ def do_map_array(file, key_y, num_x, num_y, numkey, nfld, L, pad, array):
 		subkey_x, subkey_y = '0', '0'
 	else:
 		subkey_x, subkey_y = 'A', 'a'
-	if nfld / L == 1:
+	if nfld // L == 1:
 		subkey_x = None
 	if L == 1 or array == 2:
 		subkey_y = None
-	if not numkey and (nfld / L > 26 or L > 26):
+	if not numkey and (nfld // L > 26 or L > 26):
 		error("サブキーが足りません。-n オプションを指定してください。")
 
 	#
@@ -196,17 +198,17 @@ def do_map_array(file, key_y, num_x, num_y, numkey, nfld, L, pad, array):
 	for line in file:
 		line = FieldLine(line)
 		if line.getField(1, num_x) != oldkey:
-			putblk(table, len(key_y), nfld / L, L, subkey_x, oldkey)
+			putblk(table, len(key_y), nfld // L, L, subkey_x, oldkey)
 			oldkey = line.getField(1, num_x)
 			l = L * len(key_y)
-			table = [ [ pad ] * l for i in range(nfld / L) ]
+			table = [ [ pad ] * l for i in range(nfld // L) ]
 		pos = key_y.index(line.getField(num_x + 1, num_x + num_y))
 		n = num_x + num_y + 1
-		for i in range(nfld / L):
+		for i in range(nfld // L):
 			for j in range(L):
 				table[i][L * pos + j] = line.getField(n)
 				n += 1
-	putblk(table, len(key_y), nfld / L, L, subkey_x, oldkey)
+	putblk(table, len(key_y), nfld // L, L, subkey_x, oldkey)
 
 #
 # map 処理 (+yarr / +arr 無し)
@@ -221,15 +223,15 @@ def do_map(file, key_y, num_x, num_y, numkey, nfld, L, pad):
 		subkey_x, subkey_y = 'A', 'a'
 	if L == 1:
 		subkey_x = None
-	if nfld / L == 1:
+	if nfld // L == 1:
 		subkey_y = None
-	if not numkey and (L > 26 or nfld / L > 26):
+	if not numkey and (L > 26 or nfld // L > 26):
 		error("サブキーが足りません。-n オプションを指定してください。")
 
 	#
 	# ヘッダーの出力
 	#
-	puthead(key_y, num_x, num_y, nfld / L, subkey_x, subkey_y)
+	puthead(key_y, num_x, num_y, nfld // L, subkey_x, subkey_y)
 
 	#
 	# メインループ
@@ -239,17 +241,17 @@ def do_map(file, key_y, num_x, num_y, numkey, nfld, L, pad):
 	for line in file:
 		line = FieldLine(line)
 		if line.getField(1, num_x) != oldkey:
-			putblk(table, len(key_y), L, nfld / L, subkey_x, oldkey)
+			putblk(table, len(key_y), L, nfld // L, subkey_x, oldkey)
 			oldkey = line.getField(1, num_x)
-			l = (nfld / L) * len(key_y)
+			l = (nfld // L) * len(key_y)
 			table = [ [ pad ] * l for i in range(L) ]
 		pos = key_y.index(line.getField(num_x + 1, num_x + num_y))
 		n = num_x + num_y + 1
-		for i in range(nfld / L):
+		for i in range(nfld // L):
 			for j in range(L):
-				table[j][nfld / L * pos + i] = line.getField(n)
+				table[j][nfld // L * pos + i] = line.getField(n)
 				n += 1
-	putblk(table, len(key_y), L, nfld / L, subkey_x, oldkey)
+	putblk(table, len(key_y), L, nfld // L, subkey_x, oldkey)
 
 #
 #メイン関数
@@ -317,7 +319,7 @@ if __name__ == '__main__':
 	#
 	# ファイルのオープン
 	#
-	file = open_file(2)
+	file = open_file(2)	# 指定ファイルが省略または「-」ならstdinを返す
 	if not isfile(file.fileno()):
 		tmp = tempfile.mkstemp(prefix='map-')
 		os.unlink(tmp[1])
@@ -332,7 +334,7 @@ if __name__ == '__main__':
 	key_y = set([])
 	for line in file:
 		if tmp:
-			print >>tmp, line,
+			print(line, end='',file=tmp)	# 入力がstdinのときは一時ファイルに書き出す
 		line = FieldLine(line)
 		if not nfld:
 			nfld = line.size()
@@ -357,7 +359,7 @@ if __name__ == '__main__':
 	elif nfld % L != 0:
 		error("フィールド数が -<l> オプションの倍数ではありません。")
 
-	if tmp:
+	if tmp:	# 一時ファイルを使用ならいったん閉じる
 		file.close()
 		file = tmp
 	file.seek(0)
