@@ -29,6 +29,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from __future__ import print_function
+
 _usage = "nameread [-el] <name> <name_file>"
 _option = "-d<c>       空白を置換"
 _option1 = "-i<string>  ヌルデータの初期化"
@@ -45,15 +47,15 @@ import sys
 #from regex_syntax import *
 
 def error(msg, *arg):
-	print >> sys.stderr, 'Error[check_need_name] :', msg % arg
+	print('Error[nameread] :', msg % arg, file=sys.stderr)
 	sys.exit(1)
 
 def usage():
-	print >> sys.stderr, "Usage   :", _usage
-	print >> sys.stderr, "Option  :", _option
-	print >> sys.stderr, "Option  :", _option1
-	print >> sys.stderr, "Version :", _version
-	print >> sys.stderr, "         ", _code
+	print("Usage   :", _usage, file=sys.stderr)
+	print("Option  :", _option, file=sys.stderr)
+	print("Option  :", _option1, file=sys.stderr)
+	print("Version :", _version, file=sys.stderr)
+	print("         ", _code, file=sys.stderr)
 	sys.exit(1)
 
 #
@@ -111,7 +113,7 @@ if __name__ == '__main__':
 				c = sys.argv[1][i]
 				if c < '\x21' or c > '\x7e':
 					c = hex(ord(c))
-				print >>sys.stderr, "不明なオプション文字です: %s" % c
+				print("不明なオプション文字です: %s" % c, file=sys.stderr)
 				usage()
 		del(sys.argv[1])
 
@@ -125,7 +127,7 @@ if __name__ == '__main__':
 
 	# メインループ
 	for line in openFile(2):
-		tokens = line.rstrip().split(' ')
+		tokens = line.rstrip().split(' ',1) # 分割は左から最大1回とする
 
 		if len(tokens) == 0:
 			error("<name_file> に空行があります。")
@@ -145,7 +147,7 @@ if __name__ == '__main__':
 		#output
 		if out_flag:
 			value_out = re.sub(' ', blank[0], value or null)
-			if lflag:	print name, value_out
-			else:		print value_out
+			if lflag:	print(name, value_out)
+			else:		print(value_out)
 
 	sys.exit(0)
