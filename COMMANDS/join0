@@ -28,6 +28,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from __future__ import print_function
+
 _usage = "join0 [+ng<fd>] key=<n> <master> <tran>"
 _version = "Fri Oct 21 11:26:06 JST 2011"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
@@ -40,13 +42,13 @@ import os
 import sys
 
 def error(msg, *arg):
-	print >> sys.stderr, 'Error[join0] :', msg % arg
+	print('Error[join0] :', msg % arg, file=sys.stderr)
 	sys.exit(1)
 
 def usage():
-	print >> sys.stderr, "Usage   :", _usage
-	print >> sys.stderr, "Version :", _version
-	print >> sys.stderr, "         ", _code
+	print("Usage   :", _usage, file=sys.stderr)
+	print("Version :", _version, file=sys.stderr)
+	print("         ", _code, file=sys.stderr)
 	sys.exit(1)
 
 class FieldLine:
@@ -120,9 +122,10 @@ def getkey(line, arg):
 		if sep == '@':
 			key += [ n ]
 		elif key[-1] <= n:
-			key += range(key[-1] + 1, n + 1)
+			key += list(range(key[-1] + 1, n + 1))
 		else:
-			key += range(key[-1] - 1, n - 1, -1)
+			key += list(range(key[-1] - 1, n - 1, -1))
+	key=sorted(set(key),key=key.index) # 集合化によってリストの重複を解消し元のリストにおける出現位置をキーとしてsort
 	return key
 
 #
@@ -130,9 +133,9 @@ def getkey(line, arg):
 #
 def flush_tran(tran, ngfile, tline):
 	if ngfile:
-		print >> ngfile, tline.getField(0)
+		print(tline.getField(0), file=ngfile)
 		for tline in tran:
-			print >> ngfile, tline,
+			print(tline, end='',file=ngfile)	# tlineは改行付きなのでendは空とする
 	else:
 		for tline in tran:
 			pass
@@ -214,9 +217,9 @@ if __name__ == '__main__':
 			mline = FieldLine(mline)
 			mkstr = keystr(mline, mkey)
 		if tkstr == mkstr:
-			print tline.getField(0)
+			print(tline.getField(0))
 		elif ngfile:
-			print >> ngfile, tline.getField(0)
+			print(tline.getField(0), file=ngfile)
 		tline = tran.readline()
 		if not tline:
 			sys.exit(0)
