@@ -28,6 +28,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from __future__ import print_function
+
 _usage = "delf <f1> <f2> ... [file]"
 _version = "Sat Mar 10 17:18:43 JST 2012"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
@@ -80,7 +82,10 @@ class Operator:
 				tokens[i] = None
 
 		tokens = [ e for e in tokens if e != None ]
-		print " ".join(tokens).encode('utf_8')
+		if not Python3:
+			print(" ".join(tokens).encode('utf_8'))
+		else:
+			print(" ".join(tokens))
 
 def isFileName(s):
 	reg = r'(\d+|NF(-\d+)?)((\.\d+){,2})(/(\d|NF(-\d+)?)\3)?$'
@@ -89,9 +94,9 @@ def isFileName(s):
 	return p.match(s) == None
 
 def printUsage():
-	print >> sys.stderr , "Usage    :", _usage
-	print >> sys.stderr , "Version  :", _version
-	print >> sys.stderr , "          ", _code
+	print("Usage    :", _usage, file=sys.stderr)
+	print("Version  :", _version, file=sys.stderr)
+	print("          ", _code, file=sys.stderr)
 	sys.exit(1)
 
 ###########################################
@@ -111,9 +116,13 @@ if __name__ == '__main__':
 
 	op = Operator()
 
+	direct=False
+
 	#オプションを一個ずつ見ていく。
 	for i in range(1, argc):
-		if isFileName(sys.argv[i]):
+		if sys.argv[i]=='-d':	# -dオプション
+			direct=True
+		elif isFileName(sys.argv[i]):
 			filenames.append(sys.argv[i])
 			filename_pos.append(i)
 		else:
@@ -130,20 +139,39 @@ if __name__ == '__main__':
 	if len(filenames) == 0:
 		file = sys.stdin
 	elif len(filenames) == 1 and filename_pos[0] == argc-1:
-		if filenames[0] == "-": 
+		if direct:
+			line=filenames[0]	# -dオプションならファイル名相当部を入力文字列とする
+		elif filenames[0] == "-": 
 			file = sys.stdin
 		else:
 			file = open(filenames[0], 'r')
 	else:
-		print >> sys.stderr, "ファイル指定が不正です。"
+		print("ファイル指定が不正です。", file=sys.stderr)
 		sys.exit(1)
 
 	###########################################
 	#出力
 	###########################################
 
+	# Pythonのversion
+	if sys.version_info >= (3, 0): Python3=True
+	else: Python3=False
+
+	if direct:	# -dオプションによる直接処理
+		if not Python3:
+			#utf_8からユニコードに変換して改行を取る
+			line = unicode(line, "utf_8").rstrip()
+		else:
+			line = line.rstrip()
+		tokens = [ x for x in line.split(' ') if x ]
+		op.output(tokens)
+		exit(0)
+
 	for line in file:
-		#utf_8からユニコードに変換して改行を取る
-		line = unicode(line, "utf_8").rstrip()
+		if not Python3:
+			#utf_8からユニコードに変換して改行を取る
+			line = unicode(line, "utf_8").rstrip()
+		else:
+			line = line.rstrip()
 		tokens = [ x for x in line.split(' ') if x ]
 		op.output(tokens)
