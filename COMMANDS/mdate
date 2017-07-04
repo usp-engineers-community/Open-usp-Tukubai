@@ -28,6 +28,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from __future__ import print_function
+
 _usage = """
  DIRECT-MODE
 
@@ -72,18 +74,18 @@ import sys
 from datetime import date, timedelta
 
 def error(msg, *arg):
-	print >> sys.stderr, 'Error[mdate] :', msg % arg
+	print('Error[mdate] :', msg % arg, file=sys.stderr)
 	sys.exit(1)
 
 def usage():
-	print >> sys.stderr, "Usage   :", _usage
-	print >> sys.stderr, "Version :", _version
-	print >> sys.stderr, "         ", _code
+	print("Usage   :", _usage, file=sys.stderr)
+	print("Version :", _version, file=sys.stderr)
+	print("         ", _code, file=sys.stderr)
 	sys.exit(1)
 
 def version():
-	print >> sys.stderr, "Version :", _version
-	print >> sys.stderr, "         ", _code
+	print("Version :", _version, file=sys.stderr)
+	print("         ", _code, file=sys.stderr)
 	sys.exit(1)
 
 def strToDate(str):
@@ -103,7 +105,7 @@ def shiftMonth(m_str,diff):
 	m = int(m_str[4:]) + diff
 
 	m_zero = m - 1
-	dy = int(m_zero/12)
+	dy = int(m_zero//12)
 	
 	y = str(y + dy)
 	m = str(m_zero%12 + 1)
@@ -112,8 +114,10 @@ def shiftMonth(m_str,diff):
 	return y + m
 
 def printDays(f,t):
+	endchar=' '
 	while f <= t: 
-		print f.strftime("%Y%m%d"),
+		if f==t: endchar=''	# loop最終回のときは空白出力はしない
+		print(f.strftime("%Y%m%d"), end=endchar)
 		f = shiftDay(f,1)
 
 def monthDelta(m1,m2):
@@ -161,11 +165,19 @@ def sortTwoDays(d1,d2):
 	else:		return d2, d1
 
 def printTokens(f1,f2,tokens):
+	# f1 == 0 && f2 > 0 → 前部の出力
+	# f2==len(tokens) && f1 > 0 → 後部の出力
+	# f1>=f2のときはloop実行をしない（f1<f2のときはloop実行をする）
+
+	if f1 > 0 and f2 == len(tokens) and f1 < f2: print(" ",end="")	# 後部出力でloop実行をするときは先頭に空白を出力する
+	endchar=' '
 	for i in range(f1,f2):
-		print tokens[i],
+		if i==f2-1: endchar=''	# loop最終回のときは空白出力はしない
+		print(tokens[i], end=endchar)
+	if f1 == 0 and f1 < f2: print(" ",end="")	# 前部出力でloop実行したときは後尾に空白を出力をする
 
 def printDay(d):
-	print d.strftime("%Y%m%d"),
+	print(d.strftime("%Y%m%d"), end='')
 
 def monthToFirstDay(m_str):
 	y = int(m_str[0:4])
@@ -189,31 +201,35 @@ def directMode(opt):
 	if re.compile('^-y [0-9]{8}$').match(opt):
 		#日付  mdate -y <yyyymmdd>               : 曜日
 		d = strToDate(sys.argv[2])
-		print d.weekday() + 1
+		print(d.weekday() + 1)
 	elif re.compile('^-d [0-9]{6}m$').match(opt):
 		#mdate -d <yyyymm>m                : 日付を１カ月分出力
 		d1 = monthToFirstDay(sys.argv[2])
 		d2 = monthToLastDay(sys.argv[2])
 		printDays(d1,d2)
+		print()
 	elif re.compile('^[0-9]{6}m/[+-][0-9]*$').match(opt):
 		#mdate <yyyymm>m/±<dif>           : dif 月先の月
 		m1, m2 = parseMonthSlashForm(sys.argv[1])
-		print m2
+		print(m2)
 	elif re.compile('^-e [0-9]{6}m/[+-][0-9]*$').match(opt):
 		#mdate -e <yyyymm>m/±<dif>        : dif 月先までの月を連続出力
 		m1, m2 = parseMonthSlashForm(sys.argv[2])
 		if m1 > m2 : m1, m2 = m2, m1
 
 		m = m1
+		endchar=" "
 		while m <= m2:
-			print m, 
+			if m==m2: endchar=""	# loop最終回のときは空白出力はしない
+			print(m, end=endchar) 
 			m = shiftMonth(m,1)
+		print()
 	elif re.compile('^[0-9]{6}m [0-9]{6}m$').match(opt):
 		#mdate <yyyymm1>m <yyyymm2>m       : 月の差
 		m1 = sys.argv[1][:6]
 		m2 = sys.argv[2][:6]
 
-		print monthDelta(m1,m2)
+		print(monthDelta(m1,m2))
 
 	elif re.compile('^-e [0-9]{6}m [0-9]{6}m$').match(opt):
 		#mdate -e <yyyymm1>m <yyyymm2>m    : 月の範囲を連続出力
@@ -223,33 +239,36 @@ def directMode(opt):
 
 		m = m1
 		while m <= m2:
-			print m, 
+			print(m, end=' ') 
 			m = shiftMonth(m,1)
 		
 	elif re.compile('^-ly [0-9]{6}m$').match(opt):
 		# mdate -ly <yyyymm>m               : 前年月
 		y = int(sys.argv[2][:4]) - 1
-		print str(y) + sys.argv[2][4:6]
+		print(str(y) + sys.argv[2][4:6])
 	elif re.compile('-e [0-9]{8}/[+-][0-9]*').match(opt):
 		#日付  mdate -e <yyyywwdd>/±<dif>       : dif 日先までの日付を連続出力
 		date1, date2 = parseDaySlashForm(sys.argv[2])
 		d1, d2 = sortTwoDays(date1,date2)
 		printDays(d1,d2)
+		print()
 	elif re.compile('-e [0-9]{8} [0-9]{8}').match(opt):
 	 	#mdate -e <yyyymmdd1> <yyyymmdd2>  : 日付の範囲を連続出力
 		date1 = strToDate(sys.argv[2])
 		date2 = strToDate(sys.argv[3])
 		d1, d2 = sortTwoDays(date1,date2)
 		printDays(d1,d2)
+		print()
 	elif re.compile('^[0-9]{8}/[+-][0-9]*$').match(opt):
 		#mdate <yyyywwdd>/±<dif>          : dif 日先の日付
 		d1, d2 = parseDaySlashForm(sys.argv[1])
 		printDay(d2)
+		print()
 	elif re.compile('^[0-9]{8} [0-9]{8}$').match(opt):
 		#mdate <yyyymmdd1> <yyyymmdd2>     : 日付の差
 		d1 = strToDate(sys.argv[1])
 		d2 = strToDate(sys.argv[2])
-		print (d1 - d2).days
+		print((d1 - d2).days)
 	else:
 		usage()
 
@@ -270,7 +289,7 @@ def filterMode(opt):
 			printDays(d1,d2)
 			
 			printTokens(f+1,len(tokens),tokens)
-			print ""
+			print("")
 
 	elif re.compile('^-f -e [0-9]+ [0-9]+$').match(opt):
 		#mdate -f -e <f1> <f2>         : 日付間の展開
@@ -293,7 +312,7 @@ def filterMode(opt):
 
 			printTokens(f2+1,len(tokens),tokens)
 	
-			print ""
+			print("")
 	elif re.compile('^-f [0-9]+/[+-][0-9]*$').match(opt):
 		#mdate -f <f>/±<dif>          : dif 日先の日付
 		f, diff = parseFieldSlashForm(sys.argv[2])
@@ -301,15 +320,15 @@ def filterMode(opt):
 		for line in sys.stdin:
 			tokens = line.rstrip().split(' ')
 
-			printTokens(0,f+1,tokens)
+			printTokens(0,f+1,tokens)	# 前のフィールド出力があれば区切り空白を出力する
 
 			d1 = strToDate(tokens[f])
 			d2 = shiftDay(d1,diff)
-			print d2.strftime("%Y%m%d"),
+			print(d2.strftime("%Y%m%d"), end='')
 
 			printTokens(f+1,len(tokens),tokens)
 
-			print ""
+			print("")
 	elif re.compile('^-f -y [0-9]+$').match(opt):
 		#日付  mdate -f -y <f>               : 曜日
 		f = int(sys.argv[3]) - 1
@@ -319,10 +338,12 @@ def filterMode(opt):
 
 			d = strToDate(tokens[f])
 			printDay(d)
-			print d.weekday() + 1,
+			print(" ",end="")	# printDay()は後尾に空白を付けないので
+
+			print(d.weekday() + 1, end='')
 
 			printTokens(f+1,len(tokens),tokens)
-			print ""
+			print("")
 
 	elif re.compile('^-f [0-9]+ [0-9]+$').match(opt):
 		#mdate -f <f1> <f2>            : 日付の差
@@ -340,11 +361,11 @@ def filterMode(opt):
 			d1 = strToDate(tokens[f1])
 			d2 = strToDate(tokens[f2])
 			
-			print (d1 - d2).days,
+			print((d1 - d2).days, end='')
 
 			printTokens(f2+1,len(tokens),tokens)
 	
-			print ""
+			print("")
 	elif re.compile('^-f [0-9]+ \+[0-9]+$').match(opt):
 		# mdate -f <f1> +<f2>         : 日付の加算
 		f1 = int(sys.argv[2]) - 1
@@ -361,7 +382,7 @@ def filterMode(opt):
 			printDay(d2)
 
 			printTokens(f2+1,len(tokens),tokens)
-			print ""
+			print("")
 	elif re.compile('^-f [0-9]+ -[0-9]+$').match(opt):
 		# mdate -f <f1> -<f2>         : 日付の加算
 		f1 = int(sys.argv[2]) - 1
@@ -378,7 +399,7 @@ def filterMode(opt):
 			printDay(d2)
 
 			printTokens(f2+1,len(tokens),tokens)
-			print ""
+			print("")
 	elif re.compile('^-f -e [0-9]+ \+[0-9]+$').match(opt):
 		#mdate -f -e <f1> +<f2>       : 日付の加算 展開
 		f1 = int(sys.argv[3]) - 1
@@ -398,7 +419,7 @@ def filterMode(opt):
 			printDays(d1,d2)
 
 			printTokens(f2+1,len(tokens),tokens)
-			print ""
+			print("")
 	elif re.compile('^-f -e [0-9]+ -[0-9]+$').match(opt):
 		#mdate -f -e <f1> -<f2>       : 日付の加算 展開
 		f1 = int(sys.argv[3]) - 1
@@ -416,7 +437,7 @@ def filterMode(opt):
 			printDays(d1,d2)
 
 			printTokens(f2+1,len(tokens),tokens)
-			print ""
+			print("")
 	elif re.compile('^-f -d [0-9]+m$').match(opt):
 		#   月次  mdate -f -d <f>m              : 日付を１カ月分出力
 		f = int(sys.argv[3][:-1]) - 1
@@ -432,7 +453,7 @@ def filterMode(opt):
 			printDays(d1,d2)
 
 			printTokens(f+1,len(tokens),tokens)
-			print ""
+			print("")
 	elif re.compile('^-f [0-9]+m/[+-][0-9]+$').match(opt):
 		#mdate <f>m/±<dif>         : dif 月先の月
 		opts = sys.argv[2].split("/")
@@ -447,11 +468,11 @@ def filterMode(opt):
 			m1 = tokens[f]
 			m2 = shiftMonth(m1,diff)
 
-			print m2,
+			print(m2, end='')
 
 			d1 = monthToFirstDay(tokens[f][:6])
 			printTokens(f+1,len(tokens),tokens)
-			print ""
+			print("")
 	elif re.compile('^-f -e [0-9]+m/[+-][0-9]+$').match(opt):
 		#mdate -f -e <f>m ±<dif>      : dif 月先の月まで展開
 		opts = sys.argv[3].split("/")
@@ -467,16 +488,17 @@ def filterMode(opt):
 			m2 = shiftMonth(m1,diff)
 			if m1 > m2 : m1, m2 = m2, m1
 
-			if diff < 0 : print m2,
+			if diff < 0 : print(m2, end=' ')
 			m = m1
 			while m <= m2:
-				print m, 
+				if m==m2:	print(m, end='') 	# loop最終回は区切り空白の出力をしない
+				else:       print(m, end=' ')
 				m = shiftMonth(m,1)
 	
 
 			d1 = monthToFirstDay(tokens[f][:6])
 			printTokens(f+1,len(tokens),tokens)
-			print ""
+			print("")
 
 	elif re.compile('^-f [0-9]+m [0-9]+m$').match(opt):
 		#mdate -f <f1>m <f2>m          : 月の差
@@ -491,11 +513,11 @@ def filterMode(opt):
 
 			printTokens(0,f2+1,tokens)
 
-			print monthDelta(tokens[f1],tokens[f2]),
+			print(monthDelta(tokens[f1],tokens[f2]), end='')
 
 			printTokens(f2+1,len(tokens),tokens)
 	
-			print ""
+			print("")
 	elif re.compile('^-f -e [0-9]+m [0-9]+m$').match(opt):
 		#mdate -f -e <f1>m <f2>m       : 月の展開
 		f1 = int(sys.argv[3][:-1]) - 1
@@ -515,12 +537,13 @@ def filterMode(opt):
 
 			m = m1
 			while m <= m2:
-				print m, 
+				if m==m2:	print(m, end='') 	# loop最終回は区切り空白の出力をしない
+				else:       print(m, end=' ') 
 				m = shiftMonth(m,1)
 
 			printTokens(f2+1,len(tokens),tokens)
 	
-			print ""
+			print("")
 
 	elif re.compile('^-f [0-9]+m [-\+][0-9]+$').match(opt):
 		#mdate -f <f>m ±<dif>         : 月の加算
@@ -539,9 +562,9 @@ def filterMode(opt):
 
 			m2 = shiftMonth(m1,diff*sign)
 
-			print m2,
+			print(m2, end='')
 			printTokens(f2+1,len(tokens),tokens)
-			print ""
+			print("")
 	elif re.compile('^-f -e [0-9]+m \+[0-9]+$').match(opt):
 		#mdate -e <f>m ±<dif>      : 月の加算展開
 		f1 = int(sys.argv[3][:-1]) - 1
@@ -562,11 +585,12 @@ def filterMode(opt):
 
 			m = m1
 			while m <= m2:
-				print m, 
+				if m==m2:	print(m, end='') 	# loop最終回は区切り空白の出力をしない
+				else:       print(m, end=' ') 
 				m = shiftMonth(m,1)
 
 			printTokens(f2+1,len(tokens),tokens)
-			print ""
+			print("")
 	elif re.compile('^-f -ly [0-9]+m$').match(opt):
 		#mdate -f -ly <f>m             : 前年月
 		f = int(sys.argv[3][:-1]) - 1
@@ -579,10 +603,10 @@ def filterMode(opt):
 			y = int(tokens[f][:4]) - 1
 			m = tokens[f][4:6]
 
-			print str(y) + m,
+			print(str(y) + m, end='')
 			printTokens(f+1,len(tokens),tokens)
 
-			print ""
+			print("")
 	elif re.compile('^-f -ly [0-9]$').match(opt):
 		#mdate -f -ly <f>             : 前年日
 		f = int(sys.argv[3]) - 1
@@ -597,10 +621,10 @@ def filterMode(opt):
 
 			if md == "0229" : md = "0228"
 
-			print str(y) + md,
+			print(str(y) + md, end='')
 			printTokens(f+1,len(tokens),tokens)
 
-			print ""
+			print("")
 	else:
 		usage()
 
