@@ -1,0 +1,104 @@
+#!/usr/bin/env python
+#coding: utf-8
+#
+# isdate ８桁日付のチェック（Open usp Tukubai版）
+#
+# designed by Nobuaki Tounaka
+#
+# The MIT License
+#
+# Copyright (C) 2011 Universal Shell Programming Laboratory
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+from __future__ import print_function
+import sys
+import calendar
+
+_usage = "isdate <date>"
+_version = "Fri Oct 21 11:26:06 JST 2011"
+_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
+
+def error(msg, *arg):
+	print('Error[isdate] :', msg % arg, file=sys.stderr)
+	sys.exit(1)
+
+def usage():
+	print("Usage   :", _usage, file=sys.stderr)
+	print("Version :", _version, file=sys.stderr)
+	print("         ", _code, file=sys.stderr)
+	sys.exit(1)
+
+#
+#メイン関数
+#
+if __name__ == '__main__':
+
+	if len(sys.argv) <= 1 \
+	 or sys.argv[1] == '--help' \
+	 or sys.argv[1] == '--version':
+		usage()
+
+	# オプション解析
+	date=sys.argv[1] # パラメータから日付け文字列を取得
+
+	# 日付け文字列の長さと型の検査
+	if not len(date)==8: # 日付け文字列が8文字でなければ異常終了
+		sys.exit(1)
+	if not date.isdigit(): # 日付け文字列が数字列でなければ異常終了
+		sys.exit(1)
+
+	# 年月日の取り出し
+	year=int(date[:4])
+	month=int(date[4:6])
+	day=int(date[6:8])
+
+	# 月別日数の範囲内か？
+
+	if day==0:
+		sys.exit(1)
+
+	# 閏年の処理
+	if month==2: # 2月は閏年か調べてから月の日数を決める
+		lastday=28 # 通常年の2月の日数
+		# ユリウス暦時代とグレゴリオ暦時代に分ける
+		if year <= 1752: # 英国およびその植民地では1752年9月にユリウス暦から改暦しグレゴリオ暦となる
+			if year%4==0: # 閏年
+				lastday=29
+		else: # グレゴリオ暦時代
+			# 4で割り切れる年は閏年とする
+			#  ただし、100で割り切れる年は閏年としない
+			#   ただし、400で割り切れる年は閏年とする
+			if calendar.isleap(year): lastday=29
+
+	# 大の月と小の月ごとに日数を設定
+	elif month==1 or month==3 or month==5 or month==7 \
+		or month==8 or month==10 or month==12: # 大の月
+		lastday=31
+	else: # 2月以外の小の月
+		if year==1752 and month==9: # 1752年9月はユリウス暦からグレゴリオ暦への改暦月
+			if day>=3 and day<=13: # 改暦により9月2日水曜日の次は9月14日木曜日となる
+				sys.exit(1)
+		lastday=30
+
+	# 月の日数判定
+	if day>lastday:
+		sys.exit(1)
+
+	sys.exit(0)
