@@ -1,0 +1,334 @@
+#!/usr/bin/env python
+#coding: utf-8
+#
+# ulock 排他制御コマンド（Open usp Tukubai版）
+# 
+# designed by Nobuaki Tounaka
+#
+# The MIT License
+#
+# Copyright (C) 2011 Universal Shell Programming Laboratory
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+from __future__ import print_function
+import re
+import os
+import sys
+from stat import *
+import random
+import time
+from datetime import datetime
+
+_usage = "ulock <lock-file>"
+_usage2 = "ulock -w <lock-file> [<counter-file>]"
+_usage3 = "ulock -r <lock-file> <counter-file> <command>"
+_option = "--timeout=<sec>/--invalid=<sec>"
+_version = "Fri Oct 21 11:26:06 JST 2011"
+_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
+
+def error(msg, *arg):
+	print('Error[ulock] :', msg % arg, file=sys.stderr)
+	sys.exit(1)
+
+def usage():
+	print("Usage   :", _usage, file=sys.stderr)
+	print("Usage   :", _usage2, file=sys.stderr)
+	print("Usage   :", _usage3, file=sys.stderr)
+	print("Option  :", _option, file=sys.stderr)
+	print("Version :", _version, file=sys.stderr)
+	print("         ", _code, file=sys.stderr)
+	sys.exit(1)
+
+#
+# ファイルの自動生成
+def makefile():
+
+	path=makefilename() # ファイル名の生成
+	try:
+		f=open(path,'w') # ファイルの生成
+	except:
+		error("作業用一時ファイル('%s')の生成エラー", path)
+	f.close()
+	return path
+
+#
+# ファイル名の自動生成
+def makefilename():
+
+	# pidと乱数を使って新しいファイル名を生成
+	while True:
+		# "/tmp/tmp-<pid>-<乱数>"のファイル名を生成
+		path='/tmp/ulock-'+str(os.getpid())+'-'+str(random.randint(0,999))
+		# 不存在を確認
+		if not os.path.exists(path):
+			return path
+
+#
+# counter_fileの参照数（ハードリンク数）を1増やす
+def addref():
+
+	# 新しいファイルを生成してcounter_fileとのハードリンクを試みる
+	# counter_fileの存在/不存在の両方に対応する
+	# counter_fileが存在していないときは新ファイルを生成してそこからcounter_fileへのハードリンクをして参照数を2にする
+	# counter_fileが存在するときはそこから新ファイルへハードリンクをして参照数を上げる
+	path=makefile() # 新しいファイルを生成する
+	if hardlink(path,counter_file): # counter_fileへのハードリンクに成功したら
+		# counter_fileは存在していなかったので生成した
+		# counter_fileの参照数は2になる
+		return path # リンク元の新ファイル名を返す
+	else: # 失敗した
+		if not os.path.exists(path): # 原因はpath（ハードリンク元）の喪失
+			error("作業用一時ファイル('%s')を喪失した", path)
+		elif not os.path.exists(counter_file): # <counter-file>が生成されていないとき
+			error("<counter-file>('%s')へのハードリンクエラー", counter_file)
+
+		# その他のときはcounter_file（ハードリンク先）が既存であることが原因なので処理続行
+		os.remove(path) # 生成した新ファイルは不要なので削除
+		# counter_fileは既存なのでcounter_fileからのハードリンクを生成して参照数を上げる
+		path=makefilename() # 新しいファイル名を作る
+		if hardlink(counter_file,path): # 指定ファイルから新ファイルへのハードリンクに成功したら
+			# counter_fileの参照数は+1される
+			return path # リンク先の新ファイル名を返す
+		else: # 失敗した
+			if not os.path.exists(counter_file): # 原因はcounter_file（ハードリンク元）の喪失
+				error("<counter-file>('%s')を喪失した", counter_file)
+			elif os.path.exists(path): # 原因はpath（ハードリンク先）の存在（makefilename()とhardlink()の実行間で生成されている）
+				os.remove(path)
+				error("作業用一時ファイル('%s')の作成エラー", path) # エラーにする
+			else:
+				error("<counter-file>('%s')への参照数増加エラー", counter_file)
+#
+# counter_fileの参照数（ハードリンク数）を1減らす
+def subref(path):
+
+	os.remove(path) # 指定ファイルを削除
+
+#
+# ハードリンクを生成
+def hardlink(frm, to):
+
+	try:
+		os.link(frm,to)
+	except:
+		return False
+	return True
+
+# <lock_file>を占有する
+def hold_lock_file():
+
+	path=makefile() # lock-fileのハードリンク元ファイルを自動生成する
+	while True: # 先行する<lock_file>占有があれば解除を待つ
+		# ハードリンク元の存在が保証された状態でハードリンクをする
+		if hardlink(path,lock_file): # <lock-file>をリンク先とするハードリンク（リンク元は自動生成）
+			# ハードリンクに成功した
+			os.remove(path) # ハードリンク元を削除
+			return
+		else:
+			# ハードリンクに失敗した
+			if not os.path.exists(path): # ハードリンク元ファイル（path）が削除されている場合
+				error("作業用一時ファイル('%s')を喪失した", path)
+			# 他のprocessによってhardlink()実行と原因検査の間（すきま）で<lock-file>が削除（解放）されることもあるので…
+			# この段階でハードリンク先ファイル（<lock-file>）が存在していない場合についてはエラーとしない
+			# その他はハードリンク先ファイル（<lock-file>）が既存であることによる失敗なので処理続行
+			# 時間切れになるまでハードリンクを繰り返し試行する
+			if timeup(): # 時間切れ
+				os.remove(path) # ハードリンク元を削除
+				sys.exit(1) # lock_fileの占有に失敗
+			else:
+				time.sleep(sleeptime) # sleeptime秒まってから再試行
+				# 生成したpath（ハードリンク元）を再利用して試行を繰り返す
+
+# <lock_file>を解放する
+def free_lock_file():
+
+	if not os.path.exists(lock_file):
+		# <lock_file>が存在していなかったらエラー
+		error("<lock-file>('%s')を喪失した",lock_file)
+	os.remove(lock_file)
+
+#
+# 時間切れ判定
+def timeup():
+
+	if timeout<0: # 待ち時間無限大
+		return False
+	if (time.time()-starttime)>=timeout:
+		return True
+	else:
+		return False
+
+#
+# main
+
+if __name__ == '__main__':
+
+	# コマンドの説明表示
+	if len(sys.argv) <= 1 \
+	 or sys.argv[1] == '--help' \
+	 or sys.argv[1] == '--version':
+		usage()
+
+	# パラメータ解析
+	w, r = False, False # default値
+	lock_file=''
+	counter_file=''
+	command=''
+	comlist=[]
+	sys.argv.pop(0)
+	pos=0
+	timeout=None
+	invalid=None
+	for param in sys.argv:
+		if param == '-w': # -w指定
+			w=True
+		elif param == "-r": # -r指定
+			r=True
+		else:
+			rm = re.match(r'^--(timeout|invalid)=(.+)', param)
+			if rm:
+				if rm.group(1)=='timeout': # timeoutオプションを検出した
+					try:
+						timeout=int(rm.group(2))
+					except:
+						error("--timeoutオプションの値が整数ではありません")
+				elif rm.group(1)=='invalid': # invalidオプションを検出した
+					try:
+						invalid=int(rm.group(2))
+					except:
+						error("--invalidオプションの値が整数ではありません")
+			else: # -/--なしのパラメータ（lock-file/counter-file/command）
+				pos+=1
+				if pos==1: # lock-file
+					lock_file=param
+				elif pos==2: # counter-file
+					counter_file=param
+				else: # command文字列
+					comlist.append(param)
+	if len(comlist)>0:
+		for unit in comlist:
+			command+=unit+' '
+	command.strip() # 末尾の空白をとる
+
+	# パラメータの検査
+	if r and w:
+		error("-r指定と-w指定の両方があります")
+	if lock_file=='':
+		error("ロックファイルの指定がありません")
+	if w:
+		if len(comlist)>0:
+			error("-w指定でコマンド指定があります")
+		# <counter-file>指定があるとき<counter-file>は既存でなくてもよい
+	elif r:
+		if counter_file=='':
+			error("-r指定でカウンターファイルの指定がありません")
+		if len(comlist)==0:
+			error("-r指定でコマンド指定がありません")
+		# <counter-file>指定があるとき<counter-file>は既存でなくてもよい
+	# --timeout/--invalidオプションが省略されていたらdefault値を設定する
+	if timeout==None:
+		timeout=-1
+	if invalid==None:
+		invalid=60
+	# --timeout/--invalidオプションの値域検査
+	if timeout<0 and timeout!=-1:
+		error("--timeoutオプションの値で-1以外の負数が指定されています")
+	if invalid<0: # --invalidオプションに負の値がある
+		error("--invalidオプションの値が負数です")
+
+	# --invalidオプションによって古い<lock-file>の削除をする
+	if os.path.exists(lock_file):
+		# <lock-file>のctimeを調べる
+		ctime=os.stat(lock_file)[ST_CTIME]
+		# --ivalidオプションの値と比較して古い<lock-file>を削除する
+		if (time.time()-int(ctime))>invalid:
+			os.remove(lock_file)
+
+	sleeptime=0.01 # ロック解除待ちloopのsleep時間
+
+	starttime = time.time() # 時間計測開始
+	# 形式1 ulock <lock-file>
+	if not (w or r): # 完全ロック
+		hold_lock_file() # lockfileの解放待ちで時間切れ（ハードリンク失敗）のときは帰ってこない
+		sys.exit(0) # ロックに成功
+
+	# 形式2 ulock -w <lock-file> <counter-file>
+	elif w: # 書き込みロック
+		# <lock-file>をリンク先とするハードリンクを試みて書き込みロックをする
+		# 書き込みロックの解除待ち
+		# ハードリンク元の存在が保証された状態で<lock_file>へハードリンクをする
+		# <lock_file>を占有して書き込みロックの準備をする
+		hold_lock_file() # lockfileの解放待ちで時間切れ（ハードリンク失敗）のときは帰ってこない
+		# <lock-file>へのハードリンクに成功した
+		if not counter_file=='': # <counter-file>指定があるとき
+			path=makefile() # ハードリンク元を用意
+			if hardlink(path,counter_file): # <counter-file>が存在していなければハードリンク先として生成する
+				# ハードリンクに成功した
+				os.remove(path) # ハードリンク元は不要なので削除（参照数は1になる）
+				# 生成直後（参照数は1）でかつlockfileでロック中なので他のプロセスはcounter-fileに手が出せない（参照数の増減はできない）
+				sys.exit(0) # ロックに成功
+			else:
+				# ハードリンクに失敗した
+				if not os.path.exists(path): # 原因がpath（ハードリンク元）の喪失のとき
+					error("作業用一時ファイル('%s')を喪失した",path)
+				elif not os.path.exists(counter_file): # <counter-file>が存在していないときはその他のハードリンクエラー
+					os.remove(path)
+					error("<counter-file>('%s')へのハードリンクエラー", counter_file)
+				# それ以外は<counter-file>が既存であったことが原因なので処理続行
+				os.remove(path) # 生成したハードリンク元は不要なので削除
+			# 読み込みロックの解除待ち
+			while True:
+				# <counter-file>の参照数が1になったらロックできる
+				ref=os.stat(counter_file)[ST_NLINK]
+				if ref==1:
+					sys.exit(0) # ロックに成功
+				else:
+					# 読み込みロックされていたら時間切れか判定する
+					if timeup(): # 時間切れ
+						sys.exit(1) # ロックに失敗
+					else:
+						time.sleep(sleeptime) # sleeptime秒まってから再判定する
+		else: # <counter-file>指定がないとき
+			sys.exit(0) # ロックに成功
+
+	# 形式3 ulock -r <lock-file> <counter-file> <command>
+	else: # 読み込みロック
+		# 書き込みロックの解除を待って読み込みロックをする
+		# <lock_file>を占有する
+		hold_lock_file() # <lock-file>の解放待ちで時間切れ（ハードリンク失敗）のときは帰ってこない
+		# <counter-file>の参照数を1増やす
+		path=addref() # <counter-file>とハードリンクした新ファイルの名前をもらう
+		# <lock_file>を解放する
+		free_lock_file()
+		# 書き込みロックの解除待ち
+		while True:
+			# 書き込みロックされているか？
+			if os.path.exists(lock_file): # <lock_file>が存在して（書き込みロックされて）いるか
+				# ロックされていたら時間切れか判定する
+				if timeup(): # 時間切れ
+					# <counter-file>の参照数を1減らして読み込みロック失敗とする
+					subref(path) # <counter-file>の参照数を1減らす
+					sys.exit(1) # 書き込みロックがあるため読み込みロックに失敗
+				else:
+					time.sleep(sleeptime) # sleeptime秒まってから再判定する
+			# 書き込みロックされていないとき指定の（読み込み）コマンドを実行
+			else:
+				os.system(command) # 指定コマンドを実行する
+				subref(path) # <counter-file>の参照数を1減らす
+				sys.exit(0) # 読み込みロック成功
