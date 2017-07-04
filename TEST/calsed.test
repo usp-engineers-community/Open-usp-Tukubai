@@ -1,0 +1,196 @@
+#!/bin/bash
+#!/usr/local/bin/bash -xv # コマンド処理系の変更例
+#
+# test script of calsed
+#
+# usage: [<test-path>/]calclock.test [<command-path> [<python-version>]]
+#
+#            <test-path>は
+#                    「現ディレクトリーからみた」本スクリプトの相対パス
+#                    または本スクリプトの完全パス
+#                    省略時は現ディレクトリーを仮定する
+#            <command-path>は
+#                    「本スクリプトのディレクトリーからみた」test対象コマンドの相対パス
+#                    またはtest対象コマンドの完全パス
+#                    省略時は本スクリプトと同じディレクトリーを仮定する
+#                    値があるときまたは空値（""）で省略を示したときはあとにつづく<python-version>を指定できる
+#            <python-version>は
+#                    使用するpython処理系のversion（minor versionまで指定可）を指定する
+#                    （例 python2 python2.6 phthon3 python3.4など）
+#                    単にpythonとしたときは現実行環境下でのdefault versionのpythonを使用する
+#                    文字列"python"は大文字/小文字の区別をしない
+#                    省略時はpythonを仮定する
+name=calsed # test対象コマンドの名前
+testpath=$(dirname $0) # 本スクリプト実行コマンドの先頭部($0)から本スクリプトのディレトリー名をとりだす
+cd $testpath # 本スクリプトのあるディレクトリーへ移動
+if test "$2" = ""; # <python-version>($2)がなければ
+	then pythonversion="python" # default versionのpythonとする
+	else pythonversion="$2" # <python-version>($2)があれば指定versionのpythonとする
+fi
+if test "$1" = ""; # <command-path>($1)がなければ
+	then commandpath="." # test対象コマンドは現ディレクトリーにある
+	else commandpath="$1" # <command-path>($1)があればtest対象コマンドは指定のディレクトリーにある
+fi
+com="${pythonversion} ${commandpath}/${name}" # python処理系によるtest対象コマンド実行の先頭部
+tmp=/tmp/$$
+
+ERROR_CHECK(){
+	[ "$(echo ${PIPESTATUS[@]} | tr -d ' 0')" = "" ] && return
+	echo $1
+	echo "${pythonversion} ${name}" NG
+	rm -f $tmp-*
+	exit 1
+}
+
+###########################################
+# TEST1
+# 直接置換文字列を指定する。
+
+cat << FIN > $tmp-data
+<td>NAME</td>
+<td>AGE</td>
+FIN
+
+cat << FIN > $tmp-out
+<td>usp</td>
+<td>25</td>
+FIN
+
+${com} NAME usp $tmp-data | ${com} AGE 25 - > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1 error"
+
+###########################################
+# TEST2
+# 置換後文字列に空白がある場合
+
+cat << FIN > $tmp-out
+<td>usp lab</td>
+<td>AGE</td>
+FIN
+
+${com} NAME "usp lab" $tmp-data > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2 error"
+
+###########################################
+# TEST3
+# 置換後文字列にヌル文字列
+
+cat << FIN > $tmp-out
+<td></td>
+<td>AGE</td>
+FIN
+
+${com} NAME @ $tmp-data > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3 error"
+
+###########################################
+# TEST4
+# ヌル文字列を変更する
+
+cat << FIN > $tmp-out
+<td>@</td>
+<td>AGE</td>
+FIN
+
+${com} -nx NAME @ $tmp-data > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4 error"
+
+###########################################
+# TEST5
+# 空白に変換する文字を指定する
+
+cat << FIN > $tmp-out
+<td>usp lab</td>
+<td>AGE</td>
+FIN
+
+${com} -s_ NAME usp_lab $tmp-data > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5 error"
+
+###########################################
+# TEST6
+# 変換元文字列と変換後文字列をセットにしたファイルを指定して、
+# 置換を行うことができます。
+# このファイルは name 形式であることが必要です。
+
+cat << FIN > $tmp-script
+NAME usp
+AGE 25
+FIN
+
+cat << FIN > $tmp-out
+<td>usp</td>
+<td>25</td>
+FIN
+
+${com} -f $tmp-script $tmp-data > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST6 error"
+
+###########################################
+# TEST7
+# 変換元文字列と変換後文字列をセットにしたファイルを指定して、
+# 置換を行うことができます。
+# このファイルは name 形式であることが必要です。
+# 変換後文字列が "@" の時、ヌル文字列に変換されます。
+
+cat << FIN > $tmp-script2
+NAME @
+AGE
+FIN
+
+cat << FIN > $tmp-out
+<td></td>
+<td></td>
+FIN
+
+${com} -f $tmp-script2 $tmp-data > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST7 error"
+
+###########################################
+# TEST8
+# 空白をそのまま置換する
+
+cat << FIN > $tmp-script3 # <- [空白]usp[空白]lab[空白] を指定
+NAME  usp lab 
+AGE 25
+FIN
+
+cat << FIN > $tmp-out
+<td> usp lab </td>
+<td>25</td>
+FIN
+
+${com} -f $tmp-script3 $tmp-data > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST8 error"
+
+###########################################
+# TEST9
+# 空白文字に置換する文字を指定
+
+cat << FIN > $tmp-script4
+NAME usp_lab
+AGE 25
+FIN
+
+cat << FIN > $tmp-out
+<td>usp lab</td>
+<td>25</td>
+FIN
+
+${com} -s_ -f $tmp-script4 $tmp-data > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST9 error"
+
+###########################################
+rm -f $tmp-*
+echo "${pythonversion} ${name}" OK
+
+exit 0
