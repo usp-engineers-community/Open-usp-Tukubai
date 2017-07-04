@@ -28,6 +28,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from __future__ import print_function
+
 _usage = "keycut [options] <filename> <file>"
 _option = "-d : キーの削除"
 _option1 = "-a : ファイル追記"
@@ -49,15 +51,15 @@ import gzip
 from getopt import getopt
 
 def error(msg, *arg):
-	print >> sys.stderr, 'Error[keycut] :', msg % arg
+	print('Error[keycut] :', msg % arg, file=sys.stderr)
 	sys.exit(1)
 
 def usage():
-	print >> sys.stderr, "Usage   :", _usage
-	print >> sys.stderr, "Option  :", _option
-	print >> sys.stderr, "        :", _option1
-	print >> sys.stderr, "        :", _option2
-	print >> sys.stderr, "Version :", _version
+	print("Usage   :", _usage, file=sys.stderr)
+	print("Option  :", _option, file=sys.stderr)
+	print("        :", _option1, file=sys.stderr)
+	print("        :", _option2, file=sys.stderr)
+	print("Version :", _version, file=sys.stderr)
 	sys.exit(1)
 
 class FieldLine:
@@ -162,7 +164,7 @@ def open_file(n, mode = 'r'):
 #
 def path_dir(path):
 	p = path.split('/')
-	return map(lambda x: x + '/', p[:-1])
+	return [x + '/' for x in p[:-1]]
 
 #
 # ディレクトリの判定
