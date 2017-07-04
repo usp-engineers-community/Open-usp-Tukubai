@@ -1,0 +1,270 @@
+#!/usr/bin/env python
+#coding: utf-8
+#
+# check_date_name : name 形式データの日付をチェックする（Open usp Tukubai版）
+# 
+# designed by Nobuaki Tounaka
+#
+# The MIT License
+#
+# Copyright (C) 2011 Universal Shell Programming Laboratory
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+from __future__ import print_function
+import sys
+import os
+import datetime
+import calendar
+
+_usage = "check_date_name <check_file> <name_file>"
+_usage2 = "[--through <string>]"
+_version = "Fri Oct 21 11:26:06 JST 2011"
+_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
+
+def error(msg, *arg):
+	print('Error[check_date_name] :', msg % arg, file=sys.stderr)
+	sys.exit(1)
+
+def usage():
+	print("Usage   :", _usage, file=sys.stderr)
+	print("        :", _usage2, file=sys.stderr)
+	print("Version :", _version, file=sys.stderr)
+	print("         ", _code, file=sys.stderr)
+	sys.exit(1)
+
+# ファイルオープン
+def open_file(filename, mode = 'r'):
+	# 入力でファイル名が'-'または省略なら標準入力とする
+	if mode=="r" and (filename=='-' or filename == None): 
+		file = sys.stdin
+	else: # その他の入力ファイルのとき
+		try:
+			file = open(filename, mode)
+		except:
+			error("ファイル '%s' をオープンできません。", filename)
+	return file
+
+# 改行符号（\r\n）の削除関数
+def rm_eol(line):
+	return line.rstrip('\n').rstrip('\r')
+
+# 閏年の判定
+# calendar.isleap(year)でも判定できる（グレゴリオ暦による判定）
+def is_leap_year(year):
+	# ユリウス暦時代とグレゴリオ暦時代に分ける
+	if year <= 1752: # 英国およびその植民地では1752年9月にユリウス暦から改暦しグレゴリオ暦となる
+		if year%4==0: # 閏年
+			return True
+	else: # グレゴリオ暦時代
+		return calendar.isleap(year)
+	return False
+
+# 日付け検査
+def is_date(date):
+	# 日付け文字列の長さと型の検査
+	if not len(date)==8: # 日付け文字列が8文字でなければエラー
+		return False
+	if not date.isdigit(): # 日付け文字列が数字列でなければエラー
+		return False
+
+	# 年月日の取り出し
+	year=int(date[:4])
+	month=int(date[4:6])
+	day=int(date[6:8])
+
+	# 年の検査
+	if year==0: return False
+
+	# 月の検査
+	if month==0 or month>12: return False
+
+	# 月別日数の範囲内か？
+	if day==0: return False
+
+	# 閏年の処理
+	if month==2: # 2月は閏年か調べてから月の日数を決める
+		if is_leap_year(year): lastday=29
+		else: lastday=28
+
+	# 大の月と小の月ごとに日数を設定
+	elif month==1 or month==3 or month==5 or month==7 \
+		or month==8 or month==10 or month==12: # 大の月
+		lastday=31
+	else: # 2月以外の小の月
+		if year==1752 and month==9: # 1752年9月はユリウス暦からグレゴリオ暦への改暦月
+			if day>=3 and day<=13: # 改暦により9月2日水曜日の次は9月14日木曜日となる
+				return False
+		lastday=30
+
+	# 月の日数判定
+	if day>lastday:
+		return False
+
+	return True
+
+# date検査関数
+def check_date(check_mark,data,calweek):
+	# 日付けの検査
+	if check_mark=="D":
+		return is_date(data)
+	# 週の検査
+	elif check_mark=="W":
+		# 日付け文字列の長さと型の検査
+		if not len(data)==6: # 日付け文字列が6文字でなければエラー
+			return False
+		if not data.isdigit(): # 日付け文字列が数字列でなければエラー
+			return False
+		# 年と週の取り出し
+		year=int(data[:4])
+		week=int(data[4:6])
+		if calweek=="iso":
+			# ISO(JIS)方式:年の第1週を「最初の木曜が含まれる週」とする
+			# 1年は52週または53週となる
+			date=datetime.date(year,12,28) # 12月28日の入る週は必ず年内に木曜を含む
+			maxweek=date.isocalendar()[1] # 年の最大週数（52週まは53週）を得る
+		else:
+			#  USA方式:週は日曜に始まり土曜に終るとして「1月1日が含まれる週」を年の第1週とする
+			# 週初の曜日はパラメータcalweekで指定されている
+			# date.weekday()で曜日（月曜日を 0、日曜日を 6 とする）を得る
+			# 年初（1月1日）が週末で閏年ならその年は第54週まであり、それ以外の年は第53週まで
+			date=datetime.date(year,1,1) # 当該年の年初の日付け
+			if calweek=="sun": weekend=5 # 週初を日曜とし週末は土曜とする
+			elif calweek=="mon": weekend=6 # 週初を月曜とし週末は日曜とする
+			if date.weekday()==weekend and is_leap_year(year):
+				maxweek=54
+			else:
+				maxweek=53
+		if week==0 or week>maxweek: return False
+		return True
+	# 月の検査
+	elif check_mark=="M":
+		# 日付け文字列の長さと型の検査
+		if not len(data)==6: # 日付け文字列が6文字でなければエラー
+			return False
+		if not data.isdigit(): # 日付け文字列が数字列でなければエラー
+			return False
+		month=int(data[4:6])
+		if month==0 or month>12: return False
+		return True
+	else:
+		return False
+
+# main
+
+if __name__ == '__main__':
+
+	ret_code,calweek= 0,"iso" # default値
+	# calweekは["iso","sun","mon"]のいずれか
+	#  iso→ISO(JIS)規格:週初を月曜とし年の最初の木曜が含まれる週を第1週とする（第1週は前年末から始まることがある）
+	#  sun→週初を日曜とし年初の属する週を第1週とする（週の日数は第1週と年の最終週で7日未満となりうる）
+	#  mon→週初を月曜とし年初の属する週を第1週とする（週の日数は第1週と年の最終週で7日未満となりうる）
+
+	# コマンドの説明表示
+	if len(sys.argv) <= 1 \
+	 or sys.argv[1] == '--help' \
+	 or sys.argv[1] == '--version':
+		usage()
+
+	# パラメータ解析
+	numparam=0
+	minparam=2
+	maxparam=2
+	through_string=[]
+	while len(sys.argv) > 1:
+		if sys.argv[1].startswith("--through"): # throughパラメータ
+			del(sys.argv[1]) # popup
+			if len(sys.argv)<2:
+				error("--throughパラメータの値がありません")
+			through_string.append(sys.argv[1])
+		else:
+			numparam+=1
+			if numparam==1: # expression
+				check_filename=sys.argv[1]
+			elif numparam==2: # name
+				name_filename=sys.argv[1]
+		del(sys.argv[1]) # popup
+
+	# パラメータ検査
+	if numparam<minparam:
+		error("パラメータの数が足りません")
+	if numparam>maxparam:
+		error("パラメータの数が多すぎます")
+	if not calweek in ["iso","sun","mon"]:
+		error("calweekの指定('%s')が不正です（内部エラー）",calweek)
+
+	# throughオプションの指定がなかったときはdefault値を使う
+	if len(through_string)==0:
+		through_string.append("_")
+
+	# checkファイルを開く
+	checkfile=open_file(check_filename)
+	# nameファイルを開く
+	namefile=open_file(name_filename)
+
+	checklist={}
+	# checkファイルをすべて読み込みdictにする
+	for line in checkfile:
+		line=rm_eol(line)
+		fields=line.split()
+		if not len(fields)==2:
+			error("checkファイルのフィールド数が2ではありません")
+		# checkファイルにおける重複検査
+		if fields[0] in checklist:
+			error("checkファイルのtag部に重複があります")
+		# checklistへ追加
+		checklist[fields[0]]=fields[1]
+	if len(checklist)==0:
+		error("checkファイルが空です")
+	# checkファイルを閉じる
+	checkfile.close()
+
+	ret_code=0
+	# nameファイルを読み各行をchecklistにしたがってcheckする
+	for line in namefile:
+		line=rm_eol(line)
+		fields=line.split(' ',1) # 最初の半角空白で行を2分割する
+		if len(fields)!=2:
+			error("nameファイルのフィールド数が2ではありません")
+		# 第1欄からtag名をとりだす
+		tailpos=fields[0].find("_")
+		if tailpos>=0:
+			tag=fields[0][0:tailpos] # tag名をとりだす
+		else:
+			tag=fields[0]
+		# 第2欄をdataとする
+		data=fields[1]
+		# 行のデータ部（第2欄）がthroughオプション文字列に該当したら検査をskipする
+		if data in through_string: continue
+		# checklistにしたがって検査する
+		# checklistに指定されたtag名で
+		if tag in checklist:
+			# check項目がthroughオプション文字列でないとき
+			if not checklist[tag] in through_string:
+				# 検査を実行
+				passcheck=check_date(checklist[tag],data,calweek)
+				if not passcheck: # checkにひっかかったら
+					print(fields[0]+" "+checklist[tag]) # name部とcheck項目を表示
+					ret_code=1
+
+	# nameファイルを閉じる
+	namefile.close()
+
+	# 終了
+	sys.exit(ret_code)
