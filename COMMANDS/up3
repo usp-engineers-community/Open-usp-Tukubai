@@ -28,6 +28,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from __future__ import print_function
+
 _usage = "up3 key=<key> <master_file> <tran_file>"
 _version = "Fri Oct 21 11:26:06 JST 2011"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
@@ -38,13 +40,13 @@ import os
 import sys
 
 def error(msg, *arg):
-	print >> sys.stderr, 'Error[up3] :', msg % arg
+	print('Error[up3] :', msg % arg, file=sys.stderr)
 	sys.exit(1)
 
 def usage():
-	print >> sys.stderr, "Usage   :", _usage
-	print >> sys.stderr, "Version :", _version
-	print >> sys.stderr, "         ", _code
+	print("Usage   :", _usage, file=sys.stderr)
+	print("Version :", _version, file=sys.stderr)
+	print("         ", _code, file=sys.stderr)
 	sys.exit(1)
 
 class FieldLine:
@@ -128,7 +130,7 @@ if __name__ == '__main__':
 	tline = trans.readline()
 	if not tline:
 		for mline in master:
-			print mline,
+			print(mline, end='')
 		sys.exit(0)
 	t = FieldLine(tline)
 
@@ -138,21 +140,21 @@ if __name__ == '__main__':
 	for mline in master:
 		m = FieldLine(mline)
 		while m.getField(k1, k2) > t.getField(k1, k2):
-			print tline,
+			print(tline, end='')
 			tline = trans.readline()
 			if not tline:
-				print mline,
+				print(mline, end='')
 				for mline in master:
-					print mline,
+					print(mline, end='')
 				sys.exit(0)
 			t = FieldLine(tline)
-		print mline,
+		print(mline, end='')
 
 	#
 	# trans の残り行の出力
 	#
 	while tline:
-		print tline,
+		print(tline, end='')
 		tline = trans.readline()
 
 	sys.exit(0)
