@@ -28,6 +28,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from __future__ import print_function
+
 _usage = "tcat [-n] file1 file2..."
 _version = "Fri Oct 21 11:26:06 JST 2011"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
@@ -37,13 +39,13 @@ import os
 import sys
 
 def error(msg, *arg):
-	print >> sys.stderr, 'Error[tcat] :', msg % arg
+	print('Error[tcat] :', msg % arg, file=sys.stderr)
 	sys.exit(1)
 
 def usage():
-	print >> sys.stderr, "Usage   :", _usage
-	print >> sys.stderr, "Version :", _version
-	print >> sys.stderr, "         ", _code
+	print("Usage   :", _usage, file=sys.stderr)
+	print("Version :", _version, file=sys.stderr)
+	print("         ", _code, file=sys.stderr)
 	sys.exit(1)
 
 #
@@ -83,16 +85,16 @@ if __name__ == '__main__':
 	#
 	file = open_file(1)
 	for line in file:
-		print line,
+		print(line, end='')
 
 	#
 	# メインループ
 	#
 	for i in range(2, len(sys.argv)):
 		if n > 0:
-			print '\n' * n,
+			print('\n' * n, end='')
 		file = open_file(i)
 		for line in file:
-			print line,
+			print(line, end='')
 
 	sys.exit(0)
