@@ -1,0 +1,99 @@
+#!/bin/bash
+#!/usr/local/bin/bash -xv # コマンド処理系の変更例
+#
+# test script of tcat
+#
+# usage: [<test-path>/]tcat.test [<command-path> [<python-version>]]
+#
+#            <test-path>は
+#                    「現ディレクトリーからみた」本スクリプトの相対パス
+#                    または本スクリプトの完全パス
+#                    省略時は現ディレクトリーを仮定する
+#            <command-path>は
+#                    「本スクリプトのディレクトリーからみた」test対象コマンドの相対パス
+#                    またはtest対象コマンドの完全パス
+#                    省略時は本スクリプトと同じディレクトリーを仮定する
+#                    値があるときまたは空値（""）で省略を示したときはあとにつづく<python-version>を指定できる
+#            <python-version>は
+#                    使用するpython処理系のversion（minor versionまで指定可）を指定する
+#                    （例 python2 python2.6 phthon3 python3.4など）
+#                    単にpythonとしたときは現実行環境下でのdefault versionのpythonを使用する
+#                    文字列"python"は大文字/小文字の区別をしない
+#                    省略時はpythonを仮定する
+name=tcat # test対象コマンドの名前
+testpath=$(dirname $0) # 本スクリプト実行コマンドの先頭部($0)から本スクリプトのディレトリー名をとりだす
+cd $testpath # 本スクリプトのあるディレクトリーへ移動
+if test "$2" = ""; # <python-version>($2)がなければ
+	then pythonversion="python" # default versionのpythonとする
+	else pythonversion="$2" # <python-version>($2)があれば指定versionのpythonとする
+fi
+if test "$1" = ""; # <command-path>($1)がなければ
+	then commandpath="." # test対象コマンドは現ディレクトリーにある
+	else commandpath="$1" # <command-path>($1)があればtest対象コマンドは指定のディレクトリーにある
+fi
+com="${pythonversion} ${commandpath}/${name}" # python処理系によるtest対象コマンド実行の先頭部
+tmp=/tmp/$$
+
+ERROR_CHECK(){
+	[ "$(echo ${PIPESTATUS[@]} | tr -d ' 0')" = "" ] && return
+	echo $1
+	echo "${pythonversion} ${name}" NG
+	rm -f $tmp-*
+	exit 1
+}
+
+###########################################
+#TEST1
+# 引数で指定した複数のファイルを縦に並べて連結して出力する
+
+cat << FIN > $tmp-in1
+---試験結果---
+氏名No  氏名       年齢 性別  A  B  C  D  E
+FIN
+
+cat << FIN > $tmp-in2
+0000008 角屋______   50    F 52 91 44  9  0
+0000009 米原______   68    F 60 89 33 18  6
+0000010 柳本______   50    F 95 60 35 93 76
+0000011 安武______   55    F 92 56 83 96 75
+FIN
+
+cat << FIN > $tmp-out
+---試験結果---
+氏名No  氏名       年齢 性別  A  B  C  D  E
+0000008 角屋______   50    F 52 91 44  9  0
+0000009 米原______   68    F 60 89 33 18  6
+0000010 柳本______   50    F 95 60 35 93 76
+0000011 安武______   55    F 92 56 83 96 75
+FIN
+
+${com} $tmp-in1 $tmp-in2 > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1 error"
+
+###########################################
+#TEST2
+# -<n>オプションを使用すると、
+# ファイルを<n>-で指定した行数分だけ間をあけて連結することができる
+# 2行あけて連結する
+
+cat << FIN > $tmp-out
+---試験結果---
+氏名No  氏名       年齢 性別  A  B  C  D  E
+
+
+0000008 角屋______   50    F 52 91 44  9  0
+0000009 米原______   68    F 60 89 33 18  6
+0000010 柳本______   50    F 95 60 35 93 76
+0000011 安武______   55    F 92 56 83 96 75
+FIN
+
+${com} -2 $tmp-in1 $tmp-in2 > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2 error"
+
+###########################################
+
+rm -f $tmp-*
+echo "${pythonversion} ${name}" OK
+exit 0
