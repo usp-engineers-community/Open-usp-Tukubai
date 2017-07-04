@@ -28,7 +28,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-_usage = "ctail -<n> <file>"
+from __future__ import print_function
+
+_usage = "ctail -<n> [<file>]"
+_usage2 = "ctail <n> [<file>]"
+_usage3 = "ctail -<n>c [<file>]"
 _version = "Fri Oct 21 11:26:06 JST 2011"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
 
@@ -36,9 +40,11 @@ import os
 import sys
 
 def printUsage():
-	print >> sys.stderr , "Usage    :", _usage
-	print >> sys.stderr , "Version  :", _version
-	print >> sys.stderr , "          ", _code
+	print("Usage    :", _usage, file=sys.stderr)
+	print("Usage    :", _usage2, file=sys.stderr)
+	print("Usage    :", _usage3, file=sys.stderr)
+	print("Version  :", _version, file=sys.stderr)
+	print("          ", _code, file=sys.stderr)
 	sys.exit(1)
 
 def prefixEqual(prefix,token):
@@ -50,9 +56,12 @@ def prefixEqual(prefix,token):
 	return False
 
 def die(message):
-	print >> sys.stderr, "Error[ctail] :", message
+	print("Error[ctail] :", message, file=sys.stderr)
 	sys.exit(1)
 
+# 改行符号（\r\n）の削除関数
+def rm_eol(line):
+	return line.rstrip('\n').rstrip('\r')
 
 ###########################################
 #メイン関数
@@ -64,26 +73,56 @@ if __name__ == '__main__':
 	###########################################
 	file = sys.stdin
 	n = 10
+	byteflag=False
 
 	argc = len(sys.argv)
-	#ファイルか、-nか
+	#ファイルか、nか、-nか、-ncか
 	try:
 		for i in range(1, argc):
 			arg = sys.argv[i]
 			if arg == "-":			pass
-			elif prefixEqual("-",arg):	n = int(arg[1:])
-			else:				file = open(arg,'r')
+			elif prefixEqual("-",arg):
+				if arg[-1]=='c':
+					arg=arg[:-1]
+					byteflag=True
+				n = int(arg[1:])
+			elif argc>2 and i==(argc-1):		file = open(arg,'r')
+			else: n = int(arg)
 	except:
 		printUsage()
 
-	if n <= 0:
+	if argc==1 or n <= 0:
 		printUsage()
 
 	###########################################
 	#出力
 	###########################################
 	line_queue = []
-	for line in file:
-		line_queue.append(line)
-		if len(line_queue) > n:
-			print line_queue.pop(0),
+	if not byteflag:
+		for line in file:
+			line_queue.append(line)
+			if len(line_queue) > n:
+				print(line_queue.pop(0), end='')
+	else:
+		if sys.version_info >= (3, 0): Python3=True
+		else: Python3=False
+		buflen=0
+		for line in file:
+			line=rm_eol(line)
+			if Python3: line=line.encode('utf-8')
+			line_queue.append(line)
+			buflen+=len(line)
+			# popできるか？
+			if buflen-len(line_queue[0]) >= n:
+				buflen-=len(line_queue[0])
+				if Python3:
+					print(line_queue.pop(0).decode('utf8','replace'))
+				else:
+					print(line_queue.pop(0))
+		# 最後にqueueに残っている量を検査
+		if buflen<n: die("末尾の指定バイト数を削除するに充分な量が入力されていません")
+		if buflen > n:	# nバイト超が残っていたら先頭行の後方から削除して出力する
+			if Python3:
+				print(line_queue.pop(0)[:buflen-n].decode('utf8','replace'))
+			else:
+				print(line_queue.pop(0)[:buflen-n])
