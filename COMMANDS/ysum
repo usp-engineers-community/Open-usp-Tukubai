@@ -28,6 +28,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from __future__ import print_function
+
 _usage = "ysum [+h] num=<n> <file>"
 _usage1 = "ysum [+h] <file>"
 _version = "Fri Oct 21 11:26:06 JST 2011"
@@ -39,14 +41,14 @@ import sys
 from decimal import Decimal
 
 def error(msg, *arg):
-	print >> sys.stderr, 'Error[ysum] :', msg % arg
+	print('Error[ysum] :', msg % arg, file=sys.stderr)
 	sys.exit(1)
 
 def usage():
-	print >> sys.stderr, "Usage   :", _usage
-	print >> sys.stderr, "        :", _usage1
-	print >> sys.stderr, "Version :", _version
-	print >> sys.stderr, "         ", _code
+	print("Usage   :", _usage, file=sys.stderr)
+	print("        :", _usage1, file=sys.stderr)
+	print("Version :", _version, file=sys.stderr)
+	print("         ", _code, file=sys.stderr)
 	sys.exit(1)
 
 class FieldLine:
@@ -152,7 +154,7 @@ if __name__ == '__main__':
 		line = file.readline()
 		if not line:
 			sys.exit(0)
-		print line.rstrip('\n'), '@'
+		print(line.rstrip('\n'), '@')
 
 	#
 	# メインループ
@@ -165,6 +167,6 @@ if __name__ == '__main__':
 				sum += Decimal(line.getField(i))
 			except:
 				error("数値に変換できません。")
-		print line.getField(0), sum
+		print(line.getField(0), sum)
 
 	sys.exit(0)
