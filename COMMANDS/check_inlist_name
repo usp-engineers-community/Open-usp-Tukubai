@@ -1,0 +1,246 @@
+#!/usr/bin/env python
+#coding: utf-8
+#
+# check_inlist_name : name 形式データのリスト内存在チェックをする（Open usp Tukubai版）
+# 
+# designed by Nobuaki Tounaka
+#
+# The MIT License
+#
+# Copyright (C) 2011 Universal Shell Programming Laboratory
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+from __future__ import print_function
+import sys
+import itertools
+
+_usage = "check_inlist_name <check_file> <name_file>"
+_usage2 = "[--through <string>]"
+_version = "Fri Oct 21 11:26:06 JST 2011"
+_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
+
+def error(msg, *arg):
+	print('Error[check_inlist_name] :', msg % arg, file=sys.stderr)
+	sys.exit(1)
+
+def usage():
+	print("Usage   :", _usage, file=sys.stderr)
+	print("        :", _usage2, file=sys.stderr)
+	print("Version :", _version, file=sys.stderr)
+	print("         ", _code, file=sys.stderr)
+	sys.exit(1)
+
+# ファイルオープン
+def open_file(filename, mode = 'r'):
+	# 入力でファイル名が'-'または省略なら標準入力とする
+	if mode=="r" and (filename=='-' or filename == None): 
+		file = sys.stdin
+	else: # その他の入力ファイルのとき
+		try:
+			file = open(filename, mode)
+		except:
+			error("ファイル '%s' をオープンできません。", filename)
+	return file
+
+# 改行符号（\r\n）の削除関数
+def rm_eol(line):
+	return line.rstrip('\n').rstrip('\r')
+
+# コメントの削除関数（行の" #"以降を削除する）
+def rm_comment(line):
+	# "#"で始まる行は空文字列を返す
+	if line[0]=="#": return ""
+	comment_starts=line.find(" #")
+	if comment_starts != -1: # コメントがみつかったらその直前までを返す
+		if comment_starts>0:
+			return line[0:comment_starts]
+		else:
+			return ""
+	return line # コメントがなければ行をそのまま返す
+
+# 文字列を'.'で分割する
+def SplitByPoint(line):
+	fields=line.split(".")
+	# リスト中に空文字列があれば除去する
+	while "" in fields:
+		fields.remove("")
+	return fields
+
+# tag部からtag名と連番をとりだす
+def splittag(string):
+	# tag部を"_"で区切ってtag名をとりだす
+	tailpos=string.find("_")
+	if tailpos>=1:
+		return (string[0:tailpos],string[tailpos:])
+	else: # みつからないときまたは先頭が"_"のとき
+		return (string,"")
+
+# list間の交差検査
+def crosslist(list1,list2):
+	if len((set(list1) & set(list2)))!=0: return True # 積集合が非空集合ならlist間に共通要素あり
+	return False
+
+# main
+
+if __name__ == '__main__':
+
+	ret_code = 0 # 初期値
+
+	# コマンドの説明表示
+	if len(sys.argv) <= 1 \
+	 or sys.argv[1] == '--help' \
+	 or sys.argv[1] == '--version':
+		usage()
+
+	# パラメータ解析
+	numparam=0
+	minparam=2
+	maxparam=2
+	through_string=[]
+	while len(sys.argv) > 1:
+		if sys.argv[1].startswith("--through"): # throughパラメータ
+			del(sys.argv[1]) # popup
+			if len(sys.argv)<2:
+				error("--throughパラメータの値がありません")
+			through_string.append(sys.argv[1])
+		else:
+			numparam+=1
+			if numparam==1: # checkファイル
+				check_filename=sys.argv[1]
+			elif numparam==2: # nameファイル
+				name_filename=sys.argv[1]
+		del(sys.argv[1]) # popup
+
+	# パラメータ検査
+	if numparam<minparam:
+		error("パラメータの数が足りません")
+	if numparam>maxparam:
+		error("パラメータの数が多すぎます")
+
+	# throughオプションの指定がなかったときはdefault値を使う
+	if len(through_string)==0:
+		through_string.append("_")
+
+	# checkファイルを開く
+	checkfile=open_file(check_filename)
+	checklist_tag=[]
+	checklist_file=[]
+	# checkファイルをすべて読み込む
+	for line in checkfile:
+		line=rm_eol(line)
+		fields=line.split()
+		if len(fields)!=2:
+			error("checkファイルのフィールド数が2ではありません")
+		# tag名の部分が複数指定（A.B.…）になっているときは分割してtag組とする
+		taglist=SplitByPoint(fields[0]) # 複数指定でないときはtaglistの長さは1となる
+		# checkするtag組とリストファイル名を記憶する
+		checklist_tag.append(taglist)
+		checklist_file.append(fields[1])
+	if len(checklist_tag)==0:
+		error("checkファイルが空です")
+	# checkファイルを閉じる
+	checkfile.close()
+
+	# checkファイルのtag指定重複検査
+	for listpair in itertools.combinations(checklist_tag,2):
+		if crosslist(listpair[0],listpair[1]):
+				error("checkファイルのtag指定に重複があります")
+
+	# checklistにあるリストファイルの内容を読み込んで新しいchecklistを作る
+	checklist_list=[] # データリストのリスト
+	for file_name in checklist_file:
+		listfile=open_file(file_name) # リストファイルを開く
+		datalist=[] # tag名に対応するリストファイル中のリスト
+		for line in listfile:
+			line=rm_eol(line)
+			line=rm_comment(line)
+			fields=line.split()
+			datalist.append(fields)
+		listfile.close() # リストファイルを閉じる
+		checklist_list.append(datalist) # データ組を追加
+		# checklistは2本:
+		#   checklist_tag tag組のリスト
+		#   checklist_list データ組のリスト
+
+	count=0
+	namelistlist=[]
+	# nameファイルを開く
+	namefile=open_file(name_filename)
+	for line in namefile:
+		line=rm_eol(line)
+		fields=line.split(' ',1) # 最初の半角空白で行を2分割する
+		if len(fields)!=2:
+			error("nameファイルのフィールド数が2ではありません")
+		if fields[1] in through_string: continue # データ部がthrough文字列ならskipする
+		count+=1
+		tag,sernum=splittag(fields[0]) # tag名と連番をとりだす
+		# tag名がchecklist_tagにあるか検査する
+		checkcnt=0
+		tag_completed=False
+		for taglist in checklist_tag: # checklistのtag部分について
+			if tag in taglist: # tag名がchecklistのtag組にある
+				# namelistlist(<連番,tag組,値組>（namelist）のリスト)を走査
+				for namelist in namelistlist:
+					if namelist[0]==sernum: # 連番がnameファイルの今の行の連番と一致
+						vallist=namelist[2]
+						# tag組が完成（各tagに対応する値が埋まっている）か？
+						if vallist[taglist.index(tag)] == "": # tagに対応する値が未登録
+							vallist[taglist.index(tag)]=fields[1] # 値を記憶する
+						if not "" in namelist[2]: # vallistが埋まっていてtag組が完成した
+							completed_namelist=namelist
+							completed_checkcnt=checkcnt
+							tag_completed=True # tag組が完成した
+						# tag組が完成していないとき
+						else:
+							# tag位置に対応する値を追加する
+							vallist[taglist.index(tag)]=fields[1]
+						break
+				# namelistlistが空かまたは一致する連番がないときはこの連番で新しいtag組を作る
+				else:
+					vallist=[""]*len(taglist)
+					vallist[taglist.index(tag)]=fields[1]
+					namelist=(sernum,taglist,vallist)
+					namelistlist.append(namelist)
+					if len(taglist)==1: # taglistが単一のtagでできているときtag組は完成
+						tag_completed=True
+						completed_namelist=namelist
+						completed_checkcnt=checkcnt
+						break # tag組は完成した
+			checkcnt+=1
+		if tag_completed: # checklist走査が終ってtag組が完成していたら
+			# checklistにしたがってcheckする
+			# nameファイルから得られた値組（vallist）を対応するchecklist_listの値組と比較する
+			for list in checklist_list[completed_checkcnt]:
+				if list==vallist:
+					break
+			else: # checklist_listのどの値組とも一致しなかった
+				ret_code=1
+				# 条件を満たさないtag組とリストファイル名を出力
+				tags=""
+				for tag2 in completed_namelist[1]:
+					tags+=tag2+namelist[0]+" "
+				print(tags+checklist_file[completed_checkcnt])
+			# namelistlistからリストファイルとの照合に使用したnamelistを削除
+			del namelistlist[namelistlist.index(completed_namelist)]
+	# nameファイルを閉じる
+	namefile.close()
+
+	# 終了
+	sys.exit(ret_code)
