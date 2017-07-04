@@ -28,6 +28,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from __future__ import print_function
+
 _usage = "tarr [num=<n>] [-<m>] <file>"
 _version = "Thu Dec  8 11:22:55 JST 2011"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4+/UTF-8)"
@@ -95,23 +97,26 @@ class Operator:
 			else:
 				outstr = values[n:m]
 
-			print " ".join(outstr).encode('utf_8')
+			if sys.version_info < (3, 0):	# Python2のときはユニコードからutf_8への変換が必要
+				print(" ".join(outstr).encode('utf_8'))
+			else:
+				print(" ".join(outstr))
 
 			n += self.return_num
 		
 				
 
 	def debugPrint(self):
-		print self.key_num, self.return_num
+		print(self.key_num, self.return_num)
 
 def die(message):
-	print >> sys.stderr, "Error[tarr] :", message
+	print("Error[tarr] :", message, file=sys.stderr)
 	sys.exit(1)
 
 def printUsage():
-	print >> sys.stderr , "Usage    :", _usage
-	print >> sys.stderr , "Version  :", _version
-	print >> sys.stderr , "          ", _code
+	print("Usage    :", _usage, file=sys.stderr)
+	print("Version  :", _version, file=sys.stderr)
+	print("          ", _code, file=sys.stderr)
 	sys.exit(1)
 
 def prefixEqual(prefix,token):
@@ -155,6 +160,7 @@ if __name__ == '__main__':
 	#出力
 	###########################################
 	for line in file:
-		#utf_8からユニコードに変換して改行を取る
-		line = unicode(line, "utf_8").rstrip()
+		# （Python2のときはutf_8からユニコードに変換して）改行を取る
+		if sys.version_info < (3, 0): line = unicode(line, "utf_8")
+		line=line.rstrip()
 		op.output(line)
