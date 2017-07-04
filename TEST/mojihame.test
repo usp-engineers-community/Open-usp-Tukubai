@@ -1,0 +1,330 @@
+#!/bin/bash
+#!/usr/local/bin/bash -xv # コマンド処理系の変更例
+#
+# test script of mojihame
+#
+# usage: [<test-path>/]mojihame.test [<command-path> [<python-version>]]
+#
+#            <test-path>は
+#                    「現ディレクトリーからみた」本スクリプトの相対パス
+#                    または本スクリプトの完全パス
+#                    省略時は現ディレクトリーを仮定する
+#            <command-path>は
+#                    「本スクリプトのディレクトリーからみた」test対象コマンドの相対パス
+#                    またはtest対象コマンドの完全パス
+#                    省略時は本スクリプトと同じディレクトリーを仮定する
+#                    値があるときまたは空値（""）で省略を示したときはあとにつづく<python-version>を指定できる
+#            <python-version>は
+#                    使用するpython処理系のversion（minor versionまで指定可）を指定する
+#                    （例 python2 python2.6 phthon3 python3.4など）
+#                    単にpythonとしたときは現実行環境下でのdefault versionのpythonを使用する
+#                    文字列"python"は大文字/小文字の区別をしない
+#                    省略時はpythonを仮定する
+name=mojihame # test対象コマンドの名前
+testpath=$(dirname $0) # 本スクリプト実行コマンドの先頭部($0)から本スクリプトのディレトリー名をとりだす
+cd $testpath # 本スクリプトのあるディレクトリーへ移動
+if test "$2" = ""; # <python-version>($2)がなければ
+	then pythonversion="python" # default versionのpythonとする
+	else pythonversion="$2" # <python-version>($2)があれば指定versionのpythonとする
+fi
+if test "$1" = ""; # <command-path>($1)がなければ
+	then commandpath="." # test対象コマンドは現ディレクトリーにある
+	else commandpath="$1" # <command-path>($1)があればtest対象コマンドは指定のディレクトリーにある
+fi
+com="${pythonversion} ${commandpath}/${name}" # python処理系によるtest対象コマンド実行の先頭部
+tmp=/tmp/$$
+
+ERROR_CHECK(){
+	[ "$(echo ${PIPESTATUS[@]} | tr -d ' 0')" = "" ] && return
+	echo $1
+	echo "${pythonversion} ${name}" NG
+	rm -f $tmp-*
+	exit 1
+}
+
+###########################################
+#TEST1
+
+cat << FIN > $tmp-in
+a b
+c d
+FIN
+
+cat << FIN > $tmp-template
+1st=%1
+2nd=%2
+3rd=%3 4th=%4
+FIN
+
+cat << FIN > $tmp-out
+1st=a
+2nd=b
+3rd=c 4th=d
+FIN
+
+${com} $tmp-template $tmp-in > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1 error"
+
+###########################################
+#TEST2
+
+cat << FIN > $tmp-in
+a @
+@ d
+FIN
+
+cat << FIN > $tmp-template
+1st=%1
+2nd=%2
+3rd=%3 4th=%4
+FIN
+
+cat << FIN > $tmp-out1
+1st=a
+2nd=
+3rd= 4th=d
+FIN
+
+cat << FIN > $tmp-out2
+1st=
+2nd=@
+3rd=@ 4th=d
+FIN
+
+${com}  $tmp-template $tmp-in > $tmp-ans
+diff $tmp-ans $tmp-out1
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2-1 error"
+
+${com}  -da $tmp-template $tmp-in > $tmp-ans
+diff $tmp-ans $tmp-out2
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2-2 error"
+
+###########################################
+#TEST3
+
+cat << FIN > $tmp-in
+a b c d
+w x y z
+FIN
+
+cat << FIN > $tmp-template
+1st=%1 2nd=%2
+3rd=%3 4th=%4
+FIN
+
+cat << FIN > $tmp-out1
+1st=a 2nd=b
+3rd=c 4th=d
+1st=w 2nd=x
+3rd=y 4th=z
+FIN
+
+cat << FIN > $tmp-out2
+1st=a 2nd=b
+3rd=c 4th=d
+1st=w 2nd=x
+3rd=y 4th=z
+FIN
+${com}  -l $tmp-template $tmp-in > $tmp-ans
+diff $tmp-ans $tmp-out1
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-1 error"
+
+${com}  -r $tmp-template $tmp-in > $tmp-ans
+diff $tmp-ans $tmp-out2
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-2 error"
+
+###########################################
+#TEST4
+
+cat << FIN > $tmp-in
+a b
+y z
+FIN
+
+cat << FIN > $tmp-template
+header %1
+LABEL
+1st=%1 2nd=%2
+LABEL
+footer %2
+FIN
+
+cat << FIN > $tmp-out
+header %1
+1st=a 2nd=b
+1st=y 2nd=z
+footer %2
+FIN
+
+${com}  -lLABEL $tmp-template $tmp-in > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4 error"
+
+###########################################
+#TEST5
+
+cat << FIN > $tmp-member
+佐藤
+鈴木
+FIN
+
+cat << FIN > $tmp-kbn1
+東京
+大阪
+横浜
+FIN
+
+cat << FIN > $tmp-kbn2
+男
+女
+FIN
+
+cat << FIN > $tmp-template
+MEMBER
+氏名＝%1
+K1
+地名＝%1
+K1
+K2
+性別＝%1
+K2
+MEMBER
+FIN
+
+cat << FIN > $tmp-out
+氏名＝佐藤
+地名＝東京
+地名＝大阪
+地名＝横浜
+性別＝男
+性別＝女
+氏名＝鈴木
+地名＝東京
+地名＝大阪
+地名＝横浜
+性別＝男
+性別＝女
+FIN
+
+${com}   -lK1  $tmp-template  $tmp-kbn1 | ${com} -lK2 -  $tmp-kbn2 | ${com} -lMEMBER - $tmp-member > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5 error"
+
+###########################################
+#TEST6
+
+cat << FIN > $tmp-in
+xyz b
+xyz z
+FIN
+
+cat << FIN > $tmp-template
+header %1
+LABEL
+1st=%1 2nd=%2
+LABEL
+footer %2
+FIN
+
+cat << FIN > $tmp-out
+header %1
+1st= 2nd=b
+1st= 2nd=z
+footer %2
+FIN
+
+${com}  -lLABEL -dxyz $tmp-template $tmp-in > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST6 error"
+
+###########################################
+#TEST7
+
+cat << FIN > $tmp-in
+山田 東京 10:00
+山田 大阪 20:00
+山田 横浜 09:30
+鈴木 東京 16:45
+鈴木 神戸 15:30
+FIN
+
+cat << FIN > $tmp-template
+表題 %1
+LABEL-1
+氏名＝%1
+LABEL-2
+地名＝%2 時刻＝%3
+LABEL-2
+LABEL-1
+FIN
+
+cat << FIN > $tmp-out
+表題 %1
+氏名＝山田
+地名＝東京 時刻＝10:00
+地名＝大阪 時刻＝20:00
+地名＝横浜 時刻＝09:30
+氏名＝鈴木
+地名＝東京 時刻＝16:45
+地名＝神戸 時刻＝15:30
+FIN
+
+${com}  -hLABEL $tmp-template $tmp-in > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST7 error"
+
+###########################################
+#TEST8
+
+cat << FIN > $tmp-in
+usp_lab
+usp\_lab
+______\_\_
+FIN
+
+cat << FIN > $tmp-template
+<input type="text" value="%1" />
+<input type="text" value="%2" />
+<input type="text" value="%3" />
+FIN
+
+cat << FIN > $tmp-out
+<input type="text" value="usp lab" />
+<input type="text" value="usp_lab" />
+<input type="text" value="      __" />
+FIN
+
+${com}  $tmp-template $tmp-in > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST8 error"
+
+###########################################
+#追加TEST2
+
+cat << FIN > $tmp-in
+𠆢 @
+@ d
+FIN
+
+cat << FIN > $tmp-template
+1st=%1
+2nd=%2
+3rd=%3 4th=%4
+FIN
+
+cat << FIN > $tmp-out2
+1st=
+2nd=@
+3rd=@ 4th=d
+FIN
+
+${com}  -d𠆢 $tmp-template $tmp-in > $tmp-ans
+diff $tmp-ans $tmp-out2
+[ $? -eq 0 ] ; ERROR_CHECK "追加TEST2 error"
+
+# 「𠆢」は𠆢(U+201A2)代用対では𠆢(U+D840-U+DDA2)
+
+rm -f $tmp-*
+echo "${pythonversion} ${name}" OK
+exit 0
