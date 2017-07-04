@@ -28,32 +28,31 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-# marumeからコードを拝借して応急処置で作った物です。
-# コードの掃除が必要
+# marumeからコードを拝借して応急処置で作った物です。→Python2/Python3共用化改修をした
+# コードの掃除が必要→掃除した
+
+from __future__ import print_function
+
 _usage = "maezero <f1.d1> <f2.d2> .. <file>"
 _version = "Sat Jul 13 17:11:48 JST 2013"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
-_keypat = r'(\d+)\.(0?)(\d+)$'
+_keypat = r'(\d+)\.(\d+)$'
 		# 1: field number
-		# 2: 0 (means round integral part)
-		# 3: precision
+		# 2: precision
 
 import re
 import os
 import sys
 from decimal import *
 
-def round(x, n):
-	return x.quantize(Decimal('.1') ** n)
-
 def error(msg, *arg):
-	print >> sys.stderr, 'Error[maezero] :', msg % arg
+	print('Error[maezero] :', msg % arg, file=sys.stderr)
 	sys.exit(1)
 
 def usage():
-	print >> sys.stderr, "Usage   :", _usage
-	print >> sys.stderr, "Version :", _version
-	print >> sys.stderr, "         ", _code
+	print("Usage   :", _usage, file=sys.stderr)
+	print("Version :", _version, file=sys.stderr)
+	print("         ", _code, file=sys.stderr)
 	sys.exit(1)
 
 class FieldLine:
@@ -129,7 +128,7 @@ def getval(line, n):
 #
 def add_zero(x, prec):
 	fmt = '%0' + str(prec) + 'd'
-	print fmt % x,
+	return str(fmt % x)
 
 #
 #メイン関数
@@ -140,21 +139,10 @@ if __name__ == '__main__':
 	 or sys.argv[1] == '--help' or sys.argv[1] == '--version':
 		usage()
 
-	#
-	# +age / -sage
-	#
-	if sys.argv[1] == '+age':
-		getcontext().rounding = ROUND_UP
-		del sys.argv[1]
-	elif sys.argv[1] == '-sage':
-		getcontext().rounding = ROUND_DOWN
-		del sys.argv[1]
-	else:
-		getcontext().rounding = ROUND_HALF_UP
 	if len(sys.argv) <= 1:
 		usage()
 
-	if re.match(_keypat, sys.argv[-1]):
+	if re.match(_keypat, sys.argv[-1]):	# 入力ファイル名が省略されたときはstdinを仮定する
 		file = sys.stdin
 	else:
 		file = open_file(len(sys.argv) - 1)
@@ -167,10 +155,7 @@ if __name__ == '__main__':
 		p = re.match(_keypat, arg)
 		if not p:
 			usage()
-		if p.group(2) == '':
-			prec += [ [ int(p.group(1)), int(p.group(3))] ]
-		else:
-			prec += [ [ int(p.group(1)), -int(p.group(3))] ]
+		prec += [ [ int(p.group(1)), int(p.group(2))] ]	# フィールド番号と精度の対のリストに追加する
 	for x in zip(prec, prec[1:]):
 		if x[0][0] >= x[1][0]:
 			error("フィールド位置が昇順になっていません。")
@@ -180,13 +165,14 @@ if __name__ == '__main__':
 	for line in file:
 		line = FieldLine(line)
 		p = prec[:]
+		outstr=''
 		for i in range(1, line.size() + 1):
-			while p and i > p[0][0]:
-				del p[0]
-			if not p or i < p[0][0]:
-				print line.getField(i),
-			else:
-				add_zero(getval(line, i), p[0][1]),
-		print
+			while p and i > p[0][0]:	# 未処理フィールドがあって番号がiより小
+				del p[0]	# stackのtopを処理済みとして削除
+			if not p or i < p[0][0]:	# 処理対象フィールドでなければそのまま出力
+				outstr+=line.getField(i)+' '
+			else:	# 処理対象フィールドなら前0を付ける
+				outstr+=add_zero(getval(line, i), p[0][1])+' '
+		print(outstr.rstrip())	# 最後尾の空白を除去した文字列をpitnt()する
 
 	sys.exit(0)
