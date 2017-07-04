@@ -28,6 +28,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from __future__ import print_function
+
 _usage = "count <k1> <k2> <file>"
 _version = "Fri Oct 21 11:26:06 JST 2011"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
@@ -38,13 +40,13 @@ import os
 import sys
 
 def error(msg, *arg):
-	print >> sys.stderr, 'Error[count] :', msg % arg
+	print('Error[count] :', msg % arg, file=sys.stderr)
 	sys.exit(1)
 
 def usage():
-	print >> sys.stderr, "Usage   :", _usage
-	print >> sys.stderr, "Version :", _version
-	print >> sys.stderr , "        ", _code
+	print("Usage   :", _usage, file=sys.stderr)
+	print("Version :", _version, file=sys.stderr)
+	print("        ", _code, file=sys.stderr)
 	sys.exit(1)
 
 class FieldLine:
@@ -141,10 +143,10 @@ if __name__ == '__main__':
 		line = FieldLine(line)
 		key = line.getField(k1, k2)
 		if key != oldkey:
-			print oldkey, n
+			print(oldkey, n)
 			n = 0
 			oldkey = key
 		n = n + 1
 
-	print oldkey, n
+	print(oldkey, n)
 	sys.exit(0)
