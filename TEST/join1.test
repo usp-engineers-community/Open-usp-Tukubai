@@ -1,26 +1,107 @@
-#!/usr/local/bin/bash -xv
+#!/bin/bash
+#!/usr/local/bin/bash -xv # コマンド処理系の変更例
 #
 # test script of join1
 #
-# usage: ./join1.test <python ver>
-
-name=join1
-    
+# usage: [<test-path>/]join1.test [<command-path> [<python-version>]]
+#
+#            <test-path>は
+#                    「現ディレクトリーからみた」本スクリプトの相対パス
+#                    または本スクリプトの完全パス
+#                    省略時は現ディレクトリーを仮定する
+#            <command-path>は
+#                    「本スクリプトのディレクトリーからみた」test対象コマンドの相対パス
+#                    またはtest対象コマンドの完全パス
+#                    省略時は本スクリプトと同じディレクトリーを仮定する
+#                    値があるときまたは空値（""）で省略を示したときはあとにつづく<python-version>を指定できる
+#            <python-version>は
+#                    使用するpython処理系のversion（minor versionまで指定可）を指定する
+#                    （例 python2 python2.6 phthon3 python3.4など）
+#                    単にpythonとしたときは現実行環境下でのdefault versionのpythonを使用する
+#                    文字列"python"は大文字/小文字の区別をしない
+#                    省略時はpythonを仮定する
+name=join1 # test対象コマンドの名前
+testpath=$(dirname $0) # 本スクリプト実行コマンドの先頭部($0)から本スクリプトのディレトリー名をとりだす
+cd $testpath # 本スクリプトのあるディレクトリーへ移動
+if test "$2" = ""; # <python-version>($2)がなければ
+	then pythonversion="python" # default versionのpythonとする
+	else pythonversion="$2" # <python-version>($2)があれば指定versionのpythonとする
+fi
+if test "$1" = ""; # <command-path>($1)がなければ
+	then commandpath="." # test対象コマンドは現ディレクトリーにある
+	else commandpath="$1" # <command-path>($1)があればtest対象コマンドは指定のディレクトリーにある
+fi
+com="${pythonversion} ${commandpath}/${name}" # python処理系によるtest対象コマンド実行の先頭部
 tmp=/tmp/$$
-dir=$(dirname $0)/..
-cd $dir
-    
-com="$2 ./$1/${name}"
-[ "$1" = "" ] && com="./$1/${name}"
 
 ERROR_CHECK(){
 	[ "$(echo ${PIPESTATUS[@]} | tr -d ' 0')" = "" ] && return
-
 	echo $1
-	echo "$com" NG
+	echo "${pythonversion} ${name}" NG
 	rm -f $tmp-*
 	exit 1
 }
+
+###########################################
+#TEST00
+# 不連続キー
+
+cat << FIN > $tmp-master
+B a A nameA1
+C c A nameAC
+FIN
+
+cat << FIN > $tmp-tran
+x B z A x
+x C x A x
+x A w B x
+x B y C x
+FIN
+
+cat << FIN > $tmp-data
+x B z A a nameA1 x
+x C x A c nameAC x
+FIN
+
+${com} key=4@2@2@4 $tmp-master $tmp-tran > $tmp-ok
+diff $tmp-ok $tmp-data
+
+[ $? -eq 0 ] ; ERROR_CHECK "TEST00 error"
+
+###########################################
+#TEST0
+# 連続するキー
+
+cat << FIN > $tmp-tran
+1 A 0000000 91 59 20 76 54
+2 A 0000001 46 39 8  5  21
+3 A 0000003 30 50 71 36 30
+4 A 0000004 58 71 20 10 6
+5 A 0000005 82 79 16 21 80
+6 B 0000007 50 2  33 15 62
+7 B 0000008 52 91 44 9  0
+8 C 0000009 60 89 33 18 6
+9 C 0000010 95 60 35 93 76
+10 C 0000011 92 56 83 96 75
+FIN
+
+cat << FIN > $tmp-master
+A 0000003 杉山______ 26 F
+A 0000005 崎村______ 50 F
+B 0000007 梶川______ 42 F
+C 0000010 柳本______ 50 F
+FIN
+
+cat << FIN > $tmp-out
+3 A 0000003 杉山______ 26 F 30 50 71 36 30
+5 A 0000005 崎村______ 50 F 82 79 16 21 80
+6 B 0000007 梶川______ 42 F 50 2  33 15 62
+9 C 0000010 柳本______ 50 F 95 60 35 93 76
+FIN
+
+${com} key=2/3 $tmp-master $tmp-tran > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST0 error"
 
 ###########################################
 #TEST1
@@ -105,5 +186,5 @@ diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST3 error"
 
 rm -f $tmp-*
-echo "${com}" OK
+echo "${pythonversion} ${name}" OK
 exit 0
