@@ -28,6 +28,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from __future__ import print_function
+
 _usage = "loopx <file1> <file2> ..."
 _version = "Thu Jan 12 18:35:55 JST 2012"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
@@ -36,13 +38,13 @@ import sys
 import tempfile
 
 def error(msg, *arg):
-	print >> sys.stderr, 'Error[loopx] :', msg % arg
+	print('Error[loopx] :', msg % arg, file=sys.stderr)
 	sys.exit(1)
 
 def usage():
-	print >> sys.stderr, "Usage   :", _usage
-	print >> sys.stderr, "Version :", _version
-	print >> sys.stderr, "         ", _code
+	print("Usage   :", _usage, file=sys.stderr)
+	print("Version :", _version, file=sys.stderr)
+	print("         ", _code, file=sys.stderr)
 	sys.exit(1)
 
 def combine(left,right,out):
@@ -52,22 +54,20 @@ def combine(left,right,out):
 		right.seek(0)
 		for rline in right:
 			rline = rline.rstrip()
-			print >> out, lline, rline
+			print(lline, rline, file=out)
 
 #読み込みファイルを返す。標準入力だったら一度tmpに落とす
 def openReadFile(file_name):
 	if file_name == "-":
-		tmp = tempfile.TemporaryFile()
+		tmp = tempfile.TemporaryFile(mode='w+')	# mode='r+'でもよい defaultではmode='w+b'でPython3ではbyte用となる
 		for line in sys.stdin:
-			tmp.write(line)
-
+			tmp.write(line)	# mode='w+b'では「TypeError: 'str' does not support the buffer interface」が出る
 		return tmp
 	elif '/dev/fd/' in file_name:
 		f = open(file_name,'r')
-		tmp = tempfile.TemporaryFile()
+		tmp = tempfile.TemporaryFile(mode='w+')	# mode='r+'でもよい defaultではmode='w+b'でPython3ではbyte用となる
 		for line in f:
-			tmp.write(line)
-
+			tmp.write(line)	# mode='w+b'では「TypeError: 'str' does not support the buffer interface」が出る
 		return tmp
 	try:	return open(file_name,'r')
 	except:	error("ファイルを開けません。")
@@ -99,7 +99,8 @@ if __name__ == '__main__':
 			combine(left,right,sys.stdout)
 			sys.exit(0)
 
-		out = tempfile.TemporaryFile()
+		out = tempfile.TemporaryFile(mode='w+')	# mode='r+'でもよい defaultではmode='w+b'でPython3ではbyte用となる
+
 		combine(left,right,out)
 		out.seek(0)
 		file_stack.append(out)
