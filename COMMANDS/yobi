@@ -28,6 +28,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from __future__ import print_function
+
 _usage = "yobi [-ej] <field> <filename>"
 _usage1 = "yobi -d[ej] <string>"
 _version = "Fri Oct 21 11:26:06 JST 2011"
@@ -41,14 +43,14 @@ from getopt import getopt
 from datetime import datetime
 
 def error(msg, *arg):
-	print >> sys.stderr, 'Error[count] :', msg % arg
+	print('Error[count] :', msg % arg, file=sys.stderr)
 	sys.exit(1)
 
 def usage():
-	print >> sys.stderr, "Usage   :", _usage
-	print >> sys.stderr, "        :", _usage1
-	print >> sys.stderr, "Version :", _version
-	print >> sys.stderr, "         ", _code
+	print("Usage   :", _usage, file=sys.stderr)
+	print("        :", _usage1, file=sys.stderr)
+	print("Version :", _version, file=sys.stderr)
+	print("         ", _code, file=sys.stderr)
 	sys.exit(1)
 
 class FieldLine:
@@ -117,7 +119,7 @@ def weekday(date, lang):
 	except:
 		error("日付が正しくありません。")
 	return {
-		'':  [ str(x) for x in range(1, 7) + [ 0 ] ],
+		'':  [ str(x) for x in list(range(1, 7)) + [ 0 ] ],
 		'e': [ 'Mon', 'Tue','Wed','Thu','Fri','Sat','Sun' ],
 		'j': [ '月',  '火', '水', '木', '金', '土', '日' ],
 	}[lang][w]
@@ -153,7 +155,7 @@ if __name__ == '__main__':
 	# ダイレクトモード
 	#
 	if direct:
-		print weekday(sys.argv[1], lang)
+		print(weekday(sys.argv[1], lang))
 		sys.exit(0)
 
 	#
@@ -170,12 +172,14 @@ if __name__ == '__main__':
 	#
 	for line in open_file(2):
 		line = FieldLine(line)
-		if line.size() < fld:
-			print line.getField(1, line.size())
+		if line.size() < fld:	# 指定フィールド番号が最大入力フィールド番号を超えているとき
+			print(line.getField(1, line.size()))	# 曜日出力はしない
 		else:
-			print line.getField(1, fld), weekday(line.getField(fld), lang),
+			if fld < line.size(): endchar=' '
+			else:                 endchar=''
+			print(line.getField(1, fld), weekday(line.getField(fld), lang), end=endchar)
 			if fld < line.size():
-				print line.getField(fld + 1, line.size()),
-			print
+				print(line.getField(fld + 1, line.size()), end='')
+			print()
 
 	sys.exit(0)
