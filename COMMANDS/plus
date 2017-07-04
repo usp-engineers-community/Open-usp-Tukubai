@@ -28,6 +28,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from __future__ import print_function
+
 _usage = "plus <n1> <n2> ..."
 _version = "Thu Dec  8 10:46:51 JST 2011"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
@@ -36,13 +38,13 @@ import sys
 from decimal import Decimal
 
 def printUsage():
-	print >> sys.stderr , "Usage    :", _usage
-	print >> sys.stderr , "Version  :", _version
-	print >> sys.stderr, "           ", _code
+	print("Usage    :", _usage, file=sys.stderr)
+	print("Version  :", _version, file=sys.stderr)
+	print("           ", _code, file=sys.stderr)
 	sys.exit(1)
 
 def die(message):
-	print >> sys.stderr, "Error[plus] :", message
+	print("Error[plus] :", message, file=sys.stderr)
 	sys.exit(1)
 
 
@@ -64,5 +66,5 @@ if __name__ == '__main__':
 	except:
 		printUsage()
 	
-	print n
+	print(n)
 
