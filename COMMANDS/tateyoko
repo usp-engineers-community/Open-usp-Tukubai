@@ -28,6 +28,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from __future__ import print_function
+
 _usage = "tateyoko <file>"
 _version = "Fri Oct 21 11:26:06 JST 2011"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
@@ -37,13 +39,13 @@ import os
 import sys
 
 def error(msg, *arg):
-	print >> sys.stderr, 'Error[tateyoko] :', msg % arg
+	print('Error[tateyoko] :', msg % arg, file=sys.stderr)
 	sys.exit(1)
 
 def usage():
-	print >> sys.stderr, "Usage   :", _usage
-	print >> sys.stderr, "Version :", _version
-	print >> sys.stderr, "         ", _code
+	print("Usage   :", _usage, file=sys.stderr)
+	print("Version :", _version, file=sys.stderr)
+	print("         ", _code, file=sys.stderr)
 	sys.exit(1)
 
 class FieldLine:
@@ -129,8 +131,8 @@ if __name__ == '__main__':
 	#
 
 	for i in range(1, nf + 1):
-		for j in range(len(lines)):
-			print lines[j].getField(i),
-		print
+		for j in range(len(lines)-1):
+			print(lines[j].getField(i), end=' ')
+		print(lines[len(lines)-1].getField(i))
 
 	sys.exit(0)
