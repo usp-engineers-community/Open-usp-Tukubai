@@ -255,7 +255,7 @@ $ mojihame -hLABEL -dx template data
 
 【注意2】アンダースコアデータの扱い
 
-データの中の_mojihame実行後には_に置換される。エスケープのない_は半角スペースに
+データの中の\_はmojihame実行後には_に置換される。エスケープのない_は半角スペースに
 置換される。
 
 $ cat template
@@ -266,8 +266,8 @@ $
 
 $ cat data
 usp_lab
-usp_lab
-________
+usp\_lab
+______\_\_
 $
 
 $ mojihame template data
