@@ -1,0 +1,77 @@
+check_inlist_name
+
+＜名前＞
+check_inlist_name : name 形式データのリスト内存在チェックをする
+
+＜書式＞
+Usage   : check_inlist_name <check_file> <name_file>
+Option  : --through <chars>
+Version : Tue May  7 16:12:54 JST 2013
+
+＜説明＞
+<check_file> に記述されているタグ名とリスト名にしたがい、
+<name_file>の値がリストに存在しているかのチェックをします。
+エラーがあった場合は、コマンドはエラー終了し、標準出力にタグ名
+とリスト名を出力します。 
+
+<オプション>
+--through <string>
+<name_file> のデータが<string>に等しい場合は、
+チェックを実施しません。<string>のデフォルトは、"_" となります。
+このオプションは繰り返し使って複数の<string>を指定することが
+できます。
+
+＜例１＞
+[usp1 usp@ ~]$ cat check
+A /tmp/OS_FILE      <-- タグ名とリストファイル名(絶対パスであること)
+B /tmp/ABC_FILE
+
+[usp1 usp@ ~]$ cat /tmp/OS_FILE
+Linux     # comment
+UNIX      # comment
+Windows   # comment
+
+[usp1 usp@ ~]$ cat /tmp/ABC_FILE
+abc   # comment
+cde   # comment
+
+[usp1 usp@ ~]$ cat data
+A Linux
+B_001 abc
+B_002 cde
+B_003 fgh
+B_004 _     <--  "_" はチェックの対象外(--through オプションで変更可)
+
+[usp1 usp@ ~]$ check_inlist_name check data
+B_003 /tmp/ABC_FILE
+[usp1 usp@ ~]$ echo $?
+1
+
+＜例２＞
+複数チェック
+[usp1 usp@ ~]$ cat check
+A.B list1
+C list2
+
+[usp1 usp@ ~]$ cat list1
+1 3  # comment
+4 5  # comment
+
+[usp1 usp@ ~]$ cat list2
+5  # comment
+6  # comment
+7  # comment
+
+[usp1 usp@ ~]$ cat data
+A_01 1
+A_02 2
+B_01 3
+B_02 4
+C 1
+
+[usp1 usp@ ~]$ check_inlist_name check data
+A_02 B_02 list1
+C list2
+
+[usp1 usp@ ~]$ echo $?
+1
