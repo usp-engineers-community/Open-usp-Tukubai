@@ -1,0 +1,81 @@
+ulock
+
+＜名前＞
+ulock : 排他制御コマンド
+
+＜書式＞
+Usage   : ulock <lock-file>
+Usage   : ulock -w <lock-file> [<counter-file>]
+          ulock -r <lock-file> <counter-file> <command>
+Option  : --timeout=<sec>/--invalid=<sec>
+Version : Fri Jun  6 12:29:31 JST 2014
+
+＜説明＞
+書式１（ulock <lock-file>）は、完全排他区間を実現します。
+この場合、ulock は排他的に <lock-file> を生成します。
+
+書式２は、リード・ライトロックを実現します。
+-w (ライトロック)の場合、ulock は排他的に <lock-file> を生成した上に、
+<counter-file> のリンクカウントが１になるまで待ちます。
+-r (リードロック)の場合、<lock-file> が存在しなくなるまで、<counter-
+file>のリンクカウントを１増やすことを試み、成功したら、<command> を
+実行し、そのあと、<counter-file> のリンクカウントを１減らします。
+
+--timeout オプションで command が起動されるまでの待ち時間の最大値を
+指定できます。-1 を指定すると無限に待ちます。デフォルトは -1 (無限に
+待つ）です。
+
+--invalid オプションで古いロックファイルの削除を行います。デフォルト
+は 60 秒です。
+
+＜例１＞ 完全排他区間の実現
+$ cat lock.sh
+#!/bin/bash
+
+if ulock lock; then
+  #
+  # 読み書きなどの処理
+  #
+  rm -f lock
+fi
+
+＜例２＞ リードライトロックの実現
+$ cat writelock.sh
+#!/bin/bash
+
+if ulock -w lock counter; then
+
+  # 書き込み処理(例)
+  up3 key=1 master tran > master.new
+  mv master.new master
+
+  rm -f lock
+fi
+
+$ cat readlock.sh
+#!/bin/bash
+
+ulock -r lock counter cat master
+
+
+＜備考＞ リードライトロックのアルゴリズム
+
+-- ライトロック
+X-- 書き込みロックを取る。(アトミック)
+X-- カウンタ1まで待つ。
+--- 書き込み処理
+--- 書き込みロックをはずす。
+
+-- リードロック
+X-- カウンタを1足す。(アトミック)
+X-- 書き込みロックがないことを確認。ロックされていれば 1 減らして戻る。
+X-- 読むだけの処理
+X-- カウンタを1減らす (アトミック)
+
+ulock では書き込みロックはハードリンクファイル生成の一意性を利用し、
+カウンタオペレーションは、ハードリンクファイルのリンク（一意）数を利
+用しています。ulock は上記アルゴリズムのうち、X の部分を実装していま
+す。
+
+lock-file counter-file とも NFS 上に作成すれば、各サーバーからのリー
+ドライトロックが実現します。
