@@ -9,10 +9,9 @@ formhame : HTML テンプレートに文字をはめ込む
 【書式】
 
 Usage   : formhame <html_template> <data>
-Option  : --form <formname>
-        : -i<c>
+Option  : -i<c>
         : -d<c>
-Version : Sat Sep 20 16:45:33 JST 2014
+Version : Sun Mar 17 12:51:52 JST 2013
 
 【説明】
 
@@ -55,7 +54,7 @@ $
 $ formhame html data
 <html><body>
 <form name="name_form">
-<input type="text" name="name_text1"  value="hello" />
+<input type="text" name="name_text1" value="hello"/>
 <input type="text" name="name_text2" />
 <input type="radio" name="name_radio" value="a"/>
 <input type="radio" name="name_radio" value="b" checked="checked" />
@@ -68,7 +67,7 @@ laboratory
 <select name="name_pulldown">
 <option value="pd1">pd1</option>
 <option value="pd2">pd2</option>
-<option value="pd3" selected="selected" >pd3</option>
+<option value="pd3" selected="selected">pd3</option>
 </select>
 <input type="submit" name="submit" />
 </form>
@@ -84,15 +83,22 @@ $
  3. 値が無い場合、値は挿入されない。
  4. -iオプションで文字列を指定すると、その文字列に等しい値はヌル文字列にして挿
     入する。
- 5. -dオプションで文字を指定すると、その文字に等しい値は半角空白文字に置換して
-    挿入する。ただし、\指定文字というデータは半角空白に変換しない。
- 6. HTMLは正しく記述されている必要がある。タグはすべて小文字であり、<タグ />あ
-    るいは、<タグ></タグ>と記述される必要がある。変数は必ず" "で囲まれている必
-    要がある(value="1"など)。input type="checkbox"のときは、必ずvalue="XXX"が指
+ 5. -dオプションで文字列を指定すると、値の中の指定文字列部分は半角空白文字に置換して
+    挿入する。ただし、\指定文字列という部分は半角空白ではなく（\をとった）指定文字列に置換して挿入する。
+ 6. -iオプションと-dオプションの両方が指定された場合、-iオプションによる処理を先に行なう。
+ 7. HTMLは正しく記述されている必要がある。タグは<タグ />あるいは、<タグ></タグ>と記述される必要がある。
+    変数は必ず" "で囲まれている必要がある(value="1"など)。
+    input type="checkbox"のときは、必ずvalue="XXX"が指
     定されている必要がある。
- 7. checkbox、radiobox、selectboxの複数選択の場合は、ネーム形式データ(5)は次の
+ 8. checkbox、radiobox、selectboxの複数選択の場合は、ネーム形式データ(5)は次の
     ように1つのタグに対して複行となる。
 
+name_radio a
+name_radio b
+name_checkbox x
+name_checkbox y
+name_pulldown pd1
+name_pulldown pd2
 
 【関連項目】
 
