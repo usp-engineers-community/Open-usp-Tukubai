@@ -29,11 +29,11 @@ $
 
 【例2】
 
-改行(%0D%0A)はnに変換される。
+改行(%0D%0A)は文字列'\n'に変換される。また、記号'+'は半角空白に変換される。
 
-$ echo 'place=%E6%9D%B1%E4%BA%AC%0D%0A%E5%A4%A7%E9%98%AA&country=japan' | cgi-name
-place 東京n大阪
-country japan
+$ echo 'place=%E6%9D%B1%E4%BA%AC%0D%0A%E5%A4%A7%E9%98%AA&country=ja+pan' | cgi-name
+place 東京\n大阪
+country ja pan
 $
 
 【例3】
