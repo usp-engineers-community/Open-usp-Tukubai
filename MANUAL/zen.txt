@@ -8,15 +8,14 @@ zen : 全角へ変換
 
 【書式】
 
-Usage   : zen <f1> <f2> .. <file>
-: zen [-k] <file>
-: zen -d <string>
+Usage   : zen  [-k] [<f1> <f2> ..] <file>
+        : zen -d <string>
 Version : Fri Oct 21 11:26:06 JST 2011
 OpenUSP (LINUX+FREEBSD/PYTHON2.4/UTF-8)
 
 【説明】
 
-引数のファイルまたは標準入力におけるテキストデータの半角英数およびカタカナをす
+引数のファイルまたは標準入力におけるテキストデータの半角英数記号およびカタカナをす
 べて全角に変換して出力する。
 
 【例1】
