@@ -28,6 +28,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from __future__ import print_function
+
 _usage = "sm2 [+count] <k1> <k2> <s1> <s2> <file>"
 _version = "Wed Apr  2 19:22:38 JST 2014"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
@@ -39,13 +41,13 @@ import sys
 from decimal import Decimal
 
 def error(msg, *arg):
-	print >> sys.stderr, 'Error[sm2] :', msg % arg
+	print('Error[sm2] :', msg % arg, file=sys.stderr)
 	sys.exit(1)
 
 def usage():
-	print >> sys.stderr, "Usage   :", _usage
-	print >> sys.stderr, "Version :", _version
-	print >> sys.stderr, "         ", _code
+	print("Usage   :", _usage, file=sys.stderr)
+	print("Version :", _version, file=sys.stderr)
+	print("         ", _code, file=sys.stderr)
 	sys.exit(1)
 
 class FieldLine:
@@ -162,7 +164,7 @@ if __name__ == '__main__':
 	#
 	# 合計の初期化
 	#
-	sum = range(s2 + 1)
+	sum = list(range(s2 + 1))
 	for i in range(s1, s2 + 1):
 		sum[i] = getval(line, i)
 	cnt = 1
@@ -179,11 +181,11 @@ if __name__ == '__main__':
 				sum[i] += getval(line, i)
 			cnt += 1
 			continue
-		print key,
-		if count: print cnt,
+		print(key, end=' ')
+		if count: print(cnt, end=' ')
 		for i in range(s1, s2):
-			print sum[i],
-		print sum[s2]
+			print(sum[i], end=' ')
+		print(sum[s2])
 		for i in range(s1, s2 + 1):
 			sum[i] = getval(line, i)
 		cnt = 1
@@ -192,10 +194,10 @@ if __name__ == '__main__':
 	#
 	# 残り合計の出力
 	#
-	if k1 != 0: print key,
-	if count: print cnt,
+	if k1 != 0: print(key, end=' ')
+	if count: print(cnt, end=' ')
 	for i in range(s1, s2):
-		print sum[i],
-	print sum[s2]
+		print(sum[i], end=' ')
+	print(sum[s2])
 
 	sys.exit(0)
