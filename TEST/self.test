@@ -1,23 +1,43 @@
-#!/usr/local/bin/bash -xv
+#!/bin/bash
+#!/usr/local/bin/bash -xv # コマンド処理系の変更例
 #
-# test script of self 
+# test script of self
 #
-# usage: ./self.test <command dir> <python ver>
-
-name=self
-    
+# usage: [<test-path>/]self.test [<command-path> [<python-version>]]
+#
+#            <test-path>は
+#                    「現ディレクトリーからみた」本スクリプトの相対パス
+#                    または本スクリプトの完全パス
+#                    省略時は現ディレクトリーを仮定する
+#            <command-path>は
+#                    「本スクリプトのディレクトリーからみた」test対象コマンドの相対パス
+#                    またはtest対象コマンドの完全パス
+#                    省略時は本スクリプトと同じディレクトリーを仮定する
+#                    値があるときまたは空値（""）で省略を示したときはあとにつづく<python-version>を指定できる
+#            <python-version>は
+#                    使用するpython処理系のversion（minor versionまで指定可）を指定する
+#                    （例 python2 python2.6 phthon3 python3.4など）
+#                    単にpythonとしたときは現実行環境下でのdefault versionのpythonを使用する
+#                    文字列"python"は大文字/小文字の区別をしない
+#                    省略時はpythonを仮定する
+name=self # test対象コマンドの名前
+testpath=$(dirname $0) # 本スクリプト実行コマンドの先頭部($0)から本スクリプトのディレトリー名をとりだす
+cd $testpath # 本スクリプトのあるディレクトリーへ移動
+if test "$2" = ""; # <python-version>($2)がなければ
+	then pythonversion="python" # default versionのpythonとする
+	else pythonversion="$2" # <python-version>($2)があれば指定versionのpythonとする
+fi
+if test "$1" = ""; # <command-path>($1)がなければ
+	then commandpath="." # test対象コマンドは現ディレクトリーにある
+	else commandpath="$1" # <command-path>($1)があればtest対象コマンドは指定のディレクトリーにある
+fi
+com="${pythonversion} ${commandpath}/${name}" # python処理系によるtest対象コマンド実行の先頭部
 tmp=/tmp/$$
-dir=$(dirname $0)/..
-cd $dir
-    
-com="$2 ./$1/${name}"
-[ "$1" = "" ] && com="./$1/${name}"
 
 ERROR_CHECK(){
 	[ "$(echo ${PIPESTATUS[@]} | tr -d ' 0')" = "" ] && return
-
 	echo $1
-	echo "$com" NG
+	echo "${pythonversion} ${name}" NG
 	rm -f $tmp-*
 	exit 1
 }
@@ -289,6 +309,71 @@ ${com} 1 < $tmp-in > $tmp-ans
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST18 error"
 
+###########################################
+#追加TEST1
+# 代用対/結合文字列/IVS/SVSの処理検査 ファイルからの読み込み
+
+cat << FIN > $tmp-in
+0000000 ______吉田 50 F 91 59 20 76 54 #吉(U+5409)
+0000001 ______𠮷田 50 F 46 39 8  5  21 #𠮷(U+20BB7)代用対では𠮷(U+D842-U+DFB7)
+0000003 ______今川 26 F 30 50 71 36 30 #今(U+4ECA)
+0000004 ______𫝆川 40 M 58 71 20 10 6 #𫝆(U+2B746)代用対では𫝆(U+D86D-U+DF46)
+0000005 ______𫝆󠄁川 40 F 82 79 16 21 80 #IVSの例で𫝆󠄁(U+2B746_U+E0101)代用対では𫝆󠄁(U+D86D-U+DF46_U+DB40-U+DD01)
+0000006 ______渡邊 50 F 33 56 27 40 72 #邊(U+908A)
+0000007 ______渡邊󠄊 36 F 51 30 15 22 81 #IVSの例で邊󠄊(U+908A_U+E010A)代用対では邊󠄊(U+908A_U+DB40-U+DD0A)
+0000008 ______渡邊󠄋 62 F 72 39 26 18 55 #IVSの例で邊󠄋(U+908A_U+E010B)代用対では邊󠄋(U+908A_U+DB40-U+DD0B)
+0000009 ______渡邊󠄌 52 F 33 48 33 33 25 #IVSの例で邊󠄌(U+908A_U+E010C)代用対では邊󠄌(U+908A_U+DB40-U+DD0C)
+0000010 ______神山 38 F 64 67 40 21 36 #神(U+795E)
+0000011 ______神︀山 25 F 45 36 5 16 72 #SVSの例で神︀(U+795E_U+FE00)
+0000012 ______羽田 18 F 76 75 22 32 25 #羽(U+7FBD)
+0000013 ______羽︀田 53 F 47 64 43 7 2 #SVSの例で羽︀(U+7FBD_U+FE00)
+0000014 か゚き゚く゚け゚こ゚ 45 F 88 43 9 37 62 #結合文字列の例でか゚(U+304B_U+309A)き゚(U+304D_U+309A)く゚(U+304F_U+309A)け゚(U+3051_U+309A)こ゚(U+3053_U+309A)
+FIN
+
+# 文字の正しい表示には適切なfontの使用が求められる
+# Unicode符号位置を「字(U+xxxx)」の形式で表現する（符号位置第が第2面のときは「字(U+xxxxx)」）
+# 代用対は「字(U+xxxx-U+yyyy)」の形式で表現する
+# 結合文字列/IVS/SVSは「字(U+xxxx_U+yyyy)」の形式で表現する
+
+cat << FIN > $tmp-out
+吉田 F
+𠮷田 F
+今川 F
+𫝆川 M
+𫝆󠄁川 F
+渡邊 F
+渡邊󠄊 F
+渡邊󠄋 F
+渡邊󠄌 F
+神山 F
+神︀山 F
+羽田 F
+羽︀田 F
+け゚こ゚ F
+FIN
+
+${com} 2.7.4 4 $tmp-in > $tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "追加TEST1 error"
+
+###########################################
+#追加TEST2
+# 代用対/結合文字列/IVS/SVSの処理検査 -d指定による
+
+${com} -d 1.3.4 2.1.5 "神︀邊󠄊𠀋一 か゚12345" > $tmp-ans
+
+# 「神︀」はSVSの例で神︀(U+795E_U+FE00)
+# 「邊󠄊」はIVSの例で邊󠄊(U+908A_U+E010A)代用対では邊󠄊(U+908A_U+DB40-U+DD0A)
+# 「𠀋」は𠀋(U+2000B)代用対では𠀋(U+D840-U+DC0B)
+# 「か゚」は結合文字列の例でか゚(U+304B_U+309A)
+
+cat << FIN > $tmp-out
+邊󠄊𠀋 か゚123
+FIN
+
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "追加TEST2 error"
+
 rm -f $tmp-*
-echo "${com}" OK
+echo "${pythonversion} ${name}" OK
 exit 0
