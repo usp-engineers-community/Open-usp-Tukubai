@@ -137,7 +137,7 @@ cat << FIN > $tmp-in
 FIN
 
 cat $tmp-in	|
-${com} 0 0 1 1	> $tmp-ans
+${com} 0 0 1 1	> $tmp-ans	2> /dev/null
 #if exit status is zero, it's an error
 [ $? -eq 0 ] && false || true
 ERROR_CHECK "TEST5 error"
