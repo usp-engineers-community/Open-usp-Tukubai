@@ -223,25 +223,29 @@ diff $tmp-ans $tmp-out
 ###########################################
 #TEST11
 
-echo ＵＳＰ研究所 | ${com} 1.2.4 > $tmp-ans
+echo ＵＳＰ研究所 | ${com} 1.2.4 > $tmp-ans 2> /dev/null
+# Error[self] : 部分文字列の開始位置が全角文字の内部になります。
 [ $? -eq 1 ] ; ERROR_CHECK "TEST11 error"
 
 ###########################################
 #TEST12
 
-echo ＵＳＰ研究所 | ${com} 1.20 > $tmp-ans
+echo ＵＳＰ研究所 | ${com} 1.20 > $tmp-ans 2> /dev/null
+# Error[self] : 部分文字列の開始位置が後ろすぎます。
 [ $? -eq 1 ] ; ERROR_CHECK "TEST12 error"
 
 ###########################################
 #TEST13
 
-echo ＵＳＰ研究所 | ${com} 1.2 > $tmp-ans
+echo ＵＳＰ研究所 | ${com} 1.2 > $tmp-ans 2> /dev/null
+# Error[self] : 部分文字列の開始位置が全角文字の内部になります。
 [ $? -eq 1 ] ; ERROR_CHECK "TEST13 error"
 
 ###########################################
 #TEST14
 
-echo 123 | ${com} 1.4 > $tmp-ans
+echo 123 | ${com} 1.4 > $tmp-ans 2> /dev/null
+# Error[self] : 部分文字列の開始位置が後ろすぎます。
 [ $? -eq 1 ] ; ERROR_CHECK "TEST14 error"
 
 ###########################################
