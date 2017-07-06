@@ -28,13 +28,17 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from __future__ import print_function
+import re
+import sys
+import codecs
+import unicodedata	# unicode関連処理用
+
 _usage = [ "self f1 f2 ... file", "self -d f1 f2 ... string" ]
 _version = "Sat Mar 29 20:29:04 JST 2014"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4+, 3.1, 3.2/UTF-8)"
 
-import re
-import sys
-import codecs
+wide_class = ["W","F","A"]	# 全角文字クラス
 
 def die(msg):
 	sys.stderr.write( 'Error[self] : ' + msg + "\n")
@@ -97,12 +101,12 @@ def isFile(opt):
 
 class Params:
 	def __init__(self,tokens):
-		self.num_from = None
-		self.num_to = None
-		self.nf_from = False
-		self.nf_to = False
-		self.start = None
-		self.length = None
+		self.num_from = None	# fromフィールド番号
+		self.num_to = None	# toフィールド番号
+		self.nf_from = False	# fromフィールド指定にNFが含まれていればTrueになる
+		self.nf_to = False	# toフィールド指定にNFが含まれていればTrueになる
+		self.start = None	# 部分文字列指定の開始位置
+		self.length = None	# 部分文字列指定の長さ
 
 		if len(tokens) == 0:
 			die("オプションが不正です。")
@@ -118,28 +122,32 @@ class Params:
 		self.num_from, self.nf_from = self.parseFieldNum(tokens[0])
 		self.num_to, self.nf_to = self.num_from, self.nf_from
 
-		if len(tokens) == 1:	return
+		if len(tokens) == 1:	return	# 部分文字列指定ではない
 
-		#開始位置
-		self.start = int(tokens[1])-1
-		if len(tokens) == 2:	return
+		#開始位置（半角単位）
+		self.start = int(tokens[1])-1	# 開始位置を0から始まる数にする
+		if self.start<0:
+			die("部分文字列の開始位置が不正です。")
+		if len(tokens) == 2:	return	# 部分文字列指定で「x.y」形式
 
-		#文字列の長さ
-		self.length = int(tokens[2])
+		#文字列の長さ（半角単位）
+		self.length = int(tokens[2])	# 部分文字列指定で「x.y.z」形式
+		if self.length<=0:
+			die("部分文字列の長さが不正です。")
 
 	def parseFieldNum(self,word):
 		#1, NF, NF-1 など 
 		#数字とNFの有無を返す
 		p = re.compile('^[0-9]+$')
 		if p.match(word):
-			return int(word), False
+			return int(word), False	# フィールド指定が「n」形式
 	
 		if word == "NF":
-			return 0, True
+			return 0, True	# フィールド指定が「NF」形式
 
 		tmp = word.split("-")
 		if tmp[0] == "NF":
-			return int(tmp[1]), True
+			return int(tmp[1]), True	# フィールド指定が「NF-n」形式
 			
 		die("フィールド指定が不正です。")	
 		
@@ -150,13 +158,12 @@ class Operator:
 		self.field_num = 0
 
 	def setOption(self,opt):
-		params = Params(opt.split('.'))
+		params = Params(opt.split('.'))	 # optが"."で区切られていれば分割リストをParam()に与え、"."がなければ文字列全体をParam()に与える
 		self.out_sequence.append(params)
 
 	def output(self,line):
 		tokens = [line] + [w for w in line.split(" ") if w != "" ]
 		#0: 一行全体 1以降: 各フィールド
-
 		print(" ".join(
 			[ self.cutWord(tokens,f) for f in self.out_sequence ]
 		))
@@ -166,71 +173,279 @@ class Operator:
 		frm = param.num_from
 		to = param.num_to
 
-		if param.nf_from == True:	frm = nf - frm - 1
-		if param.nf_to == True:		to = nf - to - 1
+		if param.nf_from == True:	frm = nf - frm - 1	# NFがあるときの処理
+		if param.nf_to == True:		to = nf - to - 1	# NFがあるときの処理
 
-		if param.start == None:
+		if param.start == None:	# 部分文字列指定がないときすべての指定フィールドを連結して返す
 			return " ".join(tokens[frm:to+1])
 
+		# 拡張文字列による処理
 		token = tokens[frm]
-		width = [ self.getCharWidth(ch) for ch in token ]
+		xtoken=string2list(token)	# tokenを拡張文字列化する
+		width=[ self.getCharWidth(xchar) for xchar in xtoken ]	# xtoken中の各文字の表示幅のリストを作成する
+		# for deub
+		#xtokenlen=sum(width)	# xtokenの表示幅（半角単位）
 
 		#半角だけなら単純に文字列を切り取り
 		if not 2 in width:
-			if param.start >= len(token):
-				die("分割位置が後ろすぎます。")
+			if param.start >= len(xtoken):	# すべて半角なので半角単位のparam.startと文字数を返すlen(xtoken)は比較できる
+				die("部分文字列の開始位置が後ろすぎます。")
 			if param.length == None:
-				return token[param.start:]
+				# xtokenから指定範囲の文字列を抽出して返す（範囲検査はlist2string()内で実行する）
+				return list2string(xtoken,param.start,len(xtoken))
 			else:
-				return token[param.start:param.start+param.length]
+				# xtokenから指定範囲の文字列を抽出して返す（範囲検査はlist2string()内で実行する）
+				return list2string(xtoken,param.start,param.start+param.length)
 
-		#先頭部分の切り取り
-		pos = 0
-		wsum = 0
-		for w in width:
-			if wsum < param.start:
+		#開始位置の確認（開始位置は半角単位で指定）
+		pos = 0	# 文字単位の位置
+		wsum = 0	# 半角単位の位置
+		if param.start>0:
+			for w in width:	# 先頭から文字単位で表示幅を調べる
 				pos += 1
 				wsum += w
-			elif wsum > param.start:
-				die("不正な分割位置です。")
-			else:
-				break
-
-		if len(token) <= pos:
-			die("分割位置が後ろすぎます。")
+				if wsum < param.start:	continue
+				elif wsum > param.start:	# 開始位置（半角単位）が全角文字の内部になる
+					die("部分文字列の開始位置が全角文字の内部になります。")
+				else:
+					if pos==len(xtoken):	# 開始位置が文字列の直後のとき
+						die("部分文字列の開始位置がフィールド文字列の直後になっています。")
+					break	# 開始位置（半角単位）が正しく文字の位置になっていて全角文字の内部にはこない
+			else:	# forが(wsum<param.start)のままで完了したので指定の開始位置が半角単位の文字列長より大きい
+				die("部分文字列の開始位置が後ろすぎます。")
 
 		if param.length == None:
-			return token[pos:]
+			# xtokenから指定範囲の文字列を抽出して返す
+			return list2string(xtoken,pos,len(xtoken))
 
-		#後ろの切り取り
+		#後ろの切り取り（切り取りの長さは半角単位で指定）
 		leng = 0
 		wsum = 0
-		for w in width:
+		for i in range(pos,len(width)):	# 開始位置から文字単位で表示幅を調べる
+			leng += 1
+			wsum += width[i]
 			if wsum < param.length:
-				leng += 1
-				wsum += w
-
-			elif wsum == param.length:
+				continue
+			#  終了位置（半角単位）が全角文字の内部になるか？
+			elif wsum > param.length:	# 終了位置（半角単位）が今の全角文字の内部になる
+				die("部分文字列の終了位置が全角文字の内部になります。")
+			else:	# wsum == param.length:
 				break
-			elif wsum == param.length+1:
-				die("不正な分割位置です。")
-				
-		return token[pos:pos+leng]
+		else:	# (wsum<param.length）のままforが完了したので指定の開始位置から半角単位の指定長さを進むと文字列の末端を超える
+			die("部分文字列の終了位置が後ろすぎます")
 
-	def getCharWidth(self,c):
-		x = ord(c)
-		if x <= 0x7f:
-			return 1 
-		if x >= 0xff61 and x <= 0xff9f:
-			return 1
+		# xtokenから指定範囲の文字列を抽出して返す
+		return list2string(xtoken,pos,pos+leng)
 
-		return 2
+	# 拡張文字の表示幅を得る（拡張文字の先頭部で判断する）
+	def getCharWidth(self,xc):
+		if isHalfWidth(xc[0]):	return 1	# 半角なら1
+		else:	return 2	# 全角なら2
 
 def directMode(argv):
-	for opt in argv[:-1]:
+	for opt in argv[:-1]:	# ここのargvには元のargvのargv[2:]が渡されている
 		operator.setOption(opt)
+	str=utf2ucs(argv[-1])	# 直接指定文字列の前処理
+	operator.output(str)
 
-	operator.output(sys.argv[-1])
+###########################################
+# 代用対/結合文字列/IVS/SVS/拡張文字列関連
+
+#
+# 代用対前半部の判定
+#
+def isHighSurrogate(cp):
+	if 0xd800 <= cp and cp <= 0xdbff: return True
+	else:                             return False
+
+#
+# 代用対後半部の判定
+#
+def isLowSurrogate(cp):
+	if 0xdc00 <= cp and cp <= 0xdfff: return True
+	else:                             return False
+
+#
+# UCS2の判定
+#
+def isUCS2():
+	if sys.maxunicode==0xFFFF: return True
+	else:                      return False
+
+#
+# unicodedata.east_asian_width()「東アジアの文字幅」の修正版
+#
+def east_asian_width(c):
+	if len(c)>=2: return unicodedata.east_asian_width(c)	# UCS2で代用対が与えられたとき
+	# unicodedata.east_asian_width()は半角オーバ－ライン「‾」（U+203e）に対して
+	# A（Ambiguous; 曖昧=ギリシャ文字/ロシア文字と同様に全角扱いされる）を返すので
+	# Na（Narrow; 狭=半角英数記号）に準ずるものと修正する
+	elif ord(c)==0x203e: return 'Na'
+	else:                return unicodedata.east_asian_width(c)
+
+#
+# 半角判定
+#
+def isHalfWidth(c):
+	# 文字のEast_Asian_Width特性検査でFまたはWまたはAならば
+	# F/W/A = Wide（全角英数記号） Full（漢字 ひらがな 全角カタカナ） Ambiguous（ロシア文字 ギリシャ文字）
+	if east_asian_width(c) in wide_class: return False	# 全角
+	else:                                 return True	# それ以外は半角
+
+#
+# 合成可能文字の判定
+#
+def isCombiningDiacriticalMark(cp):
+	# unicodeにおける合成可能文字のブロック内か？
+		#	0x3099 0x309a	仮名文字の合成可能濁点と合成可能半濁点
+		#	0x0300-0x036F	ダイアクリティカルマーク（合成可能）
+		#	0x1AB0-0x1AFF	ダイアクリティカルマーク（合成可能）拡張
+		#	0x1DC0-0x1DFF	ダイアクリティカルマーク（合成可能）補助
+		#	0x20D0-0x20FF	記号用ダイアクリティカルマーク（合成可能）
+		#	0xFE20-0xFE2F	半記号（合成可能）
+	if cp == 0x3099 or cp == 0x309a or \
+		0x0300<=cp and cp <=0x036F or \
+		0x1AB0<=cp and cp <=0x1AFF or \
+		0x1DC0<=cp and cp <=0x1DFF or \
+		0x20D0<=cp and cp <=0x20FF or \
+		0xFE20<=cp and cp <=0xFE2F:
+		return True
+	else:	return False
+
+#
+# 異体字選択子（vaiation selector）の判定
+#
+def isVariationSelector(cp):
+	# unicodeにおける異体字選択子のブロック内か？
+		#	0xFE00-0xFE0F	Variation Selectors Supplement	字形選択子補助（SVS用）
+		#	0xE0100-0xE01EF	Variation Selectors	字形選択子（IVS用）
+	if  0xFE00<=cp  and cp <=0xFE0F or \
+		0xE0100<=cp and cp <=0xE01EF:
+		return True
+	else:	return False
+
+#
+# 文字列の分解
+#
+#	文字列を拡張文字の列に変換する	1文字が複数の符号位置であらわされている場合（代用対/結合文字/IVS/SVS）への対応
+#		分解結果はリストとなり各要素（拡張文字）は
+#			UCS2のときはリスト
+#				[ 通常文字または文字列としての代用対 , 結合文字または異体字選択子（2バイトまたは代用対）または空文字 ]
+#			UCS4のときは文字列
+#				文字列（通常文字に結合文字または異体字選択子が付くことがある）
+def string2list(s):
+	StringList=[]
+	if isUCS2():
+		surrogate_pair=False	# UCS2では代用対（surrogate pair）がありうる
+		prevchar=""
+		for c in s:
+			cp=ord(c)	# code point			
+			# 代用対（[D800～DBFF]+[DC00～DFFF]のペア）の存在を考慮する
+			if not surrogate_pair:	# 代用対の処理中でなければ
+				if isHighSurrogate(cp):	# 代用対の前半部なら
+					surrogate_pair=True	# surrogate pair starts
+					HighSurrogate=c
+					HighSurrogateCp=cp
+					continue
+				if isLowSurrogate(cp):	error("代用対の構成が無効です。")	# 代用対の後半部が単独で現れた
+				elif isCombiningDiacriticalMark(cp):	# 合成可能文字なら
+					if prevchar=="":	error("結合文字列の構成が無効です。")	# 空文字の次に合成可能文字が現われた
+					StringList.append([prevchar,c])	# 先行文字と合成可能文字の組を追加（合成可能文字は第0面のみにある）
+					prevchar=""
+				elif isVariationSelector(cp):	# 異体字選択子なら
+					if prevchar=="":	error("異体字列の構成が無効です。")	# 空文字の次に異体字選択子が現われた
+					StringList.append([prevchar,c])	# 先行文字とSVS用異体字選択子（2バイト）の組を追加
+					prevchar=""
+				else:	# 次となる普通の文字がきたら先行文字を単独で追加
+					if prevchar!="":
+						StringList.append([prevchar,""])	# 先行文字と空文字の組を追加
+					prevchar=c	# 先行文字とする
+			elif isLowSurrogate(cp):	# 代用対の処理中に代用対の後半部がきたら代用対の完成
+				surrogate_pair=False	# surrogate pair ends
+				sp=HighSurrogate+c	# 代用対を作る
+				uni = 0x10000 + (HighSurrogateCp - 0xD800) * 0x400 + (cp - 0xDC00);	# 代用対をdecodeする
+				if isVariationSelector(uni):	# 代用対が異体字選択子なら
+					if prevchar=="":	error("異体字列の構成が無効です。")	# 空文字の次に異体字選択子が現われた
+					StringList.append([prevchar,sp])	# 先行文字とIVS用異体字選択子（4バイト）の組を追加
+					prevchar=""
+				else:	# 先行文字があって次に文字としての代用対が来た
+					if prevchar!="":
+						StringList.append([prevchar,""])	# 先行文字と空文字の組を追加
+					prevchar=sp	# 代用対を先行文字とする
+			else:	error("代用対の構成が無効です。")	# 代用対の前半部の次に代用対後半部以外が現われた
+		if surrogate_pair: 	error("代用対の構成が無効です。")	# 代用対の前半部で文字列の終端に達した
+		if prevchar!="":
+			StringList.append([prevchar,""])	# 最後の先行文字と空文字の組を追加
+	else:	# UCS4
+		prevchar=""
+		for c in s:
+			cp=ord(c)	# code point
+			if isCombiningDiacriticalMark(cp):	# 合成可能文字なら
+				if prevchar=="":	error("結合文字列の構成が無効です。")	# 空文字の次に合成可能文字が現われた
+				StringList.append(prevchar+c)	# 先行文字と合成可能文字の列を追加
+				prevchar=""
+			elif isVariationSelector(cp):	# 異体字選択子なら
+				if prevchar=="":	error("異体字列の構成が無効です。")	# 空文字の次に異体字選択子が現われた
+				StringList.append(prevchar+c)	# 先行文字とIVS用異体字選択子（4バイト）の列を追加
+				prevchar=""
+			else:
+				if prevchar!="":	StringList.append(prevchar)	# 次となる普通の文字がきたら先行文字を単独で追加
+				prevchar=c	# 先行文字とする
+		if prevchar!="":
+			StringList.append(prevchar)	# 最後の先行文字を追加
+	return StringList
+
+#
+# 文字列の合成
+#
+#	拡張文字列を文字列に変換する	1文字が複数の符号位置であらわされている場合（代用対/結合文字/IVS/SVS）への対応
+#		拡張文字の各文字は
+#			UCS2のときはリスト
+#				[ 通常文字または文字列としての代用対 , 結合文字または異体字選択子（2バイトまたは代用対）または空文字 ]
+#			UCS4のときは文字列
+#				文字列（通常文字に結合文字または異体字選択子が付くことがある）
+def list2string(xs,start,end):	# 拡張文字列xsのstartからendの手前までを文字列として返す
+	# startとendは文字単位で与えられる
+	if start<0 or start>len(xs):
+		die("部分文字列の開始位置の指定エラー")
+	if end<0 or end>len(xs):
+		die("部分文字列の終了位置の指定エラー")
+	if start>end: die("部分文字列の開始位置が終了位置の後にあります。")
+	string=""
+	for i in range(start,end):
+		if isUCS2():	# UCS2のとき拡張文字列の各拡張文字は長さ2のリスト（[代用対または通常文字,結合文字または異体字選択子（代用対のこともある）]）
+			string+=xs[i][0]+xs[i][1]
+		else:
+			string+=xs[i]	# UCS4のとき拡張文字列の各拡張文字は文字列
+	return string
+#
+# 直接入力文字列の前処理
+#
+#  Python3においてコマンドラインからの直接入力文字列中にUnicode符号位置がU+FFFFを超えるコードがあると
+#  Unicode文字に正しく変換されない場合があることへの対処をする
+#  Python2においてはUTF8からUnicode文字への通常の変換処理をする
+def utf2ucs(instr):
+	if sys.version_info < (3, 0):	# Python2なら
+		try:
+			outstr=unicode(instr, 'utf_8')	# utf8からunicdoeへ変換する
+		except:
+			die("不当なマルチバイト文字が含まれています。")
+		return outstr
+	outstr=""	# 出力文字列
+	intlist=[]	# 作業用整数リスト
+	for char in instr:
+		if ord(char)>=0xdc00 and ord(char)<=0xdcff:	# 文字の符号位置がU+DCxxの範囲にあったら「UTF8もどき」
+			intlist.append(ord(char)-0xdc00)	# 0xdc00のげたをはずして整数リストに入れる
+		else:	# 通常文字がきたら
+			if len(intlist)>0:	# ここまでに「UTF8もどき」列を変換した整数リストがあったら
+				# bytesに変換してutf8からUCSへの変換をして出力文字列に追加
+				outstr+= bytes(intlist).decode("utf_8")
+				intlist=[]	# 整数リストを再初期化
+			outstr+=char	# 新しくきた通常文字を出力文字列に追加
+	# 「UTF8もどき」列を変換した整数リストが残っていたら
+	# bytesに変換してutf8からUCSへの変換をして出力文字列に追加
+	if len(intlist)>0:	outstr+= bytes(intlist).decode("utf_8")
+	return outstr
 
 ###########################################
 #メイン関数
@@ -243,6 +458,7 @@ if __name__ == '__main__':
 
 	#ダイレクトモード
 	if sys.argv[1] == "-d":
+		sys.stdout = resetStdout()	# ダイレクトモードでもstdoutの設定をしておく
 		directMode(sys.argv[2:])
 		sys.exit(0)
 
