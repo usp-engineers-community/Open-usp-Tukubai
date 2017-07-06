@@ -100,7 +100,8 @@ cat << FIN > $tmp-name
 PAGE @@
 FIN
 
-${com} $tmp-check $tmp-name --blank > $tmp-ans
+${com} $tmp-check $tmp-name --blank > $tmp-ans 2>/dev/null
+# Error[check_need_name] : --blankオプションはコマンドの直後に指定してください。
 [ $? -eq 1 ] ; ERROR_CHECK "Test3-1 error"
 
 ${com} --blank @@ $tmp-check $tmp-name > $tmp-ans 
@@ -114,7 +115,8 @@ ${com} --blank @ $tmp-check $tmp-name > $tmp-ans
 : |
 diff - $tmp-ans ; ERROR_CHECK "Test3-3-2 error"
 
-${com} $tmp-check --blank @@ $tmp-name > $tmp-ans 
+${com} $tmp-check --blank @@ $tmp-name > $tmp-ans 2>/dev/null
+# Error[check_need_name] : --blankオプションはコマンドの直後に指定してください。
 [ $? -eq 1 ] ; ERROR_CHECK "Test3-4-1 error"
 
 : |
