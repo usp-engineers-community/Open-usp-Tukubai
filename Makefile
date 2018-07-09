@@ -22,9 +22,9 @@
 
 NAME=		open-usp-tukubai
 
-LOCALBASE?=	/usr/local
-BINDIR?=	${LOCALBASE}/bin
-TUKDIR?=	${LOCALBASE}/share/${NAME}
+PREFIX?=	/usr/local
+BINDIR?=	${PREFIX}/bin
+TUKDIR?=	${PREFIX}/share/${NAME}
 DATDIR?=	${TUKDIR}/devel
 MANDIR=		${DATDIR}/man
 HTMDIR=		${DATDIR}/html
@@ -50,9 +50,9 @@ DOCMODE=	444
 
 all:
 	@echo "Run 'make install' to install"
-	@echo "    LOCALBASE=${LOCALBASE}"
+	@echo "    PREFIX=${PREFIX}"
 	@echo "    BINDIR=${BINDIR}"
-	@echo "    TUKDIR=${LOCALBASE}/share/${NAME}"
+	@echo "    TUKDIR=${TUKDIR}"
 	@echo "    DATDIR=${TUKDIR}/devel"
 	@echo "    MANDIR=${DATDIR}/man"
 	@echo "    HTMDIR=${DATDIR}/html"
