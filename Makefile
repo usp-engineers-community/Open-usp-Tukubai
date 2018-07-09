@@ -53,11 +53,11 @@ all:
 	@echo "    PREFIX=${PREFIX}"
 	@echo "    BINDIR=${BINDIR}"
 	@echo "    TUKDIR=${TUKDIR}"
-	@echo "    DATDIR=${TUKDIR}/devel"
-	@echo "    MANDIR=${DATDIR}/man"
-	@echo "    HTMDIR=${DATDIR}/html"
-	@echo "    PDFDIR=${DATDIR}/pdf"
-	@echo "    DOCDIR=${DATDIR}/doc"
+	@echo "    DATDIR=${DATDIR}"
+	@echo "    MANDIR=${MANDIR}"
+	@echo "    HTMDIR=${HTMDIR}"
+	@echo "    PDFDIR=${PDFDIR}"
+	@echo "    DOCDIR=${DOCDIR}"
 
 install:
 	${MKDIR} ${DESTDIR}${BINDIR}
