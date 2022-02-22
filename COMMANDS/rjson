@@ -1,0 +1,139 @@
+#!/usr/bin/env python
+#coding: utf-8
+#
+# rjson : JSON 形式のファイルをフィールド形式に変換する（Open usp Tukubai版）
+# 
+# designed by Aoki Takemasa
+# written  by Hinata Yanagi
+#
+# The MIT License
+#
+# Copyright (C) 2022 Universal Shell Programming Laboratory
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+from __future__ import print_function
+import sys
+import os.path
+import json
+
+_usage = "rjson  [-p<c>][-m<c>][-s<c>][-n<string>] <json-file>"
+_version = "Tue Feb 22 13:13:14 JST 2022"
+_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.7/UTF-8)"
+
+def usage():
+	print("Usage   :", _usage, file=sys.stderr)
+	print("Version :", _version, file=sys.stderr)
+	print("         ", _code, file=sys.stderr)
+	sys.exit(1)
+
+#
+# Throw an error and terminate in failure.
+#
+
+def error(msg, *arg):
+	print('Error[rjson] :', msg % arg, file=sys.stderr)
+	sys.exit(1)
+
+#
+# Open an input file
+#
+def open_file(n, quiet = False):
+	if type(n) == type(0):
+		if n >= len(sys.argv):
+			n = '-'
+		else:
+			n = sys.argv[n]
+	if n == '-':
+		file = sys.stdin
+	else:
+		try:
+			file = open(n)
+		except:
+			if not quiet:
+				error("Cannot open file '%s'", n)
+			else:
+				sys.exit(1)
+	return file
+
+#
+#  Print an object in fields format.
+#
+
+def fields_of_object(value, path = ""):
+	if type(value) == dict:
+		for key in value.keys():
+			key = key.replace(' ', key_whitespace)
+			for key_inner in value.get(key):
+				key_inner = key_inner.replace(' ', key_whitespace)
+
+				for value in fields_of_object(value.get(key).get(key_inner), key +  " " + key_inner):
+					yield(key + " " + key_inner + " " + str(value))
+	elif type(value) == list:
+		index = 1
+		for item in value:
+			yield (str(index) + " " + str(item))
+			index += 1
+	elif type(value) == str or type(value) == unicode:
+		yield value.replace(' ', value_whitespace)
+	elif value == None:
+		print(path, null_padding)
+	elif value == True:
+		print(path, "true")
+	elif value == False:
+		print(path, "false")
+	else:
+		print(path, value)
+
+#
+# main
+#
+
+if __name__ == '__main__':
+	# Print how to use the command
+	if len(sys.argv) <= 1 \
+	 or sys.argv[1] == '--help' \
+	 or sys.argv[1] == '--version':
+		usage()
+
+	key_whitespace = "_"
+	value_whitespace = "_"
+	null_padding = "_"
+
+	while len(sys.argv) > 1:
+		if sys.argv[1][:2] == "-m" and len(sys.argv[1]) > 2:
+			key_whitespace = sys.argv[1][2:]
+			del sys.argv[1]
+		if sys.argv[1][:2] == "-s" and len(sys.argv[1]) > 2:
+			value_whitespace = sys.argv[1][2:]
+			del sys.argv[1]
+		if sys.argv[1][:2] == "-n" and len(sys.argv[1]) > 2:
+			null_padding = sys.argv[1][2:]
+			del sys.argv[1]
+		elif len(sys.argv[1]) < 2 or sys.argv[1][0] != '-':
+			break;
+
+	input_file = open_file(1)
+	input_object = json.loads(input_file.read())
+
+	for line in fields_of_object(input_object):
+		print(line)
+
+	# Exit
+	sys.exit(0)
