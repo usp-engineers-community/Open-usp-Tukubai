@@ -1,0 +1,121 @@
+#!/usr/bin/env python
+#coding: utf-8
+#
+# xmldir ディレクトリタグの絶対パスを指定して、XMLデータをフィールド
+#        形式に変換する。（Open usp Tukubai版）
+# 
+# designed by Nobuaki Tounaka
+# written  by Hinata Yanagi
+#
+# The MIT License
+#
+# Copyright (C) 2022 Universal Shell Programming Laboratory
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+from __future__ import print_function
+import sys
+import os.path
+import xml.sax
+import xml.sax.handler
+
+_usage = "xmldir [-c<n>] /<DirTag1>/<DirTag2>/.../<DirTagN> <xmlfile>"
+_version = ""
+_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.7/UTF-8)"
+
+def usage():
+	print("Usage   :", _usage, file=sys.stderr)
+	print("Version :", _version, file=sys.stderr)
+	print("         ", _code, file=sys.stderr)
+	sys.exit(1)
+
+#
+# Throw an error and terminate in failure.
+#
+
+def error(msg, *arg):
+	print('Error[xmldir] :', msg % arg, file=sys.stderr)
+	sys.exit(1)
+
+#
+# SAX handler class
+#
+
+class SAXHandler:
+	def __init__(self):
+		self.documentIndex = 0
+
+	def setDocumentLocator(self, b):
+		return
+
+	def startDocument(self):
+		self.path = []
+		self.element_index = 1
+
+	def startElement(self, name, attributes):
+		if len(self.path) == 1:
+			self.documentIndex = 1 + self.documentIndex
+
+		self.path.append(name)
+
+	def endElement(self, name):
+		self.path.pop()
+
+	def characters(self, content):
+		if len(self.path) == 1 or content.isspace(): return
+
+		if indices_padding == None:
+			prefix = ""
+		else:
+			prefix = str(self.documentIndex).rjust(indices_padding, '0') + " " + \
+			         str(self.element_index).rjust(indices_padding, '0') + " "
+
+		print(prefix + ' '.join(self.path[1:]), content)
+		self.element_index = 1 + self.element_index
+
+	def processingInstruction(self, content):
+	 	return
+
+	def endDocument(self):
+		return
+#
+# main
+#
+
+if __name__ == '__main__':
+	# Print how to use the command
+	if len(sys.argv) <= 1 \
+	 or sys.argv[1] == '--help' \
+	 or sys.argv[1] == '--version':
+		usage()
+
+	indices_padding = None
+
+	while len(sys.argv) > 1:
+		if sys.argv[1][:2] == '-c' and len(sys.argv[1]) > 2:
+			indices_padding = int(sys.argv[1][2:])
+			del sys.argv[1]
+		elif len(sys.argv[1]) < 2 or sys.argv[1][0] != '-':
+			break;
+
+	input_file = sys.stdin if sys.argv[2] == '-' else open(sys.argv[2])
+	xml.sax.parseString('<document>' + input_file.read() + '</document>', SAXHandler())
+
+	# Exit
+	sys.exit(0)
