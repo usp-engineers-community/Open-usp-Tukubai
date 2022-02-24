@@ -1,6 +1,6 @@
 ﻿               Universal Shell Programming Laboratory
                           info@usp-lab.com
-                    Sun Feb 20 19:46:48 JST 2022
+                             2022/02/24
  
 Open usp Tukubaiとは
 ====================
