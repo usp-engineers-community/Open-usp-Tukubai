@@ -86,6 +86,9 @@ class SAXHandler:
 			prefix = str(self.documentIndex).rjust(indices_padding, '0') + " " + \
 			         str(self.element_index).rjust(indices_padding, '0') + " "
 
+		if target_path != '/' + '/'.join(self.path[1:]):
+			return
+
 		print(prefix + ' '.join(self.path[1:]), content)
 		self.element_index = 1 + self.element_index
 
@@ -114,6 +117,7 @@ if __name__ == '__main__':
 		elif len(sys.argv[1]) < 2 or sys.argv[1][0] != '-':
 			break;
 
+	target_path = sys.argv[1]
 	input_file = sys.stdin if sys.argv[2] == '-' else open(sys.argv[2])
 	xml.sax.parseString('<document>' + input_file.read() + '</document>', SAXHandler())
 

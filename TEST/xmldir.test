@@ -1,0 +1,63 @@
+#!/bin/bash
+#!/usr/local/bin/bash -xv # コマンド処理系の変更例
+#
+# test script of xmldir
+#
+# usage: [<test-path>/]xmldir.test [<command-path> [<python-version>]]
+#
+#            <test-path>は
+#                    「現ディレクトリーからみた」本スクリプトの相対パス
+#                    または本スクリプトの完全パス
+#                    省略時は現ディレクトリーを仮定する
+#            <command-path>は
+#                    「本スクリプトのディレクトリーからみた」test対象コマンドの相対パス
+#                    またはtest対象コマンドの完全パス
+#                    省略時は本スクリプトと同じディレクトリーを仮定する
+#                    値があるときまたは空値（""）で省略を示したときはあとにつづく<python-version>を指定できる
+#            <python-version>は
+#                    使用するpython処理系のversion（minor versionまで指定可）を指定する
+#                    （例 python2 python2.6 phthon3 python3.4など）
+#                    単にpythonとしたときは現実行環境下でのdefault versionのpythonを使用する
+#                    文字列"python"は大文字/小文字の区別をしない
+#                    省略時はpythonを仮定する
+name=xmldir # test対象コマンドの名前
+testpath=$(dirname $0) # 本スクリプト実行コマンドの先頭部($0)から本スクリプトのディレトリー名をとりだす
+cd $testpath # 本スクリプトのあるディレクトリーへ移動
+if test "$2" = ""; # <python-version>($2)がなければ
+	then pythonversion="python" # default versionのpythonとする
+	else pythonversion="$2" # <python-version>($2)があれば指定versionのpythonとする
+fi
+if test "$1" = ""; # <command-path>($1)がなければ
+	then commandpath="." # test対象コマンドは現ディレクトリーにある
+	else commandpath="$1" # <command-path>($1)があればtest対象コマンドは指定のディレクトリーにある
+fi
+com="${pythonversion} ${commandpath}/${name}" # python処理系によるtest対象コマンド実行の先頭部
+tmp=/tmp/$$
+
+ERROR_CHECK(){
+	[ "$(echo ${PIPESTATUS[@]} | tr -d ' 0')" = "" ] && return
+	echo $1
+	echo "${pythonversion} ${name}" NG
+	rm -f $tmp-*
+	exit 1
+}
+
+###########################################
+# Check for ordinal examples.
+
+${com} / - <<< '<empty/>' > $tmp-ans
+[ "$(wc -c $tmp-ans | self 1)" -eq 0 -a $? -eq 0 ]; ERROR_CHECK "An empty element must not be output and left vacant."
+
+${com} /paragraph - <<< '<paragraph>hello</paragraph>' > $tmp-ans
+[ -z "$(echo paragraph hello | diff $tmp-ans -)" -a $? -eq 0 ]; ERROR_CHECK "<paragraph>hello</paragraph> must be converted to a single line \"paragraph hello\"."
+
+${com} /p - <<< '<p>Hello,<strong>world.</strong></p>' > $tmp-ans
+[ -z "$(echo p Hello, | diff $tmp-ans -)" -a $? -eq 0 ]; ERROR_CHECK "<pHello, <strong>world.</strong></p> must be converted to \"\p Hello\", with /p selector."
+
+${com} /p/strong - <<< '<p>Hello,<strong>world.</strong></p>' > $tmp-ans
+[ -z "$(echo p strong world. | diff $tmp-ans -)" -a $? -eq 0 ]; ERROR_CHECK "<pHello, <strong>world.</strong></p> must be converted to \"p strong world.\" with /p/strong selector."
+
+
+rm -f $tmp-*
+echo "${pythonversion} ${name}" OK
+exit 0
