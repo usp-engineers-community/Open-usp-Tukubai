@@ -1,0 +1,106 @@
+#!/bin/bash
+#!/usr/local/bin/bash -xv # コマンド処理系の変更例
+#
+# test script of rjson
+#
+# usage: [<test-path>/]rjson.test [<command-path> [<python-version>]]
+#
+#            <test-path>は
+#                    「現ディレクトリーからみた」本スクリプトの相対パス
+#                    または本スクリプトの完全パス
+#                    省略時は現ディレクトリーを仮定する
+#            <command-path>は
+#                    「本スクリプトのディレクトリーからみた」test対象コマンドの相対パス
+#                    またはtest対象コマンドの完全パス
+#                    省略時は本スクリプトと同じディレクトリーを仮定する
+#                    値があるときまたは空値（""）で省略を示したときはあとにつづく<python-version>を指定できる
+#            <python-version>は
+#                    使用するpython処理系のversion（minor versionまで指定可）を指定する
+#                    （例 python2 python2.6 phthon3 python3.4など）
+#                    単にpythonとしたときは現実行環境下でのdefault versionのpythonを使用する
+#                    文字列"python"は大文字/小文字の区別をしない
+#                    省略時はpythonを仮定する
+name=rjson # test対象コマンドの名前
+testpath=$(dirname $0) # 本スクリプト実行コマンドの先頭部($0)から本スクリプトのディレトリー名をとりだす
+cd $testpath # 本スクリプトのあるディレクトリーへ移動
+if test "$2" = ""; # <python-version>($2)がなければ
+	then pythonversion="python" # default versionのpythonとする
+	else pythonversion="$2" # <python-version>($2)があれば指定versionのpythonとする
+fi
+if test "$1" = ""; # <command-path>($1)がなければ
+	then commandpath="." # test対象コマンドは現ディレクトリーにある
+	else commandpath="$1" # <command-path>($1)があればtest対象コマンドは指定のディレクトリーにある
+fi
+com="${pythonversion} ${commandpath}/${name}" # python処理系によるtest対象コマンド実行の先頭部
+tmp=/tmp/$$
+
+ERROR_CHECK(){
+	[ "$(echo ${PIPESTATUS[@]} | tr -d ' 0')" = "" ] && return
+	echo $1
+	echo "${pythonversion} ${name}" NG
+	rm -f $tmp-*
+	exit 1
+}
+
+###########################################
+# Check for an empty object, array, zero, string.
+
+${com} - <<< '{}' > $tmp-ans
+[ -z "$(cat $tmp-ans)" -a $? -eq 0 ]; ERROR_CHECK "An empty object must be converted into '{}'."
+
+${com} - <<< '[]' > $tmp-ans
+[ -z "$(cat $tmp-ans)" -a $? -eq 0 ]; ERROR_CHECK "An empty object must be converted into '[]'."
+
+${com} - <<< '0' > $tmp-ans
+[ "$(cat $tmp-ans)" -eq 0 -a $? -eq 0 ]; ERROR_CHECK "0 must be converted into 0."
+
+${com} -n@ - <<< '""' > $tmp-ans
+[ "$(cat $tmp-ans)" = @ -a $? -eq 0 ]; ERROR_CHECK "\"\" must be converted into a '-n' specified string."
+
+###########################################
+# Check for a significant object, array, number, string.
+
+${com} - <<< '{"a":1,"b c":"un due"}' > $tmp-ans
+
+[ $? -eq 0 ] && diff $tmp-ans - <<-EOF
+a 1
+b_c un_due
+EOF
+
+ERROR_CHECK "Failed with a conversion of an object."
+
+${com} - <<< '[1,[2,"a"],"b"]' > $tmp-ans
+
+[ $? -eq 0 ] && diff $tmp-ans - <<-EOF
+1 1
+2 1 2
+2 2 a
+3 b
+EOF
+
+ERROR_CHECK "Failed with a conversion of an array."
+
+${com} - <<< '0' > $tmp-ans
+[ "$(cat $tmp-ans)" = 0 -a $? -eq 0 ]; ERROR_CHECK "0 must be convert into mere 0."
+
+${com} - <<< '123.45' > $tmp-ans
+[ "$(cat $tmp-ans)" = 123.45 -a $? -eq 0 ]; ERROR_CHECK "123.45 must be convert into 123.45."
+
+${com} - <<< '1e3' > $tmp-ans
+[ "$(bc <<< "$(cat $tmp-ans)-1000")" = 0 -a $? -eq 0 ]; ERROR_CHECK "1e3 must be convert into 1000."
+
+${com} - <<< '1e-3' > $tmp-ans
+[ "$(bc <<< "$(cat $tmp-ans)-0.001")" = 0 -a $? -eq 0 ]; ERROR_CHECK "1e-3 must be convert into 0.001."
+
+${com} -n@ - <<< '""' > $tmp-ans
+[ "$(cat $tmp-ans)" = @ -a $? -eq 0 ]; ERROR_CHECK "\"\" must be convert into @ with -n@."
+
+${com} - <<< '"shell"' > $tmp-ans
+[ "$(cat $tmp-ans)" = shell -a $? -eq 0 ]; ERROR_CHECK "\"shell\" must be convert into shell."
+
+${com} -s\# - <<< '"usp tukubai"' > $tmp-ans
+[ "$(cat $tmp-ans)" = "usp#tukubai" -a $? -eq 0 ]; ERROR_CHECK "\"usp tukubai\" must be convert into usp#tukubai with -n\#."
+
+rm -f $tmp-*
+echo "${pythonversion} ${name}" OK
+exit 0
