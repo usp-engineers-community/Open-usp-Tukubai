@@ -5,12 +5,22 @@
 # usage: ./formhame.test <python ver>
 
 name=formhame
+testpath=$(dirname $0) # 本スクリプト実行コマンドの先頭部($0)から本スクリプトのディレトリー名をとりだす
+cd $testpath # 本スクリプトのあるディレクトリーへ移動
+if test "$2" = ""; # <python-version>($2)がなければ
+	then pythonversion="python" # default versionのpythonとする
+	else pythonversion="$2" # <python-version>($2)があれば指定versionのpythonとする
+fi
+if test "$1" = ""; # <command-path>($1)がなければ
+	then commandpath="." # test対象コマンドは現ディレクトリーにある
+	else commandpath="$1" # <command-path>($1)があればtest対象コマンドは指定のディレクトリーにある
+fi
+com="${pythonversion} ${commandpath}/${name}" # python処理系によるtest対象コマンド実行の先頭部
     
 tmp=/tmp/$$
 dir=$(dirname $0)/..
 cd $dir
     
-com="$2 ./$1/${name}"
 [ "$1" = "" ] && com="./$1/${name}"
 
 ERROR_CHECK(){
