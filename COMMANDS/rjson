@@ -79,27 +79,36 @@ def open_file(n, quiet = False):
 def fields_of_object(value, path = ""):
 	if type(value) == dict:
 		for key in value.keys():
-			key = key.replace(' ', key_whitespace)
-			for key_inner in value.get(key):
-				key_inner = key_inner.replace(' ', key_whitespace)
+			key_print = key.replace(' ', key_whitespace)
 
-				for value in fields_of_object(value.get(key).get(key_inner), key +  " " + key_inner):
-					yield(key + " " + key_inner + " " + str(value))
+			fields_of_object(value[key], key_print if path == '' else path + ' ' + key_print)
+		return
 	elif type(value) == list:
 		index = 1
+
 		for item in value:
-			yield (str(index) + " " + str(item))
+			fields_of_object(item, ('' if path == '' else path + ' ') + str(index))
 			index += 1
+		return
+	elif value == '':
+		value_print = null_padding
 	elif type(value) == str or type(value) == unicode:
-		yield value.replace(' ', value_whitespace)
+		value_print = value.replace(' ', value_whitespace)
+	elif type(value) == int:
+		value_print = str(value)
 	elif value == None:
-		print(path, null_padding)
+		value_print = null_padding
 	elif value == True:
-		print(path, "true")
+		value_print = "true"
 	elif value == False:
-		print(path, "false")
+		value_print = "false"
 	else:
-		print(path, value)
+		value_print = str(value)
+
+	if path == '':
+		print(value_print)
+	else:
+		print(path, value_print)
 
 #
 # main
@@ -112,9 +121,9 @@ if __name__ == '__main__':
 	 or sys.argv[1] == '--version':
 		usage()
 
-	key_whitespace = "_"
-	value_whitespace = "_"
-	null_padding = "_"
+	key_whitespace = '_'
+	value_whitespace = '_'
+	null_padding = '_'
 
 	while len(sys.argv) > 1:
 		if sys.argv[1][:2] == "-m" and len(sys.argv[1]) > 2:
@@ -132,8 +141,6 @@ if __name__ == '__main__':
 	input_file = open_file(1)
 	input_object = json.loads(input_file.read())
 
-	for line in fields_of_object(input_object):
-		print(line)
+	fields_of_object(input_object)
 
-	# Exit
 	sys.exit(0)
