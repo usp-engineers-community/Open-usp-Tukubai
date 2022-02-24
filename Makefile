@@ -59,6 +59,18 @@ all:
 	@echo "    PDFDIR=${PDFDIR}"
 	@echo "    DOCDIR=${DOCDIR}"
 
+test: # シェル・スクリプトのみテストを実行する。
+	@for test_script in $$(echo TEST/* | tarr | grep -e '\/[^.]*\.test$$'); \
+	do \
+		"$${test_script}" "$$(pwd)/COMMANDS"; \
+		if [ "$$?" -ne 0 ]; then \
+			echo "test for $$(basename "$${test_script}" .sh)" failed.; \
+			exit 1; \
+		fi; \
+	done; \
+	echo Tests are finished successfully. 
+
+
 install:
 	${MKDIR} ${DESTDIR}${BINDIR}
 	@for i in ${COMMANDS}; \
@@ -153,4 +165,4 @@ package: clean
 clean:
 	rm -rf ${NAME}-${TODAY}*
 
-.PHONY: install
+.PHONY: install test
