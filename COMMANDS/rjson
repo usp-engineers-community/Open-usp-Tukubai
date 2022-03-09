@@ -31,6 +31,7 @@
 from __future__ import print_function
 import sys
 import os.path
+import io
 import json
 
 _usage = "rjson  [-p<c>][-m<c>][-s<c>][-n<string>] <json-file>"
@@ -106,9 +107,9 @@ def fields_of_object(value, path = ""):
 		value_print = str(value)
 
 	if path == '':
-		print(value_print)
+		print(value_print.encode('utf-8'))
 	else:
-		print(path, value_print)
+		print(path, value_print.encode('utf-8'))
 
 #
 # main
