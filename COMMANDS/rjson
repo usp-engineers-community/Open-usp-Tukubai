@@ -82,7 +82,7 @@ def fields_of_object(value, path = ""):
 		keys = [value.keys()]
 		for key in value.keys():
 			key_print = key.replace(' ', key_whitespace)
-			fields_of_object(value[key], key_print if path == '' else path + ' ' + key_print)
+			fields_of_object(value[key], key_print if path == '' else path + separator + key_print)
 		return
 	elif type(value) == list:
 		index = 1
@@ -122,11 +122,15 @@ if __name__ == '__main__':
 	 or sys.argv[1] == '--version':
 		usage()
 
+	separator = ' '
 	key_whitespace = '_'
 	value_whitespace = '_'
 	null_padding = '_'
 
 	while len(sys.argv) > 1:
+		if sys.argv[1][:2] == "-p" and len(sys.argv[1]) > 2:
+			separator = sys.argv[1][2:]
+			del sys.argv[1]
 		if sys.argv[1][:2] == "-m" and len(sys.argv[1]) > 2:
 			key_whitespace = sys.argv[1][2:]
 			del sys.argv[1]
