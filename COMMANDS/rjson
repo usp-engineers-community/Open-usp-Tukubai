@@ -35,7 +35,7 @@ import io
 import json
 
 _usage = "rjson  [-p<c>][-m<c>][-s<c>][-n<string>] <json-file>"
-_version = "Tue Feb 22 13:13:14 JST 2022"
+_version = "Sun Mar 13 09:42:44 JST 2022"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.7/UTF-8)"
 
 def usage():
@@ -79,9 +79,9 @@ def open_file(n, quiet = False):
 
 def fields_of_object(value, path = ""):
 	if type(value) == dict:
+		keys = [value.keys()]
 		for key in value.keys():
 			key_print = key.replace(' ', key_whitespace)
-
 			fields_of_object(value[key], key_print if path == '' else path + ' ' + key_print)
 		return
 	elif type(value) == list:
@@ -93,7 +93,7 @@ def fields_of_object(value, path = ""):
 		return
 	elif value == '':
 		value_print = null_padding
-	elif type(value) == str or type(value) == unicode:
+	elif type(value) == str:
 		value_print = value.replace(' ', value_whitespace)
 	elif type(value) == int:
 		value_print = str(value)
@@ -107,9 +107,9 @@ def fields_of_object(value, path = ""):
 		value_print = str(value)
 
 	if path == '':
-		print(value_print.encode('utf-8'))
+		print(value_print)
 	else:
-		print(path, value_print.encode('utf-8'))
+		print(path, value_print)
 
 #
 # main
