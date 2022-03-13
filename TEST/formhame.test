@@ -1,4 +1,4 @@
-#!/usr/local/bin/bash -xv
+#!/bin/bash
 #
 # test script of formhame
 #
@@ -6,7 +6,6 @@
 
 name=formhame
 testpath=$(dirname $0) # 本スクリプト実行コマンドの先頭部($0)から本スクリプトのディレトリー名をとりだす
-cd $testpath # 本スクリプトのあるディレクトリーへ移動
 if test "$2" = ""; # <python-version>($2)がなければ
 	then pythonversion="python" # default versionのpythonとする
 	else pythonversion="$2" # <python-version>($2)があれば指定versionのpythonとする
@@ -18,8 +17,7 @@ fi
 com="${pythonversion} ${commandpath}/${name}" # python処理系によるtest対象コマンド実行の先頭部
     
 tmp=/tmp/$$
-dir=$(dirname $0)/..
-cd $dir
+cd $testpath # 本スクリプトのあるディレクトリーへ移動
     
 [ "$1" = "" ] && com="./$1/${name}"
 
@@ -88,7 +86,7 @@ laboratory
 </body></html>
 FIN
 
-${com} $tmp-html $tmp-name > $tmp-out
+${com} $tmp-html $tmp-name > $tmp-out 2> /dev/null
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST1 error"
 
@@ -148,7 +146,7 @@ laboratory
 </body></html>
 FIN
 
-${com} -i_ $tmp-html $tmp-name > $tmp-out
+${com} -i_ $tmp-html $tmp-name > $tmp-out 2> /dev/null
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST2 error"
 
@@ -208,7 +206,7 @@ laboratory
 </body></html>
 FIN
 
-${com} -i_ -d_ $tmp-html $tmp-name > $tmp-out
+${com} -i_ -d_ $tmp-html $tmp-name > $tmp-out 2> /dev/null
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST3 error"
 
@@ -268,10 +266,10 @@ laboratory
 </body></html>
 FIN
 
-${com} -i_ -d_ $tmp-html $tmp-name > $tmp-out
+${com} -i_ -d_ $tmp-html $tmp-name > $tmp-out 2> /dev/null
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST4 error"
 
 rm -f $tmp-*
-echo "${com}" OK
+echo "${pythonversion}" "${name}" OK
 exit 0

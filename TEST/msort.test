@@ -1,9 +1,9 @@
 #!/bin/bash
 #!/usr/local/bin/bash -xv # コマンド処理系の変更例
 #
-# test script of rjson
+# test script of msort
 #
-# usage: [<test-path>/]rjson.test [<command-path> [<python-version>]]
+# usage: [<test-path>/]calclock.test [<command-path> [<python-version>]]
 #
 #            <test-path>は
 #                    「現ディレクトリーからみた」本スクリプトの相対パス
@@ -20,7 +20,7 @@
 #                    単にpythonとしたときは現実行環境下でのdefault versionのpythonを使用する
 #                    文字列"python"は大文字/小文字の区別をしない
 #                    省略時はpythonを仮定する
-name=rjson # test対象コマンドの名前
+name=msort # test対象コマンドの名前
 testpath=$(dirname $0) # 本スクリプト実行コマンドの先頭部($0)から本スクリプトのディレトリー名をとりだす
 cd $testpath # 本スクリプトのあるディレクトリーへ移動
 if test "$2" = ""; # <python-version>($2)がなければ
@@ -43,64 +43,92 @@ ERROR_CHECK(){
 }
 
 ###########################################
-# Check for an empty object, array, zero, string.
+# TEST1
+# データが 2 列存在するときの 1 列目 の文字コード順ソート。
 
-${com} - <<< '{}' > $tmp-ans
-[ -z "$(cat $tmp-ans)" -a $? -eq 0 ]; ERROR_CHECK "An empty object must be converted into '{}'."
+cat << FIN > $tmp-data
+04 d
+03 c
+02 b
+01 a
+FIN
 
-${com} - <<< '[]' > $tmp-ans
-[ -z "$(cat $tmp-ans)" -a $? -eq 0 ]; ERROR_CHECK "An empty object must be converted into '[]'."
+cat << FIN > $tmp-out
+01 a
+02 b
+03 c
+04 d
+FIN
 
-${com} - <<< '0' > $tmp-ans
-[ "$(cat $tmp-ans)" -eq 0 -a $? -eq 0 ]; ERROR_CHECK "0 must be converted into 0."
-
-${com} -n@ - <<< '""' > $tmp-ans
-[ "$(cat $tmp-ans)" = @ -a $? -eq 0 ]; ERROR_CHECK "\"\" must be converted into a '-n' specified string."
+${com} key=1 <$tmp-data >$tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1 error"
 
 ###########################################
-# Check for a significant object, array, number, string.
+# TEST2
+# データが 2 列存在するときの 2 列目 の文字コード順ソート。
 
-${com} - <<< '{"a":1,"b c":"un due"}' | sort > $tmp-ans
+cat << FIN > $tmp-data
+04 d
+03 c
+02 b
+01 a
+FIN
 
-[ $? -eq 0 ] && diff $tmp-ans - <<-EOF
-a 1
-b_c un_due
-EOF
+cat << FIN > $tmp-out
+01 a
+02 b
+03 c
+04 d
+FIN
 
-ERROR_CHECK "Failed with a conversion of an object."
+${com} key=2 <$tmp-data >$tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2 error"
 
-${com} - <<< '[1,[2,"a"],"b"]' > $tmp-ans
+###########################################
+# TEST3
+# データが 2 列存在するときの 2 列目 の数値順ソート。
 
-[ $? -eq 0 ] && diff $tmp-ans - <<-EOF
-1 1
-2 1 2
-2 2 a
-3 b
-EOF
+cat << FIN > $tmp-data
+banana 2
+apple 01
+coconut 003
+FIN
 
-ERROR_CHECK "Failed with a conversion of an array."
+cat << FIN > $tmp-out
+apple 01
+banana 2
+coconut 003
+FIN
 
-${com} - <<< '0' > $tmp-ans
-[ "$(cat $tmp-ans)" = 0 -a $? -eq 0 ]; ERROR_CHECK "0 must be convert into mere 0."
+${com} key=2n <$tmp-data >$tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3 error"
 
-${com} - <<< '123.45' > $tmp-ans
-[ "$(cat $tmp-ans)" = 123.45 -a $? -eq 0 ]; ERROR_CHECK "123.45 must be convert into 123.45."
+###########################################
+# TEST4
+# データが 2 列存在するときの 2 列目 の逆順ソート。
 
-${com} - <<< '1e3' > $tmp-ans
-[ "$(bc <<< "$(cat $tmp-ans)-1000")" = 0 -a $? -eq 0 ]; ERROR_CHECK "1e3 must be convert into 1000."
+cat << FIN > $tmp-data
+banana 2
+apple 01
+coconut 003
+FIN
 
-${com} - <<< '1e-3' > $tmp-ans
-[ "$(bc <<< "$(cat $tmp-ans)-0.001")" = 0 -a $? -eq 0 ]; ERROR_CHECK "1e-3 must be convert into 0.001."
+cat << FIN > $tmp-out
+banana 2
+apple 01
+coconut 003
+FIN
 
-${com} -n@ - <<< '""' > $tmp-ans
-[ "$(cat $tmp-ans)" = @ -a $? -eq 0 ]; ERROR_CHECK "\"\" must be convert into @ with -n@."
+${com} key=2r <$tmp-data >$tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4 error"
 
-${com} - <<< '"shell"' > $tmp-ans
-[ "$(cat $tmp-ans)" = shell -a $? -eq 0 ]; ERROR_CHECK "\"shell\" must be convert into shell."
-
-${com} -s\# - <<< '"usp tukubai"' > $tmp-ans
-[ "$(cat $tmp-ans)" = "usp#tukubai" -a $? -eq 0 ]; ERROR_CHECK "\"usp tukubai\" must be convert into usp#tukubai with -n\#."
+###########################################
 
 rm -f $tmp-*
 echo "${pythonversion} ${name}" OK
+
 exit 0
