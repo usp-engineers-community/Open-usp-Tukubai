@@ -101,6 +101,9 @@ ${com} - <<< '"shell"' > $tmp-ans
 ${com} -s\# - <<< '"usp tukubai"' > $tmp-ans
 [ "$(cat $tmp-ans)" = "usp#tukubai" -a $? -eq 0 ]; ERROR_CHECK "\"usp tukubai\" must be convert into usp#tukubai with -n\#."
 
+${com} -p. - <<< '{"universal":{"shell":"programming"}}' > $tmp-ans
+[ "$(cat $tmp-ans)" = "universal.shell programming" -a $? -eq 0 ]; ERROR_CHECK "-p option must specify the hierarchy separator."
+
 rm -f $tmp-*
 echo "${pythonversion} ${name}" OK
 exit 0
