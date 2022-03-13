@@ -36,7 +36,7 @@ import xml.sax
 import xml.sax.handler
 
 _usage = "xmldir [-c<n>] /<DirTag1>/<DirTag2>/.../<DirTagN> <xmlfile>"
-_version = ""
+_version = "Sat Mar 12 14:38:08 2022"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.7/UTF-8)"
 
 def usage():
@@ -89,7 +89,7 @@ class SAXHandler:
 		if target_path != '/' + '/'.join(self.path[1:]):
 			return
 
-		print((prefix + ' '.join(self.path[1:]).encode('utf-8')), content.encode('utf-8'))
+		print((prefix + ' '.join(self.path[1:])), content)
 		self.element_index = 1 + self.element_index
 
 	def processingInstruction(self, content):

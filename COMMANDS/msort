@@ -1,0 +1,162 @@
+#!/usr/bin/env python
+#coding: utf-8
+#
+# msort オンメモリソート（Open usp Tukubai版）
+# 
+# designed by Nobuaki Tounaka
+# written by Hinata Yanagi
+#
+# The MIT License
+#
+# Copyright (C) 2022 Universal Shell Programming Laboratory
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+from __future__ import print_function
+
+_usage = "msort key=<key> <file>"
+_version = "Sat Mar 12 17:37:17 JST 2022"
+_code = "Open usp Tukubai (Linux+/PYTHON3.5/UTF-8)"
+_keypat = r'^key=([0-9/nr]+(@[0-9/nr]+)*)$'
+_keypat_factor = r'^([0-9]+[nr]*)(?:/([0-9]+[nr]*))?$'
+
+import re
+import os
+import sys
+from functools import cmp_to_key
+
+def error(msg, *arg):
+	print('Error[msort] :', msg % arg, file=sys.stderr)
+	sys.exit(1)
+
+def usage():
+	print("Usage   :", _usage, file=sys.stderr)
+	print("Version :", _version, file=sys.stderr)
+	print("         ", _code, file=sys.stderr)
+	sys.exit(1)
+
+#
+# Open an input file
+#
+def open_file(n, quiet = False):
+	if type(n) == type(0):
+		if n >= len(sys.argv):
+			n = '-'
+		else:
+			n = sys.argv[n]
+	if n == '-':
+		file = sys.stdin
+	else:
+		try:
+			file = open(n)
+		except:
+			if not quiet:
+				error("Cannot open file '%s'", n)
+			else:
+				sys.exit(1)
+	return file
+
+#
+# main
+#
+if __name__ == '__main__':
+	# Print how to use the command
+
+	if len(sys.argv) < 2:
+		usage()
+
+	#
+	# key=<key>
+	#
+
+	file = open_file(3)
+
+	#
+	# メインループ
+	#
+
+	keys = re.match(_keypat, sys.argv[1])
+
+	if not keys:
+		usage()
+
+	indices = []
+	attributes = dict()
+
+	for term in keys.group(1).split('@'):
+		factor = (re.match(_keypat_factor, term))
+
+		if factor.group(2) == None:
+			attributed_key = factor.group(1)
+			key = int(re.sub(r'[nr]+$', '', attributed_key))
+			attribute = re.search(r'[nr]+$', attributed_key)
+
+			if attribute == None:
+				attributes[key - 1] = None
+			else:
+				attributes[key - 1] = attribute.group()
+
+			indices.append(key - 1)
+		else:
+			for index in range(int(factor.group(1)), int(factor.group(2)) + 1, 1):
+				attributed_key = factor.group(1)
+				key = int(re.sub(r'[nr]+$', '', attributed_key))
+				attributes[key - 1] = re.search(r'[nr]+$', attributed_key)
+				indices.append(key - 1)
+
+
+	file = open_file(2)
+	records = []
+
+	for line in file:
+		records.append(re.split(' +', line.rstrip('\n')))
+
+	def accumulate(item):
+		value = ()
+
+		for index in indices:
+			if attributes[index] == None:
+				value += (item[index],)
+			else:
+				if 'n' in attributes[index]:
+					value += (float(item[index]),)
+				elif 'r' in attributes[index]:
+					if type(item[index]) is str:
+						inverted_string = ''.join(
+							map(lambda c: chr(0x10FFFF - ord(c)),
+								list(item[index])))
+						value += (inverted_string,)
+					elif type(item[index]) is int:
+						value += (-item[index])
+					elif type(item[index]) is float:
+						value += (-item[index])
+					else:
+						error('cannot handle a value of type "%s".', type(item[index]))
+				else:
+					error("invalid key value.")
+		return value
+
+	records = sorted(records, key=accumulate)
+
+	for record in records:
+		print(' '.join(record))
+
+	file.close()
+
+	sys.exit(0)
