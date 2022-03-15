@@ -32,7 +32,7 @@ from __future__ import print_function
 
 _usage = "msort key=<key> <file>"
 _version = "Sat Mar 12 17:37:17 JST 2022"
-_code = "Open usp Tukubai (Linux+/PYTHON3.5/UTF-8)"
+_code = "Open usp Tukubai (Linux+/PYTHON2.7/UTF-8)"
 _keypat = r'^key=([0-9/nr]+(@[0-9/nr]+)*)$'
 _keypat_factor = r'^([0-9]+[nr]*)(?:/([0-9]+[nr]*))?$'
 
