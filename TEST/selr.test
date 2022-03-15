@@ -106,6 +106,19 @@ diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST4 error"
 
 ###########################################
+# TEST5
+# NR をフィールドに設定した場合は行の最後のフィールドを指す。
+
+cat << FIN > $tmp-out
+0003 c
+0004 c
+FIN
+
+${com} NF c <$tmp-data >$tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5 error"
+
+###########################################
 
 rm -f $tmp-*
 echo "${pythonversion} ${name}" OK
