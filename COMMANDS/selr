@@ -4,10 +4,11 @@
 # selr フィールドの完全一致を見る（Open usp Tukubai版）
 # 
 # designed by Nobuaki Tounaka
+# written by Hinata Yanagi
 #
 # The MIT License
 #
-# Copyright (C) 2011 Universal Shell Programming Laboratory
+# Copyright (C) 2022 Universal Shell Programming Laboratory
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -29,11 +30,12 @@
 
 from __future__ import print_function
 import sys
+import re
 
 _usage = "selr <field> <str> <file>"
 _option = "--through <str>"
-_version = "Fri Oct 21 11:26:06 JST 2011"
-_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
+_version = "Tue Mar 15 15:13:22 JST 2022"
+_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON3.5/UTF-8)"
 
 def error(msg, *arg):
 	print('Error[selr] :', msg % arg, file=sys.stderr)
@@ -68,8 +70,8 @@ def rm_eol(line):
 #
 # フィールド値判定関数
 def trymatch(line,fieldnum,string):
+	fields=re.split(' +', line)
 
-	fields=line.split(' ')
 	if fields[fieldnum-1]==string: # 指定フィールドの値が指定値と一致した
 		return True
 	return False
@@ -107,6 +109,8 @@ if __name__ == '__main__':
 	# パラメータ検査
 	if numparam<2:
 		error("パラメータの数が足りません")
+	if fieldstring=='NF':
+		fieldstring='0'
 	if not fieldstring.isdigit():
 		error("フィールド指定が数値ではありません")
 	fieldnum=int(fieldstring)
@@ -119,6 +123,8 @@ if __name__ == '__main__':
 		line=rm_eol(line)
 		# throughオプションが無いか、または、throughオプション値とフィールド指定値が一致しないとき
 		if not throughstring==string:
+			if fieldnum==0:
+				fieldnum=len(re.split(' +',line))
 			if trymatch(line,fieldnum,string): # 行の指定フィールドの値が指定値と一致したら行を表示
 				print(line)
 		# throughオプション指定があってフィールド指定値と一致するとき
