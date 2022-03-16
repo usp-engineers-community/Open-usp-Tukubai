@@ -93,7 +93,7 @@ def fields_of_object(value, path = ""):
 		return
 	elif value == '':
 		value_print = null_padding
-	elif type(value) == str:
+	elif type(value) == str or type(value) == unicode:
 		value_print = value.replace(' ', value_whitespace)
 	elif type(value) == int:
 		value_print = str(value)
