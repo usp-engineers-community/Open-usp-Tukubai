@@ -139,7 +139,7 @@ if __name__ == '__main__':
 				elif 'r' in attributes[index]:
 					if type(item[index]) is str:
 						inverted_string = ''.join(
-							map(lambda c: chr(0x10FFFF - ord(c)),
+							map(lambda c: bytes([0x10FFFF - ord(c)]),
 								list(item[index])))
 						value += (inverted_string,)
 					elif type(item[index]) is int:
