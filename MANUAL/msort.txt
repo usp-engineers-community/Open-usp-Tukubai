@@ -1,0 +1,32 @@
+msort(USP)
+
+【名前】
+msort : オンメモリソート
+
+【書式】
+Usage   : msort key=<key> <file>
+Version : Sat Mar 12 17:37:17 JST 2022
+          Open usp Tukubai (Linux+/PYTHON2.7/UTF-8)
+Edition : 5
+
+【説明】
+key=<key> にしたがって <file> のソートを行います。<key> として、フィ
+ールドの位置を指定できます。
+
+  msort key=2 file
+  msort key=2/5 file
+  msort key=3@1@NF file
+
+キーの長さやキーフィールド数の制限はありません。日本語などのマルチバ
+イト文字が含まれていても構いません。フィールド位置の後に r を付ける
+と、そのフィールドは降順にソートされます。n を付けると数値として比較
+されます。nr を付けると、数値として比較されて降順にソートされます。
+/ の前後のフィールドにソート種別を付ける場合は、前後で揃っている必要
+があります。
+
+  msort key=2n/5n  file      ○
+  msort key=2n/5nr file      ×
+  msort key=2n/5r  file      ×
+
+ファイル名を指定しない、或は - を指定した場合、標準入力から読み込み
+ます。

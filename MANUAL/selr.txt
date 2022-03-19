@@ -1,0 +1,43 @@
+selr(USP)
+
+【名前】
+selr : フィールドが完全一致した行を出力する
+
+【書式】
+Usage   : selr <field> <str> <file>
+Option  : --through <str>
+Version : Tue Mar 15 15:13:22 JST 2022"
+          Open usp Tukubai (LINUX+FREEBSD/PYTHON3.5/UTF-8)"
+
+【説明】
+引数のファイルのテキストデータより、指定したフィールドが指定した文字
+列と完全一致した行を出力します。
+ファイル名が省略された時及び "-" の時は標準入力から入力します。
+
+【例１】 指定したフィールドが完全一致した行を出力する
+$ cat data
+0001 a
+0002 b
+0003 c
+0004 c
+
+$ selr 1 "0001" data
+0001 a
+
+$ selr 2 c data
+0003 c
+0004 c
+
+【例２】
+--through を指定したときは、<str> が同じものであれば、無条件に全レコ
+ードを出力し、異なるものであれば、--through を指定しなかったように動
+作します。
+
+$ selr --through _ 2 _ data
+0001 a
+0002 b
+0003 c
+0004 c
+
+$ selr --through _ 2 a data
+0001 a

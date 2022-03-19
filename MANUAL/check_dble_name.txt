@@ -1,0 +1,51 @@
+check_dble_name
+
+【名前】
+check_dble_name : name 形式データの重複チェックをする
+
+【書式】
+Usage   : check_dble_name <check_file> <name_file>
+Option  : --through <string>
+Version : Fri Oct 21 11:26:06 JST 2011
+          Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)
+
+【説明】
+<check_file> に記述されているタグ名について、
+<name_file>の値の重複チェックをします。
+エラーがあった場合は、コマンドはエラー終了し、標準出力にタグ名
+を出力します。
+
+【オプション】
+--through <string>
+<name_file> のデータが<string>と等しい場合は、
+チェックを実施しません。<string>のデフォルトは、"_" となります。
+このオプションは繰り返し使って複数の<string>を指定することが
+できます。
+
+【例１】
+[usp1 usp@ ~]$ cat check
+A
+
+[usp1 usp@ ~]$ cat data
+A_001 5
+A_002 5
+A_003 6
+A_004 7
+[usp1 usp@ ~]$ check_dble_name check data
+A_001
+A_002
+$ echo $?
+1
+
+【例２】
+[usp1 usp@ ~]$ cat data
+A_001 5
+A_002 5
+A_003 @
+A_004 @
+A_005 @
+[usp1 usp@ ~]$ check_dble_name --through @ check data
+A_001
+A_002
+$ echo $?
+1

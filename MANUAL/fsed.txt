@@ -1,0 +1,83 @@
+fsed(USP)
+
+【名前】
+fsed : フィールドの文字列の置換
+
+【書式】
+Usage   : fsed [-e|-i] 's/<org>/<new>/<n>'... <file>
+Version : Fri Oct 21 11:26:06 JST 2011"
+          Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)
+Edition : 1
+
+【説明】
+ファイル <file> のフィールド <n> の中で、文字列 <org> を文字列 <new>
+に置換します。<n> に 'g' を指定すると、全フィールドの指定になります。
+
+-e オプションを使うと <org> を正規表現と解釈します。-i オプションを
+使うと大文字／小文字を区別しない正規表現になります。
+
+置換指定は複数指定できます。この場合、-e/-i オプションは、正規表現を
+使う置換指定毎に指定する必要があります。
+
+
+【例１】
+第１フィールドの tokyo を TOKYO に、第３フィールドの osaka をOSAKA
+に置換します。
+
+$ cat data1
+tokyo 1234 tokyo 5678
+osaka 1234 osaka 5678
+
+$ fsed 's/tokyo/TOKYO/1' 's/osaka/OSAKA/3' data1
+TOKYO 1234 tokyo 5678
+osaka 1234 OSAKA 5678
+
+【例２】
+全フィールドの tokyo を yokohama に置換します。
+$ fsed 's/tokyo/yokohama/g' data1
+yokohama 1234 yokohama 5678
+osaka 1234 osaka 5678
+
+【例３】
+正規表現を使います。
+$ cat data3
+Tokyo 1234
+tokyo 5678
+TOKYO 7777
+
+$ fsed -e 's/^[Tt]okyo$/東京/1' data3
+東京 1234
+東京 5678
+TOKYO 7777
+
+【例４】
+大文字／小文字を区別しない正規表現を使います。
+$ fsed -i 's/^tokyo$/東京/1' data3
+東京 1234
+東京 5678
+東京 7777
+
+【例５】
+複数の置換指定を使います。
+$ fsed 's/tokyo/横浜/1' -i 's/tokyo/川崎/1' data3
+川崎 1234
+横浜 5678
+川崎 7777
+
+【例６】
+置換指定の区切り文字 '/' を置換対象にする場合。
+$ cat data6
+001 /home/MANUAL/TOOL/fsed.txt
+
+data6 の中で、'/' を '-' に置換する場合、置換指定の区切り文字を '/'
+以外の文字（本例では ','）にします。この文字には、任意の ASCII 文字
+を指定できます。
+
+$ fsed 's,/,-,2' data6
+001 -home-MANUAL-TOOL-fsed.txt
+
+区切り文字は '/' のままにしておいて、パターン中の '/' に '\' を前置
+してもよいです。
+
+$ fsed 's/\//-/2' data6
+001 -home-MANUAL-TOOL-fsed.txt

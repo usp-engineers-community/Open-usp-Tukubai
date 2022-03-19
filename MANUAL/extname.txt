@@ -1,0 +1,23 @@
+extname(USP)
+
+＜名前＞
+extname : パス名からサフィックスを取り出す
+
+＜書式＞
+Usage   : extname <pathname>
+Version : Sun Aug 19 10:16:04 JST 2007
+
+＜説明＞
+extname コマンドは指定した <pathname> からサフィックスを出力します。
+
+＜例１＞
+$ extname /home/usp/hogehoge.c
+c
+
+＜参考＞
+basename コマンド ＝ パスを取り除き、ファイル名のみ取り出す
+dirname コマンド ＝ パスの中からディレクトリ名のみ取り出す
+rootname コマンド ＝ パスの中からサフィックスを取り除く（USPコマンド）
+extname コマンド ＝ パスの中からサフィックスを取り出す（USPコマンド）
+
+# 20160701 参考にUSPコマンドかどうかを追記 青木

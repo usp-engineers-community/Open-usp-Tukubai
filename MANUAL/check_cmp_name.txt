@@ -1,0 +1,73 @@
+check_cmp_name
+
+【名前】
+check_cmp_name : name 形式データの値の大小関係をチェックする
+
+【書式】
+Usage   : check_cmp_name <expression> <name_file>
+Option  : --through <string>
+Version : Fri Oct 21 11:26:06 JST 2011
+          Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)
+
+【説明】
+<expression> の記述に従って、<name_file> のデータのタグ同士やタグと
+値の大小関係をチェックします。
+
+エラーがある場合，<expression> を満たさないタグ名をすべて標準出力に
+出力してから、エラー終了します。
+
+<expression> は、'左辺 記号 右辺' と記述します。左辺と右辺にはタグ名
+や値を指定します。記号については、次の６種類が使えます。
+
+    -EQ -eq  <--  =  (equal)
+    -NE -ne  <-- !=  (not equal)
+    -GE -ge  <-- >=  (greater or equal)
+    -GT -gt  <--  >  (greater)
+    -LE -le  <-- <=  (less or equal)
+    -LT -lt  <--  <  (less)
+
+【オプション】
+--through <string>
+<name_file> で定義されるデータが <string> に一致する場合は、チェック
+を実施しません。<string> のデフォルトは '_' です。このオプションは繰
+り返し使って複数の <string> を指定できます。
+
+【例１】
+[usp1 usp@ ~]$ cat data
+A 200
+B 300
+C _
+D_001 3
+D_002 2
+D_003 1
+E_001 1
+E_002 2
+E_003 3
+
+(タグ名とタグ名の比較)
+$ check_cmp_name 'A -le B' data
+$ echo $?
+0
+$ check_cmp_name 'A -eq B' data
+A
+B
+$ echo $?
+1
+
+(タグ名と数値の比較)
+$ check_cmp_name 'A -gt 300' data
+A
+$ echo $?
+1
+
+('_' の場合はチェックしない)
+$ check_cmp_name 'C -ne 0' data
+$ echo $?
+0
+
+(複数レコードも正しくチェックする)
+$ check_cmp_name 'D -le E' data
+D_001
+E_001
+$ echo $?
+1
