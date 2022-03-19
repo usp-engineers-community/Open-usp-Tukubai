@@ -1,0 +1,28 @@
+cap(USP)
+
+＜名前＞
+cap 半角英数の小文字を大文字に変換する
+
+＜書式＞
+Usage   : cap <f1> <f2> .. <file>
+          cap -d <string>
+Version : Fri Oct 21 11:26:06 JST 2011
+        : OpenUSP (LINUX+FREEBSD/PYTHON2.4/UTF-8)
+
+＜説明＞
+引数で指定したフィールドの半角英小文字を、すべて半角英大文字に変換し
+て出力する。変換できない文字（日本語、数字、記号、全角文字）は、変換
+されずにそのまま出力される。
+
+＜例１＞
+(元データ)
+$ cat data
+001 japan america
+002 england russia
+$ cap 1 2 data
+001 JAPAN america
+002 ENGLAND russia
+
+＜例２＞
+$ cap -d japan
+JAPAN

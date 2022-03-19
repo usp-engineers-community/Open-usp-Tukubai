@@ -1,0 +1,14 @@
+man2(USP)
+
+【名前】
+man2 : usp コマンドのマニュアル表示
+
+【書式】
+Usage   : man2 <command>
+Version : Wed Apr 17 14:24:42 JST 2013
+
+【説明】
+usp コマンドのマニュアルを表示します。
+
+【例】
+$ man2 join0   <-- join0 のマニュアルを表示します。
