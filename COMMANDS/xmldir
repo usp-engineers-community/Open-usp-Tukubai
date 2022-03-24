@@ -36,7 +36,7 @@ import xml.sax
 import xml.sax.handler
 
 _usage = "xmldir [-c<n>] /<DirTag1>/<DirTag2>/.../<DirTagN> <xmlfile>"
-_version = "Sat Mar 12 14:38:08 2022"
+_version = "Thu Mar 24 15:51:59 JST 2022"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.7/UTF-8)"
 
 def usage():
@@ -74,6 +74,10 @@ class SAXHandler:
 
 		self.path.append(name)
 
+		for name in attributes.getNames():
+			if target_path == '/' + '/'.join(self.path[1:]) + '/@' + name:
+				print(' '.join(self.path[1:]) + ' @' + name, attributes.getValue(name).replace(' ', space_alternative))
+
 	def endElement(self, name):
 		self.path.pop()
 
@@ -109,13 +113,20 @@ if __name__ == '__main__':
 		usage()
 
 	indices_padding = None
+	space_alternative = '_'
 
 	while len(sys.argv) > 1:
 		if sys.argv[1][:2] == '-c' and len(sys.argv[1]) > 2:
 			indices_padding = int(sys.argv[1][2:])
 			del sys.argv[1]
+		elif sys.argv[1][:2] == '-s' and len(sys.argv[1]) > 2:
+			space_alternative = sys.argv[1][2:]
+			del sys.argv[1]
 		elif len(sys.argv[1]) < 2 or sys.argv[1][0] != '-':
 			break;
+		else:
+			print('An unknown option %s is specified.' % sys.argv[1][:2], file=sys.stderr)
+			break
 
 	target_path = sys.argv[1]
 	input_file = sys.stdin if sys.argv[2] == '-' else open(sys.argv[2])
