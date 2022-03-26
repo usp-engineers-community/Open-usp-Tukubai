@@ -57,6 +57,9 @@ ${com} /p - <<< '<p>Hello,<strong>world.</strong></p>' > $tmp-ans
 ${com} /p/strong - <<< '<p>Hello,<strong>world.</strong></p>' > $tmp-ans
 [ -z "$(echo p strong world. | diff $tmp-ans -)" -a $? -eq 0 ]; ERROR_CHECK "<pHello, <strong>world.</strong></p> must be converted to \"p strong world.\" with /p/strong selector."
 
+${com} -s= /p - <<< '<p>Hello, world.</p>' > $tmp-ans
+[ -z "$(echo p Hello,=world. | diff $tmp-ans -)" -a $? -eq 0 ]; ERROR_CHECK 'p must choose Hello,=world. with -s= option.'
+
 ${com} -s= /p/span/@title - <<< '<p>Hello, <span title="an attribute">world</span>.</p>' > $tmp-ans
 [ -z "$(echo p span @title an=attribute | diff $tmp-ans -)" -a $? -eq 0 ]; ERROR_CHECK 'p span @title must choose an=attribute with -s= option.'
 
