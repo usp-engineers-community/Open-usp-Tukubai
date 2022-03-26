@@ -33,9 +33,10 @@ import sys
 import os.path
 import io
 import json
+from collections import OrderedDict
 
 _usage = "rjson  [-p<c>][-m<c>][-s<c>][-n<string>] <json-file>"
-_version = "Sun Mar 13 09:42:44 JST 2022"
+_version = "Sat Mar 26 13:13:04 JST 2022"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.7/UTF-8)"
 
 def usage():
@@ -78,7 +79,7 @@ def open_file(n, quiet = False):
 #
 
 def fields_of_object(value, path = ""):
-	if type(value) == dict:
+	if type(value) == OrderedDict:
 		keys = [value.keys()]
 		for key in value.keys():
 			key_print = key.replace(' ', key_whitespace)
@@ -144,7 +145,7 @@ if __name__ == '__main__':
 			break;
 
 	input_file = open_file(1)
-	input_object = json.loads(input_file.read())
+	input_object = json.loads(input_file.read(), object_pairs_hook=OrderedDict)
 
 	fields_of_object(input_object)
 
