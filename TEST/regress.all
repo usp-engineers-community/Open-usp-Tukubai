@@ -1,4 +1,4 @@
-#!/usr/local/bin/bash -xve
+#!/bin/bash -xve
 
 exec 2> /tmp/log.$(basename $0)
 
@@ -10,63 +10,64 @@ cd $dir
 #####################################
 #support of sh scripts
 
+echo $1; exit
 # passed
-./cjoin0.test COMMANDS.SH ""
-./cjoin1.test COMMANDS.SH ""
-./delf.test COMMANDS.SH ""
-./self.test COMMANDS.SH ""
-./tateyoko.test COMMANDS.SH ""
-./sm2.test COMMANDS.SH ""
-./plus.test COMMANDS.SH ""
-#./nameread.test COMMANDS.SH ""
-#./keta.test COMMANDS.SH ""
-#./filehame.test COMMANDS.SH ""
-#./cgi-name.test COMMANDS.SH ""
-#./ycat.test COMMANDS.SH ""
-./gyo.test COMMANDS.SH ""
-./retu.test COMMANDS.SH ""
+./cjoin0.test "$1.SH" ""
+./cjoin1.test "$1.SH" ""
+./delf.test "$1.SH" ""
+./self.test "$1.SH" ""
+./tateyoko.test "$1.SH" ""
+./sm2.test "$1.SH" ""
+./plus.test "$1.SH" ""
+#./nameread.test "$1.SH" ""
+#./keta.test "$1.SH" ""
+#./filehame.test "$1.SH" ""
+#./cgi-name.test "$1.SH" ""
+#./ycat.test "$1.SH" ""
+./gyo.test "$1.SH" ""
+./retu.test "$1.SH" ""
 
 #####################################
 #support of haskell binary
 
-./cjoin0.test COMMANDS.HS ""
-./cjoin1.test COMMANDS.HS ""
-./cjoin2.test COMMANDS.HS ""
-./ctail.test COMMANDS.HS ""
-./calclock.test COMMANDS.HS ""
-./cgi-name.test COMMANDS.HS ""
-./check_need_name.test COMMANDS.HS ""
-./comma.test COMMANDS.HS ""
-./count.test COMMANDS.HS ""
-./dayslash.test COMMANDS.HS ""
-./divsen.test COMMANDS.HS ""
-./getfirst.test COMMANDS.HS ""
-./getlast.test COMMANDS.HS ""
-./delf.test COMMANDS.HS ""
-./divsen.test COMMANDS.HS ""
-./filehame.test COMMANDS.HS ""
-./gyo.test COMMANDS.HS ""
-./han.test COMMANDS.HS ""
-./join0.test COMMANDS.HS ""
-./join1.test COMMANDS.HS ""
-./join2.test COMMANDS.HS ""
-./juni.test COMMANDS.HS ""
-./kasan.test COMMANDS.HS ""
-./keta.test COMMANDS.HS ""
-./loopx.test COMMANDS.HS ""
-./formhame.hs.test COMMANDS.HS ""
-./maezero.test COMMANDS.HS ""
-./marume.test COMMANDS.HS ""
-./mdate.test COMMANDS.HS ""
-./plus.test COMMANDS.HS ""
-./ratio.test COMMANDS.HS ""
-./retu.test COMMANDS.HS ""
-./self.test COMMANDS.HS ""
-./sm2.test COMMANDS.HS ""
-./tarr.test COMMANDS.HS ""
-./tateyoko.test COMMANDS.HS ""
-./yarr.test COMMANDS.HS ""
-./zen.test COMMANDS.HS ""
+./cjoin0.test "$1.HS" ""
+./cjoin1.test "$1.HS" ""
+./cjoin2.test "$1.HS" ""
+./ctail.test "$1.HS" ""
+./calclock.test "$1.HS" ""
+./cgi-name.test "$1.HS" ""
+./check_need_name.test "$1.HS" ""
+./comma.test "$1.HS" ""
+./count.test "$1.HS" ""
+./dayslash.test "$1.HS" ""
+./divsen.test "$1.HS" ""
+./getfirst.test "$1.HS" ""
+./getlast.test "$1.HS" ""
+./delf.test "$1.HS" ""
+./divsen.test "$1.HS" ""
+./filehame.test "$1.HS" ""
+./gyo.test "$1.HS" ""
+./han.test "$1.HS" ""
+./join0.test "$1.HS" ""
+./join1.test "$1.HS" ""
+./join2.test "$1.HS" ""
+./juni.test "$1.HS" ""
+./kasan.test "$1.HS" ""
+./keta.test "$1.HS" ""
+./loopx.test "$1.HS" ""
+./formhame.hs.test "$1.HS" ""
+./maezero.test "$1.HS" ""
+./marume.test "$1.HS" ""
+./mdate.test "$1.HS" ""
+./plus.test "$1.HS" ""
+./ratio.test "$1.HS" ""
+./retu.test "$1.HS" ""
+./self.test "$1.HS" ""
+./sm2.test "$1.HS" ""
+./tarr.test "$1.HS" ""
+./tateyoko.test "$1.HS" ""
+./yarr.test "$1.HS" ""
+./zen.test "$1.HS" ""
 
 #####################################
 #support of 2.x
@@ -80,43 +81,43 @@ FIN
 
 cat $tmp-ver	|
 while read com ; do
-	./calclock.test COMMANDS $com
-	./cjoin0.test COMMANDS $com
-	./cjoin1.test COMMANDS $com
-	./cjoin2.test COMMANDS $com
-	./ctail.test COMMANDS $com
-	./count.test COMMANDS $com
-	./getlast.test COMMANDS $com
-	./getfirst.test COMMANDS $com
-	./getlast.test COMMANDS $com
-	./tateyoko.test COMMANDS $com
-	./sm2.test COMMANDS $com
-	./cgi-name.test COMMANDS $com
-	./dayslash.test COMMANDS $com
-	./ycat.test COMMANDS $com
-	./yarr.test COMMANDS $com
-	./plus.test COMMANDS $com
-	./self.test COMMANDS $com
-	./tarr.test COMMANDS $com
-	./delf.test COMMANDS $com
-	./check_need_name.test COMMANDS $com
-	./join0.test COMMANDS $com
-	./join1.test COMMANDS $com
-	./join2.test COMMANDS $com
-	./filehame.test COMMANDS $com
-	./formhame.test COMMANDS $com
-	./gyo.test COMMANDS $com
-	./kasan.test COMMANDS $com
-	./keta.test COMMANDS $com
-	./keycut.test COMMANDS $com
-	./loopj.test COMMANDS $com
-	./loopx.test COMMANDS $com
-	./maezero.test COMMANDS $com
-	./map.test COMMANDS $com
-	./marume.test COMMANDS $com
-	./mdate.test COMMANDS $com
-	./nameread.test COMMANDS $com
-	./numchar.test COMMANDS $com
+	./calclock.test "$1" $com
+	./cjoin0.test "$1" $com
+	./cjoin1.test "$1" $com
+	./cjoin2.test "$1" $com
+	./ctail.test "$1" $com
+	./count.test "$1" $com
+	./getlast.test "$1" $com
+	./getfirst.test "$1" $com
+	./getlast.test "$1" $com
+	./tateyoko.test "$1" $com
+	./sm2.test "$1" $com
+	./cgi-name.test "$1" $com
+	./dayslash.test "$1" $com
+	./ycat.test "$1" $com
+	./yarr.test "$1" $com
+	./plus.test "$1" $com
+	./self.test "$1" $com
+	./tarr.test "$1" $com
+	./delf.test "$1" $com
+	./check_need_name.test "$1" $com
+	./join0.test "$1" $com
+	./join1.test "$1" $com
+	./join2.test "$1" $com
+	./filehame.test "$1" $com
+	./formhame.test "$1" $com
+	./gyo.test "$1" $com
+	./kasan.test "$1" $com
+	./keta.test "$1" $com
+	./keycut.test "$1" $com
+	./loopj.test "$1" $com
+	./loopx.test "$1" $com
+	./maezero.test "$1" $com
+	./map.test "$1" $com
+	./marume.test "$1" $com
+	./mdate.test "$1" $com
+	./nameread.test "$1" $com
+	./numchar.test "$1" $com
 done
 
 #####################################
@@ -130,16 +131,16 @@ FIN
 
 cat $tmp-ver	|
 while read com ; do
-	./calclock.test COMMANDS $com
-	./check_need_name.test COMMANDS $com
-	./cjoin0.test COMMANDS $com
-	./cjoin1.test COMMANDS $com
-	./cjoin2.test COMMANDS $com
-	./dayslash.test COMMANDS $com
-	./filehame.test COMMANDS $com
-	./formhame.test COMMANDS $com
-	./self.test COMMANDS $com
-	./yarr.test COMMANDS $com
+	./calclock.test "$1" $com
+	./check_need_name.test "$1" $com
+	./cjoin0.test "$1" $com
+	./cjoin1.test "$1" $com
+	./cjoin2.test "$1" $com
+	./dayslash.test "$1" $com
+	./filehame.test "$1" $com
+	./formhame.test "$1" $com
+	./self.test "$1" $com
+	./yarr.test "$1" $com
 done
 
 rm -f $tmp-*
