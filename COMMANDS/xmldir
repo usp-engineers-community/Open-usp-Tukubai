@@ -93,7 +93,7 @@ class SAXHandler:
 		if target_path != '/' + '/'.join(self.path[1:]):
 			return
 
-		print((prefix + ' '.join(self.path[1:])), content)
+		print((prefix + ' '.join(self.path[1:])), content.replace(' ', space_alternative))
 		self.element_index = 1 + self.element_index
 
 	def processingInstruction(self, content):
