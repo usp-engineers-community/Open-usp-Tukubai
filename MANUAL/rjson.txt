@@ -1,0 +1,141 @@
+Tukubaiオンラインコマンドマニュアル
+
+rjson(1)
+
+【名前】
+rjson : JSON 形式のファイルをフィールド形式に変換する
+
+【書式】
+Usage   : rjson [-p<c>][-m<c>][-s<c>][-n<string>] <json-file>
+Version : Wed Mar 16 10:23:42 JST 2022
+
+【説明】
+JSON 形式(RFC8259) のファイル <json-file> をフィールド形式にします。
+オブジェクト名とリスト位置がネストの順に出力され、最後に値が出力されます。
+
+【オプション】
+-p : オブジェクト名やリスト位置の区切りを変更します。デフォルトは半角空白です。
+-m : オブジェクト名に含まれる半角空白を変更します。デフォルトは "_" です。
+-s : 値に含まれる半角空白を変更します。デフォルトは "_" です。
+-n : ヌル値（空文字列）を変更します。デフォルトは "_" です。
+
+【例１】
+$ cat jsondata
+{
+  "data1" : "null",
+  "data2" : "",
+  "data3" : null,
+  "data4" : true,
+  "data5" : false,
+  "data6" : "6.62607e-34"
+}
+$ rjson jsondata
+data1 null
+data2 _
+data3 _
+data4 true
+data5 false
+data6 6.62607e-34
+
+【例２】
+$ cat jsondata
+[
+{ "name"   : "Alice Brown",
+  "sku"    : "54321",
+  "price"  : 199.95,
+  "shipTo" : { "name" : "Bob Brown",
+               "address" : "456 Oak Lane",
+               "city" : "Pretendville",
+               "state" : "",
+               "zip"   : "98999" },
+  "billTo" : { "name" : "Alice Brown",
+               "address" : "456 Oak Lane",
+               "city" : "Pretendville",
+               "state" : "HI",
+               "zip"   : "98999" }
+},
+{ "name"   : "Donald Tramp",
+  "sku"    : "24680",
+  "price"  : 153.32,
+  "shipTo" : { "name" : "Kim Jonil",
+               "address" : "123 Hidroask",
+               "city" : "Pyonyan",
+               "state" : "NK",
+               "zip"   : "10012" },
+  "billTo" : { "name" : "Donald Tramp",
+               "address" : "456 Oak Lane",
+               "city" : "Pretendville",
+               "state" : "HI",
+               "zip"   : "98999" }
+}
+]
+
+$ rjson < jsondata
+1 name Alice_Brown
+1 sku 54321
+1 price 199.95
+1 shipTo name Bob_Brown
+1 shipTo address 456_Oak_Lane
+1 shipTo city Pretendville
+1 shipTo state _
+1 shipTo zip 98999
+1 billTo name Alice_Brown
+1 billTo address 456_Oak_Lane
+1 billTo city Pretendville
+1 billTo state HI
+1 billTo zip 98999
+2 name Donald_Tramp
+2 sku 24680
+2 price 153.32
+2 shipTo name Kim_Jonil
+2 shipTo address 123_Hidroask
+2 shipTo city Pyonyan
+2 shipTo state NK
+2 shipTo zip 10012
+2 billTo name Donald_Tramp
+2 billTo address 456_Oak_Lane
+2 billTo city Pretendville
+2 billTo state HI
+2 billTo zip 98999
+
+$ rjson -p. < jsondata
+1.name Alice_Brown
+1.sku 54321
+1.price 199.95
+1.shipTo.name Bob_Brown
+1.shipTo.address 456_Oak_Lane
+1.shipTo.city Pretendville
+1.shipTo.state _
+1.shipTo.zip 98999
+1.billTo.name Alice_Brown
+1.billTo.address 456_Oak_Lane
+1.billTo.city Pretendville
+1.billTo.state HI
+1.billTo.zip 98999
+2.name Donald_Tramp
+2.sku 24680
+2.price 153.32
+2.shipTo.name Kim_Jonil
+2.shipTo.address 123_Hidroask
+2.shipTo.city Pyonyan
+2.shipTo.state NK
+2.shipTo.zip 10012
+2.billTo.name Donald_Tramp
+2.billTo.address 456_Oak_Lane
+2.billTo.city Pretendville
+2.billTo.state HI
+2.billTo.zip 98999
+
+
+【例３】
+$ cat jsondata2
+[
+["a","b"],
+["c","d"]
+]
+
+$ rjson jsondata2
+1 1 a
+1 2 b
+2 1 c
+2 2 d
