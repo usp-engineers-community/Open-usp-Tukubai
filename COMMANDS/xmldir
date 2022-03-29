@@ -30,13 +30,13 @@
 # THE SOFTWARE.
 
 from __future__ import print_function
-import sys
+import sys, codecs
 import os.path
 import xml.sax
 import xml.sax.handler
 
 _usage = "xmldir [-c<n>] /<DirTag1>/<DirTag2>/.../<DirTagN> <xmlfile>"
-_version = "Thu Mar 24 15:51:59 JST 2022"
+_version = "Tue Mar 29 12:32:28 JST 2022"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.7/UTF-8)"
 
 def usage():
@@ -60,6 +60,7 @@ def error(msg, *arg):
 class SAXHandler:
 	def __init__(self):
 		self.documentIndex = 0
+		self.content = ''
 
 	def setDocumentLocator(self, b):
 		return
@@ -69,6 +70,9 @@ class SAXHandler:
 		self.element_index = 1
 
 	def startElement(self, name, attributes):
+		if self.content !=  '':
+			self.endElement(name)
+
 		if len(self.path) == 1:
 			self.documentIndex = 1 + self.documentIndex
 
@@ -78,23 +82,28 @@ class SAXHandler:
 			if target_path == '/' + '/'.join(self.path[1:]) + '/@' + name:
 				print(' '.join(self.path[1:]) + ' @' + name, attributes.getValue(name).replace(' ', space_alternative))
 
+		self.content = ''
+
 	def endElement(self, name):
-		self.path.pop()
+		if self.content != '':
+			if indices_padding == None:
+				prefix = ''
+			else:
+				prefix = str(self.documentIndex).rjust(indices_padding, '0') + " " + \
+					 str(self.element_index).rjust(indices_padding, '0') + " "
 
-	def characters(self, content):
-		if len(self.path) == 1 or content.isspace(): return
+			if target_path != '/' + '/'.join(self.path[1:]):
+				return
 
-		if indices_padding == None:
-			prefix = ""
-		else:
-			prefix = str(self.documentIndex).rjust(indices_padding, '0') + " " + \
-			         str(self.element_index).rjust(indices_padding, '0') + " "
+			print((prefix + ' '.join(self.path[1:])), self.content.replace(' ', space_alternative))
+			self.path.pop()
+			self.element_index = 1 + self.element_index
 
-		if target_path != '/' + '/'.join(self.path[1:]):
-			return
+		self.content = ''
 
-		print((prefix + ' '.join(self.path[1:])), content.replace(' ', space_alternative))
-		self.element_index = 1 + self.element_index
+	def characters(self, fragment):
+		if len(self.path) == 1 or fragment.isspace(): return
+		self.content += fragment
 
 	def processingInstruction(self, content):
 	 	return
@@ -106,6 +115,8 @@ class SAXHandler:
 #
 
 if __name__ == '__main__':
+	sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
+
 	# Print how to use the command
 	if len(sys.argv) <= 1 \
 	 or sys.argv[1] == '--help' \

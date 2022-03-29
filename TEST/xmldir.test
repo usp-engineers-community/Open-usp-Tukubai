@@ -51,6 +51,9 @@ ${com} / - <<< '<empty/>' > $tmp-ans
 ${com} /paragraph - <<< '<paragraph>hello</paragraph>' > $tmp-ans
 [ -z "$(echo paragraph hello | diff $tmp-ans -)" -a $? -eq 0 ]; ERROR_CHECK "<paragraph>hello</paragraph> must be converted to a single line \"paragraph hello\"."
 
+${com} /paragraph - <<< '<paragraph>コマンド</paragraph>' > $tmp-ans
+[ -z "$(echo paragraph コマンド | diff $tmp-ans -)" -a $? -eq 0 ]; ERROR_CHECK "<paragraph>コマンド</paragraph> must be converted to a single line \"paragraph コマンド\"."
+
 ${com} /p - <<< '<p>Hello,<strong>world.</strong></p>' > $tmp-ans
 [ -z "$(echo p Hello, | diff $tmp-ans -)" -a $? -eq 0 ]; ERROR_CHECK "<pHello, <strong>world.</strong></p> must be converted to \"\p Hello\", with /p selector."
 
