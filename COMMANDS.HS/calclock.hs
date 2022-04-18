@@ -1,3 +1,4 @@
+#!/usr/bin/env runghc
 import System.Environment
 import System.IO
 import Text.ParserCombinators.Parsec
@@ -5,17 +6,16 @@ import Control.Monad
 import Data.Time
 import Data.Time.Format (formatTime)
 import Data.Time.Format (parseTime)
-import System.Locale (defaultTimeLocale)
 
 {--
 calclock（Open usp Tukubai）
 
-designed by USP lab.
-written by Ryuichi Ueda
+designed by Nobuaki Tounaka
+written by Hinata Yanagi
 
 The MIT License
 
-Copyright (C) 2012 Universal Shell Programming Laboratory
+Copyright (C) 2022 Universal Shell Programming Laboratory
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -37,18 +37,20 @@ THE SOFTWARE.
 --}
 
 showUsage :: IO ()
-showUsage = do hPutStr stderr
-		("Usage    : calclock <f1> <f2> ... <file>\n" ++ 
-		"Wed Jun 12 22:14:11 JST 2013\n" ++
-		"Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
+showUsage = do
+        hPutStr stderr (
+         "Usage    : calclock <f1> <f2> ... <file>\n" ++
+         "Version  : Mon Apr 18 14:22:50 JST 2022\n" ++
+         "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
 
 main :: IO ()
 main = do
-	args <- getArgs
-	case args of
-		["-h"]     -> showUsage
-		["--help"] -> showUsage
-		_          -> do if f == "-"
+    args <- getArgs
+    case args of
+        []         -> showUsage
+        ["-h"]     -> showUsage
+        ["--help"] -> showUsage
+        _          -> do if f == "-"
                                      then getContents >>= mainProc opt
                                      else readFile f >>= mainProc opt
                                           where opt = setOpts args
@@ -93,20 +95,20 @@ getAns str = case (length str) of
               14 -> toStr $ normal14 str
 
 normal8 :: String -> Maybe UTCTime
-normal8 str = parseTime defaultTimeLocale "%Y%m%d" str :: Maybe UTCTime
+normal8 str = parseTimeM True defaultTimeLocale "%Y%m%d" str :: Maybe UTCTime
 
 normal12 :: String -> Maybe UTCTime
-normal12 str = parseTime defaultTimeLocale "%Y%m%d%H%M" str :: Maybe UTCTime
+normal12 str = parseTimeM True defaultTimeLocale "%Y%m%d%H%M" str :: Maybe UTCTime
 
 normal14 :: String -> Maybe UTCTime
-normal14 str = parseTime defaultTimeLocale "%Y%m%d%H%M%S" str :: Maybe UTCTime
+normal14 str = parseTimeM True defaultTimeLocale "%Y%m%d%H%M%S" str :: Maybe UTCTime
 
 toStr :: Maybe UTCTime -> String
 toStr (Just s) = formatTime defaultTimeLocale "%s" s
 toStr Nothing = [""] !! 2
 
 rev :: String -> String
-rev str = str ++ " " ++ toStrRev (parseTime defaultTimeLocale "%s" str :: Maybe UTCTime )
+rev str = str ++ " " ++ toStrRev (parseTimeM True defaultTimeLocale "%s" str :: Maybe UTCTime )
 
 toStrRev :: Maybe UTCTime -> String
 toStrRev (Just s) = formatTime defaultTimeLocale "%Y%m%d%H%M%S" s
