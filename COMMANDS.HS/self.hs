@@ -1,3 +1,4 @@
+#!/usr/bin/env runghc
 import System.Environment
 import System.IO
 import Text.ParserCombinators.Parsec
@@ -10,11 +11,11 @@ import Data.ByteString.Lazy.Char8 as BS hiding (filter,head,last,map,zip,repeat,
 self（Open usp Tukubai）
 
 designed by Nobuaki Tounaka
-written by Ryuichi Ueda
+written  by Hinata Yanagi
 
 The MIT License
 
-Copyright (C) 2012 Universal Shell Programming Laboratory
+Copyright (C) 2022 Universal Shell Programming Laboratory
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -36,18 +37,20 @@ THE SOFTWARE.
 --}
 
 showUsage :: IO ()
-showUsage = do System.IO.hPutStr stderr
-		("Usage    : self <f1> <f2> ... <file>\n" ++ 
-		"Thu Jul 25 21:26:20 JST 2013\n" ++
-		"Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
+showUsage = do
+    System.IO.hPutStr stderr "Usage    : self <f1> <f2> ... <file>\n"
+    System.IO.hPutStr stderr "Version  : Mon Apr 18 10:34:00 JST 2022\n"
+    System.IO.hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n"
 
 main :: IO ()
-main = do args <- getArgs
-	  case args of
-		["-h"]     -> showUsage
-		["--help"] -> showUsage
-		"-d":as    -> directMode as
-		_          -> readF (getFileName os) >>= mainProc (getFields os)
+main = do
+    args <- getArgs
+    case args of
+      []         -> showUsage
+      ["-h"]     -> showUsage
+      ["--help"] -> showUsage
+      "-d":as    -> directMode as
+      _          -> readF (getFileName os) >>= mainProc (getFields os)
                                      where os = setOpts args
 
 readF :: String -> IO BS.ByteString
