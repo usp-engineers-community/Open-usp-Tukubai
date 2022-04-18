@@ -1,3 +1,4 @@
+#!/usr/bin/env runghc
 import System.Environment
 import System.IO
 import Data.ByteString.Lazy.Char8 as BS hiding (filter,take,concat,map,drop,length)
@@ -32,13 +33,15 @@ THE SOFTWARE.
 --}
 
 showUsage :: IO ()
-showUsage = do System.IO.hPutStr stderr ("Usage    : check_need_name [--blank <string>] <check_file> <name_file>\n" ++ 
-                "Thu Aug 29 17:08:31 JST 2013\n" ++
-                "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
+showUsage = do
+                System.IO.hPutStr stderr "Usage    : check_need_name [--blank <string>] <check_file> <name_file>\n"
+                System.IO.hPutStr stderr "Version  : Mon Apr 18 17:22:00 JST 2022\n"
+                System.IO.hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n"
 
 main :: IO ()
 main = do args <- getArgs
           case args of
+                []         -> showUsage
                 ["-h"]     -> showUsage
                 ["--help"] -> showUsage
                 ["--blank",str,check,name] -> do cf <- readF check
@@ -47,6 +50,7 @@ main = do args <- getArgs
                 [check,name] -> do cf <- readF check
                                    nf <- readF name
                                    doCheck (BS.pack "_") cf nf
+                _          -> showUsage
 
 type Key = BS.ByteString
 
