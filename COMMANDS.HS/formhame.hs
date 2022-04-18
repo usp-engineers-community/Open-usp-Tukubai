@@ -1,3 +1,4 @@
+#!/usr/bin/env runghc
 import System.Environment
 import System.IO
 import Text.ParserCombinators.Parsec
@@ -11,11 +12,11 @@ import qualified Text.Regex as RE (mkRegex,subRegex)
 formhame（Open usp Tukubai）
 
 designed by Nobuaki Tounaka
-written by Ryuichi Ueda
+written by Hinata Yanagi
 
 The MIT License
 
-Copyright (C) 2013-2014 Universal Shell Programming Laboratory
+Copyright (C) 2013-2022 Universal Shell Programming Laboratory
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -37,9 +38,10 @@ THE SOFTWARE.
 --}
 
 showUsage :: IO ()
-showUsage = do System.IO.hPutStr stderr ("Usage    : formhame <html_template> <data>\n" ++ 
-		"Sat Sep 20 16:45:33 JST 2014\n" ++
-                "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
+showUsage = do
+    System.IO.hPutStr stderr "Usage    : formhame <html_template> <data>\n"
+    System.IO.hPutStr stderr "Version  : Mon Apr 18 16:55:00 JST 2022\n"
+    System.IO.hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n"
 
 data Opts = NormalOpts TemplateFile DataFile | Error String deriving Show
 
@@ -51,6 +53,7 @@ type DataFile = String
 main :: IO ()
 main = do args <- getArgs
           case args of
+              []                       -> showUsage
               ["-h"]                   -> showUsage
               ["--help"]               -> showUsage
               [('-':'i':istr),('-':'d':dstr),f1,f2]    -> main' istr dstr f1 f2
