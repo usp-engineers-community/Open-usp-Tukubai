@@ -1,3 +1,4 @@
+#!/usr/bin/env runghc
 import System.Environment
 import System.IO
 import Text.ParserCombinators.Parsec
@@ -12,7 +13,7 @@ import Text.Printf
 han（Open usp Tukubai）
 
 designed by Nobuaki Tounaka
-written by Ryuichi Ueda
+written  by Ryuichi Ueda
 
 The MIT License
 
@@ -62,21 +63,21 @@ mainProc' fs cs = mainProc'' fs (BS.lines cs)
 
 mainProc'' :: [Int] -> [BS.ByteString] -> IO ()
 mainProc'' fs [] = do return ()
-mainProc'' fs (ln:lns) = han fs (myWords ln) >> mainProc'' fs lns
+mainProc'' fs (ln:lns) = han fs (myUWords ln) >> mainProc'' fs lns
 
-type Words = [BS.ByteString]
-type Word = BS.ByteString
+type UWords = [BS.ByteString]
+type UWord = BS.ByteString
 
-han :: [Int] -> Words -> IO ()
+han :: [Int] -> UWords -> IO ()
 han [] wds = BS.putStrLn $ BS.unwords $ DL.map han' wds 
 han fs wds = BS.putStrLn $ BS.unwords $ hanFs fs (DL.zip [1..] wds)
 
-hanFs :: [Int] -> [(Int,Word)] -> Words
+hanFs :: [Int] -> [(Int,UWord)] -> UWords
 hanFs fs [] = []
 hanFs fs ((n,w):ws) = (if x == [] then w else han' w) : hanFs fs ws
         where x = filter (== n) fs
 
-han' :: Word -> Word
+han' :: UWord -> UWord
 han' w = BS.pack $ han'' $ BS.unpack w
 
 han'' :: String -> String
@@ -188,8 +189,8 @@ readF :: String -> IO BS.ByteString
 readF "-" = BS.getContents
 readF f   = BS.readFile f
 
-myWords :: BS.ByteString -> [BS.ByteString]
-myWords line = filter (/= BS.pack "") $ BS.split ' ' line
+myUWords :: BS.ByteString -> [BS.ByteString]
+myUWords line = filter (/= BS.pack "") $ BS.split ' ' line
 
 data Opts = Opts [Int] String | Error String deriving Show
 
