@@ -1,3 +1,4 @@
+#!/usr/bin/env runghc --
 import System.Environment
 import System.IO
 import Text.ParserCombinators.Parsec
@@ -11,11 +12,11 @@ import Data.ByteString.Lazy.Char8 as BS hiding (filter,head,last,map,zip,repeat,
 self（Open usp Tukubai）
 
 designed by Nobuaki Tounaka
-written by Ryuichi Ueda
+written  by Hinata Yanagi
 
 The MIT License
 
-Copyright (C) 2012 Universal Shell Programming Laboratory
+Copyright (C) 2022 Universal Shell Programming Laboratory
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -37,21 +38,22 @@ THE SOFTWARE.
 --}
 
 showUsage :: IO ()
-showUsage = do System.IO.hPutStr stderr
-		("Usage: dayslash [-r] <format> <field> <file>\n" ++ 
-		"Sun Dec 15 00:28:47 JST 2013\n" ++
-		"Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
+showUsage = do
+    System.IO.hPutStr stderr "Usage   : dayslash [-r] <format> <field> <file>\n"
+    System.IO.hPutStr stderr "Version : Tue Apr 19 14:44:33 JST 2022\n"
+    System.IO.hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n"
 
 main :: IO ()
 main = do args <- getArgs
-	  case args of
-		["-h"]     -> showUsage
-		["--help"] -> showUsage
+          case args of
+                []         -> showUsage
+                ["-h"]     -> showUsage
+                ["--help"] -> showUsage
                 ["-r",fmt,fld,files] -> readF files >>= main' True fmt ((read fld) -1) . BS.lines
                 ["-r",fmt,fld]       -> readF "-" >>= main' True fmt ((read fld) -1)  . BS.lines
                 [fmt,fld,files]      -> readF files >>= main' False fmt ((read fld) -1) . BS.lines
                 [fmt,fld]            -> readF "-" >>= main' False fmt ((read fld) -1) . BS.lines
-		_                    -> showUsage
+                _                    -> showUsage
 
 readF :: String -> IO BS.ByteString
 readF "-" = BS.getContents

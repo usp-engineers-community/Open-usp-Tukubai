@@ -1,3 +1,4 @@
+#!/usr/bin/env runghc --
 import qualified Data.ByteString.Lazy.Char8 as BS
 import System.Environment
 import System.IO
@@ -6,12 +7,11 @@ import System.IO
 ctail（Open usp Tukubai）
 
 designed by Nobuaki Tounaka
-written by Ryuichi Ueda
-thanks to @master_q
+written  by Hinata Yanagi
 
 The MIT License
 
-Copyright (C) 2012 Universal Shell Programming Laboratory
+Copyright (C) 2022 Universal Shell Programming Laboratory
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -33,19 +33,20 @@ THE SOFTWARE.
 --}
 
 showUsage :: IO ()
-showUsage = do hPutStr stderr
-		("Usage    : ctail [-f] <file>\n" ++ 
-		"Sun Jul 28 16:48:54 JST 2013\n" ++
-		"Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
+showUsage = do
+        System.IO.hPutStr stderr "Usage    : ctail [-f] <file>\n"
+        System.IO.hPutStr stderr "Version  : Tue Apr 19 14:38:55 JST 2022\n"
+        System.IO.hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n"
 
 main :: IO ()
 main = do
-	args <- getArgs
-	case args of
-		["-h"]     -> showUsage
+    args <- getArgs
+    case args of
+                []         -> showUsage
+                ["-h"]     -> showUsage
                 [num]      -> readF "-"  >>= mainProc (readN num)
                 [num,file] -> readF file >>= mainProc (readN num)
-		_          -> showUsage
+                _          -> showUsage
 
 readF :: String -> IO BS.ByteString
 readF "-" = BS.getContents
