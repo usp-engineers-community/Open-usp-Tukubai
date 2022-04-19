@@ -1,3 +1,4 @@
+#!/usr/bin/env runghc
 import System.Environment
 import System.IO
 import Text.ParserCombinators.Parsec
@@ -36,12 +37,13 @@ THE SOFTWARE.
 
 showUsage :: IO ()
 showUsage = do System.IO.hPutStr stderr ("Usage    : kasan [+r] [ref=<ref>] key=<n> <file>\n" ++ 
-                "Tue Aug 20 10:23:06 JST 2013\n" ++
+                "Version  : Tue Aug 20 10:23:06 JST 2013\n" ++
                 "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
 
 main :: IO ()
 main = do args <- getArgs
           case args of
+              []         -> showUsage
               ["-h"]     -> showUsage
               ["--help"] -> showUsage
               _          -> mainProc (setOpts args)
