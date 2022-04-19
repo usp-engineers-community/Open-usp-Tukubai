@@ -1,3 +1,4 @@
+#!/usr/bin/env runghc
 import System.Environment
 import System.IO
 import Text.ParserCombinators.Parsec
@@ -10,11 +11,11 @@ import Data.Char
 join2（Open usp Tukubai）
 
 designed by Nobuaki Tounaka
-written by Ryuichi Ueda
+written  by Hinata Yanagi
 
 The MIT License
 
-Copyright (C) 2012 Universal Shell Programming Laboratory
+Copyright (C) 2022 Universal Shell Programming Laboratory
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -36,13 +37,15 @@ THE SOFTWARE.
 --}
 
 showUsage :: IO ()
-showUsage = do System.IO.hPutStr stderr ("Usage    : join2 [+ng] <key=n> <master> <tran>\n" ++ 
-                "Sun Jul 28 16:20:53 JST 2013\n" ++
-                "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
+showUsage = do
+    System.IO.hPutStr stderr "Usage    : join2 [+ng] <key=n> <master> <tran>\n"
+    System.IO.hPutStr stderr "Version  : Tue Apr 19 14:17:53 JST 2022\n"
+    System.IO.hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n"
 
 main :: IO ()
 main = do args <- getArgs
           case args of
+                []         -> showUsage
                 ["-h"]                  -> showUsage
                 ["--help"]              -> showUsage
                 [delim,key,master,tran] -> mainProc delim key master tran
@@ -116,12 +119,14 @@ parseMaster ks lines delim = [ f (Prelude.length ks) (myWords ln) | ln <- lines 
                              where f n ws = Master (take n ws) (drop n ws)
 
 makeDummy :: [Master] -> String -> [BS.ByteString]
-makeDummy ms "" = [ BS.pack $ take y ( repeat '*' ) | y <- x ]
+makeDummy ms "" = [ BS.pack $ take y ( repeat '_' ) | y <- x ]
                where x = maxLengths [ getValueLength m | m <- ms ]
 makeDummy ms str = [ BS.pack str | y <- (g (head ms)) ]
                where g (Master _ b) = b
 
 maxLengths :: [[Int]] -> [Int]
+maxLengths [] = []
+maxLengths [vsr] = map (\_ -> 1) vsr
 maxLengths (vsr:vsl:[]) = [ if (fst z) > (snd z) then fst z else snd z | z <- (zip vsr vsl)] 
 maxLengths (vsr:vsl:vss) = maxLengths (a:vss)
                             where zs = zip vsr vsl
