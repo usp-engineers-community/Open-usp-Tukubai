@@ -1,3 +1,4 @@
+#!/usr/bin/env runghc
 import System.Environment
 import System.IO
 import Text.ParserCombinators.Parsec
@@ -10,11 +11,11 @@ import Data.Char
 cjoin2（Open usp Tukubai）
 
 designed by Nobuaki Tounaka
-written by Ryuichi Ueda
+written  by Hinata Yanagi
 
 The MIT License
 
-Copyright (C) 2012 Universal Shell Programming Laboratory
+Copyright (C) 2022 Universal Shell Programming Laboratory
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -36,13 +37,15 @@ THE SOFTWARE.
 --}
 
 showUsage :: IO ()
-showUsage = do System.IO.hPutStr stderr ("Usage    : cjoin2 [+ng] <key=n> <master> <tran>\n" ++ 
-                "Thu Jul 25 21:26:20 JST 2013\n" ++
-                "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
+showUsage = do
+    System.IO.hPutStr stderr "Usage    : cjoin2 [+ng] <key=n> <master> <tran>\n"
+    System.IO.hPutStr stderr "Version  : Tue Apr 19 13:07:45 JST 2022\n"
+    System.IO.hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n"
 
 main :: IO ()
 main = do args <- getArgs
           case args of
+                []         -> showUsage
                 ["-h"]                  -> showUsage
                 ["--help"]              -> showUsage
                 [delim,key,master,tran] -> mainProc delim key master tran
@@ -98,14 +101,14 @@ pickMaster ms k = if Prelude.length matched > 0 then head matched else dummy
                   f (Master _ v) = Master [] v
 
 matchMaster k (Master a b) = k == a
-              
+
 parseMaster :: [Int] -> [BS.ByteString] -> String -> [Master]
 parseMaster ks lines delim = ms ++ [makeDummy ms delim]
                        where ms = [ f (Prelude.length ks) (myWords ln) | ln <- lines ]
                              f n ws = Master (take n ws) (drop n ws)
 
 makeDummy :: [Master] -> String -> Master
-makeDummy ms "" = Master k [ BS.pack $ take y ( repeat '*' ) | y <- x ]
+makeDummy ms "" = Master k [ BS.pack $ take y ( repeat '_' ) | y <- x ]
                where x = maxLengths [ getValueLength m | m <- ms ]
                      h = head ms
                      k = f h
