@@ -1,3 +1,4 @@
+#!/usr/bin/env runghc
 import qualified Data.ByteString.Lazy.Char8 as BS
 import System.Environment
 import System.IO
@@ -6,8 +7,7 @@ import System.IO
 gyo（Open usp Tukubai）
 
 designed by Nobuaki Tounaka
-written by Ryuichi Ueda
-thanks to @master_q
+written  by Hinata Yanagi
 
 The MIT License
 
@@ -33,35 +33,35 @@ THE SOFTWARE.
 --}
 
 showUsage :: IO ()
-showUsage = do hPutStr stderr
-		("Usage    : gyo [-f] <file>\n" ++ 
-		"Wed Aug 15 19:29:08 JST 2012\n" ++
-		"Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
+showUsage = do
+    hPutStr stderr "Usage    : gyo [-f] <file>\n"
+    hPutStr stderr "Version  : Wed Aug 15 19:29:08 JST 2012\n"
+    hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n"
 
 main :: IO ()
 main = do
-	args <- getArgs
-	case args of
-		[] -> printCount
-		["-"] -> printCount
-		("-f":as) -> fmode as
-		["-h"] -> showUsage
-		["--help"] -> showUsage
-		_ -> mmode args
-	
+    args <- getArgs
+    case args of
+        [] -> printCount
+        ["-"] -> printCount
+        ("-f":as) -> fmode as
+        ["-h"] -> showUsage
+        ["--help"] -> showUsage
+        _ -> mmode args
+
 printCount :: IO ()
 printCount = BS.getContents >>= print . countLines
-	
+
 printCountF :: String -> IO ()
 printCountF arg = BS.readFile arg >>= print . countLines
-	
+
 fmode :: [String] -> IO ()
 fmode [] = putStr ""
 fmode (arg:args) = do putStr ( arg ++ " " ) ; printCountF arg ; fmode args
-	
+
 mmode :: [String] -> IO ()
 mmode [] = putStr ""
 mmode (arg:args) = do printCountF arg; mmode args
-	
+
 countLines :: BS.ByteString -> Int
 countLines bs = length $ BS.lines bs
