@@ -1,3 +1,4 @@
+#!/usr/bin/env runghc
 import System.Environment
 import System.IO
 import Text.ParserCombinators.Parsec
@@ -35,13 +36,15 @@ THE SOFTWARE.
 --}
 
 showUsage :: IO ()
-showUsage = do System.IO.hPutStr stderr ("Usage    : getlast <f1> <f2> <file>\n" ++ 
-                "Tue Aug  6 10:07:55 JST 2013\n" ++
-                "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
+showUsage = do
+    System.IO.hPutStr stderr "Usage    : getlast <f1> <f2> <file>\n"
+    System.IO.hPutStr stderr "Version  : Tue Aug  6 10:07:55 JST 2013\n"
+    System.IO.hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n"
 
 main :: IO ()
 main = do args <- getArgs
           case args of
+                []         -> showUsage
                 ["-h"]     -> showUsage
                 ["--help"] -> showUsage
                 [one,two]      -> readF "-"  >>= mainProc (read one::Int) (read two::Int)
