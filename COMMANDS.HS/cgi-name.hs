@@ -10,7 +10,7 @@ import qualified Data.ByteString.Lazy.Char8 as BS
 cgi-name（Open usp Tukubai）
 
 designed by Nobuaki Tounaka
-written by Hinata Yanagi
+written  by Hinata Yanagi
 
 The MIT License
 
@@ -37,8 +37,8 @@ THE SOFTWARE.
 
 showUsage :: IO ()
 showUsage = do
-    System.IO.hPutStr stderr "Usage: cgi-name [-d<c>] [-i<c>]\n"
-    System.IO.hPutStr stderr "Version: Mon Apr 18 14:31:30 JST 2022\n"
+    System.IO.hPutStr stderr "Usage   : cgi-name [-d<c>] [-i<c>]\n"
+    System.IO.hPutStr stderr "Version : Mon Apr 18 14:31:30 JST 2022\n"
     System.IO.hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n"
 
 main :: IO ()
