@@ -1,3 +1,4 @@
+#!/usr/bin/env runghc --
 import System.Environment
 import System.IO
 import Data.List.Split hiding (oneOf)
@@ -37,17 +38,18 @@ THE SOFTWARE.
 --}
 
 showUsage :: IO ()
-showUsage = do System.IO.hPutStr stderr ("Usage    : maezero [+age|-sage] <f1.k1> <f2.k2> ... <file>\n" ++ 
-                "Tue Jul 30 15:06:18 JST 2013\n" ++
+showUsage = do System.IO.hPutStr stderr ("Usage    : maezero <f1.k1> <f2.k2> ... <file>\n" ++ 
+                "Version   : Tue Jul 30 15:06:18 JST 2013\n" ++
                 "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
 
 type OneLine = BS.ByteString
 type AllLines = BS.ByteString
-type Word = BS.ByteString
+type UWord = BS.ByteString
 
 main :: IO ()
 main = do args <- getArgs
           case args of
+              []         -> showUsage
               ["-h"]     -> showUsage
               ["--help"] -> showUsage
               _          -> mainProc (setOpts args) 
@@ -64,13 +66,13 @@ mainProc' fs str = BS.putStr $ BS.unlines [ maezero fs ln | ln <- BS.lines str]
 
 maezero :: [Field] -> OneLine -> OneLine
 maezero fs ln = BS.unwords [ maezero' fs w | w <- ws ]
-                   where ws = zip [1..] $ myWords ln
+                   where ws = zip [1..] $ myUWords ln
 
-maezero' :: [Field] -> (Int,Word) -> Word
+maezero' :: [Field] -> (Int,UWord) -> UWord
 maezero' fs (pos,word) = maezero'' f word
                     where f = pickOp fs pos
 
-maezero'' :: Maybe Field -> Word -> Word
+maezero'' :: Maybe Field -> UWord -> UWord
 maezero'' Nothing            w = w
 maezero'' (Just (Field _ n)) w = BS.pack $ (take (n - (length ww)) (repeat '0')) ++ ww
                                  where ww = BS.unpack w
@@ -80,8 +82,8 @@ pickOp fs pos = if length x == 0 then Nothing else Just $ Prelude.head x
                where f pos (Field p _) = p == pos
                      x = filter (f pos) fs
 
-myWords :: BS.ByteString -> [BS.ByteString]
-myWords line = filter (/= (BS.pack "")) $ BS.split ' ' line
+myUWords :: BS.ByteString -> [BS.ByteString]
+myUWords line = filter (/= (BS.pack "")) $ BS.split ' ' line
 
 data Opts = Opts [Field] String | Error String deriving Show
 data Field = Field Int Int deriving Show

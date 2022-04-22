@@ -1,3 +1,4 @@
+#!/usr/bin/env runghc --
 import System.Environment
 import System.IO
 import Data.List.Split hiding (oneOf)
@@ -9,7 +10,7 @@ import Data.ByteString.Lazy.Char8 as BS hiding (filter,last,zip,head,drop,revers
 loopx（Open usp Tukubai）
 
 designed by Nobuaki Tounaka
-written by Ryuichi Ueda
+written  by Ryuichi Ueda
 
 The MIT License
 
@@ -36,13 +37,14 @@ THE SOFTWARE.
 
 showUsage :: IO ()
 showUsage = do System.IO.hPutStr stderr ("Usage    : loopx <file1> <file2> ... \n" ++ 
-                "Tue Jul 30 18:13:07 JST 2013\n" ++
+                "Version  : Tue Jul 30 18:13:07 JST 2013\n" ++
                 "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
 
 
 main :: IO ()
 main = do args <- getArgs
           case args of
+              []         -> showUsage
               ["-h"]     -> showUsage
               ["--help"] -> showUsage
               _          -> mainProc args []

@@ -1,3 +1,4 @@
+#!/usr/bin/env runghc --
 import System.Environment
 import System.IO
 import Data.List.Split hiding (oneOf)
@@ -11,11 +12,11 @@ import Text.Printf
 marume（Open usp Tukubai）
 
 designed by Nobuaki Tounaka
-written by Ryuichi Ueda
+written  by Hinata Yanagi
 
 The MIT License
 
-Copyright (C) 2012 Universal Shell Programming Laboratory
+Copyright (C) 2022 Universal Shell Programming Laboratory
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -37,23 +38,26 @@ THE SOFTWARE.
 --}
 
 showUsage :: IO ()
-showUsage = do System.IO.hPutStr stderr ("Usage    : marume [+age|-sage] <f1.k1> <f2.k2> ... <file>\n" ++ 
-                "Tue Jul 30 14:06:05 JST 2013\n" ++
-                "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
+showUsage = do
+    System.IO.hPutStr stderr "Usage    : marume [+age|-sage] <f1.k1> <f2.k2> ... <file>\n"
+    System.IO.hPutStr stderr "Version  : Fri Apr 22 16:17:13 JST 2022\n"
+    System.IO.hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n"
 
 type OneLine = BS.ByteString
 type AllLines = BS.ByteString
-type Word = BS.ByteString
+type UWord = BS.ByteString
 
 main :: IO ()
 main = do args <- getArgs
           case args of
+              []         -> showUsage
               ["-h"]     -> showUsage
               ["--help"] -> showUsage
               _          -> mainProc (setOpts args) 
 
 mainProc :: Opts -> IO ()
 mainProc (Opts flg fs file) = readF file >>= mainProc' flg fs
+mainProc _  = showUsage
 
 readF :: String -> IO BS.ByteString
 readF "-" = BS.getContents
@@ -64,13 +68,13 @@ mainProc' flg fs str = BS.putStr $ BS.unlines [ marume flg fs ln | ln <- BS.line
 
 marume :: Char -> [Field] -> OneLine -> OneLine
 marume flg fs ln = BS.unwords [ marume' flg fs w | w <- ws ]
-                   where ws = zip [1..] $ myWords ln
+                   where ws = zip [1..] $ myUWords ln
 
-marume' :: Char -> [Field] -> (Int,Word) -> Word
+marume' :: Char -> [Field] -> (Int,UWord) -> UWord
 marume' flg fs (pos,word) = marume'' flg f word
                     where f = pickOp fs pos
 
-marume'' :: Char -> Maybe Field -> Word -> Word
+marume'' :: Char -> Maybe Field -> UWord -> UWord
 marume'' _   Nothing            w = w
 marume'' flg (Just (Field _ n)) w = BS.pack $ signCheck $ sign ++ (zeroCheck $ revPoint n sftn)
                         where sft = shiftPoint n (splitOn "." $ dropSign ww)
@@ -134,8 +138,8 @@ pickOp fs pos = if length x == 0 then Nothing else Just $ Prelude.head x
                where f pos (Field p _) = p == pos
                      x = filter (f pos) fs
 
-myWords :: BS.ByteString -> [BS.ByteString]
-myWords line = filter (/= (BS.pack "")) $ BS.split ' ' line
+myUWords :: BS.ByteString -> [BS.ByteString]
+myUWords line = filter (/= (BS.pack "")) $ BS.split ' ' line
 
 data Opts = Opts Char [Field] String | Error String deriving Show
 data Field = Field Int Int deriving Show

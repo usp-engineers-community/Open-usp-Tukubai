@@ -1,3 +1,4 @@
+#!/usr/bin/env runghc --
 import System.Environment
 import System.IO
 import Data.Char
@@ -32,16 +33,16 @@ THE SOFTWARE.
 --}
 
 showUsage :: IO ()
-showUsage = do System.IO.hPutStr stderr
-		("Usage: keta n1 n2 .. <filename>\n" ++ 
-		 "       keta -v <filename>\n" ++ 
-		 "       keta -- <filename>\n" ++ 
-		"Sun Dec 29 15:58:05 JST 2013\n" ++
-		"Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
+showUsage = do
+    System.IO.hPutStr stderr "Usage: keta n1 n2 .. <filename>\n"
+    System.IO.hPutStr stderr "       keta -v <filename>\n"
+    System.IO.hPutStr stderr "       keta -- <filename>\n"
+    System.IO.hPutStr stderr "Version   : Sun Dec 29 15:58:05 JST 2013\n"
+    System.IO.hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n"
 
 main :: IO ()
 main = do args <- getArgs
-          case args of 
+          case args of
               ["-h"]     -> showUsage
               ["--help"] -> showUsage
               ("-v":as)  -> do cs <- readF (getFilename as) 
