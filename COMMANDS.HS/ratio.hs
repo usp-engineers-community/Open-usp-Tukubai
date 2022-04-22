@@ -1,3 +1,4 @@
+#!/usr/bin/env runghc
 import System.Environment
 import System.IO
 import Text.ParserCombinators.Parsec
@@ -10,7 +11,7 @@ import Text.Printf
 ratio（Open usp Tukubai）
 
 designed by Nobuaki Tounaka
-written by Ryuichi Ueda
+written  by Ryuichi Ueda
 
 The MIT License
 
@@ -36,13 +37,15 @@ THE SOFTWARE.
 --}
 
 showUsage :: IO ()
-showUsage = do System.IO.hPutStr stderr ("Usage    : ratio [-<m>] [ref=<ref>] key=<n> <file>\n" ++ 
-                "Tue Aug 20 10:29:46 JST 2013\n" ++
-                "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
+showUsage = do
+    System.IO.hPutStr stderr "Usage    : ratio [-<m>] [ref=<ref>] key=<n> <file>\n"
+    System.IO.hPutStr stderr "Version  : Tue Aug 20 10:29:46 JST 2013\n"
+    System.IO.hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n"
 
 main :: IO ()
 main = do args <- getArgs
           case args of
+              []         -> showUsage
               ["-h"]     -> showUsage
               ["--help"] -> showUsage
               _          -> mainProc (setOpts args)

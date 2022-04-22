@@ -39,7 +39,7 @@ THE SOFTWARE.
 
 showUsage :: IO ()
 showUsage = do System.IO.hPutStr stderr ("Usage    : maezero <f1.k1> <f2.k2> ... <file>\n" ++ 
-                "Version   : Tue Jul 30 15:06:18 JST 2013\n" ++
+                "Version  : Tue Jul 30 15:06:18 JST 2013\n" ++
                 "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
 
 type OneLine = BS.ByteString
