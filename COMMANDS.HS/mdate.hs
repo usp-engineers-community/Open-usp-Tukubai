@@ -1,3 +1,4 @@
+#!/usr/bin/env runghc --
 import System.Environment
 import System.IO
 import Data.List.Split hiding (oneOf)
@@ -8,7 +9,6 @@ import Control.Applicative hiding ((<|>), many)
 import Data.Time
 import Data.Time.Format (formatTime)
 import Data.Time.Format (parseTime)
-import System.Locale (defaultTimeLocale)
 import Text.Printf
 import Data.List as DL
 
@@ -16,11 +16,11 @@ import Data.List as DL
 mdate（Open usp Tukubai）
 
 designed by Nobuaki Tounaka
-written by Ryuichi Ueda
+written  by Hinata Yanagi
 
 The MIT License
 
-Copyright (C) 2012 Universal Shell Programming Laboratory
+Copyright (C) 2022 Universal Shell Programming Laboratory
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -46,34 +46,34 @@ showUsage = do System.IO.hPutStr stderr ("Usage    : \n" ++
                               " DIRECT-MODE\n"++
                               "\n"++
                               "   日付  mdate -y <yyyymmdd>               : 曜日\n"++
-                              "         mdate -e <yyyywwdd>/±<dif>       : dif 日先までの日付を連続出力\n"++
+                              "         mdate -e <yyyywwdd>/±<dif>        : dif 日先までの日付を連続出力\n"++
                               "         mdate -e <yyyymmdd1> <yyyymmdd2>  : 日付の範囲を連続出力\n"++
-                              "         mdate <yyyywwdd>/±<dif>          : dif 日先の日付\n"++
+                              "         mdate <yyyywwdd>/±<dif>           : dif 日先の日付\n"++
                               "         mdate <yyyymmdd1> <yyyymmdd2>     : 日付の差\n"++
-                              "         mdate <yyyymm>m/±<dif>           : dif 月先の月\n"++
-                              "         mdate -e <yyyymm>m/±<dif>        : dif 月先までの月を連続出力\n"++
+                              "         mdate <yyyymm>m/±<dif>            : dif 月先の月\n"++
+                              "         mdate -e <yyyymm>m/±<dif>         : dif 月先までの月を連続出力\n"++
                               "         mdate <yyyymm1>m <yyyymm2>m       : 月の差\n"++
                               "         mdate -ly <yyyymm>m               : 前年月\n"++
                               "\n"++
                               " FILTER-MODE\n"++
                               "   日付  mdate -f -y <f>               : 曜日\n"++
-                              "         mdate -f -e <f>/±<dif>       : dif 日先までの日付に展開\n"++
+                              "         mdate -f -e <f>/±<dif>        : dif 日先までの日付に展開\n"++
                               "         mdate -f -e <f1> <f2>         : 日付間の展開\n"++
-                              "         mdate -f <f>/±<dif>          : dif 日先の日付\n"++
+                              "         mdate -f <f>/±<dif>           : dif 日先の日付\n"++
                               "         mdate -f <f1> <f2>            : 日付の差\n"++
-                              "         mdate -f <f1> ±<f2>          : 日付の加算\n"++
-                              "         mdate -f -e <f1> ±<f2>       : 日付の加算 展開\n"++
+                              "         mdate -f <f1> ±<f2>           : 日付の加算\n"++
+                              "         mdate -f -e <f1> ±<f2>        : 日付の加算 展開\n"++
                               "         mdate -f -ly <f>              : 前年日\n"++
                               "   月次  mdate -f -d <f>m              : 日付を１カ月分出力\n"++
-                              "         mdate -f <f>m/±<dif>         : dif 月先の月\n"++
-                              "         mdate -f -e <f>m ±<dif>      : dif 月先の月まで展開\n"++
+                              "         mdate -f <f>m/±<dif>          : dif 月先の月\n"++
+                              "         mdate -f -e <f>m ±<dif>       : dif 月先の月まで展開\n"++
                               "         mdate -f <f1>m <f2>m          : 月の差\n"++
                               "         mdate -f -e <f1>m <f2>m       : 月の展開\n"++
-                              "         mdate -f <f>m ±<dif>         : 月の加算\n"++
-                              "         mdate -f -e <f>m ±<dif>      : 月の加算展開\n"++
+                              "         mdate -f <f>m ±<dif>          : 月の加算\n"++
+                              "         mdate -f -e <f>m ±<dif>       : 月の加算展開\n"++
                               "         mdate -f -ly <f>m             : 前年月\n"++
                               "\n"++
-                              "Thu Nov 14 11:08:53 JST 2013\n" ++
+                              "Version  : Fri Apr 22 16:12:00 JST 2022\n" ++
                               "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
 
 main :: IO ()
@@ -116,7 +116,7 @@ filterMode (FLastYearMonth f1 file) = readF file >>= filterLastYearMonth f1
 filterMode op = print op
 
 type Record = BS.ByteString
-type Words = [BS.ByteString]
+type UWords = [BS.ByteString]
 
 filterLastYearMonth :: Int -> BS.ByteString -> IO ()
 filterLastYearMonth f1 cs = BS.putStr $ BS.unlines [ fLYM f1 (mwords ln) | ln <- (BS.lines cs) ]
@@ -364,7 +364,7 @@ enumDPlus day diff c
 
 date8 :: String -> UTCTime
 date8 str = f d
-            where d = parseTime defaultTimeLocale "%Y%m%d" str :: Maybe UTCTime
+            where d = parseTimeM True defaultTimeLocale "%Y%m%d" str :: Maybe UTCTime
                   f (Just x) = x
 
 dayAhead :: DayRange -> UTCTime

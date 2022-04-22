@@ -1,3 +1,4 @@
+#!/usr/bin/env runghc --
 import System.Environment
 import qualified Data.ByteString.Lazy.Char8 as BS
 import System.IO
@@ -7,11 +8,11 @@ import Text.Read
 showUsage :: IO ()
 showUsage = do System.IO.hPutStr stderr (
                 "Usage    : map <num=<n>> <file> \n" ++
-                "Thu Oct 23 08:52:44 JST 2014\n" ++
+                "Version  : Thu Oct 23 08:52:44 JST 2014\n" ++
                 "Open usp Tukubai (LINUX+FREEBSD+Mac), Haskell ver.\n")
                exitWith (ExitFailure 1) 
 
-die str = System.IO.hPutStr stderr ( "Error[map] : " ++ str ++ "\n")
+udie str = System.IO.hPutStr stderr ( "Error[map] : " ++ str ++ "\n")
           >> exitWith (ExitFailure 1)
 
 main :: IO ()
@@ -27,15 +28,15 @@ readF :: String -> IO BS.ByteString
 readF "-" = BS.getContents
 readF f   = BS.readFile f
 
-type Word   = BS.ByteString
+type UWord   = BS.ByteString
 type Key    = BS.ByteString
 type SubKey = BS.ByteString
-type Values = [Word]
+type Values = [UWord]
 type Line   = (Key,SubKey,Values)
 type Data   = [Line]
 
 main' :: Either String Int -> BS.ByteString -> IO ()
-main' (Left  str) cs = die str
+main' (Left  str) cs = udie str
 main' (Right num) cs = header num h_axis >> mapM_ (body h_axis) (splitByKey d)
     where d = [ makeLine num ln | ln <- BS.lines cs ]
           h_axis = hAxis $ map ( \(_,s,_) -> s ) d
@@ -55,7 +56,7 @@ header num ss = BS.putStrLn $ BS.unwords (keyf ++ ss)
 body :: [SubKey] -> [Line] -> IO ()
 body ss lns@((k,_,_):_) = BS.putStrLn $ BS.unwords (k:(body' ss lns))
 
-body' :: [SubKey] -> [Line] -> [Word]
+body' :: [SubKey] -> [Line] -> [UWord]
 body' []   _  = []
 body' subs [] = replicate (length subs) (BS.pack "0")
 body' (sub:subs) alns@((_,s,(v:_)):lns) 
