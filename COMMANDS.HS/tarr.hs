@@ -1,3 +1,4 @@
+#!/usr/bin/env runghc
 import System.Environment
 import System.IO
 import Text.ParserCombinators.Parsec
@@ -35,10 +36,10 @@ THE SOFTWARE.
 --}
 
 showUsage :: IO ()
-showUsage = do System.IO.hPutStr stderr
-		("Usage    : tarr [num=<n>] [-<m>] <file>\n" ++ 
-		"Sat Jul 27 10:29:01 JST 2013\n" ++
-		"Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
+showUsage = do
+    System.IO.hPutStr stderr "Usage    : tarr [num=<n>] [-<m>] <file>\n"
+    System.IO.hPutStr stderr "Version  : Sat Jul 27 10:29:01 JST 2013\n"
+    System.IO.hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n"
 
 main :: IO ()
 main = do args <- getArgs

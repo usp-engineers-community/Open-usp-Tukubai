@@ -1,3 +1,4 @@
+#!/usr/bin/env runghc
 import System.Environment
 import System.IO
 import Text.ParserCombinators.Parsec
@@ -12,7 +13,7 @@ import Text.Printf
 zen（Open usp Tukubai）
 
 designed by Nobuaki Tounaka
-written by Ryuichi Ueda
+written  by Ryuichi Ueda
 
 The MIT License
 
@@ -38,9 +39,10 @@ THE SOFTWARE.
 --}
 
 showUsage :: IO ()
-showUsage = do System.IO.hPutStr stderr ("Usage    : zen <f1> <f2> ... <file>\n" ++ 
-                "Thu Aug 15 23:31:59 JST 2013\n" ++
-                "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
+showUsage = do
+    System.IO.hPutStr stderr "Usage    : zen <f1> <f2> ... <file>\n"
+    System.IO.hPutStr stderr "Version  : Thu Aug 15 23:31:59 JST 2013\n"
+    System.IO.hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n"
 
 main :: IO ()
 main = do args <- getArgs
@@ -57,21 +59,21 @@ mainProc' fs cs = mainProc'' fs (BS.lines cs)
 
 mainProc'' :: [Int] -> [BS.ByteString] -> IO ()
 mainProc'' fs [] = do return ()
-mainProc'' fs (ln:lns) = zen fs (myWords ln) >> mainProc'' fs lns
+mainProc'' fs (ln:lns) = zen fs (myUWords ln) >> mainProc'' fs lns
 
-type Words = [BS.ByteString]
-type Word = BS.ByteString
+type UWords = [BS.ByteString]
+type UWord = BS.ByteString
 
-zen :: [Int] -> Words -> IO ()
+zen :: [Int] -> UWords -> IO ()
 zen [] wds = BS.putStrLn $ BS.unwords $ DL.map zen' wds 
 zen fs wds = BS.putStrLn $ BS.unwords $ zenFs fs (DL.zip [1..] wds)
 
-zenFs :: [Int] -> [(Int,Word)] -> Words
+zenFs :: [Int] -> [(Int,UWord)] -> UWords
 zenFs fs [] = []
 zenFs fs ((n,w):ws) = (if x == [] then w else zen' w) : zenFs fs ws
         where x = filter (== n) fs
 
-zen' :: Word -> Word
+zen' :: UWord -> UWord
 zen' w = BS.pack $ zen'' $ BS.unpack w
 
 zen'' :: String -> String
@@ -183,8 +185,8 @@ readF :: String -> IO BS.ByteString
 readF "-" = BS.getContents
 readF f   = BS.readFile f
 
-myWords :: BS.ByteString -> [BS.ByteString]
-myWords line = filter (/= BS.pack "") $ BS.split ' ' line
+myUWords :: BS.ByteString -> [BS.ByteString]
+myUWords line = filter (/= BS.pack "") $ BS.split ' ' line
 
 data Opts = Opts [Int] String | Error String deriving Show
 

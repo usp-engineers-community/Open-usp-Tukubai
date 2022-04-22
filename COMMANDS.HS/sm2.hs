@@ -1,4 +1,6 @@
+#!/usr/bin/env runghc
 import System.Environment
+import System.Exit
 import System.IO
 import Text.ParserCombinators.Parsec
 import Control.Monad
@@ -11,7 +13,7 @@ import Text.Read
 sm2（Open usp Tukubai）
 
 designed by Nobuaki Tounaka
-written by Ryuichi Ueda
+written  by Ryuichi Ueda
 
 The MIT License
 
@@ -37,9 +39,11 @@ THE SOFTWARE.
 --}
 
 showUsage :: IO ()
-showUsage = do System.IO.hPutStr stderr ("Usage    : sm2 [+ng] <key=n> <master> <tran>\n" ++ 
-                "Fri Jul 26 11:50:49 JST 2013\n" ++
-                "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
+showUsage = do
+    System.IO.hPutStr stderr "Usage    : sm2 [+ng] <key=n> <master> <tran>\n"
+    System.IO.hPutStr stderr "Version  : Fri Jul 26 11:50:49 JST 2013\n"
+    System.IO.hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n"
+    exitWith (ExitFailure 1)
 
 main :: IO ()
 main = do args <- getArgs

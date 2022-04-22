@@ -1,3 +1,4 @@
+#!/usr/bin/env runghc
 import qualified Data.ByteString.Lazy.Char8 as BS
 import System.Environment
 import System.IO
@@ -6,7 +7,7 @@ import System.IO
 retu（Open usp Tukubai）
 
 designed by Nobuaki Tounaka
-written by Ryuichi Ueda
+written  by Ryuichi Ueda
 
 The MIT License
 
@@ -32,22 +33,22 @@ THE SOFTWARE.
 --}
 
 showUsage :: IO ()
-showUsage = do hPutStr stderr
-		("Usage    : retu [-f] <file>\n" ++ 
-		"Thu Aug 16 22:23:09 JST 2012\n" ++
-		"Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
+showUsage = do
+    hPutStr stderr "Usage    : retu [-f] <file>\n"
+    hPutStr stderr "Thu Aug 16 22:23:09 JST 2012\n"
+    hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n"
 
 main :: IO ()
 main = do
-	args <- getArgs
-	case args of
-		["-h"] -> showUsage
-		["--help"] -> showUsage
-		[] -> printCount
-		["-"] -> printCount
-		("-f":as) -> fmode as
-		_ -> mmode args
-	
+    args <- getArgs
+    case args of
+        ["-h"] -> showUsage
+        ["--help"] -> showUsage
+        [] -> printCount
+        ["-"] -> printCount
+        ("-f":as) -> fmode as
+        _ -> mmode args
+
 fmode :: [String] -> IO ()
 fmode [] = putStr ""
 fmode (arg:args) = do printCountF arg ; fmode args
@@ -55,18 +56,18 @@ fmode (arg:args) = do printCountF arg ; fmode args
 mmode :: [String] -> IO ()
 mmode [] = putStr ""
 mmode (arg:args) = do printCountM arg; mmode args
-	
+
 printCount :: IO ()
 printCount = BS.getContents >>= putStr . unlines . toStr . countFile
 
 printCountM :: String -> IO ()
 printCountM arg = BS.readFile arg >>= putStr . unlines . toStr . countFile
-	
+
 printCountF :: String -> IO()
 printCountF arg = do
-			bs <- BS.readFile arg 
-			putStr $ unlines $ countFileF arg bs
-	
+            bs <- BS.readFile arg
+            putStr $ unlines $ countFileF arg bs
+
 countFileF :: String -> BS.ByteString -> [String]
 countFileF arg bs = [ arg ++ " " ++ show(x) | x <- (countFile bs) ]
 

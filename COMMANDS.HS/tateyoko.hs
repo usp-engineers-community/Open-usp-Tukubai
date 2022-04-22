@@ -1,3 +1,4 @@
+#!/usr/bin/env runghc
 import System.Environment
 import System.IO
 import Text.ParserCombinators.Parsec
@@ -8,7 +9,7 @@ import qualified Data.ByteString.Lazy.Char8 as BS
 tateyoko（Open usp Tukubai）
 
 designed by Nobuaki Tounaka
-written by Ryuichi Ueda
+written  by Ryuichi Ueda
 
 The MIT License
 
@@ -34,10 +35,10 @@ THE SOFTWARE.
 --}
 
 showUsage :: IO ()
-showUsage = do hPutStr stderr
-                ("Usage    : tateyoko <file>\n" ++ 
-                "Thu Jul 25 22:01:12 JST 2013\n" ++
-                "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
+showUsage = do
+    hPutStr stderr "Usage    : tateyoko <file>\n"
+    hPutStr stderr "Version  : Thu Jul 25 22:01:12 JST 2013\n"
+    hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n"
 
 main :: IO ()
 main = do
