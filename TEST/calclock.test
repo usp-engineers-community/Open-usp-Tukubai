@@ -25,7 +25,10 @@ testpath=$(dirname $0) # 本スクリプト実行コマンドの先頭部($0)か
 cd $testpath # 本スクリプトのあるディレクトリーへ移動
 if test "$2" = ""; # <python-version>($2)がなければ
 	then pythonversion="python" # default versionのpythonとする
-	else pythonversion="$2" # <python-version>($2)があれば指定versionのpythonとする
+elif test "$2" = "runghc"; then
+	pythonversion="runghc --"
+else
+	pythonversion="$2" # <python-version>($2)があれば指定versionのpythonとする
 fi
 if test "$1" = ""; # <command-path>($1)がなければ
 	then commandpath="." # test対象コマンドは現ディレクトリーにある
@@ -48,6 +51,7 @@ ERROR_CHECK(){
 EPO=$(echo 19700101 | ${com} 1 - | awk '{print $2}')
 [ "$EPO" -eq 0 ] ; ERROR_CHECK "TEST1.1 error"
 
+echo ${com} -r 1 -
 EPO=$(echo 0 | ${com} -r 1 - | awk '{print $2}')
 [ "$EPO" -eq 19700101000000 ] ; ERROR_CHECK "TEST1.2 error"
 

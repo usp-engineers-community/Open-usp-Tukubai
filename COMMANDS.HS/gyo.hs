@@ -1,4 +1,4 @@
-#!/usr/bin/env runghc
+#!/usr/bin/env runghc --
 import qualified Data.ByteString.Lazy.Char8 as BS
 import System.Environment
 import System.IO
