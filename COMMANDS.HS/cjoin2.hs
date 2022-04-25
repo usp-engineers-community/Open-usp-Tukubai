@@ -120,7 +120,8 @@ makeDummy ms str = Master k [ BS.pack str | y <- (g h) ]
                      g (Master _ b) = b
 
 maxLengths :: [[Int]] -> [Int]
-maxLengths (vsr:vsl:[]) = [ if (fst z) > (snd z) then fst z else snd z | z <- (zip vsr vsl)] 
+maxLengths [vsr] = map (\a -> a `div` 2) vsr
+maxLengths (vsr:vsl:[]) = [ if (fst z) > (snd z) then fst z else snd z | z <- (zip vsr vsl)]
 maxLengths (vsr:vsl:vss) = maxLengths (a:vss)
                             where zs = zip vsr vsl
                                   a  = [ if (fst z) > (snd z) then fst z else snd z | z <- zs] 

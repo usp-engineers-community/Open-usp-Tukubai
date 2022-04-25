@@ -25,7 +25,10 @@ testpath=$(dirname $0) # 本スクリプト実行コマンドの先頭部($0)か
 cd $testpath # 本スクリプトのあるディレクトリーへ移動
 if test "$2" = ""; # <python-version>($2)がなければ
 	then pythonversion="python" # default versionのpythonとする
-	else pythonversion="$2" # <python-version>($2)があれば指定versionのpythonとする
+elif test "$2" = "runghc"; then
+	pythonversion=runghc
+else
+	pythonversion="$2" # <python-version>($2)があれば指定versionのpythonとする
 fi
 if test "$1" = ""; # <command-path>($1)がなければ
 	then commandpath="." # test対象コマンドは現ディレクトリーにある
