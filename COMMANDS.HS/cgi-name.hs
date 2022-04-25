@@ -45,7 +45,6 @@ main :: IO ()
 main = do
       args <- getArgs
       case args of
-        []         -> showUsage
         ["-h"]     -> showUsage
         ["--help"] -> showUsage
         _          -> readF f >>= main' dstr istr
