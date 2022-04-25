@@ -1,4 +1,4 @@
-#!/usr/bin/env runghc
+#!/usr/bin/env runghc --
 import System.IO
 import System.Environment
 import System.Exit

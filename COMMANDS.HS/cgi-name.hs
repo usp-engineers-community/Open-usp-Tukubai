@@ -1,4 +1,4 @@
-#!/usr/bin/env runghc
+#!/usr/bin/env runghc --
 import System.Environment
 import System.IO
 import Numeric
