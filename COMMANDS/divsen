@@ -193,7 +193,7 @@ if __name__ == '__main__':
 		for i in range(1, nf + 1):
 			if i==nf  : endchar=''
 			else:       endchar=' '
-			if i < f[0]:
+			if len(f) == 0 or i < f[0]:
 				print(line.getField(i), end=endchar)
 				continue
 			x = getval(line, i) / 1000
