@@ -25,7 +25,10 @@ testpath=$(dirname $0) # 本スクリプト実行コマンドの先頭部($0)か
 cd $testpath # 本スクリプトのあるディレクトリーへ移動
 if test "$2" = ""; # <python-version>($2)がなければ
 	then pythonversion="python" # default versionのpythonとする
-	else pythonversion="$2" # <python-version>($2)があれば指定versionのpythonとする
+elif test "$2" = "runghc"; then
+	pythonversion=runghc
+else
+	pythonversion="$2" # <python-version>($2)があれば指定versionのpythonとする
 fi
 if test "$1" = ""; # <command-path>($1)がなければ
 	then commandpath="." # test対象コマンドは現ディレクトリーにある
@@ -63,6 +66,7 @@ cat << FIN > $tmp-out
 0000001 B 鈴田______ 50 F 46 39 8 5 21
 FIN
 
+echo ${com} key=1 $tmp-master $tmp-tran
 ${com} key=1 $tmp-master $tmp-tran 	|
 sed 's/  */ /g'				> $tmp-ans
 diff $tmp-ans $tmp-out
