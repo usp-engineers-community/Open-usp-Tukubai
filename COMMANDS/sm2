@@ -4,11 +4,11 @@
 # sm2 サムアップツール（Open usp Tukubai版）
 # 
 # designed by Nobuaki Tounaka
-# written by Yoshio Katayama
+# written  by Hinata Yanagi
 #
 # The MIT License
 #
-# Copyright (C) 2011 Universal Shell Programming Laboratory
+# Copyright (C) 2022 Universal Shell Programming Laboratory
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -30,8 +30,8 @@
 
 from __future__ import print_function
 
-_usage = "sm2 [+count] <k1> <k2> <s1> <s2> <file>"
-_version = "Wed Apr  2 19:22:38 JST 2014"
+_usage = "sm2 [+count] [<k1> <k2> <s1> <s2>] <file>"
+_version = "Wed May  4 08:43:34 JST 2022"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
 _keypat = r'\d+|NF(-\d+)?$'
 
@@ -118,9 +118,11 @@ def getval(line, n):
 #メイン関数
 #
 if __name__ == '__main__':
-
-	if len(sys.argv) < 5:
+	if len(sys.argv) > 2 and len(sys.argv) < 5:
 		usage()
+
+	if len(sys.argv) <= 2:
+		sys.argv = [sys.argv[0]] + ["0", "0", "1", "1"] + sys.argv[1:]
 
 	#
 	# +count
