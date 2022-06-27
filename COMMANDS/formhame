@@ -4,11 +4,11 @@
 # formhame フォームへのデータのはめこみ（Open usp Tukubai版）
 # 
 # designed by Nobuaki Tounaka
-# written by Ryuichi Ueda
+# written  by Col. Richie
 #
 # The MIT License
 #
-# Copyright (C) 2011-2014 Universal Shell Programming Laboratory
+# Copyright (C) 2011-2022 Universal Shell Programming Laboratory
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,7 @@
 # THE SOFTWARE.
 
 _usage = "formhame <html_template> <data>"
-_version = "Sun Mar 17 12:51:52 JST 2013"
+_version = "Tue Jun 28 07:39:19 JST 2022"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4+, 3.1, 3.2/UTF-8)"
 _option = ''': -i<c>
 	  : -d<c>'''
@@ -168,7 +168,7 @@ def setTextValue(input_elem,namelist):
 		new_value = ' value="' + new_value + '"'
 
 	if value == None:
-		ans = input_elem.replace("/>",new_value + "/>")
+		ans = re.sub("/?>", new_value + "/>",input_elem)
 	else:
 		ans = re.sub('(value|VALUE)="[^"]*"',new_value,input_elem)
 
