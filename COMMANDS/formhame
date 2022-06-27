@@ -89,6 +89,10 @@ def getInputBlock(line,html_file):
 		i = line.index(">")
 		return line[0:i+1],line[i+1:]
 
+	if ">" in line:
+		i = line.index(">")
+		return line[0:i+1],line[i+1:]
+
 	lines = [ line ]
 	for line in html_file:
 		if line[-2:] == "/>":
