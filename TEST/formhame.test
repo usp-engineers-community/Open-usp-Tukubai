@@ -270,6 +270,29 @@ ${com} -i_ -d_ $tmp-html $tmp-name > $tmp-out 2> /dev/null
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST4 error"
 
+###########################################
+#TEST5 -d allow not explicitly closed tag.
+
+cat << FIN > $tmp-html
+<form><input type="text" name="affiliation"></form>
+FIN
+
+
+cat << FIN > $tmp-name
+affiliation ユニバーサル_シェル_プログラミング_研究所
+FIN
+
+
+cat << FIN > $tmp-ans
+<form>
+<input type="text" name="affiliation" value="ユニバーサル シェル プログラミング 研究所"/>
+</form>
+FIN
+
+${com} -i_ -d_ $tmp-html $tmp-name > $tmp-out 2> /dev/null
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5 error"
+
 rm -f $tmp-*
 echo "${pythonversion}" "${name}" OK
 exit 0
