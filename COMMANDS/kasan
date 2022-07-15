@@ -4,11 +4,11 @@
 # kasan 加算する（Open usp Tukubai版）
 # 
 # designed by Nobuaki Tounaka
-# written by Yoshio Katayama
+# written  by Masatomo Togashi
 #
 # The MIT License
 #
-# Copyright (C) 2011 Universal Shell Programming Laboratory
+# Copyright (C) 2020 Universal Shell Programming Laboratory
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -31,19 +31,21 @@
 from __future__ import print_function
 
 _usage = "kasan [+r] [ref=<ref>] key=<n> <file>"
-_version = "Fri Oct 21 11:26:06 JST 2011"
+_version = "Sat Sep 19 23:49:25 JST 2020"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
 _refpat = r'(|(\d+|NF(-\d+)?)(/(\d+|NF(-\d+)?))?)$'
 		# 2: 1st field
 		# 5: 2nd field
-_keypat = r'(\d+|NF(-\d+)?)(([/@](\d+|NF(-\d+)?))*)$'
-		# 1: 1st field
-		# 3: 2nd and later fields with separator
+_keypat = r'((\d+|NF(-\d+)?)(/(\d+|NF(-\d+)?))?)(@((\d+|NF(-\d+)?)(/(\d+|NF(-\d+)?))?))*$'
+
+# 濁音と半濁音のNFD表記でNFC表記もできるもの→NFDtoNFC変換でNFCに統一する
+_comb_pat=r"(((う|か|き|く|け|こ|さ|し|す|せ|そ|た|ち|つ|て|と|は|ひ|ふ|へ|ほ|ウ|カ|キ|ク|ケ|コ|サ|シ|ス|セ|ソ|タ|チ|ツ|テ|ト|ハ|ヒ|フ|ヘ|ホ|ワ|ヰ|ヱ|ヲ)゙)|((は|ひ|ふ|へ|ほ|ハ|ヒ|フ|ヘ|ホ)゚))+"
 
 import re
 import os
 import sys
 from decimal import Decimal
+import unicodedata
 
 def error(msg, *arg):
 	print('Error[kasan] :', msg % arg, file=sys.stderr)
@@ -58,7 +60,6 @@ def usage():
 class FieldLine:
 	def __init__(self, line, allow_z = False):
 		self.__allow_zero = allow_z
-		line = line.rstrip('\n')
 		self.__fields = [ line ]
 		self.__fields += [ x for x in line.split(' ') if x ]
 
@@ -85,11 +86,9 @@ class FieldLine:
 		return key
 
 	def getField(self, s, e = None):
-		s = self.getFieldNum(s)
 		if e == None:
 			e = s
-		else:
-			e = self.getFieldNum(e)
+		if s > self.size() or e > self.size():	error("フィールド番号が大きすぎます。")
 		if s <= e:
 			return ' '.join(self.__fields[s : e + 1])
 		else:
@@ -100,19 +99,86 @@ class FieldLine:
 #
 # 入力ファイルオープン
 #
-def open_file(n, mode = 'r'):
-	if n >= len(sys.argv):
-		file = sys.stdin
-	elif sys.argv[n] == '-':
-		file = sys.stdin
-		del sys.argv[n]
-	else:
-		try:
-			file = open(sys.argv[n], mode)
+def open_file(n):
+	if type(n) == type(0):
+		if n >= len(sys.argv):	filename = '-'
+		else:
+			filename = sys.argv[n]
 			del sys.argv[n]
-		except:
-			file = sys.stdin
+	if filename == '-':	filename = '/dev/fd/0'	# sys.stdinをファイルディスクリプターで表記する
+	if Python3():	mode='r'
+	else:	mode='rU'	# Python2ではmodeがrUのときPython3と同様に読み込み時に各種改行記号がLF（\n）に統一される
+	try:
+		file = open(filename, mode)
+	except:
+		if filename=='/dev/fd/0': filename="-"
+		error("ファイル '%s' をオープンできません。", filename)
 	return file
+
+
+# 改行符号（\r\n）の削除関数
+def rm_eol(line):
+	return line.rstrip("\r\n")	# 改行記号としてCRLF('\r\n')/CR('\r')/LF('\n')のすべてに対応する
+
+# BOMの取得関数
+def get_BOM():
+	if Python3():	return chr(int("FEFF",16))	# U+FEFFはBOMのUnicode符号位置
+	else:			return "\xEF\xBB\xBF"	# BOMは「EF BB BF」の3バイト
+
+# BOMの削除関数
+def rm_BOM(line):
+	global firstline
+	if not firstline: return line
+	firstline=False
+	if line.startswith(get_BOM()):	line=line[len(get_BOM()):]	# 行頭にBOMがあったらBOMを削除する
+	return line
+
+# ファイル入力行の前処理
+def preproc_line(line):
+	line=rm_eol(line)	# 行末の改行記号を削除する
+	line=rm_BOM(line)	# ファイル先頭行の行頭にBOMがあったらこれを削除する
+	return line
+
+# Python3か判定する
+def Python3():
+	if sys.version_info >= (3, 0):
+		return True
+	else:
+		return False
+
+#
+# unicode 変換
+#
+def to_unicode(s):
+	try:
+		return unicode(s, 'utf_8')
+	except:
+		error("不当なマルチバイト文字が含まれています。")
+
+#
+# utf8 変換
+#
+def to_utf8(s):
+	try:
+		return s.encode('utf-8')
+	except:
+		error("内部エラー UTF8への変換に失敗しました。")
+
+#
+# NFDtoNFC()のre.sub()から指定patternがみつかるごとに呼ばれるのでNFD/NFC変換をして返す
+# 置換対象パターンはNFD文字:全角ひらがな/全角カタカナの清音に結合用濁点/結合用半濁点を連接したもの
+# 置換先文字はNFC文字:全角ひらがな/全角カタカナの濁音/半濁音
+#
+def replaceNFD(matchobj):
+	if Python3():	return unicodedata.normalize('NFC',matchobj.group(0))
+	else:	return to_utf8(unicodedata.normalize('NFC',to_unicode(matchobj.group(0))))	# Python2ではutf8→unicdoe→utf8の変換をする
+
+#
+# 全角ひらがな/全角カタカナの濁音/半濁音のNFC化
+#
+def NFDtoNFC(str):
+	# 全角ひらがな/全角カタカナの濁音/半濁音をNFCで統一して返す
+	return re.sub(pattern,replaceNFD,str)
 
 #
 # フィールド値の取得
@@ -137,39 +203,39 @@ def getref(line, arg):
 		return [ ref_s, ref_s ]
 	else:
 		ref_e = line.getFieldNum(r.group(5))
-		if ref_s ==0 and ref_e != 0 \
-		 or ref_s > ref_e:
+		if ref_s == 0 and ref_e != 0 \
+		or ref_s != 0 and ref_e==0:
 			error("ref 引数が正しくありません。")
+		if ref_s > ref_e:	ref_s,ref_e=ref_e,ref_s	# 降順を昇順化
 		return [ ref_s, ref_e ]
 
 #
 # key= の解析
 #
 def getkey(line, arg):
-	k = re.match('key=' + _keypat, arg)
-	if k == None:
-		error("key 引数が正しくありません。");
-	key = [ line.getFieldNum(k.group(1)) ]
-	if key[0] == 0:
-		error("key 引数が正しくありません。");
-	while k.group(3) != '':
-		sep = k.group(3)[0]
-		str = k.group(3)[1:]
-		k = re.match(_keypat, str)
-		n = line.getFieldNum(k.group(1))
-		if sep == '@':
-			key += [ n ]
-		elif key[-1] <= n:
-			key += list(range(key[-1] + 1, n + 1))
-		else:
-			key += list(range(key[-1] - 1, n - 1, -1))
-	return key
+	k = re.match(_keypat,arg[4:])	# 構文検査のために実行する
+	if not k:
+		error("key指定が不正です,")
+	AtMarkList=arg[4:].split("@")	# @で分割
+	keylist=[]
+	for field in AtMarkList:
+		if "/" in field:	# 範囲
+			startend=field.split("/")
+			start=line.getFieldNum(startend[0])
+			end=line.getFieldNum(startend[1])
+			if start <= end:
+				keylist+=range(start,end+1)
+			else:
+				keylist+=range(end,start+1)
+		else:	# 列挙
+			keylist+=[line.getFieldNum(field)]
+	keylist=sorted(set(keylist)) # 集合化によってリストの重複を解消してから昇順化
+	return keylist
 
 #
 # 加算の実行
 #
-def execsum(line,key,ref,sum,replace):
-	last_key=''
+def execsum(line,key,sum,replace):
 	endchar=' '
 	for i in range(1, line.size() + 1):
 		if i==line.size():	# loop終端のとき
@@ -182,12 +248,9 @@ def execsum(line,key,ref,sum,replace):
 		else:
 			print(line.getField(i), end=endchar)	# 末尾の調整
 	print()
-	if ref:
-		last_key = line.getField(ref[0], ref[1])
-	return last_key
 
 #
-#メイン関数
+# メイン関数
 #
 if __name__ == '__main__':
 
@@ -195,6 +258,11 @@ if __name__ == '__main__':
 	 or sys.argv[1] == '--help' \
 	 or sys.argv[1] == '--version':
 		usage()
+
+	#
+	# NFD文字（清音+結合用濁点/結合用半濁点）検出のための正規表現パターンを準備
+	#
+	pattern=re.compile(_comb_pat)
 
 	#
 	# +r
@@ -207,7 +275,12 @@ if __name__ == '__main__':
 	else:
 		replace = False
 
-	file = open_file(len(sys.argv) - 1)
+	if sys.argv[-1].startswith("key=") or sys.argv[-1].startswith("ref="):
+		file = open_file(len(sys.argv))	# 入力ファイル名は省略された
+	else:
+		file = open_file(len(sys.argv)-1)
+
+	firstline=True
 
 	#
 	# １行入力
@@ -215,6 +288,7 @@ if __name__ == '__main__':
 	line = file.readline()
 	if not line:
 		sys.exit(0)
+	line=preproc_line(line)	# 入力行の前処理
 	line = FieldLine(line, True)
 
 	#
@@ -238,7 +312,6 @@ if __name__ == '__main__':
 		ref = []
 	if key == None:
 		usage()
-	key=sorted(set(key)) # 集合化（set())によってリストの重複を解消してから昇順化(sort())
 	kmax = max(key)
 	if line.size() < kmax:
 		error("フィールドが足りません。")
@@ -247,17 +320,23 @@ if __name__ == '__main__':
 	# 合計の初期化
 	#
 	sum = [ 0 for i in range(kmax + 1) ]
-	last_key=execsum(line,key,ref,sum,replace)
+	execsum(line,key,sum,replace)
+	if ref:
+		last_key=NFDtoNFC(line.getField(ref[0], ref[1]))
 
 	#
 	# メインループ
 	#
 	for line in file:
+		line=preproc_line(line)	# 入力行の前処理
 		line = FieldLine(line, True)
 		if line.size() < kmax:
 			error("フィールドが足りません。")
-		if ref and last_key != line.getField(ref[0], ref[1]):
-			sum = [ 0 for i in range(kmax + 1) ]
-		last_key=execsum(line,key,ref,sum,replace)
+		if ref:
+			refkey = NFDtoNFC(line.getField(ref[0], ref[1]))
+			if refkey != last_key:
+				sum = [ 0 for i in range(kmax + 1) ]
+				last_key=refkey
+		execsum(line,key,sum,replace)
 
 	sys.exit(0)

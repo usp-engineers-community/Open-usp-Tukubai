@@ -4,11 +4,11 @@
 # rank 順位をつける（Open usp Tukubai版）
 # 
 # designed by Nobuaki Tounaka
-# written by Yoshio Katayama
+# written  by Masatomo Togashi
 #
 # The MIT License
 #
-# Copyright (C) 2011 Universal Shell Programming Laboratory
+# Copyright (C) 2020 Universal Shell Programming Laboratory
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -31,23 +31,25 @@
 from __future__ import print_function
 
 _usage = "rank [ref=<ref>] [key=<key>] <file>"
-_version = "Fri Oct 21 11:26:06 JST 2011"
+_version = "Tue Oct 20 15:17:47 JST 2020"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
-_refpat = r'(\d+)(([/@]\d+)*)$'
-		# 1: 1st field
-		# 2: 2nd and later fields with separator
-_keypat = r'(\d+$)'
+_refpat = r'((\d+|NF(-\d+)?)(/(\d+|NF(-\d+)?))?)(@((\d+|NF(-\d+)?)(/(\d+|NF(-\d+)?))?))*$'
+_keypat = r'(\d+|NF(-\d+)?)$'
+
+# 濁音と半濁音のNFD表記でNFC表記もできるもの→NFDtoNFC変換でNFCに統一する
+_comb_pat=r"(((う|か|き|く|け|こ|さ|し|す|せ|そ|た|ち|つ|て|と|は|ひ|ふ|へ|ほ|ウ|カ|キ|ク|ケ|コ|サ|シ|ス|セ|ソ|タ|チ|ツ|テ|ト|ハ|ヒ|フ|ヘ|ホ|ワ|ヰ|ヱ|ヲ)゙)|((は|ひ|ふ|へ|ほ|ハ|ヒ|フ|ヘ|ホ)゚))+"
 
 import re
 import os
 import sys
 import stat
+import unicodedata
 
 def round(x, n):
 	return x.quantize(Decimal('.1') ** n)
 
 def error(msg, *arg):
-	print('Error[ratio] :', msg % arg, file=sys.stderr)
+	print('Error[rank] :', msg % arg, file=sys.stderr)
 	sys.exit(1)
 
 def usage():
@@ -59,7 +61,6 @@ def usage():
 class FieldLine:
 	def __init__(self, line, allow_z = False):
 		self.__allow_zero = allow_z
-		line = line.rstrip('\n')
 		self.__fields = [ line ]
 		self.__fields += [ x for x in line.split(' ') if x ]
 
@@ -101,15 +102,85 @@ class FieldLine:
 #
 # 入力ファイルオープン
 #
-def open_file(n, mode = 'r'):
-	if n >= len(sys.argv) or sys.argv[n] == '-':
-		file = sys.stdin
+def open_file(n):
+	if n >= len(sys.argv):	filename = '-'
 	else:
-		try:
-			file = open(sys.argv[n], mode)
-		except:
-			error("ファイル %s をオープンできません。", sys.argv[n])
+		filename = sys.argv[n]
+	if filename == '-':	filename = '/dev/fd/0'	# sys.stdinをファイルディスクリプターで表記する
+	if Python3():	mode='r'
+	else:	mode='rU'	# Python2ではmodeがrUのときPython3と同様に読み込み時に各種改行記号がLF（\n）に統一される
+	try:
+		file = open(filename, mode)
+	except:
+		if filename=='/dev/fd/0':
+			error("標準入力ファイルをオープンできません。")
+		else:
+			error("ファイル '%s' をオープンできません。", filename)
 	return file
+
+# 改行符号（\r\n）の削除関数
+def rm_eol(line):
+	return line.rstrip("\r\n")	# 改行記号としてCRLF('\r\n')/CR('\r')/LF('\n')のすべてに対応する
+
+# BOMの取得関数
+def get_BOM():
+	if Python3():	return chr(int("FEFF",16))	# U+FEFFはBOMのUnicode符号位置
+	else:			return "\xEF\xBB\xBF"	# BOMは「EF BB BF」の3バイト
+
+# BOMの削除関数
+def rm_BOM(line):
+	global head
+	if not head: return line
+	if line.startswith(get_BOM()):	line=line[len(get_BOM()):]	# 行頭にBOMがあったらBOMを削除する
+	return line
+
+# ファイル入力行の前処理
+def preproc_line(line):
+	line=rm_eol(line)	# 行末の改行記号を削除する
+	line=rm_BOM(line)	# ファイル先頭行の行頭にBOMがあったらこれを削除する
+	return line
+
+# Python3か判定する
+def Python3():
+	if sys.version_info >= (3, 0):
+		return True
+	else:
+		return False
+
+#
+# unicode 変換
+#
+def to_unicode(s):
+	if type(s)==type(U""): return s	# 入力文字列がUnicode文字列のとき
+	try:
+		return unicode(s, 'utf_8')
+	except:
+		error("不当なマルチバイト文字が含まれています。")
+
+#
+# utf8 変換
+#
+def to_utf8(s):
+	try:
+		return s.encode('utf-8')
+	except:
+		error("内部エラー UTF8への変換に失敗しました。")
+
+#
+# NFDtoNFC()のre.sub()から指定patternがみつかるごとに呼ばれるのでNFD/NFC変換をして返す
+# 置換対象パターンはNFD文字:全角ひらがな/全角カタカナの清音に結合用濁点/結合用半濁点を連接したもの
+# 置換先文字はNFC文字:全角ひらがな/全角カタカナの濁音/半濁音
+#
+def replace(matchobj):
+	if Python3():	return unicodedata.normalize('NFC',matchobj.group(0))
+	else:	return to_utf8(unicodedata.normalize('NFC',to_unicode(matchobj.group(0))))	# Python2ではutf8→unicdoe→utf8の変換をする
+
+#
+# 全角ひらがな/全角カタカナの濁音/半濁音のNFC化
+#
+def NFDtoNFC(str):
+	# 全角ひらがな/全角カタカナの濁音/半濁音をNFCで統一して返す
+	return re.sub(pattern,replace,str)
 
 #
 # キー文字列の抽出
@@ -118,55 +189,62 @@ def keystr(line, key):
 	return ' '.join(map(line.getField, key))
 
 #
-#メイン関数
+# ref= の解析
+#
+def getref(line, arg):
+	k = re.match(_refpat,arg)	# 構文検査のために実行する
+	if not k:
+		error("ref 引数が正しくありません。");
+	AtMarkList=arg.split("@")	# @で分割
+	reflist=[]
+	for field in AtMarkList:
+		if "/" in field:	# 範囲
+			startend=field.split("/")
+			start=line.getFieldNum(startend[0])
+			end=line.getFieldNum(startend[1])
+			if start <= end:
+				reflist+=range(start,end+1)
+			else:
+				reflist+=range(end,start+1)
+		else:	# 列挙
+			reflist+=[line.getFieldNum(field)]
+	reflist=sorted(set(reflist)) # 集合化によってリストの重複を解消してから昇順化
+	return reflist
+
+#
+# メイン関数
 #
 if __name__ == '__main__':
 
-	if len(sys.argv) > 1 \
-		and (sys.argv[1] == '--help' \
-		or sys.argv[1] == '--version'):
-		usage()
+	# 構文表示
+	if len(sys.argv) < 2: usage()
+	elif len(sys.argv) == 2:
+		if sys.argv[1] == '--help' or \
+		   sys.argv[1] == '--version':	usage()
+
+	#
+	# NFD文字（清音+結合用濁点/結合用半濁点）検出のための正規表現パターンを準備
+	#
+	pattern=re.compile(_comb_pat)
+
+	key,ref=None,None
 
 	#
 	# ref=
 	#
 	if len(sys.argv) > 1 and sys.argv[1][0:4] == 'ref=':
-		r = re.match('ref=' + _refpat, sys.argv[1])
-		if not r:
-			error("ref 引数が正しくありません。");
-		ref = [ int(r.group(1)) ]
-		while r.group(2) != '':
-			sep = r.group(2)[0]
-			str = r.group(2)[1:]
-			r = re.match(_refpat, str)
-			n = int(r.group(1))
-			if sep == '@':
-				ref += [ n ]
-			elif ref[-1] <= n:
-				ref += list(range(ref[-1] + 1, n + 1))
-			else:
-				ref += list(range(ref[-1] - 1, n - 1, -1))
-		if min(ref) == 0:
-			error("ref 引数が0です。")
-		ref=sorted(set(ref)) # 集合化（set())によってリストの重複を解消してから昇順化(sort())（2016年04月14日(木)11時54分23秒）
-		ref_max = max(ref)
+		ref=sys.argv[1][4:]
 		del sys.argv[1]
-	else:
-		ref = None
 
 	#
 	# key=
 	#
 	if len(sys.argv) > 1 and sys.argv[1][0:4] == 'key=':
-		k = re.match('key=' + _keypat, sys.argv[1])
+		key=sys.argv[1][4:]
+		k = re.match(_keypat, key)
 		if not k:
 			error("key 引数が正しくありません。");
-		key = int(k.group(1))
-		if key == 0:
-			error("key 引数が0です。")
 		del sys.argv[1]
-	else:
-		key = None
 
 	#
 	# 入力ファイルのオープン
@@ -177,21 +255,29 @@ if __name__ == '__main__':
 	# メインループ
 	#
 	n, nn, last_ref, last_key = 0, 0, '', ''
+	head=True
 	for line in file:
+		line=preproc_line(line)	# 入力行の前処理
 		line = FieldLine(line, True)
+		if head:	# 先頭行ならref指定/key指定を確定する
+			if ref:
+				ref = getref(line, ref)
+				ref_max = max(ref)
+			if key:
+				key = line.getFieldNum(key)
+			head=False
 		if ref and line.size() < ref_max \
 		 or key and line.size() < key:
 			error("フィールドが足りません。")
-		elif ref and keystr(line, ref) != last_ref:	# ref指定がありかつref指定のフィールド値が変化したときリセット
-			n, nn, last_ref, last_key = 0, 0, keystr(line, ref), ''
+		elif ref and NFDtoNFC(keystr(line, ref)) != last_ref:	# ref指定がありかつref指定のフィールド値が変化したときリセット
+			n, nn, last_ref, last_key = 0, 0, NFDtoNFC(keystr(line, ref)), ''
 		n += 1	# 行番号
 		if not key:	# key指定がないとき行番号を階数とする
 			nn = n
-		
-		elif line.getField(key) != last_key: # key指定がありかつkey値が変化したとき行番号を階数とする
-			last_key = line.getField(key)
+		elif NFDtoNFC(line.getField(key)) != last_key: # key指定がありかつkey値が変化したとき行番号を階数とする
+			last_key = NFDtoNFC(line.getField(key))
 			nn = n
 		# key値が変化しないとき階数は前に進まない
-		print(nn, line.getField(0))
+		print(nn, line.getField(0))	# NFDtoNFC変換はせず入力ファイルのままとする
 
 	sys.exit(0)

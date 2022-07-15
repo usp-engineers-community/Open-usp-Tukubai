@@ -3,12 +3,12 @@
 #
 # dayslash 日付のフォーマット (Open usp Tukubai版）
 # 
-# designed by USP lab.
-# written by Ryuichi Ueda
+# designed by Nobuaki Tounaka
+# written  by Masatomo Togashi
 #
 # The MIT License
 #
-# Copyright (C) 2011 Universal Shell Programming Laboratory
+# Copyright (C) 2020 Universal Shell Programming Laboratory
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -28,47 +28,92 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from __future__ import print_function
+
 _usage = "dayslash [-r] <format> <field> <file>"
-_version = "Fri Mar 15 09:51:05 JST 2013"
+_version = "Wed May 20 04:47:48 JST 2020"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4+, 3.1, 3.2/UTF-8)"
 
 import re
 import os
 import sys
-import codecs
 
-def die(msg):
-	sys.stderr.write( 'Error[dayslash] : %s\n' % msg)
+def die(msg, *arg):
+	print('Error[dayslash] :', msg % arg, file=sys.stderr)
 	sys.exit(1)
 
 def usage():
-	sys.stderr.write( "Usage     :%s\n" % _usage );
-	sys.stderr.write( "Version   :%s\n" % _version );
-	sys.stderr.write( "	   %s\n" % _code );
+	print("Usage     :", _usage, file=sys.stderr);
+	print("Version   :", _version, file=sys.stderr);
+	print("	   ", _code, file=sys.stderr);
 	sys.exit(1)
 
+#
+# 入力ファイルオープン
+#
+def openReadFile(filename, mode='r'):
+	if filename == '-':
+		filename = '/dev/fd/0'	# sys.stdinをファイルディスクリプターで表記する
+	if not Python3():
+		mode='rU'	# Python2ではmodeがrUのときPython3と同様に読み込み時に各種改行記号がLF（\n）に統一される
+	# 標準入力も含めてopen()で開く
+	try:
+		file = open(filename, mode)
+	except:
+		die("ファイルを開けません。")
+	return file
 
-def openReadFile(file_name):
-	if file_name != "-":
-		try:    return codecs.open(file_name,'r','utf-8')
-		except: die("ファイルを開けません。")
+# 改行符号（\r\n）の削除関数
+def rm_eol(line):
+	return line.rstrip("\r\n")	# 改行記号としてCRLF('\r\n')/CR('\r')/LF('\n')のすべてに対応する
 
-	if sys.version_info[0] < 3:
-		return codecs.getreader('utf-8')(sys.stdin)
+# BOMの取得関数
+def get_BOM():
+	if Python3():	return chr(int("FEFF",16))	# U+FEFFはBOMのUnicode符号位置
+	else:			return "\xEF\xBB\xBF"	# BOMは「EF BB BF」の3バイト
 
-	return codecs.getreader('utf-8')(sys.stdin.detach())
+# BOMの削除関数
+def rm_BOM(line):
+	global firstline
+	if not firstline: return line
+	firstline=False
+	if line.startswith(get_BOM()):	line=line[len(get_BOM()):]	# 行頭にBOMがあったらBOMを削除する
+	return line
 
-def resetStdout():
-	if sys.version_info[0] < 3:
-		return codecs.getwriter('utf-8')(sys.stdout)
+# ファイル入力行の前処理
+def preproc_line(line):
+	line=rm_eol(line)	# 行末の改行記号を削除する
+	line=rm_BOM(line)	# ファイル先頭行の行頭にBOMがあったらこれを削除する
+	return line
 
-	return codecs.getwriter('utf-8')(sys.stdout.detach())
+# Python3か判定する
+def Python3():
+	if sys.version_info >= (3, 0):
+		return True
+	else:
+		return False
 
-def resetStderr():
-	if sys.version_info[0] < 3:
-		return codecs.getwriter('utf-8')(sys.stderr)
-
-	return codecs.getwriter('utf-8')(sys.stderr.detach())
+#
+# 直接入力文字列の前処理
+#
+#  Python3においてコマンドラインからの直接入力文字列中にUnicode符号位置がU+FFFFを超えるコードがあると
+#  Unicode文字に正しく変換されない場合があることへの対処をする
+def utf2ucs(instr):
+	outstr=""	# 出力文字列
+	intlist=[]	# 作業用整数リスト
+	for char in instr:
+		if ord(char)>=0xdc00 and ord(char)<=0xdcff:	# 文字の符号位置がU+DCxxの範囲にあったら「UTF8もどき」
+			intlist.append(ord(char)-0xdc00)	# 0xdc00のげたをはずして整数リストに入れる
+		else:	# 通常文字がきたら
+			if len(intlist)>0:	# ここまでに「UTF8もどき」列を変換した整数リストがあったら
+				# bytesに変換してutf8からUCSへの変換をして出力文字列に追加
+				outstr+= bytes(intlist).decode("utf_8")
+				intlist=[]	# 整数リストを再初期化
+			outstr+=char	# 新しくきた通常文字を出力文字列に追加
+	# 「UTF8もどき」列を変換した整数リストが残っていたら
+	# bytesに変換してutf8からUCSへの変換をして出力文字列に追加
+	if len(intlist)>0:	outstr+= bytes(intlist).decode("utf_8")
+	return outstr
 
 def conv8(s,fmt):
 	if "H" in fmt: return s
@@ -77,9 +122,9 @@ def conv8(s,fmt):
 
 	ymd = fmt.replace("yyyy",s[0:4])
 
-	#mmだったらゼロあり
+	# mmだったらゼロあり
 	ymd = ymd.replace("mm",s[4:6])
-	#mでs[4] = "0" だったら一桁
+	# mでs[4] = "0" だったら一桁
 	if s[4] == "0":
 		ymd = ymd.replace("m",s[5])
 	else:
@@ -136,18 +181,31 @@ def conv14(s,fmt):
 	return ymd + hms
 
 def conv():
-	day_format = to_unicode(sys.argv[1])
-	field = int(sys.argv[2]) - 1
+	day_format=sys.argv[1]
+	if Python3():
+		day_format=utf2ucs(day_format)	# Python3のときは直接指定の文字列に対して前処理をする
+	try:
+		field = int(sys.argv[2]) - 1
+	except:
+		die("フィールド番号が正しくありません。")
+	if field < 0:
+		die("フィールド番号が0または負です。")
 
 	if len(sys.argv) == 3:
 		input_file = openReadFile("-")
 	else:
 		input_file = openReadFile(sys.argv[3])
 
-	for line in input_file:
-		words = line.rstrip().split()
-		day_str = words[field]
+	# 先頭行処理用flagの初期化
+	global firstline
+	firstline=True
 
+	for line in input_file:
+		line = preproc_line(line)
+		words = line.split(" ")
+		if field >= len(words):
+			die("フィールド番号が大きすぎます。")
+		day_str = words[field]
 		str_len = len(day_str)
 		if str_len == 8:
 			ans = conv8(day_str,day_format)
@@ -173,12 +231,12 @@ def revYmd(nums):
 	if "yyyy" in nums:	y_str = nums["yyyy"]
 	else:			y_str = ""
 
-	#月
+	# 月
 	if "m" in nums: m_str = addZero(nums["m"])
 	elif "mm" in nums: m_str = addZero(nums["mm"])
 	else: m_str = "00"
 
-	#日
+	# 日
 	if "d" in nums: d_str = addZero(nums["d"])
 	elif "dd" in nums: d_str = addZero(nums["dd"])
 	else: d_str = "00"
@@ -202,25 +260,32 @@ def revHms(nums):
 	return "".join([h_str,m_str,s_str])
 
 def to_unicode(s):
-	if sys.version_info >= (3, 0):
+	if Python3():
 		return s
 
 	return unicode(s,'utf-8')
 
 def rev():
-	day_format = to_unicode(sys.argv[2])
-	field = int(sys.argv[3]) - 1
+	day_format=sys.argv[2]
+	if Python3():
+		day_format=utf2ucs(day_format)	# Python3のときは直接指定の文字列に対して前処理をする
+	try:
+		field = int(sys.argv[3]) - 1
+	except:
+		die("フィールド番号が正しくありません。")
+	if field < 0:
+		die("フィールド番号が0または負です。")
 
 	if len(sys.argv) == 4:
 		input_file = openReadFile("-")
 	else:
 		input_file = openReadFile(sys.argv[4])
 
-	#何番目にどの種類の数字が入っているか配列に記録
+	# 何番目にどの種類の数字が入っているか配列に記録
 	re_num = re.compile('[^ymdHMS]')
 	format_tokens = re.sub(re_num,".",day_format).rstrip(".").split(".")
 
-	#数字を取り去ったときに何が残るか記録
+	# 数字を取り去ったときに何が残るか記録
 	re_residual = re.compile('[ymdHMS]')
 	format_residual = re.sub(re_residual,"",day_format)
 
@@ -243,16 +308,24 @@ def rev():
 	elif "d" in format_tokens or "dd" in format_tokens:
 		ymd = True
 
+	# 先頭行処理用flagの初期化
+	global firstline
+	firstline=True
 
 	for line in input_file:
-		words = line.rstrip().split()
+		line=preproc_line(line)
+		words = line.split(" ")
+		if field >= len(words):
+			die("フィールド番号が大きすぎます。")
 		day_str = words[field]
 
 		tokens = re.sub(re_num,".",day_str).rstrip(".").split(".")
 		residual = re.sub(re_residual,"",day_str)
 
 		if format_residual != residual:
-			die("フォーマット不整合")
+			# 入力ファイルの指定フィールドのデータが指定されたフォーマットに一致しない場合、入力データをそのまま出力する。
+			print(line)	# 入力行をそのまま出力
+			continue	# 入力を継続する
 
 		nums = dict(zip(format_tokens, tokens))
 
@@ -266,18 +339,13 @@ def rev():
 
 		print(" ".join(words))
 
-#メイン関数
+# メイン関数
 if __name__ == '__main__':
 	if len(sys.argv) < 2 :		usage()
 	if sys.argv[1] == '--help' :	usage()
 	if sys.argv[1] == '--version':	usage()
 
-	# 標準入出力utf8化
-	sys.stdout = resetStdout()
-	sys.stderr = resetStderr()
-
-	# リバースモード（未実装）
-	if sys.argv[1] == '-r':
+	if sys.argv[1] == '-r':	# リバースモード（未実装）
 		rev()
 	else:
 		conv()

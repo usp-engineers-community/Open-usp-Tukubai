@@ -4,11 +4,11 @@
 # tarr 縦アレー: フィールドをレコードに分ける （Open usp Tukubai版）
 #
 # designed by Nobuaki Tounaka
-# written by Ryuichi Ueda
+# written  by Masatomo Togashi
 #
 # The MIT License
 #
-# Copyright (C) 2011 Universal Shell Programming Laboratory
+# Copyright (C) 2021 Universal Shell Programming Laboratory
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -30,55 +30,77 @@
 
 from __future__ import print_function
 
-_usage = "tarr [num=<n>] [-<m>] <file>"
-_version = "Thu Dec  8 11:22:55 JST 2011"
+_usage = "tarr [-<n>] [-d<str>] [num=<m>] <file>"
+_version = "Tue Oct 19 23:46:03 JST 2021"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4+/UTF-8)"
 
 import re
 import os
 import sys
+import unicodedata
+
+# 濁音と半濁音のNFD表記でNFC表記もできるもの→NFDtoNFC変換でNFCに統一する
+_comb_pat=r"(((う|か|き|く|け|こ|さ|し|す|せ|そ|た|ち|つ|て|と|は|ひ|ふ|へ|ほ|ウ|カ|キ|ク|ケ|コ|サ|シ|ス|セ|ソ|タ|チ|ツ|テ|ト|ハ|ヒ|フ|ヘ|ホ|ワ|ヰ|ヱ|ヲ)゙)|((は|ひ|ふ|へ|ほ|ハ|ヒ|フ|ヘ|ホ)゚))+"
 
 class Operator:
-	#コンストラクタ
+	# コンストラクタ
 	def __init__(self):
 		self.key_num = 0
 		self.return_num = 1
 		self.value_delimiter = ' '
 
 	def setKeyNum(self,num):
-		self.key_num = int(num)
+		try:
+			self.key_num = int(num)
+		except:
+			die("キー範囲指定に誤りがあります。")
 		if self.key_num < 0:
 			die("キー範囲指定に誤りがあります。")
 
 	def setReturnNum(self,num):
-		self.return_num = int(num)
+		try:
+			self.return_num = int(num)
+		except:
+			die("数字指定に誤りがあります。")
 		if self.return_num <= 0:
 			die("数字指定に誤りがあります。")
 
 	def setValueDelimiter(self,str):
-		self.value_delimiter = str.decode('utf8')
+		# 縦展開するフィールドのフィールドセパレータはコマンドから-dオプションで与えられる
+		# 直接指定文字列の前処理をしてからNFC正規化をする
+		self.value_delimiter = NFDtoNFC(utf2ucs(str))
+		# LooseMatchならvalue_delimiterを拡張文字列化する
+		if LooseMatch:
+			self.Xvalue_delimiter=toXstr(to_unicode(self.value_delimiter))
 
 	def tokenizer(self,line):
 		if self.value_delimiter == " ":
 			return line.split(' ')
 
-		#値のデリミタが空白でないとき
+		# 値のデリミタが空白でないとき
 
-		#まず空白で区切る
+		# まず空白で区切る
 		sp_tokens = line.split(' ')
 
-		#キーはスペースで区切られている
+		# キーはスペースで区切られている
 		keys = sp_tokens[:self.key_num]
 
-		#値部をもとにもどす
+		# 値部をもとにもどす
 		tmp_values = " ".join(sp_tokens[self.key_num:])
-		#指定されたデリミタを改行に変換する
-		tmp_values = tmp_values.replace(self.value_delimiter,'\n')
-		#改行で切り離す
+		# 指定されたデリミタを改行に変換する
+		if LooseMatch:
+			# で値部の中の-d指定のデリミタを拡張文字列のLooseMatchで改行に置換する
+			Xtmp_values=toXstr(to_unicode(tmp_values))
+			Xtmp_values=Xreplace(self.Xvalue_delimiter,Xtmp_values,Xlf)
+			tmp_values=Xstr2Str(Xtmp_values)	# 通常文字列に戻す
+			if not Python3():
+				tmp_values=to_utf8(tmp_values)	# Python2ではutf8に戻す
+		else:
+			tmp_values = tmp_values.replace(self.value_delimiter,'\n')
+		# 改行で切り離す
 		values = tmp_values.split('\n')
 
 		return keys + values
-		
 
 	def output(self,line):
 
@@ -97,70 +119,471 @@ class Operator:
 			else:
 				outstr = values[n:m]
 
-			if sys.version_info < (3, 0):	# Python2のときはユニコードからutf_8への変換が必要
-				print(" ".join(outstr).encode('utf_8'))
-			else:
-				print(" ".join(outstr))
+			print(" ".join(outstr))
 
 			n += self.return_num
-		
-				
-
-	def debugPrint(self):
-		print(self.key_num, self.return_num)
 
 def die(message):
 	print("Error[tarr] :", message, file=sys.stderr)
 	sys.exit(1)
 
 def printUsage():
-	print("Usage    :", _usage, file=sys.stderr)
-	print("Version  :", _version, file=sys.stderr)
-	print("          ", _code, file=sys.stderr)
+	print("Usage   :", _usage, file=sys.stderr)
+	print("Version :", _version, file=sys.stderr)
+	print("         ", _code, file=sys.stderr)
 	sys.exit(1)
 
 def prefixEqual(prefix,token):
 	if len(prefix) > len(token):	return False
-	
+
 	p = token[0:len(prefix)]
-	if p == prefix:	return True
+	if p == prefix:	return True	# tokenには指定prefixにつづいて文字があるとき
 
 	return False
 
+#
+# 直接入力文字列の前処理
+#
+#  Python3においてコマンドラインからの直接入力文字列中にUnicode符号位置がU+FFFFを超えるコードがあると
+#  Unicode文字に正しく変換されない場合があることへの対処をする
+#  Python2/Python3両対応
+def utf2ucs(instr):
+	outstr=""	# 出力文字列
+	intlist=[]	# 作業用整数リスト
+	if not Python3():	return instr	# Python2のときはなにもせずそのまま返す
+	# Python3なら直接指定文字列の前処理をしてからUCSを返す
+	for char in instr:
+		if ord(char)>=0xdc00 and ord(char)<=0xdcff:	# 文字の符号位置がU+DCxxの範囲にあったら「UTF8もどき」
+			intlist.append(ord(char)-0xdc00)	# 0xdc00のげたをはずして整数リストに入れる
+		else:	# 通常文字がきたら
+			if len(intlist)>0:	# ここまでに「UTF8もどき」列を変換した整数リストがあったら
+				# bytesに変換してutf8からUCSへの変換をして出力文字列に追加
+				outstr+= bytes(intlist).decode("utf_8")
+				intlist=[]	# 整数リストを再初期化
+			outstr+=char	# 新しくきた通常文字を出力文字列に追加
+	# 「UTF8もどき」列を変換した整数リストが残っていたら
+	# bytesに変換してutf8からUCSへの変換をして出力文字列に追加
+	if len(intlist)>0:	outstr+= bytes(intlist).decode("utf_8")
+	return outstr
+
+# Python3か判定する
+def Python3():
+	if sys.version_info >= (3, 0):
+		return True
+	else:
+		return False
+
+#
+# utf8 変換
+#
+def to_utf8(s):
+	try:
+		return s.encode('utf-8')
+	except:
+		die("内部エラー UTF8への変換に失敗しました。")
+
+#
+# unicode 変換
+#
+def to_unicode(s):
+	if Python3(): return s
+	try:
+		return unicode(s, 'utf_8')
+	except:
+		die("不当なマルチバイト文字が含まれています。")
+
+#
+# NFDtoNFC()のre.sub()から指定patternがみつかるごとに呼ばれるのでNFD/NFC変換をして返す
+# 置換対象パターンはNFD文字:全角ひらがな/全角カタカナの清音に結合用濁点/結合用半濁点を連接したもの
+# 置換先文字はNFC文字:全角ひらがな/全角カタカナの濁音/半濁音
+#
+def replace(matchobj):
+	if Python3():	return unicodedata.normalize('NFC',matchobj.group(0))
+	else:	return to_utf8(unicodedata.normalize('NFC',to_unicode(matchobj.group(0))))	# Python2ではutf8→unicdoe→utf8の変換をする
+
+#
+# 全角ひらがな/全角カタカナの濁音/半濁音のNFC化
+#
+def NFDtoNFC(str):
+	# 全角ひらがな/全角カタカナの濁音/半濁音をNFCで統一して返す
+	return re.sub(pattern,replace,str)
+
+#
+# 入力ファイルオープン
+#
+def open_file(filename):
+	if filename == '-':	filename = '/dev/fd/0'	# sys.stdinをファイルディスクリプターで表記する
+	if Python3():	mode='r'
+	else:	mode='rU'	# Python2ではmodeがrUのときPython3と同様に読み込み時に各種改行記号がLF（\n）に統一される
+	try:
+		file = open(filename, mode)
+	except:
+		if filename=='/dev/fd/0':
+			die("標準入力ファイルをオープンできません。")
+		else:
+			die("ファイル '%s' をオープンできません。", filename)
+	return file
+
+# 改行符号（\r\n）の削除関数
+def rm_eol(line):
+	return line.rstrip("\r\n")	# 改行記号としてCRLF('\r\n')/CR('\r')/LF('\n')のすべてに対応する
+
+# BOMの取得関数
+def get_BOM():
+	if Python3():	return chr(int("FEFF",16))	# U+FEFFはBOMのUnicode符号位置
+	else:			return "\xEF\xBB\xBF"	# BOMは「EF BB BF」の3バイト
+
+# BOMの削除関数
+def rm_BOM(line):
+	global firstline
+	if not firstline: return line
+	firstline=False
+	if line.startswith(get_BOM()):	line=line[len(get_BOM()):]	# 行頭にBOMがあったらBOMを削除する
+	return line
+
+# ファイル入力行の前処理
+def preproc_line(line):
+	line=rm_eol(line)	# 行末の改行記号を削除する
+	line=rm_BOM(line)	# ファイル先頭行の行頭にBOMがあったらこれを削除する
+	return line
+
 ###########################################
-#メイン関数
+# 代用対/結合文字列/IVS/SVS/拡張文字列関連
+
+#
+# 代用対前半部の判定
+#
+def isHighSurrogate(cp):
+	if 0xd800 <= cp and cp <= 0xdbff: return True
+	else:                             return False
+
+#
+# 代用対後半部の判定
+#
+def isLowSurrogate(cp):
+	if 0xdc00 <= cp and cp <= 0xdfff: return True
+	else:                             return False
+
+#
+# UCS2の判定
+#
+def isUCS2():
+	if sys.maxunicode==0xFFFF: return True
+	else:                      return False
+
+#
+# 合成可能文字の判定
+#
+def isCombiningDiacriticalMark(cp):
+	# unicodeにおける合成可能文字のブロック内か？
+		# 0x3099 0x309a	仮名文字の合成可能濁点と合成可能半濁点
+		# 0x0300-0x036F	ダイアクリティカルマーク（合成可能）
+		# 0x1AB0-0x1AFF	ダイアクリティカルマーク（合成可能）拡張
+		# 0x1DC0-0x1DFF	ダイアクリティカルマーク（合成可能）補助
+		# 0x20D0-0x20FF	記号用ダイアクリティカルマーク（合成可能）
+		# 0xFE20-0xFE2F	半記号（合成可能）
+	if cp == 0x3099 or cp == 0x309a or \
+		0x0300<=cp and cp <=0x036F or \
+		0x1AB0<=cp and cp <=0x1AFF or \
+		0x1DC0<=cp and cp <=0x1DFF or \
+		0x20D0<=cp and cp <=0x20FF or \
+		0xFE20<=cp and cp <=0xFE2F:
+		return True
+	else:	return False
+
+#
+# 異体字選択子（vaiation selector）の判定
+#
+def isVariationSelector(cp):
+	# unicodeにおける異体字選択子のブロック内か？
+		# 0xFE00-0xFE0F	Variation Selectors Supplement	字形選択子補助（SVS用）
+		# 0xE0100-0xE01EF	Variation Selectors	字形選択子（IVS用）
+	if  0xFE00<=cp  and cp <=0xFE0F or \
+		0xE0100<=cp and cp <=0xE01EF:
+		return True
+	else:	return False
+
+#
+# SVS異体字選択子（variation selector）の判定
+#
+def isSVSVariationSelector(cp):
+	# unicodeにおける異体字選択子のブロック内か？
+		# 0xFE00-0xFE0F	Variation Selectors Supplement	字形選択子補助（SVS用）
+	if  0xFE00<=cp  and cp <=0xFE0F:
+		return True
+	else:	return False
+
+#
+# IVS異体字選択子（variation selector）の判定
+#
+def isIVSVariationSelector(cp):
+	# unicodeにおける異体字選択子のブロック内か？
+		# 0xE0100-0xE01EF	Variation Selectors	字形選択子（IVS用）
+	if  0xE0100<=cp and cp <=0xE01EF:
+		return True
+	else:	return False
+
+#
+# 文字列の拡張文字列化
+#
+# 文字列を拡張文字列に変換する	1文字が複数の符号位置であらわされている場合（代用対/結合文字/IVS/SVS）への対応
+#	返値は(拡張文字,属性情報)のtuppleのlistでこれを「拡張文字列」とする
+# 	このうち
+#	拡張文字は
+# 		UCS2のときはリスト
+# 			[ 通常文字または文字列としての代用対 , 結合文字または異体字選択子（2バイトまたは代用対）または空文字 ]
+# 		UCS4のときは文字列
+# 			文字列（通常文字に結合文字または異体字選択子が付くことがある）
+#	属性情報は属性値（整数）となる
+#		属性は:
+#		UCS: 通常のUnicode文字（Universal Coded Character Set）
+#		CCS: 結合文字列（Combining Charactor Seuence）
+#		SVS: 標準異体字列（Standard Variation Sequence）
+#		IVS: 異体字列（Ideographic Variation Sequence）
+#		に分類される
+def toXstr(s):
+	StringList=[]
+	AttrList=[]	# 拡張文字列の属性リスト
+	if isUCS2():
+		surrogate_pair=False	# UCS2では代用対（surrogate pair）がありうる
+		prevchar=""
+		for c in s:
+			cp=ord(c)	# code point
+			# 代用対（[D800～DBFF]+[DC00～DFFF]のペア）の存在を考慮する
+			if not surrogate_pair:	# 代用対の処理中でなければ
+				if isHighSurrogate(cp):	# 代用対の前半部なら
+					surrogate_pair=True	# surrogate pair starts
+					HighSurrogate=c
+					HighSurrogateCp=cp
+					continue
+				if isLowSurrogate(cp):	error("代用対の構成が無効です。")	# 代用対の後半部が単独で現れた
+				elif isCombiningDiacriticalMark(cp):	# 合成可能文字なら
+					if prevchar=="":	error("結合文字列の構成が無効です。")	# 空文字の次に合成可能文字が現われた
+					StringList.append([prevchar,c])	# 先行文字と合成可能文字の組を追加（合成可能文字は第0面のみにある）
+					AttrList.append(CCS)
+					prevchar=""
+				elif isSVSVariationSelector(cp):	# 異体字選択子なら（代用対ではないのでSVS用異体字選択子の可能性のみ検査する）
+					if prevchar=="":	error("異体字列の構成が無効です。")	# 空文字の次に異体字選択子が現われた
+					StringList.append([prevchar,c])	# 先行文字とSVS用異体字選択子（2バイト）の組を追加
+					AttrList.append(SVS)
+					prevchar=""
+				else:	# 次となる普通の文字がきたら先行文字を単独で追加
+					if prevchar!="":
+						StringList.append([prevchar,""])	# 先行文字と空文字の組を追加
+						AttrList.append(UCS)
+					prevchar=c	# 先行文字とする
+			elif isLowSurrogate(cp):	# 代用対の処理中に代用対の後半部がきたら代用対の完成
+				surrogate_pair=False	# surrogate pair ends
+				sp=HighSurrogate+c	# 代用対を作る
+				uni = 0x10000 + (HighSurrogateCp - 0xD800) * 0x400 + (cp - 0xDC00);	# 代用対をdecodeする
+				if isIVSVariationSelector(uni):	# 代用対が異体字選択子なら（代用対なのでSVSてはなくIVSの可能性のみ検査する
+					if prevchar=="":	error("異体字列の構成が無効です。")	# 空文字の次に異体字選択子が現われた
+					StringList.append([prevchar,sp])	# 先行文字とIVS用異体字選択子（4バイト）の組を追加
+					AttrList.append(IVS)	# 代用対はIVS用異体字選択子
+					prevchar=""
+				else:	# 先行文字があって次に文字としての代用対が来た
+					if prevchar!="":
+						StringList.append([prevchar,""])	# 先行文字と空文字の組を追加
+						AttrList.append(UCS)
+					prevchar=sp	# 代用対を先行文字とする
+			else:	error("代用対の構成が無効です。")	# 代用対の前半部の次に代用対後半部以外が現われた
+		if surrogate_pair: 	error("代用対の構成が無効です。")	# 代用対の前半部で文字列の終端に達した
+		if prevchar!="":
+			StringList.append([prevchar,""])	# 最後の先行文字と空文字の組を追加
+			AttrList.append(UCS)
+	else:	# UCS4
+		prevchar=""
+		for c in s:
+			cp=ord(c)	# code point
+			if isCombiningDiacriticalMark(cp):	# 合成可能文字なら
+				if prevchar=="":	error("結合文字列の構成が無効です。")	# 空文字の次に合成可能文字が現われた
+				StringList.append(prevchar+c)	# 先行文字と合成可能文字の列を追加
+				AttrList.append(CCS)
+				prevchar=""
+			elif isSVSVariationSelector(cp) or isIVSVariationSelector(cp):	# 異体字選択子なら
+				if prevchar=="":	error("異体字列の構成が無効です。")	# 空文字の次に異体字選択子が現われた
+				StringList.append(prevchar+c)	# 先行文字と異体字選択子（4バイト）の列を追加
+				if isSVSVariationSelector(cp):
+					AttrList.append(SVS)
+				else:
+					AttrList.append(IVS)
+				prevchar=""
+			else:
+				if prevchar!="":
+					StringList.append(prevchar)	# 次となる普通の文字がきたら先行文字を単独で追加
+					AttrList.append(UCS)
+				prevchar=c	# 先行文字とする
+		if prevchar!="":
+			StringList.append(prevchar)	# 最後の先行文字を追加
+			AttrList.append(UCS)
+	return list(zip(StringList, AttrList))	# (Xchar,Xattr)のtuppleのlistを返す
+
+#
+# XcharMatch 文字のゆるい一致検査
+#
+#	拡張文字同士で「ゆるい一致検査」をする
+#		通常文字が与えられたときは拡張文字列に変換してから比較する
+#		「拡張文字列」はtoXstr()が出力する文字単位のリストによる「文字列」
+#		ふたつの文字列で同じ位置の文字の比較は
+#			UCSとUCSのときは通常の文字比較で「一致/不一致」を決める
+#			IVSとIVSのときは基底文字と異体字選択子の両方が同じなら「一致」とする
+#			UCSとIVSのときはUCSと「IVSの基底文字」が同じなら（IVSの異体字選択子の値にかかわらず）「一致」（ゆるい一致）とする
+#		これは、IVSに対して、その基底文字に等しいUCSは「異体字選択子による微小な字体差を包摂していて文字比較においてwild-characterのようになっている」ということによる
+#		なお、UCSを表示したときに使用される字体は対応するIVSの異体字組があるときはfontシステムがその中からひとつを省略時字体（default glyph）として用いる
+def XcharMatch(char1,char2):
+	if type(char1)!=tuple:	# char1は通常文字
+		Xchar1=toXstr(char1)[0]	# 拡張文字に変換
+	else:
+		Xchar1=char1
+	if type(char2)!=tuple:	# char2は通常文字
+		Xchar2=toXstr(char2)[0]	# 拡張文字に変換
+	else:
+		Xchar2=char2
+	# LooseMatchでなかったら通常比較
+	if not LooseMatch:
+		return char1==char2
+	# (拡張文字,属性)のtupleを分解
+	char1=Xchar1[0]
+	char2=Xchar2[0]
+	attr1=Xchar1[1]
+	attr2=Xchar2[1]
+	if char1==char2:	# 拡張文字で一致のとき
+		return True
+	if char1[0]!=char2[0]:	# 拡張文字の基底文字部分が等しくないとき
+		return False	# 両文字はここで不一致となった
+	else:	# 文字の基底文字部分が等しいとき
+		if (attr1==UCS and attr2==IVS) or (attr1==IVS and attr2==UCS):	# 基底文字部分が等しく片方はUCSでもう一方はIVS異体字選択子
+			return True	# この拡張文字は一致←「片方はUCSでもう一方はIVS」は拡張部分が異なる場合の例外的一致
+		else:	# 基底文字部分が等しく両方に結合文字/SVS異体字選択子/（異なる）IVS異体字選択子
+			# この段階では基底文字部分が等しく拡張部分が異なるままなので「例外」ではなく不一致となる
+			return False	# 両文字は不一致
+
+#
+# XstrMatch 文字列のゆるい一致検査
+#
+#	拡張文字列同士で「ゆるい一致検査」をする
+#		通常文字列が与えられたときは拡張文字列に変換してから比較する
+#		「拡張文字列」はtoXstr()が出力する文字単位のリストによる「文字列」
+#		ふたつの文字列で同じ位置の文字の比較はXcharMatch()で行なう
+def XstrMatch(str1,str2):
+	# 与えられた文字列が通常文字列のときは拡張文字列に変換しておく（文字列がUTF8ときときはunicodeへの変換もする）
+	if type(str1)!=list:
+		str1=toXstr(str1)
+	if type(str2)!=list:
+		str2=toXstr(str2)
+	if str1==str2:	# 全体一致
+		return True
+	if len(str1)!=len(str2):	# 拡張文字列長（文字数）が異なる
+		return False
+	for i in range(0,len(str1)):
+		if not XcharMatch(str1[i],str2[i]):
+			return False
+	return True	# 最後の文字まで一致した
+
+#
+# 文字列の合成
+#
+# 拡張文字列を文字列に変換する	1文字が複数の符号位置であらわされている場合（代用対/結合文字/IVS/SVS）への対応
+# 	拡張文字列は(拡張文字,属性値)のtuplgのlistで
+#		拡張文字は
+# 			UCS2のときはリスト
+# 				[ 通常文字または文字列としての代用対 , 結合文字または異体字選択子（2バイトまたは代用対）または空文字 ]
+# 			UCS4のときは文字列
+# 				文字列（通常文字に結合文字または異体字選択子が付くことがある）
+#		属性値は整数
+def Xstr2Str(xs,start=0,end=None):	# 拡張文字列xsのstartからendの手前までを通常文字列として返す
+	if xs==None:
+		return ""
+	if end==None:	end=len(xs)
+	# startとendは文字単位で与えられる
+	if start<0 or start>len(xs):
+		error("部分文字列の開始位置の指定エラー")
+	if end<0 or end>len(xs):
+		error("部分文字列の終了位置の指定エラー")
+	if start>end: error("部分文字列の開始位置が終了位置の後にあります。")
+	string=""
+	for i in range(start,end):
+		if isUCS2():	# UCS2のとき拡張文字列の各拡張文字部分は長さ2のリスト（[代用対または通常文字,結合文字または異体字選択子（代用対のこともある）]）
+			string+=xs[i][0][0]+xs[i][0][1]
+		else:
+			string+=xs[i][0]	# UCS4のとき拡張文字列のi番目の文字部分をとる
+	return string
+
+# Xindex 「文字列のゆるい一致」にもとづく文字列メソッドindex()の拡張文字列版（ほぼ）代用関数
+#
+def Xindex(str1,str2):	# str1がstr2の中にあれば発見位置を返す
+	len1=len(str1)
+	dif=len(str2)-len1
+	if dif<0: return -1
+	for i in range(dif+1):
+		if XstrMatch(str1,str2[i:i+len1]):
+			return i	# str2の先頭からi番目でmatch
+	return -1
+
+# Xreplace 文字列メソッドreplace()の「文字列のゆるい一致」にもとづく拡張文字列版（ほぼ）代用関数
+#
+def Xreplace(str1,str2,str3):	# str1がstr2の中にあればstr3で置換する
+	i=0
+	while i>=0:
+		i=Xindex(str1,str2)
+		if i>=0:	# str1がstr2の中にあったら
+			# str2の中のstr1に等しい部分をstr3で置換する
+			str2[i:i+len(str1)]=str3
+	return str2
+
+###########################################
+# メイン関数
 ###########################################
 if __name__ == '__main__':
 
-	###########################################
-	#ヘルプ
-	###########################################
-	if len(sys.argv) > 1:
-		if sys.argv[1] == '--help' or sys.argv[1] == '--version':
-			printUsage()
+	# 構文表示
+	if len(sys.argv) < 2: printUsage()
+	elif len(sys.argv) == 2:
+		if sys.argv[1] == '--help' or \
+		   sys.argv[1] == '--version':	printUsage()
+
+	#
+	# NFD文字（清音+結合用濁点/結合用半濁点）検出のための正規表現パターンを準備
+	#
+	pattern=re.compile(_comb_pat)
+
+	#
+	# 拡張文字列の各文字ごとの属性識別用定数
+	UCS,CCS,SVS,IVS=0,1,2,3
+	# UCS: 通常のUnicode文字（Universal Coded Character Set）
+	# CCS: 結合文字列（Combining Charactor Seuence 結合文字列
+	# SVS: 標準異体字列（Standard Variation Sequence）
+	# IVS: 異体字列（Ideographic Variation Sequence）
+
+	# 「ゆるい文字列一致」の指定
+	LooseMatch=True	# 現在は固定
+	if LooseMatch:
+		Xlf=toXstr(to_unicode('\n'))	# 改行を拡張文字列化しておく
 
 	###########################################
-	#オプションの処理
+	# オプションの処理
 	###########################################
 	op = Operator()
 
-	file = sys.stdin
-
+	file = None
 	argc = len(sys.argv)
-	#ファイルか、num=か、-nか
+	# ファイルか、num=か、-nか
 	for i in range(1, argc):
 		arg = sys.argv[i]
 		if prefixEqual("-d",arg):	op.setValueDelimiter(arg[2:])
-		elif arg == "-":		pass
+		elif arg == "-":		file=open_file(arg)
 		elif prefixEqual("-",arg):	op.setReturnNum(arg[1:])
 		elif prefixEqual("num=",arg):	op.setKeyNum(arg[4:])
-		else:				file = open(arg,'r')
+		else:				file = open_file(arg)
+
+	if not file:
+		die("入力ファイルの指定がありません。")
 
 	###########################################
-	#出力
+	# 出力
 	###########################################
+	firstline=True
 	for line in file:
-		# （Python2のときはutf_8からユニコードに変換して）改行を取る
-		if sys.version_info < (3, 0): line = unicode(line, "utf_8")
-		line=line.rstrip()
+		line=preproc_line(line)
+		line=NFDtoNFC(line)
 		op.output(line)

@@ -4,11 +4,11 @@
 # cgi-name ＰＯＳＴメソッドによる変数と値を name 形式に変換する（Open usp Tukubai版）
 # 
 # designed by Nobuaki Tounaka
-# written by Yoshio Katayama
+# written  by Masatomo Togashi
 # 
 # The MIT License
 # 
-# Copyright (C) 2011 Universal Shell Programming Laboratory
+# Copyright (C) 2020 Universal Shell Programming Laboratory
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -30,9 +30,9 @@
 
 from __future__ import print_function
 
-_usage = "cgi-name [-d<c>][-i<string>] <param_file>"
+_usage = "cgi-name [-d<c>] [-i<string>] <param_file>"
 _option = "         [--template <html>]"
-_version = "Fri Oct 21 11:26:06 JST 2011"
+_version = "Wed May 20 04:47:47 JST 2020"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
 
 import re
@@ -41,7 +41,7 @@ import sys
 import base64
 
 def error(msg, *arg):
-	print('Error[check_need_name] :', msg % arg, file=sys.stderr)
+	print('Error[cgi-name] :', msg % arg, file=sys.stderr)
 	sys.exit(1)
 
 def usage():
@@ -55,22 +55,56 @@ def usage():
 # 入力ファイルオープン
 #
 def open_file(n, quiet = False):
-	if type(n) == type(0):
-		if n >= len(sys.argv):
-			n = '-'
+	if type(n) == type(0):	# ファイルがコマンドパラメータの位置で指定されているなら
+		if n >= len(sys.argv):	# ファイル名省略時
+			n = '-'	# sys.stdinを仮定する
 		else:
-			n = sys.argv[n]
-	if n == '-':
-		file = sys.stdin
+			n = sys.argv[n]	# 指定位置のコマンドパラメータをとる
+	if n == '-':	# '-'が指定されているとき
+		n = '/dev/fd/0'	# sys.stdinをファイルディスクリプターで表記する
+	if Python3():
+		mode='r'
 	else:
-		try:
-			file = open(n)
-		except:
-			if not quiet:
-				error("ファイル '%s' をオープンできません。", n)
-			else:
-				sys.exit(1)
+		mode='rU'	# Python2ではmodeがrUのときPython3と同様に読み込み時に各種改行記号がLF（\n）に統一される
+	# 標準入力も含めてopen()で開く
+	try:
+		file = open(n, mode)
+	except:
+		if not quiet:
+			error("ファイル '%s' をオープンできません。", n)
+		else:
+			sys.exit(1)
 	return file
+
+# 改行符号（\r\n）の削除関数
+def rm_eol(line):
+	return line.rstrip("\r\n")	# 改行記号としてCRLF('\r\n')/CR('\r')/LF('\n')のすべてに対応する
+
+# BOMの取得関数
+def get_BOM():
+	if Python3():	return chr(int("FEFF",16))	# U+FEFFはBOMのUnicode符号位置
+	else:			return "\xEF\xBB\xBF"	# BOMは「EF BB BF」の3バイト
+
+# BOMの削除関数
+def rm_BOM(line):
+	global firstline
+	if not firstline: return line
+	firstline=False
+	if line.startswith(get_BOM()):	line=line[len(get_BOM()):]	# 行頭にBOMがあったらBOMを削除する
+	return line
+
+# ファイル入力行の前処理
+def preproc_line(line):
+	line=rm_eol(line)	# 行末の改行記号を削除する
+	line=rm_BOM(line)	# ファイル先頭行の行頭にBOMがあったらこれを削除する
+	return line
+
+# Python3か判定する
+def Python3():
+	if sys.version_info >= (3, 0):
+		return True
+	else:
+		return False
 
 #
 # タグのエンドサーチ
@@ -94,8 +128,11 @@ def get_name(str):
 # <html> から name リストの取り出し
 #
 def template(fname):
+	global firstline
 	file = open_file(fname)
-	str = file.read()
+	firstline=True
+	str = file.read()	# 全行を改行記号付きで読み出す
+	str = rm_BOM(str)	# BOMがあれば削除する
 	name = []
 	while '<input' in str:
 		str = str[str.index('<input') + 6:]
@@ -143,14 +180,15 @@ def utf2ucs(instr):
 	return outstr
 
 #
-#メイン関数
+# メイン関数
 #
 if __name__ == '__main__':
 
-	if len(sys.argv) > 1 \
-	 and (sys.argv[1] == '--help' \
-	  or sys.argv[1] == '--version') :
-		usage()
+	# 構文表示
+	if len(sys.argv) < 2: usage()
+	elif len(sys.argv) == 2:
+		if sys.argv[1] == '--help' or \
+		   sys.argv[1] == '--version':	usage()
 
 	#
 	# オプション解析
@@ -161,27 +199,27 @@ if __name__ == '__main__':
 		if len(sys.argv[1]) < 2 or sys.argv[1][0] != '-':
 			break;
 		if sys.argv[1][:ltmpl] == '--template':
-			if sys.argv[1][ltmpl:] and sys.argv[1][ltmpl] == '=':
-				name += template(sys.argv[1][ltmpl + 1:])
-			elif len(sys.argv) > 2:
-				name += template(sys.argv[2])
+			if sys.argv[1][ltmpl:] and sys.argv[1][ltmpl] == '=':	# --template=<html>の場合
+				name += template(sys.argv[1][ltmpl + 1:])	# <html>を取得
+			elif len(sys.argv) > 2:	#  --template <html>の場合
+				name += template(sys.argv[2])	# 次の引数を<html>として取得
 				del sys.argv[2]
 			else:
 				error("--template オプションの引数がありません。")
 		elif sys.argv[1][1] == 'i':
-			if sys.argv[1][2:]:
-				null = sys.argv[1][2:]
+			if sys.argv[1][2:]:	# -iの後に文字があれば
+				null = sys.argv[1][2:]	# -i<string>として<string>を取得
 			elif len(sys.argv) <= 2:
 				error("-i オプションの引数がありません。")
-			else:
-				null = sys.argv[2]
+			else:	# -iの後が空白文字なら
+				null = sys.argv[2]	# -i <string>として<string>を取得
 				del(sys.argv[2])
 		elif sys.argv[1][1] == 'd':	# 半角空白置換の指定
 			blank = sys.argv[1][2:]
-			if sys.version_info >= (3, 0):	# Python3なら
+			if Python3():	# Python3なら
 				blank=utf2ucs(blank)	# 直接入力文字列の前処理をする
 		else:
-			c = sys.argv[1][i]
+			c = sys.argv[1][1]
 			if c < '\x21' or c > '\x7e':
 				c = hex(ord(c))
 			print("不明なオプション文字です: %s" % c, file=sys.stderr)
@@ -191,31 +229,44 @@ if __name__ == '__main__':
 	#
 	# 入力の解析
 	#
-	for token in re.split(r'[&\n\r]+', open_file(1, True).readline()):
-		r = re.match(r'([^=]+)=(.*)', token)
+	file=open_file(1, True)
+	firstline=True
+	line=file.readline()
+	# 主入力ファイルに複数の行があったか検査する
+	if file.readline():	# 次の行があったとき
+		error("主入力ファイルに複数の行があります。")
+	line=preproc_line(line)
+	for token in re.split(r'&+', line):	# 主入力先頭行を&で分割する
+		r = re.match(r'([^=]+)=(.*)', token)	# name=valueの対を検出する
 		if r:
-			print(r.group(1), end=' ')
-			del_name(name, r.group(1))
+			print(r.group(1), end='')	# nameを出力する
+			del_name(name, r.group(1))	# nameリストから今のnameを削除する
 			d = r.group(2)
-			d = re.sub(r'\+', ' ', d)
-			d = re.sub(r'%0D%0A', r'\\n', d)
-			if sys.version_info >= (3, 0):
+			d = re.sub(r'\+', ' ', d)	# 記号「+」は空白に変換する
+			d = re.sub(r'%0D%0A', r'\\n', d)	# 改行(%0D%0A)は文字列'\n'に変換する
+			# Base64による文字16進表記を文字へ変換する
+			if Python3():	# Python3なら
 				d=re.sub(r'(%([0-9A-F]{2}))+', lambda x: str(base64.b16decode(re.sub(r'%', '', x.group(0))),"utf8","replace"),d)
 			else:
 				d = re.sub(r'%([0-9A-F]{2})', lambda x: chr(int(x.group(1), 16)), d)
 			d = re.sub(r' ', blank, d)
 			d = d or null
 			if d:
-				print(d, end='')
-			print()
+				print(" "+d)
+			else:
+				print()
 
 	#
 	# 出力されなかった name を出力
 	#
+
+	name=sorted(set(name),key=name.index)	# 集合化によってリストの重複を解消し元のリストにおける出現位置をキーとしてsort
+
 	for n in name:
-		print(re.sub(r'_%\d+$', '', n), end=' ')
+		print(re.sub(r'_%\d+$', '', n), end='')
 		if null:
-			print(null, end='')
-		print()
+			print(" "+null)
+		else:
+			print()
 
 	sys.exit(0)

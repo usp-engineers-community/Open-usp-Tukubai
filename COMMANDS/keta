@@ -4,11 +4,11 @@
 # keta 桁整形フィルタ（Open usp Tukubai版）
 # 
 # designed by Nobuaki Tounaka
-# written by Yoshio Katayama
+# written  by Masatomo Togashi
 #
 # The MIT License
 #
-# Copyright (C) 2011 Universal Shell Programming Laboratory
+# Copyright (C) 2020 Universal Shell Programming Laboratory
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -33,7 +33,7 @@ from __future__ import print_function
 _usage = "keta n1 n2 .. <filename>"
 _usage1 = "keta -v <filename>"
 _usage2 = "keta [--] <filename>"
-_version = "Fri Oct 21 11:26:06 JST 2011"
+_version = "Wed May 20 04:47:49 JST 2020"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
 _keypat = r'(-?\d+)(x((\d+)|(NF)(-\d+)?))?$'
 		# 1: - width
@@ -62,56 +62,15 @@ def usage():
 	sys.exit(1)
 
 class FieldLine:
-	def __init__(self, line, allow_z = False):
-		self.__allow_zero = allow_z
-		line = line.rstrip('\n')
-		self.__fields = [ line ]
+	def __init__(self, line):
+		self.__fields = [ "" ]
 		self.__fields += [ x for x in line.split(' ') if x ]
 
 	def size(self):
 		return len(self.__fields) - 1
 
-	def getFieldNum(self, key):
-		if type(key) == type(0):
-			return key
-		if re.match(r'\d+$', key):
-			key = int(key)
-		elif key == 'NF':
-			key = self.size()
-		else:
-			key = self.size() - int(key[3:])
-			if key <= 0:
-				error("NF-x の x が大きすぎます。")
-		if key < 0:
-			error("フィールド番号が負です。")
-		if key == 0 and not self.__allow_zero:
-			error("フィールド番号が０です。")
-		if key > self.size():
-			error("フィールド番号が大きすぎます。")
-		return key
-
-	def getField(self, s, e = None):
-		s = self.getFieldNum(s)
-		if e == None:
-			e = s
-		else:
-			e = self.getFieldNum(e)
-		if s <= e:
-			return ' '.join(self.__fields[s : e + 1])
-		else:
-			t = self.__fields[e : s + 1]
-			t.reverse()
-			return ' '.join(t)
-
-	def getHead(self, n):
-		pat = '( *([^ ]+ +){%d}[^ ]+)' % (n - 2)
-		r = re.match(pat, self.__fields[0])
-		return r.group(1)
-
-	def getTail(self, n):
-		pat = ' *([^ ]+ +){%d}[^ ]+ ?(.*)' % (n - 1)
-		r = re.match(pat, self.__fields[0])
-		return r.group(2)
+	def getField(self, s):
+		return self.__fields[s]
 
 #
 # unicode 変換
@@ -170,12 +129,12 @@ def isHalfWidth(c):
 #
 def isCombiningDiacriticalMark(cp):
 	# unicodeにおける合成可能文字のブロック内か？
-		#	0x3099 0x309a	仮名文字の合成可能濁点と合成可能半濁点
-		#	0x0300-0x036F	ダイアクリティカルマーク（合成可能）
-		#	0x1AB0-0x1AFF	ダイアクリティカルマーク（合成可能）拡張
-		#	0x1DC0-0x1DFF	ダイアクリティカルマーク（合成可能）補助
-		#	0x20D0-0x20FF	記号用ダイアクリティカルマーク（合成可能）
-		#	0xFE20-0xFE2F	半記号（合成可能）
+		# 0x3099 0x309a	仮名文字の合成可能濁点と合成可能半濁点
+		# 0x0300-0x036F	ダイアクリティカルマーク（合成可能）
+		# 0x1AB0-0x1AFF	ダイアクリティカルマーク（合成可能）拡張
+		# 0x1DC0-0x1DFF	ダイアクリティカルマーク（合成可能）補助
+		# 0x20D0-0x20FF	記号用ダイアクリティカルマーク（合成可能）
+		# 0xFE20-0xFE2F	半記号（合成可能）
 	if cp == 0x3099 or cp == 0x309a or \
 		0x0300<=cp and cp <=0x036F or \
 		0x1AB0<=cp and cp <=0x1AFF or \
@@ -190,8 +149,8 @@ def isCombiningDiacriticalMark(cp):
 #
 def isVariationSelector(cp):
 	# unicodeにおける異体字選択子のブロック内か？
-		#	0xFE00-0xFE0F	Variation Selectors Supplement	字形選択子補助（SVS用）
-		#	0xE0100-0xE01EF	Variation Selectors	字形選択子（IVS用）
+		# 0xFE00-0xFE0F	Variation Selectors Supplement	字形選択子補助（SVS用）
+		# 0xE0100-0xE01EF	Variation Selectors	字形選択子（IVS用）
 	if  0xFE00<=cp  and cp <=0xFE0F or \
 		0xE0100<=cp and cp <=0xE01EF:
 		return True
@@ -212,12 +171,12 @@ def strwidth(s):
 #
 # 文字列の分解
 #
-#	文字列を拡張文字の列に変換する	1文字が複数の符号位置であらわされている場合（代用対/結合文字/IVS/SVS）への対応
-#		分解結果はリストとなり各要素（拡張文字）は
-#			UCS2のときはリスト
-#				[ 通常文字または文字列としての代用対 , 結合文字または異体字選択子（2バイトまたは代用対）または空文字 ]
-#			UCS4のときは文字列
-#				文字列（通常文字に結合文字または異体字選択子が付くことがある）
+# 文字列を拡張文字の列に変換する	1文字が複数の符号位置であらわされている場合（代用対/結合文字/IVS/SVS）への対応
+# 	分解結果はリストとなり各要素（拡張文字）は
+# 		UCS2のときはリスト
+# 			[ 通常文字または文字列としての代用対 , 結合文字または異体字選択子（2バイトまたは代用対）または空文字 ]
+# 		UCS4のときは文字列
+# 			文字列（通常文字に結合文字または異体字選択子が付くことがある）
 def string2list(s):
 	StringList=[]
 	if isUCS2():
@@ -283,15 +242,49 @@ def string2list(s):
 #
 # 入力ファイルオープン
 #
-def open_file(n, mode = 'r'):
-	if n >= len(sys.argv) or sys.argv[n] == '-':
-		file = sys.stdin
-	else:
-		try:
-			file = open(sys.argv[n], mode)
-		except:
-			error("ファイル %s をオープンできません。", sys.argv[n])
+def open_file(n):
+	if type(n) == type(0):
+		if n >= len(sys.argv):	n = '-'
+		else:	n = sys.argv[n]
+	if n == '-':	n = '/dev/fd/0'	# sys.stdinをファイルディスクリプターで表記する
+	if Python3():	mode='r'
+	else:	mode='rU'	# Python2ではmodeがrUのときPython3と同様に読み込み時に各種改行記号がLF（\n）に統一される
+	try:
+		file = open(n, mode)
+	except:
+		if n=='/dev/fd/0': n="-"
+		error("ファイル '%s' をオープンできません。", n)
 	return file
+
+# 改行符号（\r\n）の削除関数
+def rm_eol(line):
+	return line.rstrip("\r\n")	# 改行記号としてCRLF('\r\n')/CR('\r')/LF('\n')のすべてに対応する
+
+# BOMの取得関数
+def get_BOM():
+	if Python3():	return chr(int("FEFF",16))	# U+FEFFはBOMのUnicode符号位置
+	else:			return "\xEF\xBB\xBF"	# BOMは「EF BB BF」の3バイト
+
+# BOMの削除関数
+def rm_BOM(line):
+	global firstline
+	if not firstline: return line
+	firstline=False
+	if line.startswith(get_BOM()):	line=line[len(get_BOM()):]	# 行頭にBOMがあったらBOMを削除する
+	return line
+
+# ファイル入力行の前処理
+def preproc_line(line):
+	line=rm_eol(line)	# 行末の改行記号を削除する
+	line=rm_BOM(line)	# ファイル先頭行の行頭にBOMがあったらこれを削除する
+	return line
+
+# Python3か判定する
+def Python3():
+	if sys.version_info >= (3, 0):
+		return True
+	else:
+		return False
 
 #
 # 通常ファイルの判定
@@ -306,7 +299,7 @@ def isfile(fd):
 # 1st pass
 #
 def pass1(file, left, rewind):
-	if rewind and not isfile(file.fileno()):
+	if rewind and not isfile(file.fileno()):	# rewind指定で通常fileでないとき←fileとして標準入力が与えられているとき
 		tmp = tempfile.mkstemp(prefix='keta-')
 		os.unlink(tmp[1])
 		tmp = os.fdopen(tmp[0], 'w+')
@@ -315,10 +308,12 @@ def pass1(file, left, rewind):
 
 	wid = []
 	for line in file:
-		if tmp:
-			print(line, end='', file=tmp)
+		line=preproc_line(line)	# 入力行の前処理
+		if tmp:	# 標準入力のときは一時fileに記憶しておく
+			print(line, file=tmp)
 		line = FieldLine(line)
 		wid += [ 0 ] * (line.size() + 1 - len(wid))
+		# 各フィールドについて最大表示幅を調べる
 		for i in range(1, line.size() + 1):
 			wid[i] = max(wid[i], strwidth(line.getField(i)))
 
@@ -327,7 +322,7 @@ def pass1(file, left, rewind):
 	if tmp:
 		file.close()
 		file = tmp
-	if rewind:
+	if rewind:	# rewind指定なら一時fileをrewindしておく
 		file.seek(0)
 	return [ file, wid[1:] ]
 
@@ -335,7 +330,10 @@ def pass1(file, left, rewind):
 # 2nd pass
 #
 def pass2(arg):
+	global firstline
+	firstline=True
 	for line in arg[0]:
+		line=preproc_line(line)	# 入力行の前処理
 		prline(FieldLine(line), arg[1])
 	sys.exit(0)
 
@@ -343,7 +341,10 @@ def pass2(arg):
 # 2nd pass (with NF)
 #
 def pass2_nf(file, wid):
+	global firstline
+	firstline=True
 	for line in file:
+		line=preproc_line(line)	# 入力行の前処理
 		line = FieldLine(line)
 		prline(line, mkwidtab(wid, line.size()))
 	sys.exit(0)
@@ -364,6 +365,9 @@ def prline(line, wid):
 
 	i=0
 	outstr=''
+	# 桁指定の数とフィールド数の一致検査
+	if len(wid) != line.size():
+		error("桁指定の数と行のフィールド数が一致しません。")
 	for string in list(map(line.getField, list(range(1, line.size() + 1)))):
 		outstr=pr1(outstr,string,wid[i])
 		i+=1
@@ -386,14 +390,17 @@ def mkwidtab(wid, nf):
 			table += [ int(w[0]) ]
 	return table
 #
-#メイン関数
+# メイン関数
 #
 if __name__ == '__main__':
 
-	if len(sys.argv) > 1 \
-	 and (sys.argv[1] == '--help' \
-	  or sys.argv[1] == '--version'):
-		usage()
+	# 構文表示
+	if len(sys.argv) < 2: usage()
+	elif len(sys.argv) == 2:
+		if sys.argv[1] == '--help' or \
+		   sys.argv[1] == '--version':	usage()
+
+	firstline=True
 
 	#
 	# -v <filename>
@@ -401,7 +408,7 @@ if __name__ == '__main__':
 	if len(sys.argv) > 1 and sys.argv[1] == '-v':
 		if len(sys.argv) > 3:
 			usage()
-		file = open_file(2)
+		file = open_file(2)	# 第2パラメータをファイル名と仮定する
 		pass1list=pass1(file, 0, False)[1]
 		cnt=0
 		for i in pass1list:
@@ -428,21 +435,21 @@ if __name__ == '__main__':
 	#
 	# n1 n2 .. <filename>
 	#
-	if re.match(_keypat, sys.argv[-1]):
+	if re.match(_keypat, sys.argv[-1]):	# パラメータの末尾が桁指定に符合するなら<file>は省略されたとして標準入力をあてる
 		file = sys.stdin
 	else:
-		file = open_file(-1)
+		file = open_file(-1)	# 最後のパラメータをファイル名と仮定する
 		del sys.argv[-1]
 
 	del sys.argv[0]
 	wid = []
 	nf = False
-	for arg in sys.argv:
+	for arg in sys.argv:	# sys.argvは桁指定のならび
 		r = re.match(_keypat, arg)
 		if not r:
 			usage()
-		wid += [ [ r.group(i) for i in (1, 4, 5, 6) ] ]
-		nf |= wid[-1][2] == 'NF'
+		wid += [ [ r.group(i) for i in (1, 4, 5, 6) ] ]	# _keypatから符合部の1/4/5/6番目を取り出してwidに追加する
+		nf |= wid[-1][2] == 'NF'	# r.group(2)は_keypat符合部の5番目で符合していれば"NF"
 
 	if nf:
 		pass2_nf(file, wid)

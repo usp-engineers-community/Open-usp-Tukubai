@@ -4,11 +4,11 @@
 # loopx レコードを総掛けしてファイルを結合 （Open usp Tukubai版）
 # 
 # designed by Nobuaki Tounaka
-# written by Ryuichi Ueda
+# written  by Masatomo Togashi
 #
 # The MIT License
 #
-# Copyright (C) 2012 Universal Shell Programming Laboratory
+# Copyright (C) 2020 Universal Shell Programming Laboratory
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,7 @@
 from __future__ import print_function
 
 _usage = "loopx <file1> <file2> ..."
-_version = "Thu Jan 12 18:35:55 JST 2012"
+_version = "Sat Jun 20 21:57:20 JST 2020"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
 
 import sys
@@ -48,59 +48,118 @@ def usage():
 	sys.exit(1)
 
 def combine(left,right,out):
-
-	for lline in left:
-		lline = lline.rstrip()
+	global firstline
+	left.seek(0)
+	firstline=True
+	while True:
+		lline=left.readline()
+		if lline=="": break	# EOF
+		lline=preproc_line(lline)	# 入力行の前処理
+		if left==right:	# 同一ファイルによるcombineのとき
+			leftpos=left.tell()	# leftの今の位置を記憶しておく
 		right.seek(0)
-		for rline in right:
-			rline = rline.rstrip()
+		firstline=True
+		while True:
+			rline=right.readline()
+			if rline=="": break	# EOF
+			rline=preproc_line(rline)	# 入力行の前処理
 			print(lline, rline, file=out)
+		if left==right:
+			left.seek(leftpos)	# leftを前の位置に戻す
 
-#読み込みファイルを返す。標準入力だったら一度tmpに落とす
+# 読み込みファイルを返す。標準入力または/dev/fd/xxだったら一度tmpに落とす
 def openReadFile(file_name):
-	if file_name == "-":
-		tmp = tempfile.TemporaryFile(mode='w+')	# mode='r+'でもよい defaultではmode='w+b'でPython3ではbyte用となる
-		for line in sys.stdin:
-			tmp.write(line)	# mode='w+b'では「TypeError: 'str' does not support the buffer interface」が出る
-		return tmp
-	elif '/dev/fd/' in file_name:
-		f = open(file_name,'r')
-		tmp = tempfile.TemporaryFile(mode='w+')	# mode='r+'でもよい defaultではmode='w+b'でPython3ではbyte用となる
-		for line in f:
-			tmp.write(line)	# mode='w+b'では「TypeError: 'str' does not support the buffer interface」が出る
-		return tmp
-	try:	return open(file_name,'r')
-	except:	error("ファイルを開けません。")
+	original_file_name=file_name
+	if file_name=="-": file_name = "/dev/fd/0"	# -を/dev/fd/0に読み替える
+	if Python3():	rmode='r'
+	else:	rmode='rU'	# Python2ではmodeがrUのときPython3と同様に読み込み時に各種改行記号がLF（\n）に統一される
+	# /dev/fd/xxのとき
+	if file_name.startswith('/dev/fd/'):
+		if file_name not in file_name_list:	# 初めて-または/dev/fd/xxが指定されたときは一時ファイルに落としておく
+			# 新出のファイル名
+			file = tempfile.TemporaryFile(mode='w+')	# 返値用のfile（mode='r+'でもよい defaultではmode='w+b'でPython3では'w+b'はbyte用となる）
+			try:	fileToRead = open(file_name,rmode)
+			except:	error("ファイル %s を開けません。", original_file_name)
+			for line in fileToRead:
+				file.write(line)	# mode='w+b'では「TypeError: 'str' does not support the buffer interface」が出る
+			file_name_list.append(file_name)	# ファイル名を記憶する
+			file_list.append(file)	# 一時ファイルを記憶する
+		else:	# すでに-または/dev/fd/xxが指定されているときは一時ファイルに落としたものを使用する
+			# 新出のファイル名ではない
+			file=file_list[file_name_list.index(file_name)]	# fileリストから返値用のfileを得る
+	# -でも/dev/fd/xxでもないとき
+	else:
+		if file_name not in file_name_list:	# 初めて指定されたとき
+			# 新出のファイル名
+			try:	file=open(file_name,rmode)
+			except:	error("ファイル %s を開けません。", file_name)
+			file_name_list.append(file_name)	# ファイル名を記憶する
+			file_list.append(file)	# ファイルを記憶する
+		else:	# すでに指定されているときは記憶しているファイルを使用する
+			# 新出のファイル名ではない
+			file=file_list[file_name_list.index(file_name)]	# fileリストから返値用のfileを得る
+	return file
 
-	
+# 改行符号（\r\n）の削除関数
+def rm_eol(line):
+	return line.rstrip("\r\n")	# 改行記号としてCRLF('\r\n')/CR('\r')/LF('\n')のすべてに対応する
+
+# BOMの取得関数
+def get_BOM():
+	if Python3():	return chr(int("FEFF",16))	# U+FEFFはBOMのUnicode符号位置
+	else:			return "\xEF\xBB\xBF"	# BOMは「EF BB BF」の3バイト
+
+# BOMの削除関数
+def rm_BOM(line):
+	global firstline
+	if not firstline: return line
+	firstline=False
+	if line.startswith(get_BOM()):	line=line[len(get_BOM()):]	# 行頭にBOMがあったらBOMを削除する
+	return line
+
+# ファイル入力行の前処理
+def preproc_line(line):
+	line=rm_eol(line)	# 行末の改行記号を削除する
+	line=rm_BOM(line)	# ファイル先頭行の行頭にBOMがあったらこれを削除する
+	return line
+
+# Python3か判定する
+def Python3():
+	if sys.version_info >= (3, 0):
+		return True
+	else:
+		return False
+
+# 入力ファイルに重複指定があるときのための（重複のない）既指定分に関する情報
+file_name_list=[]	# （重複のない）既指定分のファイル名
+file_list=[]	# （重複のない）既指定分の一時ファイル
+
 if __name__ == '__main__':
+
+	# 構文表示
+	if len(sys.argv) < 2: usage()
+	elif len(sys.argv) == 2:
+		if sys.argv[1] == '--help' or \
+		   sys.argv[1] == '--version':	usage()
+
 	filenames = sys.argv[1:]
 
-	if len(filenames) == 0:
-		usage()
-
-	#ファイルは最低二つ必要
+	# ファイルは最低二つ必要
 	if len(filenames) < 2:
-		if '--help' in sys.argv:	usage()
-		elif '-h' in sys.argv:		usage()
+		error("ファイル名を二個以上指定してください。")
 
-		error("ファイル名を二個以上指定してください")
-
-	#ファイル名からファイルを取得
-	file_stack = [ openReadFile(f) for f in filenames ]
+	file_stack=[]
+	for f in filenames:
+		file=openReadFile(f)	# 重複した入力ファイルでもひとつのファイルがsetされる
+		file_stack.append(file)
 
 	while True:
 		right = file_stack.pop()
 		left = file_stack.pop()
-		left.seek(0)
-
-		#フィニッシュ（ループを抜ける処理）
+		# フィニッシュ（ループを抜ける処理）
 		if len(file_stack) == 0:
 			combine(left,right,sys.stdout)
 			sys.exit(0)
-
 		out = tempfile.TemporaryFile(mode='w+')	# mode='r+'でもよい defaultではmode='w+b'でPython3ではbyte用となる
-
 		combine(left,right,out)
-		out.seek(0)
 		file_stack.append(out)

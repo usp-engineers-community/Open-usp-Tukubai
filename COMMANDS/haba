@@ -4,10 +4,11 @@
 # haba : 表示幅をだす（Open usp Tukubai版）
 # 
 # designed by Nobuaki Tounaka
+# written  by Masatomo Togashi
 #
 # The MIT License
 #
-# Copyright (C) 2011 Universal Shell Programming Laboratory
+# Copyright (C) 2020 Universal Shell Programming Laboratory
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +33,7 @@ import sys
 import unicodedata
 
 _usage = "haba [-vf] <file1> <file2>..."
-_version = "Fri Oct 21 11:26:06 JST 2011"
+_version = "Wed May 20 04:47:48 JST 2020"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
 
 wide_class = ["W","F","A"]	# 全角文字クラス
@@ -49,27 +50,55 @@ def usage():
 
 #
 # 入力ファイルオープン
-def open_file(filename, mode = 'r'):
-
-	if filename=='-' or filename == None: # ファイル名が'-'または省略なら標準入力とする
-		file = sys.stdin
-	else:
-		try:
-			file = open(filename, mode)
-		except:
+#
+def open_file(filename):
+	if filename == '-':	filename = '/dev/fd/0'	# sys.stdinをファイルディスクリプターで表記する
+	if Python3():	mode='r'
+	else:	mode='rU'	# Python2ではmodeがrUのときPython3と同様に読み込み時に各種改行記号がLF（\n）に統一される
+	try:
+		file = open(filename, mode)
+	except:
+		if filename=='/dev/fd/0':
+			error("標準入力ファイルをオープンできません。")
+		else:
 			error("ファイル '%s' をオープンできません。", filename)
 	return file
 
-#
 # 改行符号（\r\n）の削除関数
 def rm_eol(line):
-	return line.rstrip('\n').rstrip('\r')
+	return line.rstrip("\r\n")	# 改行記号としてCRLF('\r\n')/CR('\r')/LF('\n')のすべてに対応する
+
+# BOMの取得関数
+def get_BOM():
+	if Python3():	return chr(int("FEFF",16))	# U+FEFFはBOMのUnicode符号位置
+	else:			return "\xEF\xBB\xBF"	# BOMは「EF BB BF」の3バイト
+
+# BOMの削除関数
+def rm_BOM(line):
+	global firstline
+	if not firstline: return line
+	firstline=False
+	if line.startswith(get_BOM()):	line=line[len(get_BOM()):]	# 行頭にBOMがあったらBOMを削除する
+	return line
+
+# ファイル入力行の前処理
+def preproc_line(line):
+	line=rm_eol(line)	# 行末の改行記号を削除する
+	line=rm_BOM(line)	# ファイル先頭行の行頭にBOMがあったらこれを削除する
+	return line
+
+# Python3か判定する
+def Python3():
+	if sys.version_info >= (3, 0):
+		return True
+	else:
+		return False
 
 #
 # unicode 変換
 #
 def to_unicode(s):
-	if sys.version_info >= (3, 0): return s
+	if Python3(): return s
 	else:
 		try:
 			return unicode(s, 'utf_8')
@@ -122,12 +151,12 @@ def isHalfWidth(c):
 #
 def isCombiningDiacriticalMark(cp):
 	# unicodeにおける合成可能文字のブロック内か？
-		#	0x3099 0x309a	仮名文字の合成可能濁点と合成可能半濁点
-		#	0x0300-0x036F	ダイアクリティカルマーク（合成可能）
-		#	0x1AB0-0x1AFF	ダイアクリティカルマーク（合成可能）拡張
-		#	0x1DC0-0x1DFF	ダイアクリティカルマーク（合成可能）補助
-		#	0x20D0-0x20FF	記号用ダイアクリティカルマーク（合成可能）
-		#	0xFE20-0xFE2F	半記号（合成可能）
+		# 0x3099 0x309a	仮名文字の合成可能濁点と合成可能半濁点
+		# 0x0300-0x036F	ダイアクリティカルマーク（合成可能）
+		# 0x1AB0-0x1AFF	ダイアクリティカルマーク（合成可能）拡張
+		# 0x1DC0-0x1DFF	ダイアクリティカルマーク（合成可能）補助
+		# 0x20D0-0x20FF	記号用ダイアクリティカルマーク（合成可能）
+		# 0xFE20-0xFE2F	半記号（合成可能）
 	if cp == 0x3099 or cp == 0x309a or \
 		0x0300<=cp and cp <=0x036F or \
 		0x1AB0<=cp and cp <=0x1AFF or \
@@ -142,8 +171,8 @@ def isCombiningDiacriticalMark(cp):
 #
 def isVariationSelector(cp):
 	# unicodeにおける異体字選択子のブロック内か？
-		#	0xFE00-0xFE0F	Variation Selectors Supplement	字形選択子補助（SVS用）
-		#	0xE0100-0xE01EF	Variation Selectors	字形選択子（IVS用）
+		# 0xFE00-0xFE0F	Variation Selectors Supplement	字形選択子補助（SVS用）
+		# 0xE0100-0xE01EF	Variation Selectors	字形選択子（IVS用）
 	if  0xFE00<=cp  and cp <=0xFE0F or \
 		0xE0100<=cp and cp <=0xE01EF:
 		return True
@@ -164,12 +193,12 @@ def strwidth(s):
 #
 # 文字列の分解
 #
-#	文字列を拡張文字の列に変換する	1文字が複数の符号位置であらわされている場合（代用対/結合文字/IVS/SVS）への対応
-#		分解結果はリストとなり各要素（拡張文字）は
-#			UCS2のときはリスト
-#				[ 通常文字または文字列としての代用対 , 結合文字または異体字選択子（2バイトまたは代用対）または空文字 ]
-#			UCS4のときは文字列
-#				文字列（通常文字に結合文字または異体字選択子が付くことがある）
+# 文字列を拡張文字の列に変換する	1文字が複数の符号位置であらわされている場合（代用対/結合文字/IVS/SVS）への対応
+# 	分解結果はリストとなり各要素（拡張文字）は
+# 		UCS2のときはリスト
+# 			[ 通常文字または文字列としての代用対 , 結合文字または異体字選択子（2バイトまたは代用対）または空文字 ]
+# 		UCS4のときは文字列
+# 			文字列（通常文字に結合文字または異体字選択子が付くことがある）
 def string2list(s):
 	StringList=[]
 	if isUCS2():
@@ -244,17 +273,17 @@ if __name__ == '__main__':
 		usage()
 
 	# パラメータ解析
-	f, v, wide_class = False, False, ["W","F","A"] # default値
+	f, v, wide_class = False, False, ["W","F","A"]	# default値
 	filenames=[]
 	while len(sys.argv) > 1:
-		if sys.argv[1].startswith("-") and len(sys.argv[1])>1: # オプション
-			if not sys.argv[1][1:] in ["f","v","fv","vf"]: # 許される値か
+		if sys.argv[1].startswith("-") and len(sys.argv[1])>1:	# オプション
+			if not sys.argv[1][1:] in ["f","v","fv","vf"]:	# 許される値か
 				error("オプションの値(%s)が不正です",sys.argv[1])
 			if "f" in sys.argv[1][1:]: f=True
 			if "v" in sys.argv[1][1:]: v=True
 		else:
-			filenames.append(sys.argv[1]) # fileパラメ－タへ追加
-		del(sys.argv[1]) # popup
+			filenames.append(sys.argv[1])	# fileパラメ－タへ追加
+		del(sys.argv[1])	# popup
 
 	# パラメータ検査
 	if len(filenames)==0:
@@ -264,20 +293,21 @@ if __name__ == '__main__':
 	for filename in filenames:
 		# ファイルを開く
 		file=open_file(filename)
-		if filename=="-": filename="STDIN" # 標準入力（"-"）に対してはfilenameを"STDIN"に変更
+		if filename=="-": filename="STDIN"	# 標準入力（"-"）に対してはfilenameを"STDIN"に変更
 		prev_haba_string=-1
 		linecount=0
+		firstline=True
 		# ファイルを読む
 		for line in file:
 			linecount+=1
-			line=rm_eol(line)
+			line=preproc_line(line)
 			# 表示幅の計算
 			haba_string=strwidth(line)	# 全角を2、半角を1としたときの行の表示幅
-			if f: outputline=filename+" " # -f指定のときファイル名を出力
+			if f: outputline=filename+" "	# -f指定のときファイル名を出力
 			else: outputline=""
 			if v:
-				if haba_string==prev_haba_string: continue # -v指定で表示幅に変化がなければskip
-				outputline+=str(linecount)+" " # 変化のあった行数を出力
+				if haba_string==prev_haba_string: continue	# -v指定で表示幅に変化がなければskip
+				outputline+=str(linecount)+" "	# 変化のあった行数を出力
 			prev_haba_string=haba_string
 			outputline+=str(haba_string)
 			# 表示幅を出力

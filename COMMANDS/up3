@@ -4,11 +4,11 @@
 # up3 ラストマージツール（Open usp Tukubai版）
 # 
 # designed by Nobuaki Tounaka
-# written by Yoshio Katayama
+# written  by Masatomo Togashi
 #
 # The MIT License
 #
-# Copyright (C) 2011 Universal Shell Programming Laboratory
+# Copyright (C) 2020 Universal Shell Programming Laboratory
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -30,14 +30,18 @@
 
 from __future__ import print_function
 
-_usage = "up3 key=<key> <master_file> <tran_file>"
-_version = "Fri Oct 21 11:26:06 JST 2011"
+_usage = "up3 key=<key> <master_file> [<tran_file>]"
+_version = "Fri Nov 20 17:00:13 JST 2020"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
-_keypat = r'(\d+|NF(-\d+)?)(/(\d|NF(-\d+)?))?$'	# 1st key: \1, 2nd key: \4
+_keypat = r'((\d+|NF(-\d+)?)(/(\d+|NF(-\d+)?))?)(@((\d+|NF(-\d+)?)(/(\d+|NF(-\d+)?))?))*$'
 
 import re
 import os
 import sys
+import unicodedata
+
+# 濁音と半濁音のNFD表記でNFC表記もできるもの→NFDtoNFC変換でNFCに統一する
+_comb_pat=r"(((う|か|き|く|け|こ|さ|し|す|せ|そ|た|ち|つ|て|と|は|ひ|ふ|へ|ほ|ウ|カ|キ|ク|ケ|コ|サ|シ|ス|セ|ソ|タ|チ|ツ|テ|ト|ハ|ヒ|フ|ヘ|ホ|ワ|ヰ|ヱ|ヲ)゙)|((は|ひ|ふ|へ|ほ|ハ|ヒ|フ|ヘ|ホ)゚))+"
 
 def error(msg, *arg):
 	print('Error[up3] :', msg % arg, file=sys.stderr)
@@ -52,7 +56,6 @@ def usage():
 class FieldLine:
 	def __init__(self, line, allow_z = False):
 		self.__allow_zero = allow_z
-		line = line.rstrip('\n')
 		self.__fields = [ line ]
 		self.__fields += [ x for x in line.split(' ') if x ]
 
@@ -87,25 +90,108 @@ class FieldLine:
 		if s <= e:
 			return ' '.join(self.__fields[s : e + 1])
 		else:
-			t = self.__fields[e : s + 1]
-			t.reverse()
-			return ' '.join(t)
+			return ' '.join(self.__fields[s : e-1: -1])	# 範囲の降順指定では降順で出力する
+
+	def getFields(self, FieldList):	# nまたはn/m形式で指定されたフィールド値を得る
+		str=""
+		for field in FieldList:
+			if "/" in field:
+				startend=field.split("/")
+				str+=self.getField(startend[0],startend[1])+" "
+			else:
+				str+=self.getField(field)+" "
+		return str.rstrip()
 
 #
 # 入力ファイルオープン
 #
-def open_file(n, mode = 'r'):
-	if n >= len(sys.argv) or sys.argv[n] == '-':
-		file = sys.stdin
+def open_file(n):
+	if n >= len(sys.argv):	filename = '-'
 	else:
-		try:
-			file = open(sys.argv[n], mode)
-		except:
-			error("ファイル %s をオープンできません。", sys.argv[n])
+		filename = sys.argv[n]
+	if filename == '-':	filename = '/dev/fd/0'	# sys.stdinをファイルディスクリプターで表記する
+	if Python3():	mode='r'
+	else:	mode='rU'	# Python2ではmodeがrUのときPython3と同様に読み込み時に各種改行記号がLF（\n）に統一される
+	try:
+		file = open(filename, mode)
+	except:
+		if filename=='/dev/fd/0':
+			error("標準入力ファイルをオープンできません。")
+		else:
+			error("ファイル '%s' をオープンできません。", filename)
 	return file
 
+# 改行符号（\r\n）の削除関数
+def rm_eol(line):
+	return line.rstrip("\r\n")	# 改行記号としてCRLF('\r\n')/CR('\r')/LF('\n')のすべてに対応する
+
+# BOMの取得関数
+def get_BOM():
+	if Python3():	return chr(int("FEFF",16))	# U+FEFFはBOMのUnicode符号位置
+	else:			return "\xEF\xBB\xBF"	# BOMは「EF BB BF」の3バイト
+
+# BOMの削除関数
+def rm_BOM(file,line):
+	global master_firstline,trans_firstline
+	if file==master:
+		if not master_firstline: return line
+		else: master_firstline=False
+	elif file==trans:
+		if not trans_firstline: return line
+		else: trans_firstline=False
+	if line.startswith(get_BOM()):	line=line[len(get_BOM()):]	# 行頭にBOMがあったらBOMを削除する
+	return line
+
+# ファイル入力行の前処理
+def preproc_line(file,line):
+	line=rm_eol(line)	# 行末の改行記号を削除する
+	line=rm_BOM(file,line)	# ファイル先頭行の行頭にBOMがあったらこれを削除する
+	return line
+
+# Python3か判定する
+def Python3():
+	if sys.version_info >= (3, 0):
+		return True
+	else:
+		return False
+
 #
-#メイン関数
+# utf8 変換
+#
+def to_utf8(s):
+	try:
+		return s.encode('utf-8')
+	except:
+		error("内部エラー UTF8への変換に失敗しました。")
+
+#
+# unicode 変換
+#
+def to_unicode(s):
+	if Python3(): return s
+	try:
+		return unicode(s, 'utf_8')
+	except:
+		error("不当なマルチバイト文字が含まれています。")
+
+#
+# NFDtoNFC()のre.sub()から指定patternがみつかるごとに呼ばれるのでNFD/NFC変換をして返す
+# 置換対象パターンはNFD文字:全角ひらがな/全角カタカナの清音に結合用濁点/結合用半濁点を連接したもの
+# 置換先文字はNFC文字:全角ひらがな/全角カタカナの濁音/半濁音
+#
+def replace(matchobj):
+	if Python3():	return unicodedata.normalize('NFC',matchobj.group(0))
+	else:	return to_utf8(unicodedata.normalize('NFC',to_unicode(matchobj.group(0))))	# Python2ではutf8→unicdoe→utf8の変換をする
+
+#
+# 全角ひらがな/全角カタカナの濁音/半濁音のNFC化
+#
+def NFDtoNFC(str):
+	# 全角ひらがな/全角カタカナの濁音/半濁音をNFCで統一して返す
+	return re.sub(pattern,replace,str)
+
+#
+# メイン関数
 #
 if __name__ == '__main__':
 
@@ -113,16 +199,27 @@ if __name__ == '__main__':
 		usage()
 
 	#
+	# NFD文字（清音+結合用濁点/結合用半濁点）検出のための正規表現パターンを準備
+	#
+	pattern=re.compile(_comb_pat)
+
+	#
 	# key=<key>
 	#
-	k = re.match('key=' + _keypat, sys.argv[1])
+	k = re.match('key=' + _keypat,sys.argv[1])	# 構文検査のために実行する
+
 	if not k:
 		usage()
-	k1 = k.group(1)
-	k2 = k.group(4)
+
+	# フィールドリストを作成
+	FieldList=sys.argv[1][4:].split("@")
 
 	master = open_file(2)
 	trans  = open_file(3)
+
+	# 先頭行処理用flagの初期化
+	master_firstline=True
+	trans_firstline=True
 
 	#
 	# trans の１行入力
@@ -130,31 +227,33 @@ if __name__ == '__main__':
 	tline = trans.readline()
 	if not tline:
 		for mline in master:
-			print(mline, end='')
+			print(preproc_line(master,mline))
 		sys.exit(0)
+	tline=preproc_line(trans,tline)
 	t = FieldLine(tline)
 
 	#
 	# メインループ
 	#
 	for mline in master:
+		mline=preproc_line(master,mline)
 		m = FieldLine(mline)
-		while m.getField(k1, k2) > t.getField(k1, k2):
-			print(tline, end='')
+		while NFDtoNFC(m.getFields(FieldList)) > NFDtoNFC(t.getFields(FieldList)):
+			print(tline)
 			tline = trans.readline()
 			if not tline:
-				print(mline, end='')
+				print(mline)
 				for mline in master:
-					print(mline, end='')
+					print(preproc_line(master,mline))
 				sys.exit(0)
+			tline=preproc_line(trans,tline)
 			t = FieldLine(tline)
-		print(mline, end='')
+		print(mline)
 
 	#
 	# trans の残り行の出力
 	#
 	while tline:
-		print(tline, end='')
-		tline = trans.readline()
-
+		print(tline)
+		tline = preproc_line(trans,trans.readline())
 	sys.exit(0)

@@ -4,10 +4,11 @@
 # cap 半角英数の小文字を大文字に変換する（Open usp Tukubai版）
 # 
 # designed by Nobuaki Tounaka
+# written  by Masatomo Togashi
 #
 # The MIT License
 #
-# Copyright (C) 2011 Universal Shell Programming Laboratory
+# Copyright (C) 2022 Universal Shell Programming Laboratory
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -28,12 +29,15 @@
 # THE SOFTWARE.
 
 from __future__ import print_function
+import re
 import sys
 
 _usage = "cap [<f1> <f2> ..] <file>" # フィールドは省略可能
 _usage2 = "cap -d <string>"
-_version = "Fri Oct 21 11:26:06 JST 2011"
+_version = "Thu Apr 21 00:58:47 JST 2022"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
+_keypat = r'((\d+|NF(-\d+)?)(/(\d+|NF(-\d+)?))?)(@((\d+|NF(-\d+)?)(/(\d+|NF(-\d+)?))?))*$'
+_keypatNF=r'(?P<m0>(?P<m01>\d+)|(?P<m02>NF(?P<m03>-\d+)?))(/(?P<m1>(?P<m11>\d+)|(?P<m12>NF(?P<m13>-\d+)?)))?$'
 
 def error(msg, *arg):
 	print('Error[cap] :', msg % arg, file=sys.stderr)
@@ -46,79 +50,160 @@ def usage():
 	print("         ", _code, file=sys.stderr)
 	sys.exit(1)
 
-# ファイルオープン
-def open_file(filename, mode = 'r'):
-	# 入力でファイル名が'-'または省略なら標準入力とする
-	if mode=="r" and (filename=='-' or filename == None): 
-		file = sys.stdin
-	# 出力ファイル
-	elif mode=="w":
-		file=int(filename) # 整数化してファイルディスクリプタにする
-	else:
-		try:
-			file = open(filename, mode)
-		except:
+#
+# 入力ファイルオープン
+#
+def open_file(filename):
+	if filename == '-':	filename = '/dev/fd/0'	# sys.stdinをファイルディスクリプターで表記する
+	if Python3():	mode='r'
+	else:	mode='rU'	# Python2ではmodeがrUのときPython3と同様に読み込み時に各種改行記号がLF（\n）に統一される
+	try:
+		file = open(filename, mode)
+	except:
+		if filename=='/dev/fd/0':
+			error("標準入力ファイルをオープンできません。")
+		else:
 			error("ファイル '%s' をオープンできません。", filename)
 	return file
 
-# 改行符号（\r\n）の削除関数
-def rm_eol(line):
-	return line.rstrip('\n').rstrip('\r')
-
-# （NFを含むかもしれない）フィールド要素を整数に変換する
-def intwithNF(str,NF):
-	# フィールド要素にNFを含むとき
-	if str=="NF":
-		return NF
-	elif str.startswith("NF-"):
-		str=str[3:]
-		try:
-			fieldnum=NF-int(str)
-		except:
-			error("キー指定のNF-n形式が不正です")
-	# NFを含まないとき
+# NF相対欄位置からNF（欄数）に応じた0発進の欄位置に変換する
+def getpos(base_pos):
+	# NF相対欄位置からの変換:
+	#  nのときはそのまま
+	#  0のときはNF（欄数）に
+	#  -nのときはNF-nに
+	# 0発進とするために-1を加える
+	if base_pos > 0:
+		pos=base_pos-1
+		if pos > NF-1:	error("フィールド番号が大きすぎます。 %s",str(base_pos))
 	else:
-		try:
-			fieldnum=int(str)
-		except:
-			error("キー指定が整数ではありません")
-	if fieldnum<=0:
-		error("キー指定が0または負数です")
-	if fieldnum>NF:
-		error("フィールド指定がレコードのフィールド数を超えています")
+		pos=NF+base_pos-1
+		if pos < 0:	error("フィールド指定で NF-x の x が大きすぎます。 %s","NF-"+str(-base_pos))
+	return pos
+
+# NF相対欄位置リスト（rel_keylist）からNF（欄数）に応じた実際の欄位置リスト（keylist）を作成する
+def make_keylist(rel_keylist):
+	# rel_keylistの要素には区間をあらわす整数tupleの(start,end)と、単一欄をあらわす整数がある
+	if rel_keylist==[None]:	# 全欄指定
+		return list(range(0,NF))
+	keylist=[]
+	for fieldpos in rel_keylist:
+		if type(fieldpos)==int:	keylist.append(getpos(fieldpos))	# 単一欄
+		else:	# (a/b)の区間
+			start=getpos(fieldpos[0])
+			end=getpos(fieldpos[1])
+			if start <= end:	# 正順
+				keylist+=range(start,end+1)
+			else:	# 逆順
+				keylist+=range(start,end-1,-1)
+	return list(set(keylist))	# 欄位置は0発進
+
+# 欄番号文字列をNF相対形式で整数化する
+def getFieldNum(str,str1,str2):
+	# n または NF または NF-x の形式の欄番号をNF相対形式の整数で確定する
+	# 正規表現で「\d+|NF(-\d+)?」にmatchする全体をstrが、「\d+」でmatchする部分をstr1が、「(-\d+)?」でmatchする部分をstr2が保持している
+	# NF相対形式の整数化:
+	#  単独のnが0のときはNone
+	#  単独のnが0以外のときは整数のn
+	#  単独のNFのときは整数の0
+	#  NF-nのときは整数の-n
+	# 実際の欄番号にする際には行ごとに得たNF（欄数）を使用して計算する
+	if str1:	# n
+		fieldnum=int(str1)
+		if fieldnum==0:	# 欄番号0は全欄指定を意味する
+			#error("フィールド指定に0があります。")
+			fieldnum=None
+	else:	# NF-n または NF
+		if str2:	# NF-n
+			fieldnum=int(str2)
+		else:	# NF
+			fieldnum=0
 	return fieldnum
 
-# フィールド指定文字列からフィールドリストを作る（NFは確定値が渡されてくる）
-def GetKeyList(key,NF):
-	keylist=[]
-	# <n1/n2>形式
-	if "/" in key:
-		keystrlist=key.split("/")
-		if len(keystrlist)>2:
-			error("フィールド指定が不正です")
-		for str in keystrlist:
-			keylist.append(intwithNF(str,NF))
-		if keylist[0]<keylist[1]: # 昇順のとき
-			keylist=list(range(keylist[0],keylist[1]+1))
-		else: # 降順のとき
-			keylist=list(range(keylist[0],keylist[1]-1,-1))
-	#  <n1@n2@...>形式
-	elif "@" in key:
-		keystrlist=key.split("@")
-		for str in keystrlist:
-			keylist.append(intwithNF(str,NF))
-	#  <n>形式
-	else:
-		keylist.append(intwithNF(key,NF))
-	return keylist
+#
+# ひとつの欄指定パラメータから欄番号リストを得る（区間指定にも対応する）
+#
+def getFieldList(field_param):
+	mobj = re.match(_keypat,field_param)	# 構文検査のために実行する
+	if not mobj:	# フィールド指定の形式が不正
+		error("フィールド指定の形式が不正です。 %s",field_param)
+	fieldlist=[]
+	concatlist=field_param.split("@")	# @で分割する
+	for fieldnum in concatlist:
+		mobj = re.match(_keypatNF,fieldnum)
+		start=getFieldNum(fieldnum,mobj.group('m01'),mobj.group('m03'))	# 前端部を得る
+		if mobj.group('m1'):	# a/bの形式で区間指定をしている
+			end=getFieldNum(fieldnum,mobj.group('m11'),mobj.group('m13'))	# 後端部を得る
+			fieldlist.append((start,end))	# 区間で確定
+		else:
+			fieldlist.append(start)	# 前端部単独で確定
+	return fieldlist
 
-# 出力行の作成
-def MakeLine(fields):
-	outputline=""
-	for i in range(len(fields)):
-		outputline+=fields[i]+" "
-	outputline=outputline.rstrip()
-	return outputline
+#
+#	コマンドのフィールド指定パラメータリストから処理対象のNF相対欄位置リストを作成する
+#
+def getTargetFields(args):
+	if args==[]:
+		return [None]	# フィールド指定パラメータリストが空のときは全欄指定とする
+	ans = []
+	for e in args:
+		ans+=getFieldList(e)
+	if None in ans:
+		return [None]	# 欄位置にひとつでも0を指定するものがあるときは全欄指定とする
+	ans=list(set(ans)) # 集合化によってリストの重複を解消する
+	return ans
+
+# 改行符号（\r\n）の削除関数
+def rm_eol(line):
+	return line.rstrip("\r\n")	# 改行記号としてCRLF('\r\n')/CR('\r')/LF('\n')のすべてに対応する
+
+# BOMの取得関数
+def get_BOM():
+	if Python3():	return chr(int("FEFF",16))	# U+FEFFはBOMのUnicode符号位置
+	else:			return "\xEF\xBB\xBF"	# BOMは「EF BB BF」の3バイト
+
+# BOMの削除関数
+def rm_BOM(line):
+	global firstline
+	if not firstline: return line
+	firstline=False
+	if line.startswith(get_BOM()):	line=line[len(get_BOM()):]	# 行頭にBOMがあったらBOMを削除する
+	return line
+
+# ファイル入力行の前処理
+def preproc_line(line):
+	line=rm_eol(line)	# 行末の改行記号を削除する
+	line=rm_BOM(line)	# ファイル先頭行の行頭にBOMがあったらこれを削除する
+	return line
+
+# Python3か判定する
+def Python3():
+	if sys.version_info >= (3, 0):
+		return True
+	else:
+		return False
+
+#
+# 直接入力文字列の前処理
+#
+#  Python3においてコマンドラインからの直接入力文字列中にUnicode符号位置がU+FFFFを超えるコードがあると
+#  Unicode文字に正しく変換されない場合があることへの対処をする
+def utf2ucs(instr):
+	outstr=""	# 出力文字列
+	intlist=[]	# 作業用整数リスト
+	for char in instr:
+		if ord(char)>=0xdc00 and ord(char)<=0xdcff:	# 文字の符号位置がU+DCxxの範囲にあったら「UTF8もどき」
+			intlist.append(ord(char)-0xdc00)	# 0xdc00のげたをはずして整数リストに入れる
+		else:	# 通常文字がきたら
+			if len(intlist)>0:	# ここまでに「UTF8もどき」列を変換した整数リストがあったら
+				# bytesに変換してutf8からUCSへの変換をして出力文字列に追加
+				outstr+= bytes(intlist).decode("utf_8")
+				intlist=[]	# 整数リストを再初期化
+			outstr+=char	# 新しくきた通常文字を出力文字列に追加
+	# 「UTF8もどき」列を変換した整数リストが残っていたら
+	# bytesに変換してutf8からUCSへの変換をして出力文字列に追加
+	if len(intlist)>0:	outstr+= bytes(intlist).decode("utf_8")
+	return outstr
 
 # main
 
@@ -154,45 +239,31 @@ if __name__ == '__main__':
 	# -dオプション
 	if d:
 		string=fieldstrs.pop() # -d以外の最後のパラメータをとって編集対象文字列とする
+		if Python3():
+			string=utf2ucs(string)	# Python3のときは直接指定の文字列に対して前処理をする
 	else:
 		filename=fieldstrs.pop() # -d以外の最後のパラメータをとってファイル名とする
-
-	fields=[]
-	# フィールドの指定がないとき
-	if len(fieldstrs)==0:
-		allfields=True
 
 	if not d: # ファイルに対する処理
 		# 入力ファイルを開く
 		file=open_file(filename)
 		# フィールド番号リストを得る
+		rel_keylist = getTargetFields(fieldstrs)	# パラメータからNF相対欄位置リストを作成する
 		Separator=" "
 		inputfields=[]
 		linecount=0
+		firstline=True
 		for line in file: # 入力ファイルを読む
-			line=rm_eol(line)
+			line=preproc_line(line)
 			inputfields=line.split()
-			# フィールド指定があるとき
-			if not allfields:
-				# 最初の行だけの処理
-				if linecount==0: 
-					NF=len(inputfields) # NFの値が確定した
-					# フィールド番号リストを得る
-					for fieldstr in fieldstrs:
-						fields=GetKeyList(fieldstr,NF)
-						for field in fields:
-							fieldnums.append(field)
-					# フィールド番号リストの重複解消
-					fieldnums=sorted(set(fieldnums),key=fieldnums.index) # 集合化によってリストの重複を解消し元のリストにおける出現位置をキーとしてsort
-				# 指定フィールドに対して小文字/大文字変換処理をする
-				for fieldnum in fieldnums:
-					inputfields[fieldnum-1]=inputfields[fieldnum-1].upper()
-			# フィールド指定がないとき
-			else:
-				# 全フィールドに対して小文字/大文字変換処理をする
-				for fieldnum in range(len(inputfields)):
-					inputfields[fieldnum-1]=inputfields[fieldnum-1].upper()
-			print(MakeLine(inputfields))
+			NF=len(inputfields)
+			# 指定フィールドのNF相対欄位置リストをNF（欄数）に応じた絶対欄位置リストに変換する
+			fieldnums=make_keylist(rel_keylist)
+			# 指定フィールドに対して小文字/大文字変換処理をする
+			for fieldnum in fieldnums:
+				#inputfields[fieldnum-1]=inputfields[fieldnum-1].upper()
+				inputfields[fieldnum]=inputfields[fieldnum].upper()
+			print(" ".join(inputfields))	# フィールドを空白区切りで出力する
 
 			linecount+=1
 

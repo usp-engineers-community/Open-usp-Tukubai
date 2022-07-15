@@ -4,11 +4,11 @@
 # mojihame 変数はめ込みツール（Open usp Tukubai版）
 # 
 # designed by Nobuaki Tounaka
-# written by Yoshio Katayama
+# written  by Masatomo Togashi
 #
 # The MIT License
 #
-# Copyright (C) 2011 Universal Shell Programming Laboratory
+# Copyright (C) 2020 Universal Shell Programming Laboratory
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -34,12 +34,16 @@ _usage = "mojihame <template> <data>            (通常)"
 _usage1 = "mojihame -l <label> <template> <data> (行単位)"
 _usage2 = "mojihame -h <label> <template> <data> (階層データ)"
 _option = " -d[c]"
-_version = "Fri Oct 21 11:26:06 JST 2011"
+_version = "Tue Oct 20 15:17:47 JST 2020"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
+
+# 濁音と半濁音のNFD表記でNFC表記もできるもの→NFDtoNFC変換でNFCに統一する
+_comb_pat=r"(((う|か|き|く|け|こ|さ|し|す|せ|そ|た|ち|つ|て|と|は|ひ|ふ|へ|ほ|ウ|カ|キ|ク|ケ|コ|サ|シ|ス|セ|ソ|タ|チ|ツ|テ|ト|ハ|ヒ|フ|ヘ|ホ|ワ|ヰ|ヱ|ヲ)゙)|((は|ひ|ふ|へ|ほ|ハ|ヒ|フ|ヘ|ホ)゚))+"
 
 import re
 import os
 import sys
+import unicodedata
 
 def error(msg, *arg):
 	print('Error[mojihame] :', msg % arg, file=sys.stderr)
@@ -54,60 +58,79 @@ def usage():
 	print("         ", _code, file=sys.stderr)
 	sys.exit(1)
 
-class FieldLine:
-	def __init__(self, line, allow_z = False):
-		self.__allow_zero = allow_z
-		line = line.rstrip('\n')
-		self.__fields = [ line ]
-		self.__fields += [ x for x in line.split(' ') if x ]
-
-	def size(self):
-		return len(self.__fields) - 1
-
-	def getFieldNum(self, key):
-		if type(key) == type(0):
-			return key
-		if re.match(r'\d+$', key):
-			key = int(key)
-		elif key == 'NF':
-			key = self.size()
-		else:
-			key = self.size() - int(key[3:])
-			if key <= 0:
-				error("NF-x の x が大きすぎます。")
-		if key < 0:
-			error("フィールド番号が負です。")
-		if key == 0 and not self.__allow_zero:
-			error("フィールド番号が０です。")
-		if key > self.size():
-			error("フィールド番号が大きすぎます。")
-		return key
-
-	def getField(self, s, e = None):
-		s = self.getFieldNum(s)
-		if e == None:
-			e = s
-		else:
-			e = self.getFieldNum(e)
-		if s <= e:
-			return ' '.join(self.__fields[s : e + 1])
-		else:
-			t = self.__fields[e : s + 1]
-			t.reverse()
-			return ' '.join(t)
-
 #
 # 入力ファイルオープン
 #
-def open_file(n, mode = 'r'):
-	if n >= len(sys.argv) or sys.argv[n] == '-':
-		file = sys.stdin
+def open_file(n):
+	if n >= len(sys.argv):	filename = '-'
 	else:
-		try:
-			file = open(sys.argv[n], mode)
-		except:
-			error("ファイル %s をオープンできません。", sys.argv[n])
+		filename = sys.argv[n]
+	if filename == '-':	filename = '/dev/fd/0'	# sys.stdinをファイルディスクリプターで表記する
+	if Python3():	mode='r'
+	else:	mode='rU'	# Python2ではmodeがrUのときPython3と同様に読み込み時に各種改行記号がLF（\n）に統一される
+	try:
+		file = open(filename, mode)
+	except:
+		if filename=='/dev/fd/0':
+			error("標準入力ファイルをオープンできません。")
+		else:
+			error("ファイル '%s' をオープンできません。", filename)
 	return file
+
+# BOMの取得関数
+def get_BOM():
+	if Python3():	return chr(int("FEFF",16))	# U+FEFFはBOMのUnicode符号位置
+	else:			return "\xEF\xBB\xBF"	# BOMは「EF BB BF」の3バイト
+
+# BOMの削除関数
+def rm_BOM(line):
+	global firstline
+	if not firstline: return line
+	firstline=False
+	if line.startswith(get_BOM()):	line=line[len(get_BOM()):]	# 行頭にBOMがあったらBOMを削除する
+	return line
+
+# Python3か判定する
+def Python3():
+	if sys.version_info >= (3, 0):
+		return True
+	else:
+		return False
+
+#
+# unicode 変換
+#
+def to_unicode(s):
+	if type(s)==type(U""): return s	# 入力文字列がUnicode文字列のとき
+	try:
+		return unicode(s, 'utf_8')
+	except:
+		error("不当なマルチバイト文字が含まれています。")
+
+#
+# utf8 変換
+#
+def to_utf8(s):
+	try:
+		return s.encode('utf-8')
+	except:
+		error("内部エラー UTF8への変換に失敗しました。")
+
+#
+# NFDtoNFC()のre.sub()から指定patternがみつかるごとに呼ばれるのでNFD/NFC変換をして返す
+# 置換対象パターンはNFD文字:全角ひらがな/全角カタカナの清音に結合用濁点/結合用半濁点を連接したもの
+# 置換先文字はNFC文字:全角ひらがな/全角カタカナの濁音/半濁音
+#
+def replace(matchobj):
+	if Python3():	return unicodedata.normalize('NFC',matchobj.group(0))
+	else:	return to_utf8(unicodedata.normalize('NFC',to_unicode(matchobj.group(0))))	# Python2ではutf8→unicdoe→utf8の変換をする
+
+#
+# 全角ひらがな/全角カタカナの濁音/半濁音のNFC化
+#
+def NFDtoNFC(str):
+	# 全角ひらがな/全角カタカナの濁音/半濁音をNFCで統一して返す
+	return re.sub(pattern,replace,str)
 
 #
 # 置換文字列の正規化
@@ -124,6 +147,7 @@ def canon(s, null):
 # 置換して出力
 #
 def repl_put(body, data):
+	data = NFDtoNFC(data)	# dataに対してNFDtoNFC変換をする
 	data = [ canon(x, null) for x in re.split(r'[ \n]+', data) if x ]
 	sys.stdout.write(body[0])
 	for x in body[1:]:
@@ -215,7 +239,7 @@ def utf2ucs(instr):
 	return outstr
 
 #
-#メイン関数
+# メイン関数
 #
 if __name__ == '__main__':
 
@@ -223,6 +247,11 @@ if __name__ == '__main__':
 	 or sys.argv[1] == '--help' \
 	 or sys.argv[1] == '--version':
 		usage()
+
+	#
+	# NFD文字（清音+結合用濁点/結合用半濁点）検出のための正規表現パターンを準備
+	#
+	pattern=re.compile(_comb_pat)
 
 	#
 	# オプション
@@ -259,8 +288,9 @@ if __name__ == '__main__':
 	if len(sys.argv) < 2:
 		usage()
 
-	if null != '@' and sys.version_info >= (3, 0):
-		null=utf2ucs(null)	# Python3のときは直接入力文字列の前処理をする
+	if null != '@':	# null文字列がdefaultの「@」から変更されているとき（-d@のときは対処は不要）
+		if Python3():	null=utf2ucs(null)	# Python3のときは直接入力文字列の前処理をする（-d@のときは直接入力文字列について問題は発生しない）
+		null=NFDtoNFC(null)	# null文字列に対してNFDtoNFC変換をする
 
 	#
 	# 入力ファイルオープン
@@ -272,13 +302,19 @@ if __name__ == '__main__':
 	# 通常
 	#
 	if mode == '':
-		repl_put(tmpl.read().split('%'), data.read())
+		firstline=True
+		tmpldata=rm_BOM(tmpl.read())	# ファイル先頭に対してBOM削除をする
+		firstline=True
+		datadata=rm_BOM(data.read())	# ファイル先頭に対してBOM削除をする
+		repl_put(tmpldata.split('%'), datadata)
 
 	#
 	# 行単位
 	#
 	elif mode == 'l':
+		firstline=True
 		t = tmpl.readlines()
+		t[0]=rm_BOM(t[0])	# 先頭行に対してBOM削除をする
 		if label:
 			lab = [ label in x for x in t ]
 			#
@@ -300,7 +336,9 @@ if __name__ == '__main__':
 			head, body, tail = [], t, []
 		body = ''.join(body).split('%')
 		sys.stdout.writelines(head)
+		firstline=True
 		for d in data:
+			d=rm_BOM(d)	# 先頭行に対してBOM削除をする
 			repl_put(body, d)
 		sys.stdout.writelines(tail)
 
@@ -309,6 +347,8 @@ if __name__ == '__main__':
 	#
 	else:
 		t = tmpl.readlines()
+		firstline=True
+		t[0]=rm_BOM(t[0])	# 先頭行に対してBOM削除をする
 		lab = [ label in x for x in t ]
 		if not(max(lab)):
 			error("<template> ラベル '%s' がありません。", label);
@@ -316,6 +356,9 @@ if __name__ == '__main__':
 		lab.reverse()
 		le = len(lab) - 1 - lab.index(True)
 		key = keylist(t[:ls] + t[le + 1:])
-		do_hier(t, label, data.readlines(), True)
+		datalines=data.readlines()
+		firstline=True
+		datalines[0]=rm_BOM(datalines[0])	# 先頭行に対してBOM削除をする
+		do_hier(t, label, datalines, True)
 
 	sys.exit(0)

@@ -3,7 +3,7 @@
 #
 # numchar 文字列を数値文字参照に変換（Open usp Tukubaiオリジナル）
 # 
-# written by Ryuichi Ueda
+# written  by Masatomo Togashi
 #
 # The MIT License
 #
@@ -30,7 +30,7 @@
 from __future__ import print_function
 
 _usage = "numchar < <file>"
-_version = "Tue Sep 10 11:38:19 JST 2013"
+_version = "Tue Feb 19 23:38:53 JST 2019"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
 
 import re
@@ -60,19 +60,41 @@ def append_codepoint(c,numlist):
 	numlist+=[high,low]
 	return numlist
 
-def openReadFile(file_name):
-        if file_name != "-":
-                try:    return codecs.open(file_name,'r','utf-8')
-                except: die("ファイルを開けません。")
+def openReadFile():
+	if not Python3():	return codecs.getreader('utf-8')(sys.stdin)
+	return codecs.getreader('utf-8')(sys.stdin.detach())
 
-        if sys.version_info[0] < 3:
-                return codecs.getreader('utf-8')(sys.stdin)
+# BOMの取得関数
+def get_BOM():
+	if Python3():	return chr(int("FEFF",16))	# U+FEFFはBOMのUnicode符号位置
+	else:	return unichr(int("FEFF",16))	# U+FEFFはBOMのUnicode符号位置
 
-        return codecs.getreader('utf-8')(sys.stdin.detach())
+# BOMの削除関数
+def rm_BOM(line):
+	global firstline
+	if not firstline: return line
+	firstline=False
+	if line.startswith(get_BOM()):	line=line[len(get_BOM()):]	# 行頭にBOMがあったらBOMを削除する
+	return line
+
+# Python3か判定する
+def Python3():
+	if sys.version_info >= (3, 0):
+		return True
+	else:
+		return False
 
 if __name__ == '__main__':
 
-	for line in openReadFile("-"):
+	# 構文表示
+	if len(sys.argv) == 2:
+		if sys.argv[1] == '--help' or \
+		   sys.argv[1] == '--version':	usage()
+
+	firstline=True
+
+	for line in openReadFile():
+		line=rm_BOM(line)	# 先頭行に対してBOM削除をする
 		numlist=[]
 		for c in line.rstrip(): append_codepoint(c,numlist)
 		print("".join(map(lambda num: "&#x%x;" % num, numlist)))

@@ -4,11 +4,11 @@
 # maezero ゼロ埋めする（Open usp Tukubai版）
 # 
 # designed by Nobuaki Tounaka
-# written by Ryuichi Ueda
+# written  by Masatomo Togashi
 #
 # The MIT License
 #
-# Copyright (C) 2011 Universal Shell Programming Laboratory
+# Copyright (C) 2020 Universal Shell Programming Laboratory
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -28,17 +28,24 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-# marumeからコードを拝借して応急処置で作った物です。→Python2/Python3共用化改修をした
-# コードの掃除が必要→掃除した
-
 from __future__ import print_function
 
 _usage = "maezero <f1.d1> <f2.d2> .. <file>"
-_version = "Sat Jul 13 17:11:48 JST 2013"
+_option = "--ngthrough <str>"
+_version = "Sat Jun 20 21:57:21 JST 2020"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
-_keypat = r'(\d+)\.(\d+)$'
-		# 1: field number
-		# 2: precision
+
+_keypat=r"((\d+)|(NF(-\d+)?))(\.\d+)(/((\d+)|(NF(-\d+)?))\5)?$"
+# groups(1)=((\d+)|(NF(-\d+)?))	単一または開始のフィールド位置
+# groups(2)=(\d+)	単一の開始フィールド位置
+# groups(3)=(NF(-\d+)?)	NFまたはNF-n形式の開始フィールド位置
+# groups(4)=(-\d+)	NF-n形式の-n
+# groups(5)=(\.\d+)	.精度
+# groups(6)=(/((\d+)|(NF(-\d+)?)\3))	/終了フィールド位置と精度
+# groups(7)=((\d+)|(NF(-\d+)?)\3)	終了フィールド位置と精度
+# groups(8)=(\d+)	単一の終了フィールド位置
+# groups(9)=(NF(-\d+)?)	NFまたはNF-n形式の終了フィールド位置
+# groups(10)=(-\d+)	NF-n形式の-n
 
 import re
 import os
@@ -51,75 +58,61 @@ def error(msg, *arg):
 
 def usage():
 	print("Usage   :", _usage, file=sys.stderr)
+	print("Option  :", _option, file=sys.stderr)
 	print("Version :", _version, file=sys.stderr)
 	print("         ", _code, file=sys.stderr)
 	sys.exit(1)
 
-class FieldLine:
-	def __init__(self, line, allow_z = False):
-		self.__allow_zero = allow_z
-		line = line.rstrip('\n')
-		self.__fields = [ line ]
-		self.__fields += [ x for x in line.split(' ') if x ]
-
-	def size(self):
-		return len(self.__fields) - 1
-
-	def getFieldNum(self, key):
-		if type(key) == type(0):
-			return key
-		if re.match(r'\d+$', key):
-			key = int(key)
-		elif key == 'NF':
-			key = self.size()
-		else:
-			key = self.size() - int(key[3:])
-			if key <= 0:
-				error("NF-x の x が大きすぎます。")
-		if key < 0:
-			error("フィールド番号が負です。")
-		if key == 0 and not self.__allow_zero:
-			error("フィールド番号が０です。")
-		if key > self.size():
-			error("フィールド番号が大きすぎます。")
-		return key
-
-	def getField(self, s, e = None):
-		s = self.getFieldNum(s)
-		if e == None:
-			e = s
-		else:
-			e = self.getFieldNum(e)
-		if s <= e:
-			return ' '.join(self.__fields[s : e + 1])
-		else:
-			t = self.__fields[e : s + 1]
-			t.reverse()
-			return ' '.join(t)
-
 #
 # 入力ファイルオープン
 #
-def open_file(n, mode = 'r'):
-	if n >= len(sys.argv):
-		file = sys.stdin
-	elif sys.argv[n] == '-':
-		file = sys.stdin
-		del sys.argv[n]
-	else:
-		try:
-			file = open(sys.argv[n], mode)
-			del sys.argv[n]
-		except:
-			error("ファイル %s をオープンできません。", sys.argv[n])
+def open_file(n):
+	original_file_name=n
+	if n == '-':	n = '/dev/fd/0'	# sys.stdinをファイルディスクリプターで表記する
+	if Python3():	mode='r'
+	else:	mode='rU'	# Python2ではmodeがrUのときPython3と同様に読み込み時に各種改行記号がLF（\n）に統一される
+	try:
+		file = open(n, mode)
+	except:
+		error("ファイル '%s' をオープンできません。", original_file_name)
 	return file
+
+# 改行符号（\r\n）の削除関数
+def rm_eol(line):
+	return line.rstrip("\r\n")	# 改行記号としてCRLF('\r\n')/CR('\r')/LF('\n')のすべてに対応する
+
+# BOMの取得関数
+def get_BOM():
+	if Python3():	return chr(int("FEFF",16))	# U+FEFFはBOMのUnicode符号位置
+	else:			return "\xEF\xBB\xBF"	# BOMは「EF BB BF」の3バイト
+
+# BOMの削除関数
+def rm_BOM(line):
+	global firstline
+	if not firstline: return line
+	firstline=False
+	if line.startswith(get_BOM()):	line=line[len(get_BOM()):]	# 行頭にBOMがあったらBOMを削除する
+	return line
+
+# ファイル入力行の前処理
+def preproc_line(line):
+	line=rm_eol(line)	# 行末の改行記号を削除する
+	line=rm_BOM(line)	# ファイル先頭行の行頭にBOMがあったらこれを削除する
+	return line
+
+# Python3か判定する
+def Python3():
+	if sys.version_info >= (3, 0):
+		return True
+	else:
+		return False
 
 #
 # フィールド値の取得
 #
-def getval(line, n):
-	if re.match(r'(\+|-)?(\d+\.?|\d*\.\d+)$', line.getField(n)):
-		return Decimal(line.getField(n))
+def getval(string):
+	if re.match(r'(\+|-)?(\d+\.?|\d*\.\d+)$', string):
+		return Decimal(string)
 	else:
 		error("数値変換できません。")
 
@@ -131,48 +124,171 @@ def add_zero(x, prec):
 	return str(fmt % x)
 
 #
-#メイン関数
+# 直接入力文字列の前処理
+#
+#  Python3においてコマンドラインからの直接入力文字列中にUnicode符号位置がU+FFFFを超えるコードがあると
+#  Unicode文字に正しく変換されない場合があることへの対処をする
+def utf2ucs(instr):
+	outstr=""	# 出力文字列
+	intlist=[]	# 作業用整数リスト
+	for char in instr:
+		if ord(char)>=0xdc00 and ord(char)<=0xdcff:	# 文字の符号位置がU+DCxxの範囲にあったら「UTF8もどき」
+			intlist.append(ord(char)-0xdc00)	# 0xdc00のげたをはずして整数リストに入れる
+		else:	# 通常文字がきたら
+			if len(intlist)>0:	# ここまでに「UTF8もどき」列を変換した整数リストがあったら
+				# bytesに変換してutf8からUCSへの変換をして出力文字列に追加
+				outstr+= bytes(intlist).decode("utf_8")
+				intlist=[]	# 整数リストを再初期化
+			outstr+=char	# 新しくきた通常文字を出力文字列に追加
+	# 「UTF8もどき」列を変換した整数リストが残っていたら
+	# bytesに変換してutf8からUCSへの変換をして出力文字列に追加
+	if len(intlist)>0:	outstr+= bytes(intlist).decode("utf_8")
+	return outstr
+
+# フィールド位置と精度を取得する
+def GetPrec(arg):
+	prec=[]
+	p = re.match(_keypat, arg)	# _keypat=r"((\d+)|(NF(-\d+)?))(\.\d+)(/((\d+)|(NF(-\d+)?))\5)?$"
+	if p:	# matchingに成功
+		# fs=p.group(1)	# ((\d+)|(NF(-\d+)?))	開始フィールド位置	→使用しない
+		fsn=p.group(2)	# (\d+)	整数の開始フィールド位置
+		# fsnf=p.group(3)	# (NF(-\d+)?)	NFまたはNF-n形式の開始フィールド位置	→使用しない
+		fsnfn=p.group(4)	# (-\d+)	NF-n形式の-n
+		dotpr=p.group(5)	# (\.\d+)	.精度
+		slafe=p.group(6)	# (/((\d+)|(NF(-\d+)?)\5)	/終了フィールド位置と精度
+		# fe=p.group(7)	# ((\d+)|(NF(-\d+)?	終了フィールド位置と精度	→使用しない
+		fen=p.group(8)	# (\d+)	整数の終了フィールド位置
+		# fenf=p.group(9)	# (NF(-\d+)?)	NFまたはNF-n形式の終了フィールド位置	→使用しない
+		fenfn=p.group(10)	# (-\d+)	NF-n形式の-n
+
+		# 前方部処理
+		precnum=int(dotpr[1:])
+		if fsn:	# (\d+)でmatch
+			fsnum=int(fsn)-1
+		else:	# (NF(-\d+)?)でmatch
+			fsnum=-1
+			if fsnfn:	# (-\d+)でmatch
+				fsnum=fsnum-int(fsnfn[1:])
+		# 後方部処理
+		if slafe: 	# (/((\d+)|(NF(-\d+)?)\3))でmatch
+			if fen:	# (\d+)でmatch
+				fenum=int(fen)-1
+			else:	# (NF(-\d+)?)でmatch
+				fenum=-1
+				if fenfn:	# (-\d+)でmatch
+					fenum=fenum-int(fenfn[1:])
+			prec = [ [ fsnum, fenum, precnum] ]	# フィールド番号と精度の対のリストに追加する（範囲指定）
+		else:	# 後方部がない
+			prec = [ [ fsnum, fsnum, precnum] ]	# フィールド番号と精度の対のリストに追加する
+		return prec
+	else:	# matchingに失敗
+		return p
+
+# フィールド/精度リストの再構成
+def ResetPrec(prec,numfields):
+	# precは長さ3のリストのリスト [[開始フィールド,終了フィールド,精度]]
+	precafter=[]
+	for fsfepr in prec:
+		start=fsfepr[0]
+		end=fsfepr[1]
+		precnum=fsfepr[2]
+		# 現在のフィールド数（numfields）に応じてNF（位置が負）の処理をする
+		if start<0:
+			start=numfields+start
+		if end<0:
+			end=numfields+end
+		if start<0 or end>=numfields:
+			error("フィールド位置が不正です。")
+		if start!=end:	# 範囲指定なら展開する
+			if start>end:
+				error("フィールド範囲の開始と終了が逆順です。")
+			for i in range(start,end+1):
+				precafter+=[[i,precnum]]
+		else:	# 単独指定ならそのまま
+			precafter+=[[start,precnum]]
+	# フィールド位置の昇順検査
+	for x in zip(precafter, precafter[1:]):
+		if x[0][0] >= x[1][0]:
+			error("フィールド位置が昇順になっていません。")
+	return precafter
+
+#
+# メイン関数
 #
 if __name__ == '__main__':
 
-	if len(sys.argv) <= 1 \
-	 or sys.argv[1] == '--help' or sys.argv[1] == '--version':
+	if len(sys.argv) <= 1 or \
+		sys.argv[1] == '--help' or \
+		sys.argv[1] == '--version':
 		usage()
 
-	if len(sys.argv) <= 1:
-		usage()
+	# パラメータ検査
+	SetNgthroughString,filename,ngthrough,prec=False,"","",[]
+	sys.argv.pop(0)
+	while(len(sys.argv)>0):
+		arg=sys.argv[0]
+		# --ngthroughを検出
+		if arg=="--ngthrough":
+			if SetNgthroughString:
+				error("ngthroughオプションが重複しています。")
+			sys.argv.pop(0)
+			if len(sys.argv)==0:
+				error("ngthroughの値がありません。")
+			ngthrough=sys.argv[0]
+			if Python3():
+				ngthrough=utf2ucs(ngthrough)	# Python3では直接指定の文字列に対して前処理をする
+			SetNgthroughString=True
+		# 精度と入力ファイル名の取得
+		else:
+			mprec=GetPrec(arg)
+			if mprec: # matchingに成功
+				prec+=mprec
+				if filename!="":	# 入力ファイル名指定のあとに精度指定があるときはエラー
+					error("入力ファイル名の指定位置が不正です。")
+			# ngthrough指定でも精度指定でもないときは入力ファイル名とする
+			else: # matchingに失敗
+				if filename!="":	# 多重の入力ファイル名指定があるときはエラー
+					error("入力ファイル名の指定が重複しています。")
+				filename=arg
+		sys.argv.pop(0)
 
-	if re.match(_keypat, sys.argv[-1]):	# 入力ファイル名が省略されたときはstdinを仮定する
-		file = sys.stdin
-	else:
-		file = open_file(len(sys.argv) - 1)
+	if not prec:
+		error("フィールド/精度リストがありません")
 
-	#
-	# 精度の取得
-	#
-	prec = []
-	for arg in sys.argv[1:]:
-		p = re.match(_keypat, arg)
-		if not p:
-			usage()
-		prec += [ [ int(p.group(1)), int(p.group(2))] ]	# フィールド番号と精度の対のリストに追加する
-	for x in zip(prec, prec[1:]):
-		if x[0][0] >= x[1][0]:
-			error("フィールド位置が昇順になっていません。")
+	# 入力ファイルを開く
+	if filename=="":	# 入力ファイル名省略のときはstdinを仮定する
+		filename="-"
+	file = open_file(filename)
+
 	#
 	# メインループ
 	#
+	firstline=True
+	NF=-1
 	for line in file:
-		line = FieldLine(line)
-		p = prec[:]
+		line=preproc_line(line)	# 入力行の前処理
+		fields=line.split()
+		newNF=len(fields)
+		# 第1レコードのときNFの確定とフィールド/精度リストの再構成と昇順の確認をする
+		if NF==-1:	# 入力ファイルの第1レコードのとき
+			NF=newNF
+			prec=ResetPrec(prec,NF)
+		elif newNF!=NF:
+				error("フィールドの数が一定ではありません。")
 		outstr=''
-		for i in range(1, line.size() + 1):
-			while p and i > p[0][0]:	# 未処理フィールドがあって番号がiより小
-				del p[0]	# stackのtopを処理済みとして削除
-			if not p or i < p[0][0]:	# 処理対象フィールドでなければそのまま出力
-				outstr+=line.getField(i)+' '
-			else:	# 処理対象フィールドなら前0を付ける
-				outstr+=add_zero(getval(line, i), p[0][1])+' '
-		print(outstr.rstrip())	# 最後尾の空白を除去した文字列をpitnt()する
+		lenprec=len(prec)
+		for i in range(NF):
+			j=0
+			while j<lenprec and prec[j][0]<i:	# フィールド/精度リストに未利用部分があってそのフィールド番号がiより小ならjを進める
+				j+=1
+			if j<lenprec and i==prec[j][0]:	# 処理対象フィールドなら
+				string=fields[i]	# フィールドの文字列を得る
+				if string==ngthrough:	# --ngthrough指定の文字列なら
+					outstr+=string+' '	# そのまま出力
+				else:	# --ngthrough指定の文字列でなければ
+					outstr+=add_zero(getval(string), prec[j][1])+' '	# 前0を付ける
+			else:	# 処理対象フィールドでなければそのまま出力
+				outstr+=fields[i]+' '
+		print(outstr.rstrip())	# 最後尾の空白を除去した文字列をprint()する
 
 	sys.exit(0)

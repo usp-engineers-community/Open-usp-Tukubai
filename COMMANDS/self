@@ -4,11 +4,11 @@
 # self: select field (Open usp Tukubai)
 # 
 # designed by Nobuaki Tounaka
-# written by Ryuichi Ueda
+# written  by Masatomo Togashi
 # 
 # The MIT License
 # 
-# Copyright (C) 2011 Universal Shell Programming Laboratory
+# Copyright (C) 2022 Universal Shell Programming Laboratory
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -35,45 +35,69 @@ import codecs
 import unicodedata	# unicode関連処理用
 
 _usage = [ "self f1 f2 ... file", "self -d f1 f2 ... string" ]
-_version = "Sat Mar 29 20:29:04 JST 2014"
+_version = "Mon Feb 21 00:32:55 JST 2022"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4+, 3.1, 3.2/UTF-8)"
+
+_keypat = r'(?P<ndot>(\d+|NF(-\d+)?)(/(\d+|NF(-\d+)?))?)|(?P<dot>(\d+|NF(-\d+)?)(\.\d+(\.\d+)?)?)$'	# a a/b または a a.b a.b.c
+_keypatNF = r'(?P<m0>(?P<m01>\d+)|(?P<m02>NF(?P<m03>-\d+)?))/(?P<m1>(?P<m11>\d+)|(?P<m12>NF(?P<m13>-\d+)?))$'	# a a/b
+_keypatNF_dot = r'(?P<m0>(?P<m01>\d+)|(?P<m02>NF(?P<m03>-\d+)?))(?P<dpt>(\.(?P<dot1>\d+)(\.(?P<dot2>\d+))?)?)$'	# a a.b a.b.c
 
 wide_class = ["W","F","A"]	# 全角文字クラス
 
-def die(msg):
-	sys.stderr.write( 'Error[self] : ' + msg + "\n")
+def error(msg, *arg):
+	sys.stderr.write( 'Error[self] : %s\n' % msg % arg)
 	sys.exit(1)
 
 def usage():
-	sys.stderr.write("Usage     : "+ _usage[0] + "\n")
-	sys.stderr.write("          : "+ _usage[1] + "\n")
-	sys.stderr.write("Version   : "+ _version + "\n")
-	sys.stderr.write("          : "+ _code + "\n")
+	sys.stderr.write("Usage   : "+ _usage[0] + "\n")
+	sys.stderr.write("        : "+ _usage[1] + "\n")
+	sys.stderr.write("Version : "+ _version + "\n")
+	sys.stderr.write("        : "+ _code + "\n")
 	sys.exit(1)
 
 def openReadFile(file_name):
 	if file_name != "-":
 		try:    return codecs.open(file_name,'r','utf-8')
-		except: die("ファイルを開けません。")
+		except: error("ファイルを開けません。")
 
-	if sys.version_info[0] < 3:
+	if not Python3():
 		return codecs.getreader('utf-8')(sys.stdin)
 
 	return codecs.getreader('utf-8')(sys.stdin.detach())
 
 def resetStdout():
-	if sys.version_info[0] < 3:
+	if not Python3():
 		return codecs.getwriter('utf-8')(sys.stdout)
 
 	return codecs.getwriter('utf-8')(sys.stdout.detach())
+
+# BOMの取得関数
+def get_BOM():
+	if Python3():	return chr(int("FEFF",16))	# U+FEFFはBOMのUnicode符号位置
+	else:	return unichr(int("FEFF",16))	# U+FEFFはBOMのUnicode符号位置
+
+# BOMの削除関数
+def rm_BOM(line):
+	global firstline
+	if not firstline: return line
+	firstline=False
+	if line.startswith(get_BOM()):	line=line[len(get_BOM()):]	# 行頭にBOMがあったらBOMを削除する
+	return line
+
+# Python3か判定する
+def Python3():
+	if sys.version_info >= (3, 0):
+		return True
+	else:
+		return False
 
 def isFile(opt):
 	# ここではファイルとして扱う文字列を検出
 	# .1.2など不正なオプションのチェックはあとで
 	
-	#絶対パス
+	# 絶対パス
 	if opt[0] == "/": return True
-	#相対パス
+	# 相対パス
 	if opt[0] == ".": return True
 
 	for tkn in opt.split("/"):
@@ -100,139 +124,140 @@ def isFile(opt):
 	return True
 
 class Params:
-	def __init__(self,tokens):
-		self.num_from = None	# fromフィールド番号
-		self.num_to = None	# toフィールド番号
-		self.nf_from = False	# fromフィールド指定にNFが含まれていればTrueになる
-		self.nf_to = False	# toフィールド指定にNFが含まれていればTrueになる
-		self.start = None	# 部分文字列指定の開始位置
-		self.length = None	# 部分文字列指定の長さ
 
-		if len(tokens) == 0:
-			die("オプションが不正です。")
-	
-		#フィールド数の処理
-		#slashがあれば部分文字列は無い
-		if "/" in tokens[0]:
-			tmp = tokens[0].split("/")
-			self.num_from, self.nf_from = self.parseFieldNum(tmp[0])
-			self.num_to, self.nf_to = self.parseFieldNum(tmp[1])
-			return
 
-		self.num_from, self.nf_from = self.parseFieldNum(tokens[0])
-		self.num_to, self.nf_to = self.num_from, self.nf_from
+	def __init__(self,field_param):
+		#
+		# ひとつの欄指定パラメータ（field_param）から欄番号リスト（self.fieldlist）を得る（区間指定にも対応する）
+		#
+		# field_paramの要素の形式
+			# 単一欄指定で部分文字列指定なし [pos]
+			# 単一欄指定で部分文字列指定あり [pos,start,length]	（lengthはNoneの場合もある）
+			# 区間指定(部分文字列指定はない) [from,to]
+		self.fieldlist = []
+		# self.fieldlistの要素の形式
+			# 部分文字列指定なし [pos]
+			# 部分文字列指定あり [pos,start,length]	（lengthはNoneの場合もある）
+		if len(field_param) == 0:
+			error("オプションが不正です。")
+		concatlist=field_param.split("@")	# 欄指定パラメータを「@」で分割
+		for fieldnum in concatlist:
+			mobj = re.match(_keypat,fieldnum)	# 「@」で分割した要素の構文検査
+			if not mobj:	error("フィールド指定の形式が不正です。 %s",fieldnum)
+			mobj = re.match(_keypatNF,fieldnum)	# 区間指定「a/b」か？
+			if mobj:
+				frm=self.getFieldNum(fieldnum,mobj.group('m01'),mobj.group('m03'))	# 前端部を得る
+				to=self.getFieldNum(fieldnum,mobj.group('m11'),mobj.group('m13'))	# 後端部を得る
+				self.fieldlist.append([frm,to])	# 区間で確定
+			else:	# 単独指定「a a.b a.b.c」
+				mobj = re.match(_keypatNF_dot,fieldnum)
+				field=self.getFieldNum(fieldnum,mobj.group('m01'),mobj.group('m03'))	# 欄番号を得る
+				if mobj.group('dot1'):
+					dot1=int(mobj.group('dot1'))
+					if mobj.group('dot2'):	dot2=int(mobj.group('dot2'))
+					else:	dot2=None
+					self.fieldlist.append([field,dot1,dot2])	# 部分文字列指定がある
+				else:
+					self.fieldlist.append([field])	# 部分文字列指定はない
 
-		if len(tokens) == 1:	return	# 部分文字列指定ではない
-
-		#開始位置（半角単位）
-		self.start = int(tokens[1])-1	# 開始位置を0から始まる数にする
-		if self.start<0:
-			die("部分文字列の開始位置が不正です。")
-		if len(tokens) == 2:	return	# 部分文字列指定で「x.y」形式
-
-		#文字列の長さ（半角単位）
-		self.length = int(tokens[2])	# 部分文字列指定で「x.y.z」形式
-		if self.length<=0:
-			die("部分文字列の長さが不正です。")
-
-	def parseFieldNum(self,word):
-		#1, NF, NF-1 など 
-		#数字とNFの有無を返す
-		p = re.compile('^[0-9]+$')
-		if p.match(word):
-			return int(word), False	# フィールド指定が「n」形式
-	
-		if word == "NF":
-			return 0, True	# フィールド指定が「NF」形式
-
-		tmp = word.split("-")
-		if tmp[0] == "NF":
-			return int(tmp[1]), True	# フィールド指定が「NF-n」形式
-			
-		die("フィールド指定が不正です。")	
-		
+	# 欄番号文字列をNF相対形式で整数化する
+	def getFieldNum(self,str,str1,str2):
+		# n または NF または NF-x の形式の欄番号をNF相対形式の整数で確定する
+		# 正規表現で「\d+|NF(-\d+)?」にmatchする全体をstrが、「\d+」でmatchする部分をstr1が、「(-\d+)?」でmatchする部分をstr2が保持している
+		# NF相対形式の整数化:
+		#  nのときは整数のn
+		#  NFのときは整数の0
+		#  NF-nのときは整数の-n
+		# 実際の欄番号にする際には行ごとに得たNF（欄数）を使用して計算する
+		if str1:	# n
+			fieldnum=int(str1)
+			if fieldnum==0:	fieldnum=None	# NF相対なので「0」を指定されたらNoneとしgetpos()でNoneを0に変換する
+		else:	# NF-n または NF
+			if str2:	# NF-n
+				fieldnum=int(str2)
+			else:	# NF
+				fieldnum=0
+		return fieldnum
 
 class Operator:
 	def __init__(self):
 		self.out_sequence = []
-		self.field_num = 0
+		#self.field_num = 0	# 使われていない（2022年02月16日(水)21時56分04秒）
 
 	def setOption(self,opt):
-		params = Params(opt.split('.'))	 # optが"."で区切られていれば分割リストをParam()に与え、"."がなければ文字列全体をParam()に与える
-		self.out_sequence.append(params)
+		params = Params(opt)
+		self.out_sequence+=params.fieldlist	# listであるparams.fieldlistを連結する
 
 	def output(self,line):
+		global NF
 		tokens = [line] + [w for w in line.split(" ") if w != "" ]
-		#0: 一行全体 1以降: 各フィールド
+		NF=len(tokens)-1
+		keylist=self.make_keylist(self.out_sequence)	# NF相対欄位置からNFの値を使って実際の欄位置に変換する
+		# 0: 一行全体 1以降: 各フィールド
 		print(" ".join(
-			[ self.cutWord(tokens,f) for f in self.out_sequence ]
+			[ self.cutWord(tokens,f) for f in keylist ]
 		))
 
 	def cutWord(self,tokens,param):
-		nf = len(tokens)
-		frm = param.num_from
-		to = param.num_to
+		if len(param)==1:	# 部分文字列指定はない
+			return tokens[param[0]]	# 
 
-		if param.nf_from == True:	frm = nf - frm - 1	# NFがあるときの処理
-		if param.nf_to == True:		to = nf - to - 1	# NFがあるときの処理
-
-		if param.start == None:	# 部分文字列指定がないときすべての指定フィールドを連結して返す
-			return " ".join(tokens[frm:to+1])
-
+		# 部分文字列指定がある
+		fieldnum=param[0]	# 欄番号は1発進で欄番号0は行全体を意味する
+		start=param[1]-1	# 開始位置は0発進にする
+		length=param[2]
 		# 拡張文字列による処理
-		token = tokens[frm]
+		token = tokens[fieldnum]
 		xtoken=string2list(token)	# tokenを拡張文字列化する
 		width=[ self.getCharWidth(xchar) for xchar in xtoken ]	# xtoken中の各文字の表示幅のリストを作成する
-		# for deub
-		#xtokenlen=sum(width)	# xtokenの表示幅（半角単位）
 
-		#半角だけなら単純に文字列を切り取り
+		# 半角だけなら単純に文字列を切り取り
 		if not 2 in width:
-			if param.start >= len(xtoken):	# すべて半角なので半角単位のparam.startと文字数を返すlen(xtoken)は比較できる
-				die("部分文字列の開始位置が後ろすぎます。")
-			if param.length == None:
+			if start >= len(xtoken):	# すべて半角なので半角単位のstartと文字数を返すlen(xtoken)は比較できる
+				error("部分文字列の開始位置が後ろすぎます。")
+			if length == None:
 				# xtokenから指定範囲の文字列を抽出して返す（範囲検査はlist2string()内で実行する）
-				return list2string(xtoken,param.start,len(xtoken))
+				return list2string(xtoken,start,len(xtoken))
 			else:
 				# xtokenから指定範囲の文字列を抽出して返す（範囲検査はlist2string()内で実行する）
-				return list2string(xtoken,param.start,param.start+param.length)
+				return list2string(xtoken,start,start+length)
 
-		#開始位置の確認（開始位置は半角単位で指定）
+		# 開始位置の確認（開始位置は半角単位で指定）
 		pos = 0	# 文字単位の位置
 		wsum = 0	# 半角単位の位置
-		if param.start>0:
+		if start>0:
 			for w in width:	# 先頭から文字単位で表示幅を調べる
 				pos += 1
 				wsum += w
-				if wsum < param.start:	continue
-				elif wsum > param.start:	# 開始位置（半角単位）が全角文字の内部になる
-					die("部分文字列の開始位置が全角文字の内部になります。")
+				if wsum < start:	continue
+				elif wsum > start:	# 開始位置（半角単位）が全角文字の内部になる
+					error("部分文字列の開始位置が全角文字の内部になります。")
 				else:
 					if pos==len(xtoken):	# 開始位置が文字列の直後のとき
-						die("部分文字列の開始位置がフィールド文字列の直後になっています。")
+						error("部分文字列の開始位置がフィールド文字列の直後になっています。")
 					break	# 開始位置（半角単位）が正しく文字の位置になっていて全角文字の内部にはこない
-			else:	# forが(wsum<param.start)のままで完了したので指定の開始位置が半角単位の文字列長より大きい
-				die("部分文字列の開始位置が後ろすぎます。")
+			else:	# forが(wsum<start)のままで完了したので指定の開始位置が半角単位の文字列長より大きい
+				error("部分文字列の開始位置が後ろすぎます。")
 
-		if param.length == None:
+		if length == None:
 			# xtokenから指定範囲の文字列を抽出して返す
 			return list2string(xtoken,pos,len(xtoken))
 
-		#後ろの切り取り（切り取りの長さは半角単位で指定）
+		# 後ろの切り取り（切り取りの長さは半角単位で指定）
 		leng = 0
 		wsum = 0
 		for i in range(pos,len(width)):	# 開始位置から文字単位で表示幅を調べる
 			leng += 1
 			wsum += width[i]
-			if wsum < param.length:
+			if wsum < length:
 				continue
-			#  終了位置（半角単位）が全角文字の内部になるか？
-			elif wsum > param.length:	# 終了位置（半角単位）が今の全角文字の内部になる
-				die("部分文字列の終了位置が全角文字の内部になります。")
-			else:	# wsum == param.length:
+			# 終了位置（半角単位）が全角文字の内部になるか？
+			elif wsum > length:	# 終了位置（半角単位）が今の全角文字の内部になる
+				error("部分文字列の終了位置が全角文字の内部になります。")
+			else:	# wsum == length:
 				break
-		else:	# (wsum<param.length）のままforが完了したので指定の開始位置から半角単位の指定長さを進むと文字列の末端を超える
-			die("部分文字列の終了位置が後ろすぎます")
+		else:	# (wsum<length）のままforが完了したので指定の開始位置から半角単位の指定長さを進むと文字列の末端を超える
+			error("部分文字列の終了位置が後ろすぎます")
 
 		# xtokenから指定範囲の文字列を抽出して返す
 		return list2string(xtoken,pos,pos+leng)
@@ -242,7 +267,61 @@ class Operator:
 		if isHalfWidth(xc[0]):	return 1	# 半角なら1
 		else:	return 2	# 全角なら2
 
+	# NF相対欄位置リスト（base_keylist）からNF（欄数）に応じた実際の欄位置リスト（keylist）を作成する
+	def make_keylist(self,base_keylist):
+		# base_keylistはNF相対襴位置でgetpos()で実際の欄位置に変換する
+		# base_keylistの要素は
+			# 単一欄指定で部分文字列指定なし [pos]
+			# 単一欄指定で部分文字列指定あり [pos,start,length]	（lengthはNoneの場合もある）
+			# 区間指定(部分文字列指定はない) [from,to]
+		# keylistの要素は
+			# 部分文字列指定なし pos	返値とする段階では[pos]
+			# 部分文字列指定あり (pos,start,length)	（lengthはNoneの場合もある）	返値とする段階では[pos,start,length]
+		keylist=[]
+		for fieldpos in base_keylist:
+			if len(fieldpos)==1:	# 部分文字列指定がない単一欄
+				pos=self.getpos(fieldpos[0])
+				keylist.append(pos)
+			elif len(fieldpos)==2:	# (a/b)の区間
+				frm=self.getpos(fieldpos[0])
+				to=self.getpos(fieldpos[1])
+				if frm <= to:	# 正順
+					for i in range(frm,to+1):
+						keylist.append(i)	# 部分文字列指定がない欄指定
+				else:	# 逆順
+					for i in range(to,frm+1):
+						keylist.append(i)	# 部分文字列指定がない欄指定
+			else:	# 部分文字列指定がある単一欄
+				pos=self.getpos(fieldpos[0])
+				keylist.append((pos,fieldpos[1],fieldpos[2]))
+		keylist=sorted(set(keylist), key=keylist.index)	 # 集合化によってリストの重複を解消し元のリストにおける出現位置をキーとしてsort
+		# 返値を「listのlist」にする
+		for i,key in enumerate(keylist):
+			if type(key)==int:	keylist[i]=[key]	# 部分文字列指定がない欄はintから要素数1のlistに
+			else:	keylist[i]=list(key)	# 部分文字列指定がある欄はtupleから要素数3のlistに
+		return keylist
+
+	# NF相対欄位置からNF（欄数）に応じた1発進の欄位置に変換する
+	def getpos(self,base_pos):
+		# NF相対欄位置からの変換:
+		#  Noneのときは0に
+		#  0のときはNF（欄数）に
+		#  -nのときはNF-nに
+		# 0は行全体を指し1以上は各欄を指す
+		if base_pos==None:	return 0
+		if base_pos > 0:
+			pos=base_pos
+			if pos > NF:	error("フィールド番号が大きすぎます。 %s",str(base_pos))
+		else:
+			pos=NF+base_pos
+			if pos < 0:	error("フィールド指定でNF-x の x が大きすぎます。 %s","NF-"+str(-base_pos))
+		return pos
+
 def directMode(argv):
+	if len(argv)==0:
+		error("フィールド指定と文字列がありません。")
+	elif len(argv)==1:
+		error("フィールド指定がありません。")
 	for opt in argv[:-1]:	# ここのargvには元のargvのargv[2:]が渡されている
 		operator.setOption(opt)
 	str=utf2ucs(argv[-1])	# 直接指定文字列の前処理
@@ -297,12 +376,12 @@ def isHalfWidth(c):
 #
 def isCombiningDiacriticalMark(cp):
 	# unicodeにおける合成可能文字のブロック内か？
-		#	0x3099 0x309a	仮名文字の合成可能濁点と合成可能半濁点
-		#	0x0300-0x036F	ダイアクリティカルマーク（合成可能）
-		#	0x1AB0-0x1AFF	ダイアクリティカルマーク（合成可能）拡張
-		#	0x1DC0-0x1DFF	ダイアクリティカルマーク（合成可能）補助
-		#	0x20D0-0x20FF	記号用ダイアクリティカルマーク（合成可能）
-		#	0xFE20-0xFE2F	半記号（合成可能）
+		# 0x3099 0x309a	仮名文字の合成可能濁点と合成可能半濁点
+		# 0x0300-0x036F	ダイアクリティカルマーク（合成可能）
+		# 0x1AB0-0x1AFF	ダイアクリティカルマーク（合成可能）拡張
+		# 0x1DC0-0x1DFF	ダイアクリティカルマーク（合成可能）補助
+		# 0x20D0-0x20FF	記号用ダイアクリティカルマーク（合成可能）
+		# 0xFE20-0xFE2F	半記号（合成可能）
 	if cp == 0x3099 or cp == 0x309a or \
 		0x0300<=cp and cp <=0x036F or \
 		0x1AB0<=cp and cp <=0x1AFF or \
@@ -317,8 +396,8 @@ def isCombiningDiacriticalMark(cp):
 #
 def isVariationSelector(cp):
 	# unicodeにおける異体字選択子のブロック内か？
-		#	0xFE00-0xFE0F	Variation Selectors Supplement	字形選択子補助（SVS用）
-		#	0xE0100-0xE01EF	Variation Selectors	字形選択子（IVS用）
+		# 0xFE00-0xFE0F	Variation Selectors Supplement	字形選択子補助（SVS用）
+		# 0xE0100-0xE01EF	Variation Selectors	字形選択子（IVS用）
 	if  0xFE00<=cp  and cp <=0xFE0F or \
 		0xE0100<=cp and cp <=0xE01EF:
 		return True
@@ -327,12 +406,12 @@ def isVariationSelector(cp):
 #
 # 文字列の分解
 #
-#	文字列を拡張文字の列に変換する	1文字が複数の符号位置であらわされている場合（代用対/結合文字/IVS/SVS）への対応
-#		分解結果はリストとなり各要素（拡張文字）は
-#			UCS2のときはリスト
-#				[ 通常文字または文字列としての代用対 , 結合文字または異体字選択子（2バイトまたは代用対）または空文字 ]
-#			UCS4のときは文字列
-#				文字列（通常文字に結合文字または異体字選択子が付くことがある）
+# 文字列を拡張文字の列に変換する	1文字が複数の符号位置であらわされている場合（代用対/結合文字/IVS/SVS）への対応
+# 	分解結果はリストとなり各要素（拡張文字）は
+# 		UCS2のときはリスト
+# 			[ 通常文字または文字列としての代用対 , 結合文字または異体字選択子（2バイトまたは代用対）または空文字 ]
+# 		UCS4のときは文字列
+# 			文字列（通常文字に結合文字または異体字選択子が付くことがある）
 def string2list(s):
 	StringList=[]
 	if isUCS2():
@@ -398,19 +477,19 @@ def string2list(s):
 #
 # 文字列の合成
 #
-#	拡張文字列を文字列に変換する	1文字が複数の符号位置であらわされている場合（代用対/結合文字/IVS/SVS）への対応
-#		拡張文字の各文字は
-#			UCS2のときはリスト
-#				[ 通常文字または文字列としての代用対 , 結合文字または異体字選択子（2バイトまたは代用対）または空文字 ]
-#			UCS4のときは文字列
-#				文字列（通常文字に結合文字または異体字選択子が付くことがある）
+# 拡張文字列を文字列に変換する	1文字が複数の符号位置であらわされている場合（代用対/結合文字/IVS/SVS）への対応
+# 	拡張文字の各文字は
+# 		UCS2のときはリスト
+# 			[ 通常文字または文字列としての代用対 , 結合文字または異体字選択子（2バイトまたは代用対）または空文字 ]
+# 		UCS4のときは文字列
+# 			文字列（通常文字に結合文字または異体字選択子が付くことがある）
 def list2string(xs,start,end):	# 拡張文字列xsのstartからendの手前までを文字列として返す
 	# startとendは文字単位で与えられる
 	if start<0 or start>len(xs):
-		die("部分文字列の開始位置の指定エラー")
+		error("部分文字列の開始位置の指定エラー")
 	if end<0 or end>len(xs):
-		die("部分文字列の終了位置の指定エラー")
-	if start>end: die("部分文字列の開始位置が終了位置の後にあります。")
+		error("部分文字列の終了位置の指定エラー")
+	if start>end: error("部分文字列の開始位置が終了位置の後にあります。")
 	string=""
 	for i in range(start,end):
 		if isUCS2():	# UCS2のとき拡張文字列の各拡張文字は長さ2のリスト（[代用対または通常文字,結合文字または異体字選択子（代用対のこともある）]）
@@ -418,21 +497,18 @@ def list2string(xs,start,end):	# 拡張文字列xsのstartからendの手前ま�
 		else:
 			string+=xs[i]	# UCS4のとき拡張文字列の各拡張文字は文字列
 	return string
+
 #
 # 直接入力文字列の前処理
 #
 #  Python3においてコマンドラインからの直接入力文字列中にUnicode符号位置がU+FFFFを超えるコードがあると
 #  Unicode文字に正しく変換されない場合があることへの対処をする
-#  Python2においてはUTF8からUnicode文字への通常の変換処理をする
+#  Python2/Python3両対応
 def utf2ucs(instr):
-	if sys.version_info < (3, 0):	# Python2なら
-		try:
-			outstr=unicode(instr, 'utf_8')	# utf8からunicdoeへ変換する
-		except:
-			die("不当なマルチバイト文字が含まれています。")
-		return outstr
 	outstr=""	# 出力文字列
 	intlist=[]	# 作業用整数リスト
+	if not Python3():	return instr.decode('utf8')	# Python2のときはutf8からUCSへの変換をして返す
+	# Python3なら直接指定文字列の前処理をしてからUCSを返す
 	for char in instr:
 		if ord(char)>=0xdc00 and ord(char)<=0xdcff:	# 文字の符号位置がU+DCxxの範囲にあったら「UTF8もどき」
 			intlist.append(ord(char)-0xdc00)	# 0xdc00のげたをはずして整数リストに入れる
@@ -448,21 +524,24 @@ def utf2ucs(instr):
 	return outstr
 
 ###########################################
-#メイン関数
+# メイン関数
 if __name__ == '__main__':
 
-	if len(sys.argv) <= 1 : usage()
-	if '--' in sys.argv : usage()
+	# 構文表示
+	if len(sys.argv) < 2: usage()
+	elif len(sys.argv) == 2:
+		if sys.argv[1] == '--help' or \
+		   sys.argv[1] == '--version':	usage()
 
 	operator = Operator()
 
-	#ダイレクトモード
+	# ダイレクトモード
 	if sys.argv[1] == "-d":
 		sys.stdout = resetStdout()	# ダイレクトモードでもstdoutの設定をしておく
 		directMode(sys.argv[2:])
 		sys.exit(0)
 
-	#IOの準備（最後のオプションをファイルかどうか見分ける）
+	# IOの準備（最後のオプションをファイルかどうか見分ける）
 	if isFile(sys.argv[-1]):
 		input_file = openReadFile(sys.argv[-1])
 		argv = sys.argv[1:-1]
@@ -470,15 +549,21 @@ if __name__ == '__main__':
 		input_file = openReadFile("-")
 		argv = sys.argv[1:]
 
+	# フィールド指定有無検査
+	if len(argv)==0:
+		error("フィールド指定がありません。")
+
 	sys.stdout = resetStdout()
 
-	#切り出し位置指定オプションをセット
+	# 切り出し位置指定オプションをセット
 	for opt in argv:
 		operator.setOption(opt)
 
-	#実行
+	# 実行
+	firstline=True
 	nf_set = False
 	for line in input_file:
+		line=rm_BOM(line)	# 先頭行に対してBOM削除をする
 		operator.output(line.rstrip())
 		nf_set = True
 

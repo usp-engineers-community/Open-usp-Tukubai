@@ -4,11 +4,11 @@
 # yobi 曜日挿入フィルタ（Open usp Tukubai版）
 # 
 # designed by Nobuaki Tounaka
-# written by Yoshio Katayama
+# written  by Masatomo Togashi
 #
 # The MIT License
 #
-# Copyright (C) 2011 Universal Shell Programming Laboratory
+# Copyright (C) 2020 Universal Shell Programming Laboratory
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -30,11 +30,11 @@
 
 from __future__ import print_function
 
-_usage = "yobi [-ej] <field> <filename>"
-_usage1 = "yobi -d[ej] <string>"
-_version = "Fri Oct 21 11:26:06 JST 2011"
+_usage = "yobi [-e|-j] <field> <filename>"
+_usage1 = "yobi -d [-e|-j] <string>"
+_version = "Sat Jun 20 21:57:23 JST 2020"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
-_keypat = r'\d+$'
+_keypat = r'(\d+|NF(-\d+)?)$'
 
 import re
 import os
@@ -43,7 +43,7 @@ from getopt import getopt
 from datetime import datetime
 
 def error(msg, *arg):
-	print('Error[count] :', msg % arg, file=sys.stderr)
+	print('Error[yobi] :', msg % arg, file=sys.stderr)
 	sys.exit(1)
 
 def usage():
@@ -56,7 +56,6 @@ def usage():
 class FieldLine:
 	def __init__(self, line, allow_z = False):
 		self.__allow_zero = allow_z
-		line = line.rstrip('\n')
 		self.__fields = [ line ]
 		self.__fields += [ x for x in line.split(' ') if x ]
 
@@ -98,15 +97,52 @@ class FieldLine:
 #
 # 入力ファイルオープン
 #
-def open_file(n, mode = 'r'):
-	if n >= len(sys.argv) or sys.argv[n] == '-':
-		file = sys.stdin
+def open_file(n):
+	if n >= len(sys.argv):	filename = '-'
 	else:
-		try:
-			file = open(sys.argv[n], mode)
-		except:
-			error("ファイル %s をオープンできません。", sys.argv[n])
+		filename = sys.argv[n]
+		del sys.argv[n]
+	if filename == '-':	filename = '/dev/fd/0'	# sys.stdinをファイルディスクリプターで表記する
+	if Python3():	mode='r'
+	else:	mode='rU'	# Python2ではmodeがrUのときPython3と同様に読み込み時に各種改行記号がLF（\n）に統一される
+	try:
+		file = open(filename, mode)
+	except:
+		if filename=='/dev/fd/0':
+			error("標準入力ファイルをオープンできません。")
+		else:
+			error("ファイル '%s' をオープンできません。", filename)
 	return file
+
+# 改行符号（\r\n）の削除関数
+def rm_eol(line):
+	return line.rstrip("\r\n")	# 改行記号としてCRLF('\r\n')/CR('\r')/LF('\n')のすべてに対応する
+
+# BOMの取得関数
+def get_BOM():
+	if Python3():	return chr(int("FEFF",16))	# U+FEFFはBOMのUnicode符号位置
+	else:			return "\xEF\xBB\xBF"	# BOMは「EF BB BF」の3バイト
+
+# BOMの削除関数
+def rm_BOM(line):
+	global firstline
+	if not firstline: return line
+	firstline=False
+	if line.startswith(get_BOM()):	line=line[len(get_BOM()):]	# 行頭にBOMがあったらBOMを削除する
+	return line
+
+# ファイル入力行の前処理
+def preproc_line(line):
+	line=rm_eol(line)	# 行末の改行記号を削除する
+	line=rm_BOM(line)	# ファイル先頭行の行頭にBOMがあったらこれを削除する
+	return line
+
+# Python3か判定する
+def Python3():
+	if sys.version_info >= (3, 0):
+		return True
+	else:
+		return False
 
 #
 # 曜日の計算
@@ -125,7 +161,7 @@ def weekday(date, lang):
 	}[lang][w]
 
 #
-#メイン関数
+# メイン関数
 #
 if __name__ == '__main__':
 
@@ -139,18 +175,22 @@ if __name__ == '__main__':
 	#
 	direct, lang = '', ''
 	try:
-		opts = getopt(sys.argv[1:], "dej")
-		for opt in opts[0]:
-			if opt[0] == '-d':
-				direct = True
-			else:
-				# '-e' or '-j':
-				lang = opt[0][1]
-		if not opts[1]:
-			usage()
-		sys.argv = sys.argv[0:1] + opts[1]
+		optlist,args = getopt(sys.argv[1:], "dej")
 	except:
-		usage()
+		error("オプションの指定が不正です。")
+	for opt in optlist:
+		if opt[0] == '-d':
+			if direct != '':
+				error("-d指定が重複しています。")
+			direct = True
+		else:
+			if lang != '':
+				error("言語の指定が複数あります。")
+			# '-e' or '-j':
+			lang = opt[0][1]
+	if not args:
+		error("ファイルまたは文字列の指定がありません。")
+	sys.argv = sys.argv[0:1] + args	# オプションを除くリスト
 	#
 	# ダイレクトモード
 	#
@@ -162,24 +202,27 @@ if __name__ == '__main__':
 	# <field>
 	#
 	if not re.match(_keypat, sys.argv[1]):
-		usage()
-	fld = int(sys.argv[1])
-	if fld == 0:
-		error("フィールド番号が正しくありません、")
+		error("フィールドの指定が不正です。")
+	fld = sys.argv[1]
 
 	#
 	# メインループ
 	#
+	firstline=True
+	head=True
 	for line in open_file(2):
-		line = FieldLine(line)
-		if line.size() < fld:	# 指定フィールド番号が最大入力フィールド番号を超えているとき
-			print(line.getField(1, line.size()))	# 曜日出力はしない
-		else:
-			if fld < line.size(): endchar=' '
-			else:                 endchar=''
-			print(line.getField(1, fld), weekday(line.getField(fld), lang), end=endchar)
-			if fld < line.size():
-				print(line.getField(fld + 1, line.size()), end='')
-			print()
+		line = FieldLine(preproc_line(line))
+		if head:
+			fld=line.getFieldNum(fld)
+			numfld=line.size()
+			head=False
+		elif line.size() != numfld:
+			error("行のフィールド数が一定ではありません。")
+		if fld < line.size(): endchar=' '
+		else:                 endchar=''
+		print(line.getField(1, fld), weekday(line.getField(fld), lang), end=endchar)
+		if fld < line.size():
+			print(line.getField(fld + 1, line.size()), end='')
+		print()
 
 	sys.exit(0)
