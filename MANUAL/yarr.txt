@@ -10,12 +10,14 @@ yarr : 縦型のデータを横型に展開
 
 Usage   : yarr [-<n>][-d<str>] <file>
         : yarr [-<n>][-d<str>] num=<n> <file>
-Version : Thu Dec 15 13:46:38 JST 2011
+Version : Fri Nov 20 17:00:13 JST 2020
+Edition : 1
 
 【説明】
 
 指定したファイルの第1フィールドからnum=<n>で指定したフィールド数までのフィール
 ドをキーとし、キーが同一の行のフィールドを横に展開して1行として出力する。
+<file>として-を指定すると標準入力を使用する。
 
 【例1】基本的な使い方
 
@@ -99,6 +101,6 @@ $
 
 tarr(1)
 
-last modified: 2014-01-13 16:01:13
+last modified: Fri Jul 15 16:27:49 JST 2022
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012-2014 Universal Shell Programming Laboratory All Rights
+Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights

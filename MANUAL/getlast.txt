@@ -9,13 +9,15 @@ getlast : 同一キーの最後の行を出力
 【書式】
 
 Usage   : getlast [+ng] <n1> <n2> <file>
-Version : Thu Dec 15 13:46:38 JST 2011
+Version : Sat Sep 19 23:49:26 JST 2020
+Edition : 1
 
 【説明】
 
 引数のファイルまたは標準入力のテキストデータに対し、指定されたキーフィールドの
 値が同一の行が複数ある場合に、キーフィールドごとに最後の行のみを抽出して出力す
 る。
+<file>として-を指定すると標準入力を使用する。
 
 【例1】
 
@@ -68,6 +70,6 @@ $
 
 ctail(1)、getfirst(1)、tcat(1)、ycat(1)
 
-last modified: 2014-01-13 16:01:13
+last modified: Fri Jul 15 15:42:38 JST 2022
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012-2014 Universal Shell Programming Laboratory All Rights
+Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights

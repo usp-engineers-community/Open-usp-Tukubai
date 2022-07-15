@@ -1,4 +1,6 @@
-uconv(USP)
+Tukubaiオンラインコマンドマニュアル
+
+uconv(1)
 
 【名前】
 uconv : UTF-8 <=> Shift JIS / EUC-JP コード変換
@@ -7,7 +9,7 @@ uconv : UTF-8 <=> Shift JIS / EUC-JP コード変換
 Usage   : uconv <field> <str> <file>
 Option  : --through <str>
 Version : Sun Apr 17 16:06:00 JST 2022
-          Open usp Tukubai (LINUX+FREEBSD/PYTHON3.5/UTF-8)"
+Edition : 1
 
 【説明】
 UTF-8 と Shif-JIS, EUC-JP の相互の文字コード変換を行います。オプショ
@@ -21,3 +23,7 @@ UTF-8 と Shif-JIS, EUC-JP の相互の文字コード変換を行います。�
 -utol    UTF-8      から ISO-8851-1
 
 ファイル名が省略された時及び "-" の時は標準入力から入力します。
+
+last modified: Fri Jul 15 16:48:27 JST 2022
+Contact us: uecinfo@usp-lab.com
+Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights

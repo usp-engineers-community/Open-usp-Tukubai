@@ -10,7 +10,8 @@ maezero : 前にゼロをつける
 
 Usage   : maezero <f1.w1> <f2.w2> .. <file>
 Option  : --ngthrough <str>
-Version : Mon Dec  9 17:52:22 JST 2013
+Version : Sat Jun 20 21:57:21 JST 2020
+Edition : 1
 
 【説明】
 
@@ -36,7 +37,7 @@ $
 
 【例3】
 
-続したフィールドを指定することができる。
+連続したフィールドを指定することができる。
 
 $ maezero 1.6/3.6 data
 000012 000345 006789
@@ -60,6 +61,6 @@ maezero(1)コマンドはフィールドの内容に関しては何もチェッ�
 
 フィールド形式(5)
 
-last modified: 2014-02-27 18:02:27
+last modified: Fri Jul 15 15:42:38 JST 2022
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012-2014 Universal Shell Programming Laboratory All Rights
+Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights

@@ -1,21 +1,28 @@
-check_dble_name
+Tukubaiオンラインコマンドマニュアル
+
+check_dble_name(1)
 
 【名前】
+
 check_dble_name : name 形式データの重複チェックをする
 
 【書式】
+
 Usage   : check_dble_name <check_file> <name_file>
 Option  : --through <string>
-Version : Fri Oct 21 11:26:06 JST 2011
-          Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)
+Version : Sun Nov 21 17:29:32 JST 2021
+Edition : 1
 
 【説明】
+
 <check_file> に記述されているタグ名について、
 <name_file>の値の重複チェックをします。
-エラーがあった場合は、コマンドはエラー終了し、標準出力にタグ名
-を出力します。
+重複があった場合は、そのつど標準出力に重複のあったタグ名を出力し、
+コマンド終了時には「エラー終了」とします。
+最初のエラーで終了するのではなく、複数の重複があっても対応します。
 
 【オプション】
+
 --through <string>
 <name_file> のデータが<string>と等しい場合は、
 チェックを実施しません。<string>のデフォルトは、"_" となります。
@@ -23,6 +30,7 @@ Version : Fri Oct 21 11:26:06 JST 2011
 できます。
 
 【例１】
+
 [usp1 usp@ ~]$ cat check
 A
 
@@ -35,9 +43,10 @@ A_004 7
 A_001
 A_002
 $ echo $?
-1
+1 
 
 【例２】
+
 [usp1 usp@ ~]$ cat data
 A_001 5
 A_002 5
@@ -48,4 +57,8 @@ A_005 @
 A_001
 A_002
 $ echo $?
-1
+1 
+
+last modified: Fri Jul 15 16:35:40 JST 2022
+Contact us: uecinfo@usp-lab.com
+Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights

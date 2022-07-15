@@ -8,8 +8,9 @@ numchar : 標準入力から文字列を読んで数値文字参照に変換す�
 
 【書式】
 
-Usage   : numchar < <file>
-Version : Tue Sep 10 11:38:19 JST 2013
+Usage   : numchar
+Version : Tue Feb 19 23:38:53 JST 2019
+Edition : 1
 
 【説明】
 
@@ -23,3 +24,7 @@ echo 我々は宇宙人だ。 | numchar
 【コメント】
 
 このコマンドは、「シェルスクリプト高速開発手法」のために作られたものです。
+
+last modified: Fri Jul 15 15:42:38 JST 2022
+Contact us: uecinfo@usp-lab.com
+Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights

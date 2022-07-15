@@ -1,21 +1,24 @@
-ido
+Tukubaiオンラインコマンドマニュアル
 
-＜名前＞ 
+ido(1)
+
+【名前】 
 ido  : テキストの位置を移動する。
 
-＜書式＞
-sage   : ido <y> <x> <file>
+【書式】
+Usage   : ido <y> <x> <file>
           ido -f[<string>] <y> <x> <file>
 Version : Mon Mar 18 07:54:16 JST 2013
+Edition : 1
 
-＜説明＞
+【説明】
 テキストファイル全体を指定した位置に移動して出力します。
 引数は、移動するテキストの開始位置を、"y"は下に移動する行数、"x"は右に移動する
 文字数(半角文字間隔)を指定します。
 主に"overlay"と組み合わせて成形済みの複数のテキストファイルを重ねあわせて帳票
 などを作成するのに使用します。
 
-＜例１＞
+【例１】
 (元データ)
 $ cat data1
 ★教科別得点
@@ -58,7 +61,7 @@ $ ido 3 8 data1
         007 梶川 50  2 33 15 62
 →→→→ ８文字分右横へ移動
 
-＜例３＞
+【例３】
 フィールド移動
 -f オプションをつけることによってフィールドを移動し、
 移動した分のフィールドは、デフォルト "@" でパディングします。
@@ -73,3 +76,7 @@ $ ido -f0 1 2 data
 0 0 0 0 0 
 0 0 1 2 3
 0 0 4 5 6
+
+last modified: Fri Jul 15 15:42:38 JST 2022
+Contact us: uecinfo@usp-lab.com
+Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights

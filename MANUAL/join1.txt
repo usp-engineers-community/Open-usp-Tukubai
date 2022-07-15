@@ -8,8 +8,9 @@ join1 : トランザクションファイルにマスタファイルを連結(�
 
 【書式】
 
-Usage   : join1 [+ng[<fd>]] key=<n> <master> <tran>
-Version : Thu Dec 15 13:46:38 JST 2011
+Usage   : join1 [+ng[<fd>]] key=<n> <master> [<tran>]
+Version : Sun Jun 19 23:55:51 JST 2022
+Edition : 1
 
 【説明】
 
@@ -23,14 +24,10 @@ masterに-を指定すると標準入力をマスタファイルとする。tran
 masterの第1フィールドおよびtranの第<n>フィールドは必ず昇順で整列されていること
 が条件となる。また、masterのキーフィールド(第1フィールド)はユニークでなければな
 らない。(第1フィールドが同じ値をもつ行が複数あってはならない)。tranについてはこ
-の制約はなく、キーフィールド(第<n>フィールド)が同じ値を行はいくつあっても構わな
+の制約はなく、キーフィールド(第<n>フィールド)が同じ値の行はいくつあっても構わな
 い。
 
-masterの第1フィールドおよびtranの第<n>フィールドは必ず昇順で整列されていること
-が条件となる。また、masterのキーフィールド(第1フィールド)はユニークでなければな
-らない。(第1フィールドが同じ値をもつ行が複数あってはならない)。tranについてはこ
-の制約はなく、キーフィールド(第<n>フィールド)が同じ値を行はいくつあっても構わな
-い。
+キー指定にひとつでも0があると全フィールドを指定したことになる
 
 +ng<fd>オプションを使うことで、一致した行を標準出力ファイルへ、一致しなかった行
 をファイルデスクリプタ<fd>のファイルへ出力することが可能。<fd>を省略した場合は
@@ -175,6 +172,6 @@ $
 cjoin0(1)、cjoin1(1)、cjoin2(1)、join0(1)、join2(1)、loopj(1)、loopx(1)、up3(1)
 、マスタファイル(5)、トランザクションファイル(5)
 
-last modified: 2014-01-13 16:01:13
+last modified: Fri Jul 15 15:42:38 JST 2022
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012-2014 Universal Shell Programming Laboratory All Rights
+Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights

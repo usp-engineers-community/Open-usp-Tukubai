@@ -10,7 +10,8 @@ juni : 同一キー内での順位を出力
 
 Usage   : juni [<k1> <k2>] <file>
         : juni -h [<k1> <k2>] <file>
-Version : Thu Dec 15 13:46:38 JST 2011
+Version : Sat Sep 19 23:49:25 JST 2020
+Edition : 2
 
 【説明】
 
@@ -19,8 +20,8 @@ Version : Thu Dec 15 13:46:38 JST 2011
 同一キーとみなすものとする。この場合は単純に行の先頭に行番号を挿入するのと同じ
 になる。
 
--hオプションを指定した場合、各キーフィールドの順位を階層的に出力する。<file>を
-指定しない、あるいは、-が指定された時には標準入力からのデータ入力を期待する。
+-hオプションを指定した場合、各キーフィールドの順位を階層的に出力する。
+<file>として-を指定すると標準入力を使用する。
 
 【例1】
 
@@ -134,6 +135,6 @@ $ juni -h data
 
 count(1)、gyo(1)、rank(1)、retu(1)
 
-last modified: 2014-01-13 16:01:13
+last modified: Fri Jul 15 15:42:38 JST 2022
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012-2014 Universal Shell Programming Laboratory All Rights
+Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights

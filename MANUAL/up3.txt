@@ -8,14 +8,16 @@ up3 : 2つのファイルを同一キーフィールドでマージ
 
 【書式】
 
-Usage   : up3 key=<key> <master> <tran>
-Version : Thu Dec 15 13:46:38 JST 2011
+Usage   : up3 key=<key> <master> [<tran>]
+Version : Fri Nov 20 17:00:13 JST 2020
+Edition : 1
 
 【説明】
 
 masterとtranの各行をkey=で指定されたフィールド値で比較し、同じキーフィールドを
 持つ行をmasterの該当行の下に挿入して出力する。masterもtranもキーとなるフィール
 ドは整列されている必要がある。
+tran指定を省略すると標準入力（stdin）からの入力となる。
 
 【例1】
 
@@ -65,6 +67,6 @@ $
 join0(1)、join1(1)、join2(1)、loopj(1)、loopx(1)、マスタファイル(5)、トランザク
 ションファイル(5)
 
-last modified: 2014-01-13 16:01:13
+last modified: Fri Jul 15 16:27:21 JST 2022
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012-2014 Universal Shell Programming Laboratory All Rights
+Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights

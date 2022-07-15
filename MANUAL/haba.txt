@@ -1,20 +1,27 @@
+Tukubaiオンラインコマンドマニュアル
+
 haba
 
-＜名前＞ 
+【名前】 
+
 haba : 表示幅をだす
 
-＜書式＞
-Usage   : haba [-vf] <file1> <file2>...
-Version : Tue Jun 17 23:01:25 JST 2014
+【書式】
 
-＜説明＞
+Usage   : haba [-vf] <file1> <file2>...
+Version : Wed May 20 04:47:48 JST 2020
+Edition : 1
+
+【説明】
+
 半角文字の表示幅を１として、引数のファイルの表示幅を出します。ファイ
 ルは複数指定できます。
 （註） 半角オーバ－ライン「‾」（U+203e）は表示幅は１（半角幅）と判定され、
            テキストエディター等でも半角幅で表示されるが、
            コマンド実行をするウィンドウによっては表字幅２（全角幅）で表示されることがある。
 
-＜例１＞
+【例１】
+
 指定ファイルの表示幅を出します。
 $ cat data
 1234
@@ -28,13 +35,15 @@ $ haba data
 4
 8
 
-＜例２＞
+【例２】
+
 -v オプションで表示幅に変化のあった行番号と表示幅を出力します。
 $ hava -v data
 1 4                   <--- １行目からは表示幅４
 4 8                   <--- ４行目からは表示幅８
 
-＜例３＞
+【例３】
+
 -f オプションでファイル名もあわせて出力します。標準入力の場合は、ファ
 イル名は STDIN となります。
 -v オプションと併用すると、ファイル名、行番号、表示幅の順になります。
@@ -52,7 +61,8 @@ $ cat file1 | haba -f - file2
 STDIN 4
 file2 6
 
-＜参考＞
+【参考】
+
 $ cat data
 1234
 東京
@@ -65,3 +75,7 @@ $ LANG=C awk '{print length($0)}' data <-- バイト数がでる。
 4
 6
 12
+
+last modified: Fri Jul 15 15:42:38 JST 2022
+Contact us: uecinfo@usp-lab.com
+Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights

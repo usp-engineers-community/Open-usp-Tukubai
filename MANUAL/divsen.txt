@@ -9,7 +9,8 @@ divsen : 指定フィールドを1,000で除算
 【書式】
 
 Usage   : divsen [-s] <f1> <f2> ... <file>
-Version : Thu Dec 15 13:46:38 JST 2011
+Version : Mon Mar 21 16:31:46 JST 2022
+Edition : 1
 
 【説明】
 
@@ -17,6 +18,7 @@ Version : Thu Dec 15 13:46:38 JST 2011
 位の表を作成する場合などに使用する。引数において1,000で除算する各フィールドを順
 に指定する。なお、小数点以下の数値は四捨五入される。-sオプションを指定すると四
 捨五入せず、小数点の値をそのまま出力する。
+<file>として-を指定すると標準入力を使用する。
 
 【例1】
 
@@ -55,10 +57,21 @@ $
 divsenされた結果をさらにパイプでつないでdivsenを実行すると、100万単位のデータを
 作成することができる。
 
+
+【注意】
+
+<file>を省略するときは注意が必要
+divsen 1 10の実行において
+	もし「10」という数字名のファイルが存在すると
+	標準入力ファイルの第1および第10フィールドを1,000で除算するという動作を「しない」で
+	「10」というファイルの第1フィールドを1,000で除算するという動作を「する」
+最後のパラータが「存在するファイルの名前」であればこれを入力ファイル指定とし
+そうでなければフィールド指定として処理し入力ファイル指定は省略されたとして標準入力を仮定する
+
 【関連項目】
 
 marume(1)
 
-last modified: 2014-01-13 16:01:13
+last modified: Fri Jul 15 16:41:46 JST 2022
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012-2014 Universal Shell Programming Laboratory All Rights
+Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights

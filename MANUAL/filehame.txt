@@ -9,12 +9,12 @@ filehame : テンプレートにファイルをはめ込み
 【書式】
 
 Usage   : filehame -l<string> <template> <data>
-Version : Thu Aug  2 14:07:28 JST 2012
+Version : Fri Jan 21 15:38:06 JST 2022
+Edition : 1
 
 【説明】
 
-<template>ファイルに含まれる文字列<string>が含まれる行を<data>ファイルの中身に
-置き換える。
+<template>ファイル中で文字列<string>が含まれる行を<data>ファイルの中身に置き換える。
 
 【例1】
 
@@ -41,7 +41,7 @@ $ cat data2
 <input id="123" type="button" onclick=sb('123') value="push" />
 $
 
-$ filehame -llabel1 template file1 | filehame -llabel2 - file2
+$ filehame -llabel1 template data1 | filehame -llabel2 - data2
 <html>
 <meta>
 <script type="javascript/text">
@@ -61,6 +61,6 @@ $
 
 formhame(1)、mojihame(1)
 
-last modified: 2014-01-13 16:01:13
+last modified: Fri Jul 15 16:43:10 JST 2022
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012-2014 Universal Shell Programming Laboratory All Rights
+Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights

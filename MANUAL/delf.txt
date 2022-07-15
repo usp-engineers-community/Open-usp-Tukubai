@@ -8,23 +8,16 @@ delf : 指定したフィールドを除いて出力
 
 【書式】
 
-Usage   : delf f1 f2 ... file
+Usage   : delf f1 f2 ... [file]
         : delf -d f1 f2 ... string
-Caution : supposed f1 < f2 < f3 < ..
-Version : Thu Dec 15 13:46:38 JST 2011
+Version : Thu Apr 21 00:58:47 JST 2022
+Edition : 1
 
 【説明】
 
 fileから、指定したフィールドだけを除いて出力する(delf=delete field)。self(1)と
 は逆の動作となる。ファイル名指定なし、あるいは、ファイル名が-の時は標準入力を期
 待する。
-
-【注意】
-
-f1 < f2 < f3 < ...という関係である必要がある。
-
-$ delf 1 3 5 data               ← OK
-$ delf 3 1 5 data               ← NG
 
 【オプション】
 
@@ -94,18 +87,15 @@ $
 入力ファイルが改行文字で終了していない場合、つまり行が尻切れになっている場合は
 、ファイル末尾に改行文字が追加されて完結した行になる。
 
-【バグ】
-
-数字名のファイルを使用してはならない。もし10という名前のファイルが存在すると「
-delf 1 10」が10であるファイルから第1フィールドを削除するという動作をして、標準
-入力ファイルから第1、10フィールドを削除するという動作をしなくなる。ただし、2の
-ように数字1文字だけを指定した場合は、そのファイルが存在しても、それは無視してフ
-ィールドとして扱う。
+実行時パラメータの最後尾が実際に存在するファイルの名前であればそれを入力ファイルとして開く。
+このファイル名は「10」のような数字列であってもかまわない。
+最後尾が存在するファイル名でないときはそれをフィールドとして処理し、
+入力ファイル名は省略されたものとして標準入力（stdin）を使用する。
 
 【関連項目】
 
 self(1)
 
-last modified: 2014-01-13 16:01:13
+last modified: Fri Jul 15 16:41:13 JST 2022
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012-2014 Universal Shell Programming Laboratory All Rights
+Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights

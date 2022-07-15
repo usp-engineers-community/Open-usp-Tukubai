@@ -1,20 +1,26 @@
-delr(USP)
+Tukubaiオンラインコマンドマニュアル
+
+delr(1)
 
 【名前】
+
 delr : フィールドが完全一致した行を除いて出力する
 
 【書式】
+
 Usage   : delr <field> <str> <file>
-Version : Fri Oct 21 11:26:06 JST 201
+Version : Sun Nov 21 17:29:32 JST 2021
           Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)
 Edition : 1
 
 【説明】
+
 引数のファイルのテキストデータより、指定したフィールドが指定した文字
 列と完全一致した行を除いて出力します。
 ファイル名が省略された時及び "-" の時は標準入力から入力します。
 
 【例１】 指定したフィールドが完全一致した行を除いて出力する
+
 $ cat data
 0001 a
 0002 b
@@ -27,6 +33,11 @@ $ delr 1 "0001" data
 0004 c
 
 【例２】
+
 $ delr 2 c data
 0001 a
 0002 b
+
+last modified: Fri Jul 15 15:42:38 JST 2022
+Contact us: uecinfo@usp-lab.com
+Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights

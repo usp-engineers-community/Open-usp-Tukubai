@@ -1,20 +1,31 @@
-cap(USP)
+Tukubaiオンラインコマンドマニュアル
 
-＜名前＞
+cap(1)
+
+【名前】
 cap 半角英数の小文字を大文字に変換する
 
-＜書式＞
-Usage   : cap <f1> <f2> .. <file>
+【書式】
+Usage   : cap [<f1> <f2> ..] <file>
           cap -d <string>
-Version : Fri Oct 21 11:26:06 JST 2011
-        : OpenUSP (LINUX+FREEBSD/PYTHON2.4/UTF-8)
+Version : Thu Apr 21 00:58:46 JST 2022
+Edition : 1
 
-＜説明＞
+【説明】
 引数で指定したフィールドの半角英小文字を、すべて半角英大文字に変換し
 て出力する。変換できない文字（日本語、数字、記号、全角文字）は、変換
 されずにそのまま出力される。
+<file>として-を指定すると標準入力を使用する。
 
-＜例１＞
+-dオプションがあると<string>で指定された文字列に対して変換を行なう。
+
+【注意】
+	入力ファイル <file> は省略できない
+	フィールド指定 <f1> <f2> ... を省略すると全フィールド指定となる。
+	フィールド指定 <f1> <f2> ... に0があると全フィールド指定となる。
+	  このとき同時に0以外のフィールド指定があってもそれらは無視される。
+
+【例１】
 (元データ)
 $ cat data
 001 japan america
@@ -23,6 +34,13 @@ $ cap 1 2 data
 001 JAPAN america
 002 ENGLAND russia
 
-＜例２＞
+【例２】
 $ cap -d japan
 JAPAN
+
+【参照】
+sml
+
+last modified: Fri Jul 15 16:32:45 JST 2022
+Contact us: uecinfo@usp-lab.com
+Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights

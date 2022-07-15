@@ -9,7 +9,8 @@ kasan : 累計
 【書式】
 
 Usage   : kasan [+r] [ref=<ref>] key=<n> <file>
-Version : Thu Dec 15 13:46:38 JST 2011
+Version : Sat Sep 19 23:49:25 JST 2020
+Edition : 1
 
 【説明】
 
@@ -47,6 +48,8 @@ $
 あるフィールドの値が変わった場所で加算をリセットする場合は、そのリセットのキー
 となるフィールドをref=で指定する。たとえば店別の累計仕入数を算出する場合には、
 次のように1フィールド目が変更されるごとに加算をリセットする。
+
+ref=<ref>で指定できるのは数値、範囲(/)、NF NF-<n>である。
 
 $ cat data
 a店 1日目 103 62                ←店名 日付 売れ数 仕入数
@@ -163,6 +166,6 @@ $ kasan key=NF-2 data
 
 plus(1)、ratio(1)、sm2(1)、sm4(1)、sm5(1)、ysum(1)
 
-last modified: 2014-01-13 16:01:13
+last modified: Fri Jul 15 15:42:38 JST 2022
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012-2014 Universal Shell Programming Laboratory All Rights
+Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights
