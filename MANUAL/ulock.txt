@@ -1,16 +1,22 @@
+Tukubaiオンラインコマンドマニュアル
+
 ulock
 
-＜名前＞
+【名前】
+
 ulock : 排他制御コマンド
 
-＜書式＞
+【書式】
+
 Usage   : ulock <lock-file>
 Usage   : ulock -w <lock-file> [<counter-file>]
           ulock -r <lock-file> <counter-file> <command>
 Option  : --timeout=<sec>/--invalid=<sec>
 Version : Fri Jun  6 12:29:31 JST 2014
+Edition : 1
 
-＜説明＞
+【説明】
+
 書式１（ulock <lock-file>）は、完全排他区間を実現します。
 この場合、ulock は排他的に <lock-file> を生成します。
 
@@ -28,7 +34,8 @@ file>のリンクカウントを１増やすことを試み、成功したら、
 --invalid オプションで古いロックファイルの削除を行います。デフォルト
 は 60 秒です。
 
-＜例１＞ 完全排他区間の実現
+【例１】 完全排他区間の実現
+
 $ cat lock.sh
 #!/bin/bash
 
@@ -39,7 +46,8 @@ if ulock lock; then
   rm -f lock
 fi
 
-＜例２＞ リードライトロックの実現
+【例２】 リードライトロックの実現
+
 $ cat writelock.sh
 #!/bin/bash
 
@@ -58,7 +66,7 @@ $ cat readlock.sh
 ulock -r lock counter cat master
 
 
-＜備考＞ リードライトロックのアルゴリズム
+【備考】 リードライトロックのアルゴリズム
 
 -- ライトロック
 X-- 書き込みロックを取る。(アトミック)
@@ -79,3 +87,7 @@ ulock では書き込みロックはハードリンクファイル生成の一�
 
 lock-file counter-file とも NFS 上に作成すれば、各サーバーからのリー
 ドライトロックが実現します。
+
+last modified: Fri Jul 15 16:49:03 JST 2022
+Contact us: uecinfo@usp-lab.com
+Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights

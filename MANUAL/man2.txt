@@ -1,3 +1,5 @@
+Tukubaiオンラインコマンドマニュアル
+
 man2(USP)
 
 【名前】
@@ -12,3 +14,7 @@ usp コマンドのマニュアルを表示します。
 
 【例】
 $ man2 join0   <-- join0 のマニュアルを表示します。
+
+last modified: Fri Jul 15 15:42:38 JST 2022
+Contact us: uecinfo@usp-lab.com
+Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights

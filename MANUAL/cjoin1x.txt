@@ -1,27 +1,33 @@
-cjoin1x
+Tukubaiオンラインコマンドマニュアル
 
-＜名前＞
+cjoin1x(1)
+
+【名前】
+
 cjoin1x : キーの値が同じレコードが複数存在するファイル同士を連結。
 
-＜書式＞
-Usage   : cjoin1x [+ng[<fd>]] key=<n> <master> <tran>
-Version : Thu Mar 19 12:15:02 JST 2015
+【書式】
 
-＜説明＞
+Usage   : cjoin1x [+ng[<fd>]] key=<n> <master> <tran>
+Version : Thu Jun 20 18:01:27 JST 2019
+Edition : 1
+
+【説明】
+
 テキストファイル <tran> の "key=<n>" で指定したキーフィールドがマス
 ターファイル <master> の第１フィールド（キーフィールド）とマッチした
 行のみを <tran> から抽出して、<master> の情報を連結して出力します。
 連結は <tran> のキーフィールドの直後に <master> の内容のうち
 キーフィールド以外を挿入する形で行われます。
 
-<master> の第１フィールドおよび <tran> のキーフィールドについては必
-ず昇順でソートされていることが条件になります。
+<master> の第１フィールドについては必ず昇順でソートされていることが条件になります。
 
 cjoin1 との違いは、マスターファイルのキーフィールドの値が同一のレコ
 ードが複数存在できる点です。マスターとトランザクションファイルのキー
 フィールド値が同一のレコード同士を総掛けで連結して出力します。
 
-＜例１＞
+【例１】
+
 （マスター：master）
 $ cat master
 1 東京1
@@ -54,3 +60,7 @@ $ cat data
 2 大阪2 難波
 2 大阪1 梅田
 2 大阪2 梅田
+
+last modified: Fri Jul 15 16:38:12 JST 2022
+Contact us: uecinfo@usp-lab.com
+Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights

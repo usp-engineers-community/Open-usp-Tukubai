@@ -11,8 +11,8 @@ unmap : 縦キー/横キー形式の表データを縦型ファイルに変換
 Usage   : map       [-<l>] num=<n>x<m> <file>
         : map +yarr [-<l>] num=<n>x<m> <file>
         : map +arr  [-<l>] num=<n>x<m> <file>
-Version : Sat Dec 10 21:04:17 JST 2011
-        : OpenUSP (LINUX+FREEBSD/PYTHON2.4/UTF-8)
+Version : Fri Nov 20 17:00:13 JST 2020
+Edition : 1
 
 【説明】
 
@@ -66,6 +66,6 @@ $
 
 map(1)、tateyoko(1)
 
-last modified: 2014-01-13 16:01:13
+last modified: Fri Jul 15 15:42:38 JST 2022
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012-2014 Universal Shell Programming Laboratory All Rights
+Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights

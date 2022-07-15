@@ -10,8 +10,8 @@ zen : 全角へ変換
 
 Usage   : zen  [-k] [<f1> <f2> ..] <file>
         : zen -d <string>
-Version : Fri Oct 21 11:26:06 JST 2011
-OpenUSP (LINUX+FREEBSD/PYTHON2.4/UTF-8)
+Version : Mon Feb 21 00:32:55 JST 2022
+Edition : 1
 
 【説明】
 
@@ -67,6 +67,6 @@ $
 
 han(1)
 
-last modified: 2014-01-13 16:01:13
+last modified: Fri Jul 15 16:30:15 JST 2022
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012-2014 Universal Shell Programming Laboratory All Rights
+Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights

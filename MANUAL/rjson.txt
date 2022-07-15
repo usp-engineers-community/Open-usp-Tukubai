@@ -3,11 +3,13 @@ Tukubaiオンラインコマンドマニュアル
 rjson(1)
 
 【名前】
+
 rjson : JSON 形式のファイルをフィールド形式に変換する
 
 【書式】
 Usage   : rjson [-p<c>][-m<c>][-s<c>][-n<string>] <json-file>
-Version : Wed Mar 16 10:23:42 JST 2022
+Version : Sat Mar 26 13:13:04 JST 2022
+Edition : 1
 
 【説明】
 JSON 形式(RFC8259) のファイル <json-file> をフィールド形式にします。
@@ -139,3 +141,11 @@ $ rjson jsondata2
 1 2 b
 2 1 c
 2 2 d
+
+【関連項目】
+
+xmldir(1)
+
+last modified: Fri Jul 15 16:21:01 JST 2022
+Contact us: uecinfo@usp-lab.com
+Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights

@@ -12,6 +12,7 @@ Usage   : formhame <html_template> <data>
 Option  : -i<c>
         : -d<c>
 Version : Sun Mar 17 12:51:52 JST 2013
+Edition : 1
 
 【説明】
 
@@ -104,6 +105,6 @@ name_pulldown pd2
 
 filehame(1)、mojihame(1)
 
-last modified: 2014-01-13 16:01:13
+last modified: Fri Jul 15 16:43:33 JST 2022
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012-2014 Universal Shell Programming Laboratory All Rights
+Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights

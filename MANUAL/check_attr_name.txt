@@ -11,24 +11,26 @@ check_attr_name : ネームファイルのデータ種類を行ごとに判定
 Usage           : check_attr_name <check_file> <name_file>
 Option          : --through <string> --ngword <ng_file>
 Attribute       : n N (0以上整数)
-                : s S (符号つき整数)
-                : f F (小数)
-                : v V (符号つき小数)
-                : e E (英字)
-                : a A (英数字)
-                : h H (半角文字)
-                : z Z (全角文字)
-                : k K (全角カタカナ)
-                : x X (文字)
-                : c C (チェックディジット)
-                : o O (英大文字)
+                  s S (符号つき整数)
+                  f F (小数)
+                  v V (符号つき小数)
+                  e E (英字)
+                  a A (アスキー文字)
+                  b B (英数字)
+                  h H (半角文字)
+                  z Z (全角文字)
+                  k K (全角カタカナ)
+                  x X (文字)
+                  c C (チェックディジット)
+                  o O (英大文字)
+                  j J (住所=全角+半角英数)
 Version         : Thu Dec 15 13:46:38 JST 2011
-                : UTF-8
+Edition         : 1
 
 【説明】
 
-<check_file>に記述されているタグ名、桁数+属性の指定にしたがって<name_file>のデ
-ータを判定する。データが大文字なら桁数に等しい値を、小文字なら指定桁数以下の値
+<check_file>に記述されているタグ名、属性+桁数の指定にしたがって<name_file>のデ
+ータを判定する。データが大文字なら桁数に等しい値を、小文字なら指定桁数未満の値
 を要求する。<name_file>のタグは、タグ名_数値であれば、_数値部分を取り除いたタグ
 名のみでチェックをする。エラーがあった場合は、コマンドはエラー終了し標準出力に
 タグ名と桁数+属性を出力する。
@@ -87,6 +89,6 @@ $
 
 ネーム形式(5)
 
-last modified: 2014-01-13 16:01:13
+last modified: Fri Jul 15 16:34:01 JST 2022
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012-2014 Universal Shell Programming Laboratory All Rights
+Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights

@@ -8,10 +8,10 @@ han : 半角へ変換
 
 【書式】
 
-Usage   : han f1 f2 .. file
-        : han -d string
-Version : Thu Dec 15 13:46:38 JST 2011
-        : UTF-8
+Usage   : han f1 f2 .. [file]
+          han -d string
+Version : Mon Mar 21 16:31:46 JST 2022
+Edition : 1
 
 【説明】
 
@@ -58,10 +58,17 @@ $ han -d カタカナＡＢＣ１２３
 ｶﾀｶﾅABC123
 $
 
+【注意】
+
+実行時パラメータの最後尾が実際に存在するファイルの名前であればそれを入力ファイルとして開く。
+このファイル名は「10」のような数字列であってもかまわない。
+最後尾が存在するファイル名でないときはそれをフィールドとして処理し、
+入力ファイル名は省略されたものとして標準入力（stdin）を使用する。
+
 【関連項目】
 
 zen(1)
 
-last modified: 2014-01-13 16:01:13
+last modified: Fri Jul 15 16:43:52 JST 2022
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012-2014 Universal Shell Programming Laboratory All Rights
+Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights

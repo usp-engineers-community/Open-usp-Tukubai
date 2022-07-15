@@ -2,32 +2,36 @@ Tukubaiオンラインコマンドマニュアル
 
 exist(1)
 
-＜名前＞
+【名前】
 exist   : 複数ファイルの存在チェック
 
-＜書式＞
+【書式】
 Usage   : exist [-v] <file1> <file2> ...
 Version : Fri Oct 21 11:26:06 JST 2011
-        : Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8
+Edition : 1
 
-＜説明＞
+【説明】
 <file1> <file2> ... すべてのファイルが存在すれば正常終了、
 それ以外はエラー終了します。
 
-＜例１＞
+【例１】
 $ touch file.{1..5}
 $ exist file.{1..5} && echo ok > result
 $ cat result
 ok
 
-＜例２＞
+【例２】
 $ touch file.{1..5}
 $ exist file.{1..6} || echo ng > result  <-- file.6 は無いのでエラー
 $ cat result
 ng
 
-＜例３＞
+【例３】
 ワイルドカードの展開に成功したら正常終了します。
 $ touch a{1..5}
 $ exist a* && echo ok > result  <-- "a" から始まるファイル名があれば成功
 $ cat result
+
+last modified: Fri Jul 15 16:42:11 JST 2022
+Contact us: uecinfo@usp-lab.com
+Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights

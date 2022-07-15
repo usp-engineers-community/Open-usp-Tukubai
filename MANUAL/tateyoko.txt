@@ -9,12 +9,13 @@ tateyoko : 縦テキストを横テキストへ変換
 【書式】
 
 Usage   : tateyoko <file>
-Version : Thu Dec 15 13:46:38 JST 2011
+Version : Sat Jun 20 21:57:22 JST 2020
+Edition : 1
 
 【説明】
 
-<file>の行を列に縦横変換する。出力する<file>ファイルの指定がないとき、あるいは
-ファイル名が-の時は、標準入力ファイルを取り込む。
+<file>の行を列に縦横変換する。ファイル名が-の時は、標準入力ファイルを取り込む。
+<file>として-を指定すると標準入力を使用する。
 
 【例1】
 
@@ -43,13 +44,13 @@ B 10/02 5
 B 10/03 6
 $
 
-$ map num=1 data |  keta
+$ map num=1 data |  keta -
 * 10/01 10/02 10/03
 A     1     2     3
 B     4     5     6
 $
 
-$ map num=1 data | tateyoko | keta
+$ map num=1 data | tateyoko - | keta -
 *     A B
 10/01 1 4
 10/02 2 5
@@ -64,6 +65,6 @@ tateyoko(1)は指定ファイルを一旦すべてメモリへ展開する。
 
 map(1)、unmap(1)
 
-last modified: 2014-01-13 16:01:13
+last modified: Fri Jul 15 15:42:38 JST 2022
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012-2014 Universal Shell Programming Laboratory All Rights
+Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights

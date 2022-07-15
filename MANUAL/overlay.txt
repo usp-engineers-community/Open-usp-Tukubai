@@ -1,22 +1,28 @@
+Tukubaiオンラインコマンドマニュアル
+
 overlay
 
-＜名前＞
+【名前】
+
 overlay : 二つのテキストファイルを重ねあわせる。
 
-＜書式＞
+【書式】
+
 Usage   : overlay basefile overfile
         : overlay -r basefile overfile
         : overlay -f [-m<meta-str>] basefile overfile
 Version : Mon Mar 18 16:57:50 JST 2013
-          UTF-8
+Edition : 1
 
-＜説明＞
+【説明】
+
 テキストファイル"basefile"の上にもう一つのテキストファイル"overfile"を重ねあわせ
 、一つのテキストファイルとして出力します。
 先に"ido"ツールで片方のテキストを移動させ重ねるスペースを空けてから"overlay"にて
 一つに重ねの帳票にするパターンに多く使われます。
 
-＜例１＞
+【例１】
+
 (元データ:ベースファイル)
 $ cat data1
                     ★教科別得点
@@ -57,7 +63,8 @@ Rank 氏名 総合得点  No  氏名  A  B  C  D  E
 6    米原      206  007 梶川 50  2 33 15 62
 
 
-＜例２＞
+【例２】
+
 フィールドオーバーレイ
 デフォルトでは、over ファイルの "@" は「透明文字」として
 扱われる。-m オプションを使用して透明文字を指定できる。
@@ -70,3 +77,7 @@ $ cat over
 $ overlay -f base over
 1 x 3 y
 a b w z
+
+last modified: Fri Jul 15 16:46:15 JST 2022
+Contact us: uecinfo@usp-lab.com
+Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights

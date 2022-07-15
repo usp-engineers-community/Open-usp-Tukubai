@@ -10,7 +10,8 @@ check_need_name : ネームファイルの整合性判定
 
 Usage   : check_need_name <check_file> <name_file>
 Option  : --blank <string>
-Version : Thu Dec 15 13:46:38 JST 2011
+Version : Mon Dec 20 21:02:03 JST 2021
+Edition : 1
 
 【説明】
 
@@ -36,7 +37,7 @@ C
 D
 $
 
-$ cat check_file2               ←checkとcheck2は同等
+$ cat check_file2               ←check_fileとcheck_file2は同等
 A need
 B need
 C need
@@ -62,14 +63,14 @@ $
 
 【例2】--blank オプションでヌルデータを指定する。
 
-$ cat data2
+$ cat name_file2
 A @
 B 1
 C 2
 D 3
 $
 
-$ check_need_name --blank @ check data
+$ check_need_name --blank @ check_file name_file2
 A
 $ echo $?
 1
@@ -79,6 +80,6 @@ $
 
 ネーム形式(5)
 
-last modified: 2014-01-13 16:01:13
+last modified: Fri Jul 15 16:36:52 JST 2022
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012-2014 Universal Shell Programming Laboratory All Rights
+Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights

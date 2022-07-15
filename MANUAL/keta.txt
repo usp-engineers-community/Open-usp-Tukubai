@@ -9,16 +9,24 @@ keta : テキストファイルの桁そろえ
 【書式】
 
 Usage   : keta n1 n2 .. <filename>
-        : keta -v <filename>
-        : keta [--] <filename>
-Version : Thu Dec 15 13:46:38 JST 2011
-        : UTF-8
+          keta -v <filename>
+          keta [--] <filename>
+Version : Wed May 20 04:47:49 JST 2020
+Edition : 1
 
 【説明】
 
 引数のファイルまたは標準入力のテキストデータの各フィールドの桁数をそろえて出力
-する。各フィールドの桁数を自動的に判断して出力できるほか、フィールド毎の桁を指
-定して出力することが可能。
+する。全フィールドに対してフィールド毎の桁数を指定する。
+指定桁数にそのフィールドの最大長未満を指定すると最大長がとられる。
+桁数指定をすべて省略すると各フィールドの桁数を自動的に判断して出力できる。
+フィールドは右詰めで出力するが、桁数指定に-を付けると左詰めにする。
+桁数指定をすべて省略して代わりに--を指定すると全フィールドを左詰めで出力する。
+<filename>として-を指定すると標準入力を使用する。
+桁数指定があるときは<filename>は省略可能になる。
+桁数指定がないときは<filename>は省略不可。
+-vまたは--指定があるときは桁数指定はできず<filename>は省略不可。
+<filename>が省略されたときは標準入力を仮定する。
 
 【例1】
 
@@ -104,12 +112,12 @@ $
 
 次のコマンドで例1と同じ出力が得られる。
 
-$ keta $keta -v data) data
+$ keta $(keta -v data) data
 
 【関連項目】
 
 comma(1)
 
-last modified: 2014-01-13 16:01:13
+last modified: Fri Jul 15 16:44:16 JST 2022
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012-2014 Universal Shell Programming Laboratory All Rights
+Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights
