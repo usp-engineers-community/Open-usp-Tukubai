@@ -1,0 +1,328 @@
+#!/bin/bash
+#!/usr/local/bin/bash -xv # コマンド処理系の変更例
+#
+# test script of itouch
+#
+# usage: [<test-path>/]calclock.test [<command-path> [<python-version>]]
+#
+#            <test-path>は
+#                    「現ディレクトリーからみた」本スクリプトの相対パス
+#                    または本スクリプトの完全パス
+#                    省略時は現ディレクトリーを仮定する
+#            <command-path>は
+#                    「本スクリプトのディレクトリーからみた」test対象コマンドの相対パス
+#                    またはtest対象コマンドの完全パス
+#                    省略時は本スクリプトと同じディレクトリーを仮定する
+#                    値があるときまたは空値（""）で省略を示したときはあとにつづく<python-version>を指定できる
+#            <python-version>は
+#                    使用するpython処理系のversion（minor versionまで指定可）を指定する
+#                    （例 python2 python2.6 phthon3 python3.4など）
+#                    単にpythonとしたときは現実行環境下でのdefault versionのpythonを使用する
+#                    文字列"python"は大文字/小文字の区別をしない
+#                    省略時はpythonを仮定する
+name=itouch # test対象コマンドの名前
+testpath=$(dirname $0) # 本スクリプト実行コマンドの先頭部($0)から本スクリプトのディレトリー名をとりだす
+cd $testpath # 本スクリプトのあるディレクトリーへ移動
+if test "$2" = ""; # <python-version>($2)がなければ
+	then pythonversion="python" # default versionのpythonとする
+	else pythonversion="$2" # <python-version>($2)があれば指定versionのpythonとする
+fi
+if test "$1" = ""; # <command-path>($1)がなければ
+	then commandpath="." # test対象コマンドは現ディレクトリーにある
+	else commandpath="$1" # <command-path>($1)があればtest対象コマンドは指定のディレクトリーにある
+fi
+com="${pythonversion} ${commandpath}/${name}" # python処理系によるtest対象コマンド実行の先頭部
+tmp=/tmp/$$
+
+ERROR_CHECK(){
+	[ "$(echo ${PIPESTATUS[@]} | tr -d ' 0')" = "" ] && return
+	echo $1
+	echo "${pythonversion} ${name}" NG
+	rm -f $tmp-*
+	exit 1
+}
+
+BOMandEOLvariation(){	# BOM無しLF改行ファイル（$1）からBOM付きCRLF改行ファイル（$2）とBOM付きCR改行ファイル（$3）を生成する
+	 [ $# -eq 3 ]; ERROR_CHECK "TESTスクリプト内のBOMandEOLvariation()でファイル指定が不正"
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r\n/g' -e 's/$/\r/' $1 >$2	# $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r/g' $1 | tr '\n' '\r' >$3	# $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
+}
+
+###########################################
+# TEST1
+# 存在しないファイルにitouchで存在させ、次にこのファイルにitouchする
+
+cat $tmp-file 2>$tmp-errout
+
+
+awk '/^cat: .+$/ {exit 0} {exit 1}' $tmp-errout
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1-1 error"
+
+cat << FIN > $tmp-ans
+000 000 0
+FIN
+
+${com} '000 000 0' $tmp-file
+diff $tmp-ans $tmp-file
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1-2 error"
+
+${com} 'abc abc 0' $tmp-file
+diff $tmp-ans $tmp-file
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1-3 error"
+
+###########################################
+# TEST2
+# ３行初期化
+
+cat << FIN > $tmp-ans
+000 000 0
+000 000 0
+000 000 0
+FIN
+
+: > $tmp-file # $tmp-fileを空にする
+
+${com} -3 '000 000 0' $tmp-file
+diff $tmp-ans $tmp-file
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2 error"
+
+###########################################
+# TEST3
+# '\n' は改行に置換される
+
+cat << FIN > $tmp-ans
+a
+b
+c
+FIN
+
+: > $tmp-file # $tmp-fileを空にする
+
+${com} 'a\nb\nc' $tmp-file
+diff $tmp-ans $tmp-file
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3 error"
+
+###########################################
+# TEST4
+# 標準入力から０バイトのファイルを読む
+
+: > $tmp-file1 # $tmp-file1を空にする
+
+cat << FIN > $tmp-ans
+000 0
+FIN
+
+cat $tmp-file1 | ${com} '000 0' - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4-1 error"
+
+# 標準入力から中身のあるファイルを読む
+
+cat << FIN > $tmp-file2
+ABC D
+FIN
+
+cat << FIN > $tmp-ans
+ABC D
+FIN
+
+cat $tmp-file2 | ${com} '000 0' - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4-2 error"
+
+###########################################
+# TEST5
+
+: > $tmp-file # $tmp-fileを空にする
+
+echo abc > $tmp-init      # <-- 初期化用のファイルを準備する 
+
+${com} -f $tmp-init $tmp-file  # <-- 初期化ファイル init で file を初期化する
+
+cat << FIN > $tmp-ans
+abc
+FIN
+
+diff $tmp-ans $tmp-file
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5 error"
+
+###########################################
+# TEST6
+# 初期化データに4バイト文字（Unicode符号位置がU+FFFF超の文字）を与える
+
+# 空の一時ファイルを用意する
+: > $tmp-data # $tmp-dataを空にする
+
+cat << FIN > $tmp-ans
+𠆢𠆢𠆢
+FIN
+
+# 「𠆢」は𠆢(U+201A2)代用対では𠆢(U+D840-U+DDA2)
+
+${com} '𠆢𠆢𠆢' $tmp-data
+diff $tmp-ans $tmp-data
+[ $? -eq 0 ] ; ERROR_CHECK "TEST6 error"
+
+###########################################
+# TEST7
+# BOM付きCRLFとBOM付きCRの試験
+
+# 空の一時ファイルを用意する
+: > $tmp-in # $tmp-inを空にする
+# 入力用tmpファイルからBOM付きCRLFとBOM付きCRの各ファイルを作る
+BOMandEOLvariation $tmp-in $tmp-inBOMCRLF $tmp-inBOMCR
+
+# 空ではない一時ファイルを用意する
+cat << FIN > $tmp-in2
+ABC D
+FIN
+cat << FIN > $tmp-in3
+ABC D
+FIN
+
+# 入力用tmpファイルからBOM付きCRLFとBOM付きCRの各ファイルを作る
+BOMandEOLvariation $tmp-in2 $tmp-in2BOMCRLF $tmp-in2BOMCR
+BOMandEOLvariation $tmp-in3 $tmp-in3BOMCRLF $tmp-in3BOMCR
+
+# 初期化ファイルを用意する
+cat << FIN > $tmp-init
+ABC
+DEF
+FIN
+
+# 初期化tmpファイルからBOM付きCRLFとBOM付きCRの各ファイルを作る
+BOMandEOLvariation $tmp-init $tmp-initBOMCRLF $tmp-initBOMCR
+
+# 正解データの準備
+cat << FIN > $tmp-ans
+000 0
+FIN
+
+cat << FIN > $tmp-ans2
+ABC D
+FIN
+
+cat << FIN > $tmp-ans3
+ABC
+DEF
+FIN
+
+# 空のファイルにtouchして初期データを書き込む
+
+${com} '000 0' $tmp-in
+diff $tmp-in $tmp-ans
+[ $? -eq 0 ] ; ERROR_CHECK "TEST7-1 error"
+
+# BOM付きUTF8ファイルCRLF
+${com} '000 0' $tmp-inBOMCRLF
+diff $tmp-inBOMCRLF $tmp-ans
+[ $? -eq 0 ] ; ERROR_CHECK "TEST7-2 error"
+
+# BOM付きUTF8ファイルCR
+${com} '000 0' $tmp-inBOMCR
+diff $tmp-inBOMCR $tmp-ans
+[ $? -eq 0 ] ; ERROR_CHECK "TEST7-3 error"
+
+# 空ではないファイルにtouchしようとするので初期値は書き込まない
+
+${com} '000 0' $tmp-in2
+diff $tmp-in2 $tmp-in3
+[ $? -eq 0 ] ; ERROR_CHECK "TEST7-4 error"
+
+# BOM付きUTF8ファイルCRLF
+${com} '000 0' $tmp-in2BOMCRLF
+diff $tmp-in2BOMCRLF $tmp-in3BOMCRLF
+[ $? -eq 0 ] ; ERROR_CHECK "TEST7-5 error"
+
+# BOM付きUTF8ファイルCR
+${com} '000 0' $tmp-in2BOMCR
+diff $tmp-in2BOMCR $tmp-in3BOMCR
+[ $? -eq 0 ] ; ERROR_CHECK "TEST7-6 error"
+
+# 空の標準入力ファイルにデータを書き込む→標準出力へ指定データを書き込んで出力する
+
+# 空の一時ファイルを用意する
+: > $tmp-in # $tmp-inを空にする
+# 入力用tmpファイルからBOM付きCRLFとBOM付きCRの各ファイルを作る
+BOMandEOLvariation $tmp-in $tmp-inBOMCRLF $tmp-inBOMCR
+
+cat $tmp-in | ${com} '000 0' - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST7-7 error"
+
+# BOM付きUTF8ファイルCRLF
+cat $tmp-inBOMCRLF | ${com} '000 0' - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST7-8 error"
+
+# BOM付きUTF8ファイルCR
+cat $tmp-inBOMCR | ${com} '000 0' - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "BTEST7-9 error"
+
+# 標準入力を使用する
+
+# 空ではない標準入力ファイルにデータを書き込む→指定データの書き込みは行なわれずに標準入力ファイルの内容を標準出力へコピー出力する
+
+cat $tmp-in2 | ${com} '000 0' - > $tmp-out
+diff $tmp-ans2 $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST7-10 error"
+
+# BOM付きUTF8ファイルCRLF
+cat $tmp-in2BOMCRLF | ${com} '000 0' - > $tmp-out
+diff $tmp-ans2 $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST7-11 error"
+
+# BOM付きUTF8ファイルCR
+cat $tmp-in2BOMCR | ${com} '000 0' - > $tmp-out
+diff $tmp-ans2 $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST7-12 error"
+
+# 初期化ファイルを使用する
+
+# 空のファイルにtouchして初期化ファイルから初期データを書き込む
+
+# 空の一時ファイルを用意する
+: > $tmp-in # $tmp-inを空にする
+# 入力用tmpファイルからBOM付きCRLFとBOM付きCRの各ファイルを作る
+BOMandEOLvariation $tmp-in $tmp-inBOMCRLF $tmp-inBOMCR
+
+${com} -f $tmp-init $tmp-in
+diff $tmp-ans3 $tmp-in
+[ $? -eq 0 ] ; ERROR_CHECK "TEST7-13 error"
+
+# BOM付きUTF8ファイルCRLF
+${com} -f $tmp-init $tmp-inBOMCRLF
+diff $tmp-ans3 $tmp-inBOMCRLF
+[ $? -eq 0 ] ; ERROR_CHECK "TEST7-14 error"
+
+# BOM付きUTF8ファイルCR
+${com} -f $tmp-init $tmp-inBOMCR
+diff $tmp-ans3 $tmp-inBOMCR
+[ $? -eq 0 ] ; ERROR_CHECK "TEST7-15 error"
+
+# 空の標準入力ファイルに初期化ファイルからデータを書き込む→標準出力へ指定データを書き込んで出力する
+
+# 空の一時ファイルを用意する
+: > $tmp-in # $tmp-inを空にする
+# 入力用tmpファイルからBOM付きCRLFとBOM付きCRの各ファイルを作る
+BOMandEOLvariation $tmp-in $tmp-inBOMCRLF $tmp-inBOMCR
+
+cat $tmp-in | ${com} -f $tmp-init - > $tmp-out
+diff $tmp-init $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST7-16 error"
+
+# BOM付きUTF8ファイルCRLF
+cat $tmp-inBOMCRLF | ${com} -f $tmp-init - > $tmp-out
+diff $tmp-init $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST7-17 error"
+
+# BOM付きUTF8ファイルCR
+cat $tmp-inBOMCR | ${com} -f $tmp-init - > $tmp-out
+diff $tmp-init $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST7-18 error"
+
+###########################################
+rm -f $tmp-*
+echo "${pythonversion} ${name}" OK
+exit 0

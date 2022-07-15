@@ -42,6 +42,12 @@ ERROR_CHECK(){
 	exit 1
 }
 
+BOMandEOLvariation(){	# BOM無しLF改行ファイル（$1）からBOM付きCRLF改行ファイル（$2）とBOM付きCR改行ファイル（$3）を生成する
+	 [ $# -eq 3 ]; ERROR_CHECK "TESTスクリプト内のBOMandEOLvariation()でファイル指定が不正"
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r\n/g' -e 's/$/\r/' $1 >$2	# $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r/g' $1 | tr '\n' '\r' >$3	# $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
+}
+
 ###########################################
 #TEST1
 # 読み込んだファイルの指定したフィールドの年月日の曜日のコードを
@@ -58,7 +64,7 @@ cat << FIN > $tmp-in
 0002 0000007 20060210 444 31080 0
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 0001 0000007 20060201 3 117 8335 -145
 0001 0000007 20060203 5 221 15470 0
 0001 0000007 20060205 0 85 5950 0
@@ -69,15 +75,19 @@ cat << FIN > $tmp-out
 0002 0000007 20060210 5 444 31080 0
 FIN
 
-${com} 3 $tmp-in > $tmp-ans
+${com} 3 $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST1 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1-1 error"
+
+${com} NF-3 $tmp-in > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1-2 error"
 
 ###########################################
 #TEST2
 # -eオプションを指定すると英語表記の曜日を挿入して出力する
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 0001 0000007 20060201 Wed 117 8335 -145
 0001 0000007 20060203 Fri 221 15470 0
 0001 0000007 20060205 Sun 85 5950 0
@@ -88,11 +98,112 @@ cat << FIN > $tmp-out
 0002 0000007 20060210 Fri 444 31080 0
 FIN
 
-${com} -e 3 $tmp-in > $tmp-ans
+${com} -e 3 $tmp-in > $tmp-out
+diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST2 error"
 
 ###########################################
+#TEST3
+# -jオプションで日本語表記の曜日を挿入して出力する。
 
+cat << FIN > $tmp-ans
+0001 0000007 20060201 水 117 8335 -145
+0001 0000007 20060203 金 221 15470 0
+0001 0000007 20060205 日 85 5950 0
+0001 0000007 20060206 月 293 20527 -17
+0001 0000007 20060207 火 445 31150 0
+0002 0000007 20060208 水 150 11768 -1268
+0002 0000007 20060209 木 588 41160 0
+0002 0000007 20060210 金 444 31080 0
+FIN
+
+${com} -j 3 $tmp-in > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3 error"
+
+###########################################
+#TEST4
+# -dオプションで引数に指定した日付に対して曜日を算出する。
+
+cat << FIN > $tmp-ans1
+6
+FIN
+
+cat << FIN > $tmp-ans2
+Sat
+FIN
+
+cat << FIN > $tmp-ans3
+土
+FIN
+
+${com} -d 20080112 > $tmp-out
+diff $tmp-ans1 $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4-1 error"
+
+${com} -de 20080112 > $tmp-out
+diff $tmp-ans2 $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4-2 error"
+
+${com} -dj 20080112 > $tmp-out
+diff $tmp-ans3 $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4-3 error"
+
+###########################################
+#TEST5
+#TEST1の拡大版
+# BOM付きCRLFとBOM付きCRの試験
+# 読み込んだファイルの指定したフィールドの年月日の曜日のコードを
+# 指定したフィールドの次のフィールドに挿入して出力する
+
+cat << FIN > $tmp-in
+0001 0000007 20060201 117 8335 -145
+0001 0000007 20060203 221 15470 0
+0001 0000007 20060205 85 5950 0
+0001 0000007 20060206 293 20527 -17
+0001 0000007 20060207 445 31150 0
+0002 0000007 20060208 150 11768 -1268
+0002 0000007 20060209 588 41160 0
+0002 0000007 20060210 444 31080 0
+FIN
+
+cat << FIN > $tmp-ans
+0001 0000007 20060201 3 117 8335 -145
+0001 0000007 20060203 5 221 15470 0
+0001 0000007 20060205 0 85 5950 0
+0001 0000007 20060206 1 293 20527 -17
+0001 0000007 20060207 2 445 31150 0
+0002 0000007 20060208 3 150 11768 -1268
+0002 0000007 20060209 4 588 41160 0
+0002 0000007 20060210 5 444 31080 0
+FIN
+
+# 入力用tmpファイルからBOM付きCRLFとBOM付きCRの各ファイルを作る
+BOMandEOLvariation $tmp-in $tmp-inBOMCRLF $tmp-inBOMCR
+
+# BOM付きCRLF
+${com} NF-3 $tmp-inBOMCRLF > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5-1 error"
+
+# BOM付きCR
+${com} NF-3 $tmp-inBOMCR > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5-2 error"
+
+# pipe接続
+
+# BOM付きCRLF
+cat $tmp-inBOMCRLF | ${com} NF-3 - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5-3 error"
+
+# BOM付きCR
+cat $tmp-inBOMCR | ${com} NF-3 - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5-4 error"
+
+###########################################
 rm -f $tmp-*
 echo "${pythonversion} ${name}" OK
 exit 0

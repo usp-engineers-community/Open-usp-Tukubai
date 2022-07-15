@@ -42,6 +42,12 @@ ERROR_CHECK(){
 	exit 1
 }
 
+BOMandEOLvariation(){	# BOM無しLF改行ファイル（$1）からBOM付きCRLF改行ファイル（$2）とBOM付きCR改行ファイル（$3）を生成する
+	 [ $# -eq 3 ]; ERROR_CHECK "TESTスクリプト内のBOMandEOLvariation()でファイル指定が不正"
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r\n/g' -e 's/$/\r/' $1 >$2	# $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r/g' $1 | tr '\n' '\r' >$3	# $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
+}
+
 ###########################################
 #TEST1
 
@@ -68,7 +74,7 @@ cat << FIN > $tmp-in3
 0000005 崎村______ ---
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 0000000 浜地______ a b あああ 123
 0000001 鈴田______ c d いいい 345
 0000003 杉山______ e fg 0 4556
@@ -76,26 +82,28 @@ cat << FIN > $tmp-out
 0000005 崎村______ j kk おはようniceday ---
 FIN
 
-${com} num=2 $tmp-in1 $tmp-in2 $tmp-in3 > $tmp-ans
+${com} num=2 $tmp-in1 $tmp-in2 $tmp-in3 > $tmp-out
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST1.1 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1-1 error"
 
-cat << FIN > $tmp-out
+# -dで補完データを指定
+
+cat << FIN > $tmp-ans
 0000000 浜地______ a b あああ 123
 0000001 鈴田______ c d いいい 345
-0000003 杉山______ e fg あああ 4556
+0000003 杉山______ e fg んんん 4556
 0000004 白土______ h i 上田 あいう
 0000005 崎村______ j kk おはようniceday ---
 FIN
 
-${com} -dあああ num=2 $tmp-in1 $tmp-in2 $tmp-in3 > $tmp-ans
+${com} -dんんん num=2 $tmp-in1 $tmp-in2 $tmp-in3 > $tmp-out
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST1.2 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1-2 error"
 
 ###########################################
-#追加TEST1
+#TEST2
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 0000000 浜地______ a b あああ 123
 0000001 鈴田______ c d いいい 345
 0000003 杉山______ e fg 𠆢𠆢𠆢 4556
@@ -103,13 +111,86 @@ cat << FIN > $tmp-out
 0000005 崎村______ j kk おはようniceday ---
 FIN
 
-${com} -d𠆢𠆢𠆢 num=2 $tmp-in1 $tmp-in2 $tmp-in3 > $tmp-ans
+${com} -d𠆢𠆢𠆢 num=2 $tmp-in1 $tmp-in2 $tmp-in3 > $tmp-out
 
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "追加追加TEST1 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2 error"
 
 # 「𠆢」は𠆢(U+201A2)代用対では𠆢(U+D840-U+DDA2)
 
+###########################################
+#TEST3
+#TEST1の拡大版
+# BOM付きCRLFとBOM付きCRの試験
+
+# 入力用tmpファイルからBOM付きCRLFとBOM付きCRの各ファイルを作る
+BOMandEOLvariation $tmp-in1 $tmp-inBOMCRLF1 $tmp-inBOMCR1
+BOMandEOLvariation $tmp-in2 $tmp-inBOMCRLF2 $tmp-inBOMCR2
+BOMandEOLvariation $tmp-in3 $tmp-inBOMCRLF3 $tmp-inBOMCR3
+
+cat << FIN > $tmp-ans
+0000000 浜地______ a b あああ 123
+0000001 鈴田______ c d いいい 345
+0000003 杉山______ e fg 0 4556
+0000004 白土______ h i 上田 あいう
+0000005 崎村______ j kk おはようniceday ---
+FIN
+
+# BOM付きCRLF
+${com} num=2 $tmp-inBOMCRLF1 $tmp-inBOMCRLF2 $tmp-inBOMCRLF3 > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-1 error"
+
+# BOM付きCR
+${com} num=2 $tmp-inBOMCR1 $tmp-inBOMCR2 $tmp-inBOMCR3 > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-2 error"
+
+# pipe接続
+
+# BOM付きCRLF
+cat $tmp-inBOMCRLF2 | ${com} num=2 $tmp-inBOMCRLF1 - $tmp-inBOMCRLF3 > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-3 error"
+
+# BOM付きCR
+cat $tmp-inBOMCR2 | ${com} num=2 $tmp-inBOMCR1 - $tmp-inBOMCR3 > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-4 error"
+
+# -dで補完データを指定
+
+cat << FIN > $tmp-ans
+0000000 浜地______ a b あああ 123
+0000001 鈴田______ c d いいい 345
+0000003 杉山______ e fg んんん 4556
+0000004 白土______ h i 上田 あいう
+0000005 崎村______ j kk おはようniceday ---
+FIN
+
+# BOM付きCRLF
+${com} -dんんん num=2 $tmp-inBOMCRLF1 $tmp-inBOMCRLF2 $tmp-inBOMCRLF3 > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-5 error"
+
+# BOM付きCR
+${com} -dんんん num=2 $tmp-inBOMCR1 $tmp-inBOMCR2 $tmp-inBOMCR3 > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-6 error"
+
+# pipe接続
+
+# BOM付きCRLF
+cat $tmp-inBOMCRLF2 | ${com} -dんんん num=2 $tmp-inBOMCRLF1 - $tmp-inBOMCRLF3 > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-7 error"
+
+# BOM付きCR
+cat $tmp-inBOMCR2 | ${com} -dんんん num=2 $tmp-inBOMCR1 - $tmp-inBOMCR3 > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-8 error"
+
+###########################################
 rm -f $tmp-*
 echo "${pythonversion} ${name}" OK
 exit 0

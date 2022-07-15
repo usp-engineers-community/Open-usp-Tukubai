@@ -38,8 +38,14 @@ ERROR_CHECK(){
 	[ "$(echo ${PIPESTATUS[@]} | tr -d ' 0')" = "" ] && return
 	echo $1
 	echo "${pythonversion} ${name}" NG
-	rm -f $tmp-*
+	#rm -f $tmp-*
 	exit 1
+}
+
+BOMandEOLvariation(){	# BOM無しLF改行ファイル（$1）からBOM付きCRLF改行ファイル（$2）とBOM付きCR改行ファイル（$3）を生成する
+	 [ $# -eq 3 ]; ERROR_CHECK "TESTスクリプト内のBOMandEOLvariation()でファイル指定が不正"
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r\n/g' -e 's/$/\r/' $1 >$2	# $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r/g' $1 | tr '\n' '\r' >$3	# $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
 }
 
 ###########################################
@@ -67,7 +73,7 @@ c店 4日目 81 48
 c店 5日目 98 61
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 a店 1日目 103 62
 a店 2日目 157 94
 a店 3日目 62 30
@@ -85,12 +91,343 @@ c店 4日目 81 48
 c店 5日目 98 61
 FIN
 
-${com} key=1 $tmp-master $tmp-tran > $tmp-ans
+${com} key=1 $tmp-master $tmp-tran > $tmp-out
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST1 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1-1 error"
+
+# tranをstdinから入力する
+cat $tmp-tran | ${com} key=1 $tmp-master > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1-2 error"
 
 ###########################################
+#TEST2
+# masterの1日目から3日目までのデータに
+# tranの4日目から5日目までのデータをマージする
+# 複数のキーフィールドを指定
+cat << FIN > $tmp-master
+a店 1日目 103 62
+a店 2日目 157 94
+a店 3日目 62 30
+b店 1日目 210 113
+b店 2日目 237 121
+b店 3日目 150 82
+c店 1日目 81 52
+c店 2日目 76 49
+c店 3日目 38 21
+FIN
 
+cat << FIN > $tmp-tran
+a店 4日目 131 84
+a店 5日目 189 111
+b店 4日目 198 105
+b店 5日目 259 189
+c店 4日目 81 48
+c店 5日目 98 61
+FIN
+
+cat << FIN > $tmp-ans
+a店 1日目 103 62
+a店 2日目 157 94
+a店 3日目 62 30
+a店 4日目 131 84
+a店 5日目 189 111
+b店 1日目 210 113
+b店 2日目 237 121
+b店 3日目 150 82
+b店 4日目 198 105
+b店 5日目 259 189
+c店 1日目 81 52
+c店 2日目 76 49
+c店 3日目 38 21
+c店 4日目 81 48
+c店 5日目 98 61
+FIN
+
+${com} key=1/2 $tmp-master $tmp-tran > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2 error"
+
+###########################################
+#TEST3
+# masterの1日目から3日目までのデータに
+# tranの4日目から5日目までのデータをマージする
+# 複数のキーフィールドを逆順指定（/」を使用）
+cat << FIN > $tmp-master
+a店 1日目 103 62
+b店 1日目 210 113
+c店 1日目 81 52
+a店 2日目 157 94
+b店 2日目 237 121
+c店 2日目 76 49
+a店 3日目 62 30
+b店 3日目 150 82
+c店 3日目 38 21
+FIN
+
+cat << FIN > $tmp-tran
+a店 4日目 131 84
+b店 4日目 198 105
+c店 4日目 81 48
+a店 5日目 189 111
+b店 5日目 259 189
+c店 5日目 98 61
+FIN
+
+cat << FIN > $tmp-ans
+a店 1日目 103 62
+b店 1日目 210 113
+c店 1日目 81 52
+a店 2日目 157 94
+b店 2日目 237 121
+c店 2日目 76 49
+a店 3日目 62 30
+b店 3日目 150 82
+c店 3日目 38 21
+a店 4日目 131 84
+b店 4日目 198 105
+c店 4日目 81 48
+a店 5日目 189 111
+b店 5日目 259 189
+c店 5日目 98 61
+FIN
+
+${com} key=2/1 $tmp-master $tmp-tran > $tmp-out
+#cat $tmp-ans
+
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3 error"
+
+###########################################
+#TEST4
+# masterの1日目から3日目までのデータに
+# tranの4日目から5日目までのデータをマージする
+# 複数のキーフィールドを逆順指定（「@」と「/」と「NF」を使用）
+cat << FIN > $tmp-master
+a店 1日目 am 103 62
+a店 1日目 pm 103 62
+b店 1日目 am 210 113
+b店 1日目 pm 210 113
+c店 1日目 am 81 52
+c店 1日目 pm 81 52
+a店 2日目 am 157 94
+a店 2日目 pm 157 94
+b店 2日目 am 237 121
+b店 2日目 pm 237 121
+c店 2日目 am 76 49
+c店 2日目 pm 76 49
+a店 3日目 am 62 30
+a店 3日目 pm 62 30
+b店 3日目 am 150 82
+b店 3日目 pm 150 82
+c店 3日目 am 38 21
+c店 3日目 pm 38 21
+FIN
+
+cat << FIN > $tmp-tran
+a店 4日目 am 131 84
+a店 4日目 pm 131 84
+b店 4日目 am 198 105
+b店 4日目 pm 198 105
+c店 4日目 am 81 48
+c店 4日目 pm 81 48
+a店 5日目 am 189 111
+a店 5日目 pm 189 111
+b店 5日目 am 259 189
+b店 5日目 pm 259 189
+c店 5日目 am 98 61
+c店 5日目 pm 98 61
+FIN
+
+cat << FIN > $tmp-ans
+a店 1日目 am 103 62
+a店 1日目 pm 103 62
+b店 1日目 am 210 113
+b店 1日目 pm 210 113
+c店 1日目 am 81 52
+c店 1日目 pm 81 52
+a店 2日目 am 157 94
+a店 2日目 pm 157 94
+b店 2日目 am 237 121
+b店 2日目 pm 237 121
+c店 2日目 am 76 49
+c店 2日目 pm 76 49
+a店 3日目 am 62 30
+a店 3日目 pm 62 30
+b店 3日目 am 150 82
+b店 3日目 pm 150 82
+c店 3日目 am 38 21
+c店 3日目 pm 38 21
+a店 4日目 am 131 84
+a店 4日目 pm 131 84
+b店 4日目 am 198 105
+b店 4日目 pm 198 105
+c店 4日目 am 81 48
+c店 4日目 pm 81 48
+a店 5日目 am 189 111
+a店 5日目 pm 189 111
+b店 5日目 am 259 189
+b店 5日目 pm 259 189
+c店 5日目 am 98 61
+c店 5日目 pm 98 61
+FIN
+
+${com} key=2/1@3 $tmp-master $tmp-tran > $tmp-out
+
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4-1 error"
+
+${com} key=2/1@NF-2 $tmp-master $tmp-tran > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4-2 error"
+
+${com} key=NF-3/NF-4@NF-2 $tmp-master $tmp-tran > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4-3 error"
+
+${com} key=2/1@3@NF/NF-1 $tmp-master $tmp-tran > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4-4 error"
+
+###########################################
+#TEST5
+#TEST1の拡大版
+# BOM付きCRLFとBOM付きCRの試験
+
+# masterの1日目から3日目までのデータに
+# tranの4日目から5日目までのデータをマージする
+cat << FIN > $tmp-master
+a店 1日目 103 62
+a店 2日目 157 94
+a店 3日目 62 30
+b店 1日目 210 113
+b店 2日目 237 121
+b店 3日目 150 82
+c店 1日目 81 52
+c店 2日目 76 49
+c店 3日目 38 21
+FIN
+
+cat << FIN > $tmp-tran
+a店 4日目 131 84
+a店 5日目 189 111
+b店 4日目 198 105
+b店 5日目 259 189
+c店 4日目 81 48
+c店 5日目 98 61
+FIN
+
+cat << FIN > $tmp-ans
+a店 1日目 103 62
+a店 2日目 157 94
+a店 3日目 62 30
+a店 4日目 131 84
+a店 5日目 189 111
+b店 1日目 210 113
+b店 2日目 237 121
+b店 3日目 150 82
+b店 4日目 198 105
+b店 5日目 259 189
+c店 1日目 81 52
+c店 2日目 76 49
+c店 3日目 38 21
+c店 4日目 81 48
+c店 5日目 98 61
+FIN
+
+# 入力用tmpファイルからBOM付きCRLFとBOM付きCRの各ファイルを作る
+BOMandEOLvariation $tmp-master $tmp-masterBOMCRLF $tmp-masterBOMCR
+BOMandEOLvariation $tmp-tran $tmp-tranBOMCRLF $tmp-tranBOMCR
+
+# BOM付きCRLF
+${com} key=1 $tmp-masterBOMCRLF $tmp-tranBOMCRLF > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5-1 error"
+
+# BOM付きCR
+${com} key=1 $tmp-masterBOMCR $tmp-tranBOMCR > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5-2 error"
+
+# pipe接続
+
+# BOM付きCRLF
+cat $tmp-tranBOMCRLF | ${com} key=1 $tmp-masterBOMCRLF > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5-3 error"
+
+# BOM付きCR
+cat $tmp-tranBOMCR | ${com} key=1 $tmp-masterBOMCR > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5-4 error"
+
+###########################################
+#TEST6
+# TEST1の変型版
+# masterの1日目から3日目までのデータに
+# tranの4日目から5日目までのデータをマージする
+# NFC文字（濁音/半濁音が1文字）とNFD文字（濁音/半濁音が清音+結合用濁点/結合用半濁点の2文字で構成される）を同値化して処理する
+# numで指定されたキーフィールドの値に関してNFC文字とNFD文字が混在するときの処理
+
+# 入力ファイルtmp-masterの中では
+#	「が店」の「が」はNFCで「が(U+304C)」
+#	「ぎ店」の「ぎ」はNFCで「ぎ(U+304E)」
+#	「ぐ店」の「ぐ」はNFCで「ぐ(U+3050)」
+
+cat << FIN > $tmp-master
+が店 1日目 103 62
+が店 2日目 157 94
+が店 3日目 62 30
+ぎ店 1日目 210 113
+ぎ店 2日目 237 121
+ぎ店 3日目 150 82
+ぐ店 1日目 81 52
+ぐ店 2日目 76 49
+ぐ店 3日目 38 21
+FIN
+
+# 入力ファイルtmp-tranの中では
+#	「が店」の「が」は「が(U+304B;U+3099)」でNFD
+#	「ぎ店」の「ぎ」は「ぎ(U+304D;U+3099)」でNFD
+#	「ぐ店」の「ぐ」は「ぐ(U+304F;U+3099)」でNFD
+
+cat << FIN > $tmp-tran
+が店 4日目 131 84
+が店 5日目 189 111
+ぎ店 4日目 198 105
+ぎ店 5日目 259 189
+ぐ店 4日目 81 48
+ぐ店 5日目 98 61
+FIN
+
+cat << FIN > $tmp-ans
+が店 1日目 103 62
+が店 2日目 157 94
+が店 3日目 62 30
+が店 4日目 131 84
+が店 5日目 189 111
+ぎ店 1日目 210 113
+ぎ店 2日目 237 121
+ぎ店 3日目 150 82
+ぎ店 4日目 198 105
+ぎ店 5日目 259 189
+ぐ店 1日目 81 52
+ぐ店 2日目 76 49
+ぐ店 3日目 38 21
+ぐ店 4日目 81 48
+ぐ店 5日目 98 61
+FIN
+
+${com} key=1 $tmp-master $tmp-tran > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST6-1 error"
+
+# tranをstdinから入力する
+cat $tmp-tran | ${com} key=1 $tmp-master > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST6-2 error"
+
+###########################################
 rm -f $tmp-*
 echo "${pythonversion} ${name}" OK
 exit 0

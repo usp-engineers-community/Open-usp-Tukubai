@@ -42,6 +42,12 @@ ERROR_CHECK(){
 	exit 1
 }
 
+BOMandEOLvariation(){	# BOM無しLF改行ファイル（$1）からBOM付きCRLF改行ファイル（$2）とBOM付きCR改行ファイル（$3）を生成する
+	 [ $# -eq 3 ]; ERROR_CHECK "TESTスクリプト内のBOMandEOLvariation()でファイル指定が不正"
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r\n/g' -e 's/$/\r/' $1 >$2	# $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r/g' $1 | tr '\n' '\r' >$3	# $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
+}
+
 ###########################################
 #TEST1
 
@@ -51,13 +57,13 @@ b い 2
 b う 3
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 * あ い う
 a 1 0 0
 b 0 2 3
 FIN
 
-${com} num=1 $tmp-in > $tmp-ans
+${com} num=1 $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST1 error"
 
@@ -71,13 +77,13 @@ b い 2
 b う 3
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 * あ い う
 a 1 0 0
 b 0 2 3
 FIN
 
-cat $tmp-in | ${com} num=1 > $tmp-ans
+cat $tmp-in | ${com} num=1 > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST2 error"
 
@@ -93,13 +99,13 @@ cat << FIN > $tmp-in
 002 b店 01/02 237
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 * * 01/01 01/02
 001 a店 103 157
 002 b店 210 237
 FIN
 
-${com} num=2 $tmp-in > $tmp-ans
+${com} num=2 $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST-E1 error"
 
@@ -113,13 +119,13 @@ cat << FIN > $tmp-in
 002 b店 01/02 237
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 * * 01/01 01/02
 001 a店 103 0
 002 b店 0 237
 FIN
 
-${com} num=2 $tmp-in > $tmp-ans
+${com} num=2 $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST-E2 error"
 
@@ -160,7 +166,7 @@ d店 6日目 98 69
 d店 7日目 101 90
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 * * 1日目 2日目 3日目 4日目 5日目 6日目 7日目
 a店 A 103 157 62 131 189 350 412
 a店 B 62 94 30 84 111 20 301
@@ -172,7 +178,7 @@ d店 A 75 72 34 74 91 98 101
 d店 B 48 42 19 43 51 69 90
 FIN
 
-${com} num=1 $tmp-in > $tmp-ans
+${com} num=1 $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST-E3 error"
 
@@ -181,7 +187,7 @@ diff $tmp-ans $tmp-out
 # 例4
 # 例3の結果をさらにsed(1)コマンドでAを売数、Bを客数に置換すると次のような表になる
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 * * 1日目 2日目 3日目 4日目 5日目 6日目 7日目
 a店 売数 103 157 62 131 189 350 412
 a店 客数 62 94 30 84 111 20 301
@@ -193,7 +199,7 @@ d店 売数 75 72 34 74 91 98 101
 d店 客数 48 42 19 43 51 69 90
 FIN
 
-${com} num=1 $tmp-in | sed -e 's/A/売数/1' -e 's/B/客数/1' > $tmp-ans
+${com} num=1 $tmp-in | sed -e 's/A/売数/1' -e 's/B/客数/1' > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST-E4 error"
 
@@ -202,7 +208,7 @@ diff $tmp-ans $tmp-out
 # 例5
 # +yarrオプションを指定することでデータ部の複数列を横に展開することができる。
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 * 1日目 1日目 2日目 2日目 3日目 3日目 4日目 4日目 5日目 5日目 6日目 6日目 7日目 7日目
 * a b a b a b a b a b a b a b
 a店 103 62 157 94 62 30 131 84 189 111 350 20 412 301
@@ -211,7 +217,7 @@ c店 81 52 76 49 38 21 81 48 98 61 109 91 136 110
 d店 75 48 72 42 34 19 74 43 91 51 98 69 101 90
 FIN
 
-cat << FIN > $tmp-out2
+cat << FIN > $tmp-ans2
 * 1日目 1日目 2日目 2日目 3日目 3日目 4日目 4日目 5日目 5日目 6日目 6日目 7日目 7日目
 * 売数 客数 売数 客数 売数 客数 売数 客数 売数 客数 売数 客数 売数 客数
 a店 103 62 157 94 62 30 131 84 189 111 350 20 412 301
@@ -220,17 +226,17 @@ c店 81 52 76 49 38 21 81 48 98 61 109 91 136 110
 d店 75 48 72 42 34 19 74 43 91 51 98 69 101 90
 FIN
 
-${com} +yarr num=1 $tmp-in > $tmp-ans
+${com} +yarr num=1 $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST-E5-1 error"
 
-${com} +yarr num=1 $tmp-in | sed -e '2s/a/売数/g' -e '2s/b/客数/g' > $tmp-ans
-diff $tmp-ans $tmp-out2
+${com} +yarr num=1 $tmp-in | sed -e '2s/a/売数/g' -e '2s/b/客数/g' > $tmp-out
+diff $tmp-ans2 $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST-E5-2 error"
 
 # 横インデックスが不要な場合には+arrオプションを使用する。
 
-cat << FIN > $tmp-out3
+cat << FIN > $tmp-ans3
 * 1日目 1日目 2日目 2日目 3日目 3日目 4日目 4日目 5日目 5日目 6日目 6日目 7日目 7日目
 a店 103 62 157 94 62 30 131 84 189 111 350 20 412 301
 b店 210 113 237 121 150 82 198 105 259 189 421 287 589 493
@@ -238,8 +244,8 @@ c店 81 52 76 49 38 21 81 48 98 61 109 91 136 110
 d店 75 48 72 42 34 19 74 43 91 51 98 69 101 90
 FIN
 
-${com} +arr num=1 $tmp-in > $tmp-ans
-diff $tmp-ans $tmp-out3
+${com} +arr num=1 $tmp-in > $tmp-out
+diff $tmp-ans3 $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST-E5-3 error"
 
 ###########################################
@@ -253,13 +259,13 @@ A b 2
 B a 4
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 * a b
 A 1 2
 B 4 @
 FIN
 
-${com} -m@ num=1 $tmp-in > $tmp-ans
+${com} -m@ num=1 $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST-E6 error"
 
@@ -277,7 +283,7 @@ Y x 1 2 3 4 5 6
 Y y 1 2 3 4 5 6
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 * * x x y y
 * * a b a b
 X A 1 4 1 4
@@ -288,11 +294,11 @@ Y B 2 5 2 5
 Y C 3 6 3 6
 FIN
 
-${com} -3 num=1 $tmp-in > $tmp-ans	# 3フィールド分ずmap(1)する
+${com} -3 num=1 $tmp-in > $tmp-out	# 3フィールド分ずmap(1)する
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST-E7-1 error"
 
-cat << FIN > $tmp-out2
+cat << FIN > $tmp-ans2
 * * x x x y y y
 * * a b c a b c
 X A 1 2 3 1 2 3
@@ -301,8 +307,8 @@ Y A 1 2 3 1 2 3
 Y B 4 5 6 4 5 6
 FIN
 
-${com} +yarr -3 num=1 $tmp-in > $tmp-ans	# +yarrの場合、3フィールド分ずつ折り返し
-diff $tmp-ans $tmp-out2
+${com} +yarr -3 num=1 $tmp-in > $tmp-out	# +yarrの場合、3フィールド分ずつ折り返し
+diff $tmp-ans2 $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST-E7-2 error"
 
 ###########################################
@@ -322,7 +328,7 @@ X2 Y2 Z2 8 1
 FIN
 
 # ↓横ヘッダーが2行になる
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 * * Y1 Y1 Y2 Y2
 * * Z1 Z2 Z1 Z2
 X1 A 1 2 3 4
@@ -331,13 +337,13 @@ X2 A 5 6 7 8
 X2 B 4 3 2 1
 FIN
 
-${com}  num=1x2 $tmp-in > $tmp-ans
+${com}  num=1x2 $tmp-in > $tmp-out
 
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST-E8-1 error"
 
 # ↓横ヘッダーが2行になる
-cat << FIN > $tmp-out2
+cat << FIN > $tmp-ans2
 * Y1 Y1 Y1 Y1 Y2 Y2 Y2 Y2
 * Z1 Z1 Z2 Z2 Z1 Z1 Z2 Z2
 * a b a b a b a b
@@ -345,9 +351,9 @@ X1 1 8 2 7 3 6 4 5
 X2 5 4 6 3 7 2 8 1
 FIN
 
-${com} +yarr num=1x2 $tmp-in > $tmp-ans
+${com} +yarr num=1x2 $tmp-in > $tmp-out
 
-diff $tmp-ans $tmp-out2
+diff $tmp-ans2 $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST-E8-2 error"
 
 ###########################################
@@ -366,7 +372,7 @@ X2 Y2 Z1 7 2 4 5 6 7
 X2 Y2 Z2 8 1 4 5 6 7
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 * * Y1 Y1 Y1 Y1 Y2 Y2 Y2 Y2
 * * Z1 Z1 Z2 Z2 Z1 Z1 Z2 Z2
 * * a b a b a b a b
@@ -378,12 +384,12 @@ X2 B 4 6 3 6 2 6 1 6
 X2 C 4 7 4 7 4 7 4 7
 FIN
 
-${com} -3 num=1x2 $tmp-in > $tmp-ans
+${com} -3 num=1x2 $tmp-in > $tmp-out
 
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST-E9-1 error"
 
-cat << FIN > $tmp-out2
+cat << FIN > $tmp-ans2
 * * Y1 Y1 Y1 Y1 Y1 Y1 Y2 Y2 Y2 Y2 Y2 Y2
 * * Z1 Z1 Z1 Z2 Z2 Z2 Z1 Z1 Z1 Z2 Z2 Z2
 * * a b c a b c a b c a b c
@@ -393,9 +399,9 @@ X2 A 5 4 4 6 3 4 7 2 4 8 1 4
 X2 B 5 6 7 5 6 7 5 6 7 5 6 7
 FIN
 
-${com} +yarr -3 num=1x2 $tmp-in > $tmp-ans
+${com} +yarr -3 num=1x2 $tmp-in > $tmp-out
 
-diff $tmp-ans $tmp-out2
+diff $tmp-ans2 $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST-E9-2 error"
 
 ###########################################
@@ -411,7 +417,7 @@ X1 Y2 B1 B2 B3 B4 B5 B6 B7 B8 B9 B10 B11 B12 B13 B14 B15 B16 B17 B18 B19 B20 B21
 X1 Y3 C1 C2 C3 C4 C5 C6 C7 C8 C9 C10 C11 C12 C13 C14 C15 C16 C17 C18 C19 C20 C21 C22 C23 C24 C25 C26 C27
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 * * Y1 Y2 Y3
 X1 1 A1 B1 C1
 X1 2 A2 B2 C2
@@ -442,12 +448,126 @@ X1 26 A26 B26 C26
 X1 27 A27 B27 C27
 FIN
 
-${com} -n num=1 $tmp-in > $tmp-ans
+${com} -n num=1 $tmp-in > $tmp-out
 
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST-E10 error"
 
+###########################################
+#TEST3
+#TEST1の拡大版
+# BOM付きCRLFとBOM付きCRの試験
 
+cat << FIN > $tmp-in
+a あ 1
+b い 2
+b う 3
+FIN
+
+cat << FIN > $tmp-ans
+* あ い う
+a 1 0 0
+b 0 2 3
+FIN
+
+# 入力用tmpファイルからBOM付きCRLFとBOM付きCRの各ファイルを作る
+BOMandEOLvariation $tmp-in $tmp-inBOMCRLF $tmp-inBOMCR
+
+# BOM付きCRLF
+${com} num=1 $tmp-inBOMCRLF > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-1 error"
+
+# BOM付きCR
+${com} num=1 $tmp-inBOMCR > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-2 error"
+
+# pipe接続
+
+# BOM付きCRLF
+cat $tmp-inBOMCRLF | ${com} num=1 - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-3 error"
+
+# BOM付きCR
+cat $tmp-inBOMCR | ${com} num=1 - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-4 error"
+
+###########################################
+#TEST4
+# TEST-E8の変型
+# 例8
+# num=<n>x<m>で縦キー<n>個、横キー<m>個にすることができる。横キーはヘッダー<m>行に展開される。
+# NFC文字（濁音/半濁音が1文字）とNFD文字（濁音/半濁音が清音+結合用濁点/結合用半濁点の2文字で構成される）を同値化して処理する
+
+cat << FIN > $tmp-in
+が1 ざ1 ぱ1 1 8
+が1 ざ1 ぱ2 2 7
+が1 ざ2 ぱ1 3 6
+が1 ざ2 ぱ2 4 5
+が2 ざ1 ぱ1 5 4
+が2 ざ1 ぱ2 6 3
+が2 ざ2 ぱ1 7 2
+が2 ざ2 ぱ2 8 1
+FIN
+
+# $tmp-inの実体をunicode符号位置で示す 形式は「字(U+xxxx)」（NFCのとき）または「字(U+xxxx;U+yyyy)」（NFDのとき）
+# が(U+304B;U+3099)1 ざ(U+3056)1 ぱ(U+306F;U+309A)1 1 8
+# が(U+304C)1 ざ(U+3055;U+3099)1 ぱ(U+3071)2 2 7
+# が(U+304B;U+3099)1 ざ(U+3055;U+3099)2 ぱ(U+3071)1 3 6
+# が(U+304C)1 ざ(U+3056)2 ぱ(U+306F;U+309A)2 4 5
+# が(U+304B;U+3099)2 ざ(U+3056)1 ぱ(U+306F;U+309A)1 5 4
+# が(U+304C)2 ざ(U+3055;U+3099)1 ぱ(U+3071)2 6 3
+# が(U+304B;U+3099)2 ざ(U+3055;U+3099)2 ぱ(U+3071)1 7 2
+# が(U+304C)2 ざ(U+3056)2 ぱ(U+306F;U+309A)2 8 1
+
+# ↓横ヘッダーが2行になる
+cat << FIN > $tmp-ans
+* * ざ1 ざ1 ざ2 ざ2
+* * ぱ1 ぱ2 ぱ1 ぱ2
+が1 A 1 2 3 4
+が1 B 8 7 6 5
+が2 A 5 6 7 8
+が2 B 4 3 2 1
+FIN
+
+# $tmp-ansの実体をunicode符号位置で示す 形式は「字(U+xxxx)」（NFCのとき）または「字(U+xxxx;U+yyyy)」（NFDのとき）
+# * * ざ(U+3056)1 ざ(U+3056)1 ざ(U+3056)2 ざ(U+3056)2
+# * * ぱ(U+3071)1 ぱ(U+3071)2 ぱ(U+3071)1 ぱ(U+3071)2
+# が(U+304C)1 A 1 2 3 4
+# が(U+304C)1 B 8 7 6 5
+# が(U+304C)2 A 5 6 7 8
+# が(U+304C)2 B 4 3 2 1
+
+${com}  num=1x2 $tmp-in > $tmp-out
+
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4-1 error"
+
+# ↓横ヘッダーが2行になる
+cat << FIN > $tmp-ans2
+* ざ1 ざ1 ざ1 ざ1 ざ2 ざ2 ざ2 ざ2
+* ぱ1 ぱ1 ぱ2 ぱ2 ぱ1 ぱ1 ぱ2 ぱ2
+* a b a b a b a b
+が1 1 8 2 7 3 6 4 5
+が2 5 4 6 3 7 2 8 1
+FIN
+
+# $tmp-ans2の実体をunicode符号位置で示す 形式は「字(U+xxxx)」（NFCのとき）または「字(U+xxxx;U+yyyy)」（NFDのとき）
+# * ざ(U+3056)1 ざ(U+3056)1 ざ(U+3056)1 ざ(U+3056)1 ざ(U+3056)2 ざ(U+3056)2 ざ(U+3056)2 ざ(U+3056)2
+# * ぱ(U+3071)1 ぱ(U+3071)1 ぱ(U+3071)2 ぱ(U+3071)2 ぱ(U+3071)1 ぱ(U+3071)1 ぱ(U+3071)2 ぱ(U+3071)2
+# * a b a b a b a b
+# が(U+304C)1 1 8 2 7 3 6 4 5
+# が(U+304C)2 5 4 6 3 7 2 8 1
+
+${com} +yarr num=1x2 $tmp-in > $tmp-out
+
+diff $tmp-ans2 $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4-2 error"
+
+###########################################
 rm -f $tmp-*
 echo "${pythonversion} ${name}" OK
 exit 0

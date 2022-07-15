@@ -42,6 +42,12 @@ ERROR_CHECK(){
 	exit 1
 }
 
+BOMandEOLvariation(){	# BOM無しLF改行ファイル（$1）からBOM付きCRLF改行ファイル（$2）とBOM付きCR改行ファイル（$3）を生成する
+	 [ $# -eq 3 ]; ERROR_CHECK "TESTスクリプト内のBOMandEOLvariation()でファイル指定が不正"
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r\n/g' -e 's/$/\r/' $1 >$2	# $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r/g' $1 | tr '\n' '\r' >$3	# $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
+}
+
 ###########################################
 # TEST1
 # 通常の重複検査
@@ -57,12 +63,12 @@ A_003 6
 A_004 7
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 A_001
 A_002
 FIN
 
-${com} $tmp-check $tmp-data >$tmp-ans
+${com} $tmp-check $tmp-data >$tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST1 error"
 
@@ -78,18 +84,355 @@ A_004 @
 A_005 @
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 A_001
 A_002
 FIN
 
-${com} --through @ $tmp-check $tmp-data >$tmp-ans
+${com} --through @ $tmp-check $tmp-data >$tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST2 error"
 
 ###########################################
+# TEST3
+# TEST1の拡大版
+# BOM付きCRLFとBOM付きCRの試験
+# 通常の重複検査
 
+cat << FIN > $tmp-check
+A
+FIN
+
+cat << FIN > $tmp-data
+A_001 5
+A_002 5
+A_003 6
+A_004 7
+FIN
+
+cat << FIN > $tmp-ans
+A_001
+A_002
+FIN
+
+# 入力用tmpファイルからBOM付きCRLFとBOM付きCRの各ファイルを作る
+BOMandEOLvariation $tmp-data $tmp-dataBOMCRLF $tmp-dataBOMCR
+BOMandEOLvariation $tmp-check $tmp-checkBOMCRLF $tmp-checkBOMCR
+
+# BOM付きUTF8ファイルCRLF
+${com} $tmp-checkBOMCRLF $tmp-dataBOMCRLF > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-1 error"
+
+# BOM付きUTF8ファイルCR
+${com} $tmp-checkBOMCR $tmp-dataBOMCR > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-2 error"
+
+# pipe接続
+
+# BOM付きCRLF
+cat $tmp-dataBOMCRLF | ${com} $tmp-checkBOMCRLF - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-3 error"
+
+# BOM付きCR
+cat $tmp-dataBOMCR | ${com} $tmp-checkBOMCR - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-4 error"
+
+###########################################
+# TEST4
+# NFC文字（濁音/半濁音が1文字）とNFD文字（濁音/半濁音が清音+結合用濁点/結合用半濁点の2文字で構成される）を同値化して処理する
+
+# 通常の重複検査
+
+# checkファイルのname部はNFC
+cat << FIN > $tmp-check
+がぎぐげご
+FIN
+
+# nameファイルのname部はNFD
+cat << FIN > $tmp-data
+がぎぐげご_001 5
+がぎぐげご_002 5
+がぎぐげご_003 6
+がぎぐげご_004 7
+FIN
+
+# 正解出力のname部はNFC化される
+cat << FIN > $tmp-ans
+がぎぐげご_001
+がぎぐげご_002
+FIN
+
+${com} $tmp-check $tmp-data >$tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4-1 error"
+
+# --through文字列の指定
+
+# checkファイルのname部はNFC
+cat << FIN > $tmp-check
+がぎぐげご
+ざじずぜぞ
+FIN
+
+# nameファイルのname部とdata部はともにNFD
+# 3行目のdata部に検査をthroughさせるための文字列「_」を置いた
+# 4行目のdata部に検査をthroughさせるための文字列「ゔ」（NFD）を置いた
+cat << FIN > $tmp-data
+がぎぐげご_001 5
+がぎぐげご_002 5
+がぎぐげご_003 _
+がぎぐげご_004 ゔ
+ざじずぜぞ_001 ばびぶべぼ
+ざじずぜぞ_002 ばびぶべぼ
+だぢづでど_001 0
+FIN
+
+# 正解出力のname部とdata部はNFC化される
+cat << FIN > $tmp-ans
+がぎぐげご_001
+がぎぐげご_002
+ざじずぜぞ_001
+ざじずぜぞ_002
+FIN
+
+# --through指定文字列に「_」と「ゔ」(NFC)を指定する
+${com} $tmp-check $tmp-data  --through _ --through ゔ >$tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4-2 error"
+
+###########################################
+# TEST5
+#  TEST4のNFC/NFD反転版
+# NFC文字（濁音/半濁音が1文字）とNFD文字（濁音/半濁音が清音+結合用濁点/結合用半濁点の2文字で構成される）を同値化して処理する
+
+# 通常の重複検査
+
+# checkファイルのname部はNFD
+cat << FIN > $tmp-check
+がぎぐげご
+FIN
+
+# nameファイルのname部はNFC
+cat << FIN > $tmp-data
+がぎぐげご_001 5
+がぎぐげご_002 5
+がぎぐげご_003 6
+がぎぐげご_004 7
+FIN
+
+# 正解出力のname部はNFC化される
+cat << FIN > $tmp-ans
+がぎぐげご_001
+がぎぐげご_002
+FIN
+
+${com} $tmp-check $tmp-data >$tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5-1 error"
+
+# --through文字列の指定
+
+# checkファイルのname部はNFD
+cat << FIN > $tmp-check
+がぎぐげご
+ざじずぜぞ
+FIN
+
+# nameファイルのname部とdata部はともにNFC
+# 3行目のdata部に検査をthroughさせるための文字列「_」を置いた
+# 4行目のdata部に検査をthroughさせるための文字列「ゔ」（NFC）を置いた
+cat << FIN > $tmp-data
+がぎぐげご_001 5
+がぎぐげご_002 5
+がぎぐげご_003 _
+がぎぐげご_004 ゔ
+ざじずぜぞ_001 ばびぶべぼ
+ざじずぜぞ_002 ばびぶべぼ
+だぢづでど_001 0
+FIN
+
+# 正解出力のname部とdata部はNFC化される
+cat << FIN > $tmp-ans
+がぎぐげご_001
+がぎぐげご_002
+ざじずぜぞ_001
+ざじずぜぞ_002
+FIN
+
+# --through指定文字列に「_」と「ゔ」(NFD)を指定する
+${com} $tmp-check $tmp-data  --through _ --through ゔ >$tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5-2 error"
+
+###########################################
+# TEST6
+#  TEST5の変形版
+# 文字列の「ゆるい一致」の試験
+
+# 通常の重複検査
+
+cat << FIN > $tmp-check
+A
+B
+FIN
+
+# nameファイル
+cat << FIN > $tmp-data
+A_01 齋藤
+A_02 齋󠄃藤
+A_03 齋󠄃藤
+A_04 齋󠄄藤
+A_05 齋󠄅藤
+A_06 齋󠄅藤
+B_01 渡邉
+B_02 渡邉󠄐
+B_03 渡邉
+B_04 渡邉󠄐
+B_05 渡邉󠄓
+B_06 渡邉󠄔
+FIN
+
+#  nameファイル $tmp-dataの説明
+#A_01 齋藤 # 齋(U+9F4B)藤(U+85E4) UCS 「齋(U+9F4B)」は基底文字「齋(U+9F4B)」を持つどのIVSとも一致しthrough文字列「齋󠄅(U+9F4B;U+E0105)藤(U+85E4)」とも「ゆるい文字列一致」をする
+#A_02 齋󠄃藤 # 齋󠄃(U+9F4B;U+E0103)藤(U+85E4) IVS
+#A_03 齋󠄃藤 # 齋󠄃(U+9F4B;U+E0103)藤(U+85E4) IVS
+#A_04 齋󠄄藤 # 齋󠄄(U+9F4B;U+E0104)藤(U+85E4) IVS
+#A_05 齋󠄅藤 # 齋󠄅(U+9F4B;U+E0105)藤(U+85E4) IVS
+#A_06 齋󠄅藤 # 齋󠄅(U+9F4B;U+E0105)藤(U+85E4) IVS
+#B_01 渡邉 # 渡(U+6E21)邉(U+9089) UCS 「邉(U+9089)」は基底文字「邉(U+9089)」を持つどのIVSとも一致する
+#B_02 渡邉󠄐 # 渡(U+6E21)邉󠄐(U+9089;U+E0110) IVS
+#B_03 渡邉 # 渡(U+6E21)邉󠄑(U+9089;U+E0111) IVS
+#B_04 渡邉󠄐 # 渡(U+6E21)邉󠄒(U+9089;U+E0112) IVS
+#B_05 渡邉󠄓 # 渡(U+6E21)邉󠄓(U+9089;U+E0113) IVS
+#B_06 渡邉󠄔 # 渡(U+6E21)邉󠄔(U+9089;U+E0114) IVS
+
+cat << FIN > $tmp-ans
+A_02
+A_03
+B_01
+B_02
+B_03
+B_04
+B_05
+B_06
+FIN
+
+# through文字列には「齋󠄅藤」「齋󠄅(U+9F4B;U+E0105)藤(U+85E4)」を使用する
+${com} $tmp-check $tmp-data --through 齋󠄅藤 >$tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST6 error"
+
+###########################################
+# TEST7
+# 文字列の「ゆるい一致」の試験
+# checkファイルとnameファイルのtag部にUCSとIVSを使用する
+
+# 通常の重複検査
+
+cat << FIN > $tmp-check
+齋藤
+渡邉󠄓
+FIN
+
+#  checkファイル $tmp-checkの説明
+#齋藤 # 齋(U+9F4B)藤(U+85E4) 「齋(U+9F4B)」はUCS
+#渡邉󠄓 # 渡(U+6E21)邉󠄓(U+9089;U+E0113) 「邉󠄓(U+9089;U+E0113)」はIVS
+
+# nameファイル
+cat << FIN > $tmp-data
+齋󠄃藤_01 3
+齋󠄃藤_02 4
+齋󠄄藤_03 5
+齋󠄄藤_04 5
+渡邉_01 6
+渡邉󠄐_02 7
+渡邉󠄑_03 7
+渡邉󠄓_04 6
+渡邉󠄓_05 6
+FIN
+
+#  nameファイル $tmp-dataの説明
+#齋󠄃藤_01 3 # 齋󠄃(U+9F4B;U+E0103)藤(U+85E4) 「齋󠄃(U+9F4B;U+E0103)」はIVS
+#齋󠄃藤_02 4 # 齋󠄃(U+9F4B;U+E0103)藤(U+85E4) 「齋󠄃(U+9F4B;U+E0103)」はIVS
+#齋󠄄藤_03 5 # 齋󠄄(U+9F4B;U+E0104)藤(U+85E4) 「齋󠄄(U+9F4B;U+E0104)」はIVS
+#齋󠄄藤_04 5 # 齋󠄄(U+9F4B;U+E0104)藤(U+85E4) 「齋󠄄(U+9F4B;U+E0104)」はIVS
+#渡邉_01 6 # 渡(U+6E21)邉(U+9089)邉(U+9089) 「邉(U+9089)」はUCS
+#渡邉󠄐_02 7 # 渡(U+6E21)邉󠄐(U+9089;U+E0110) 「邉󠄐(U+9089;U+E0110)」はIVS
+#渡邉󠄑_03 7 # 渡(U+6E21)邉󠄑(U+9089;U+E0111) 「邉󠄑(U+9089;U+E0111)」はIVS
+#渡邉󠄓_04 6 # 渡(U+6E21)邉󠄓(U+9089;U+E0113) 「邉󠄓(U+9089;U+E0113)」はIVS
+#渡邉󠄓_05 6 # 渡(U+6E21)邉󠄓(U+9089;U+E0113) 「邉󠄓(U+9089;U+E0113)」はIVS
+
+cat << FIN > $tmp-ans
+齋󠄄藤_03
+齋󠄄藤_04
+渡邉_01
+渡邉󠄓_04
+渡邉󠄓_05
+FIN
+
+${com} $tmp-check $tmp-data >$tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST7 error"
+
+###########################################
 rm -f $tmp-*
 echo "${pythonversion} ${name}" OK
+exit 0
 
+###########################################
+# TEST8 LooseMatch=False用
+# 文字列の「ゆるい一致」の試験
+# checkファイルとnameファイルのtag部にUCSとIVSを使用する
+
+# 通常の重複検査
+
+cat << FIN > $tmp-check
+齋藤
+渡邉󠄓
+FIN
+
+#  checkファイル $tmp-checkの説明
+#齋藤 # 齋(U+9F4B)藤(U+85E4) 「齋(U+9F4B)」はUCS
+#渡邉󠄓 # 渡(U+6E21)邉󠄓(U+9089;U+E0113) 「邉󠄓(U+9089;U+E0113)」はIVS
+
+# nameファイル
+cat << FIN > $tmp-data
+齋󠄃藤_01 3
+齋󠄃藤_02 4
+齋󠄄藤_03 5
+齋󠄄藤_04 5
+渡邉_01 6
+渡邉󠄐_02 7
+渡邉󠄑_03 7
+渡邉󠄓_04 6
+渡邉󠄓_05 6
+FIN
+
+#  nameファイル $tmp-dataの説明
+#齋󠄃藤_01 3 # 齋󠄃(U+9F4B;U+E0103)藤(U+85E4) 「齋󠄃(U+9F4B;U+E0103)」はIVS
+#齋󠄃藤_02 4 # 齋󠄃(U+9F4B;U+E0103)藤(U+85E4) 「齋󠄃(U+9F4B;U+E0103)」はIVS
+#齋󠄄藤_03 5 # 齋󠄄(U+9F4B;U+E0104)藤(U+85E4) 「齋󠄄(U+9F4B;U+E0104)」はIVS
+#齋󠄄藤_04 5 # 齋󠄄(U+9F4B;U+E0104)藤(U+85E4) 「齋󠄄(U+9F4B;U+E0104)」はIVS
+#渡邉_01 6 # 渡(U+6E21)邉(U+9089)邉(U+9089) 「邉(U+9089)」はUCS
+#渡邉󠄐_02 7 # 渡(U+6E21)邉󠄐(U+9089;U+E0110) 「邉󠄐(U+9089;U+E0110)」はIVS
+#渡邉󠄑_03 7 # 渡(U+6E21)邉󠄑(U+9089;U+E0111) 「邉󠄑(U+9089;U+E0111)」はIVS
+#渡邉󠄓_04 6 # 渡(U+6E21)邉󠄓(U+9089;U+E0113) 「邉󠄓(U+9089;U+E0113)」はIVS
+#渡邉󠄓_05 6 # 渡(U+6E21)邉󠄓(U+9089;U+E0113) 「邉󠄓(U+9089;U+E0113)」はIVS
+
+cat << FIN > $tmp-ans
+渡邉󠄓_04
+渡邉󠄓_05
+FIN
+
+${com} $tmp-check $tmp-data >$tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST8 error"
+
+###########################################
+rm -f $tmp-*
+echo "${pythonversion} ${name}" OK
 exit 0

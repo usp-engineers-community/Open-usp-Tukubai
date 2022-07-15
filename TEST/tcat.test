@@ -42,6 +42,12 @@ ERROR_CHECK(){
 	exit 1
 }
 
+BOMandEOLvariation(){	# BOM無しLF改行ファイル（$1）からBOM付きCRLF改行ファイル（$2）とBOM付きCR改行ファイル（$3）を生成する
+	 [ $# -eq 3 ]; ERROR_CHECK "TESTスクリプト内のBOMandEOLvariation()でファイル指定が不正"
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r\n/g' -e 's/$/\r/' $1 >$2	# $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r/g' $1 | tr '\n' '\r' >$3	# $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
+}
+
 ###########################################
 #TEST1
 # 引数で指定した複数のファイルを縦に並べて連結して出力する
@@ -58,7 +64,7 @@ cat << FIN > $tmp-in2
 0000011 安武______   55    F 92 56 83 96 75
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 ---試験結果---
 氏名No  氏名       年齢 性別  A  B  C  D  E
 0000008 角屋______   50    F 52 91 44  9  0
@@ -67,7 +73,7 @@ cat << FIN > $tmp-out
 0000011 安武______   55    F 92 56 83 96 75
 FIN
 
-${com} $tmp-in1 $tmp-in2 > $tmp-ans
+${com} $tmp-in1 $tmp-in2 > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST1 error"
 
@@ -77,7 +83,7 @@ diff $tmp-ans $tmp-out
 # ファイルを<n>-で指定した行数分だけ間をあけて連結することができる
 # 2行あけて連結する
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 ---試験結果---
 氏名No  氏名       年齢 性別  A  B  C  D  E
 
@@ -88,12 +94,90 @@ cat << FIN > $tmp-out
 0000011 安武______   55    F 92 56 83 96 75
 FIN
 
-${com} -2 $tmp-in1 $tmp-in2 > $tmp-ans
+${com} -2 $tmp-in1 $tmp-in2 > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST2 error"
 
 ###########################################
+#TEST3
+# file（標準入力または/dev/fd/xx）の重複指定
 
+cat << FIN > $tmp-in1
++++++++++++++++++++++++++++++++++++++++++++
+-------------------------------------------
+FIN
+
+cat << FIN > $tmp-ans
++++++++++++++++++++++++++++++++++++++++++++
+-------------------------------------------
++++++++++++++++++++++++++++++++++++++++++++
+-------------------------------------------
+FIN
+
+cat $tmp-in1 | ${com} - - > $tmp-out
+
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-1 error"
+
+cat $tmp-in1 | ${com} - /dev/fd/0 > $tmp-out
+
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-2 error"
+
+###########################################
+#TEST4
+#TEST1の拡大版
+# BOM付きCRLFとBOM付きCRの試験
+# 引数で指定した複数のファイルを縦に並べて連結して出力する
+
+cat << FIN > $tmp-in1
+---試験結果---
+氏名No  氏名       年齢 性別  A  B  C  D  E
+FIN
+
+cat << FIN > $tmp-in2
+0000008 角屋______   50    F 52 91 44  9  0
+0000009 米原______   68    F 60 89 33 18  6
+0000010 柳本______   50    F 95 60 35 93 76
+0000011 安武______   55    F 92 56 83 96 75
+FIN
+
+cat << FIN > $tmp-ans
+---試験結果---
+氏名No  氏名       年齢 性別  A  B  C  D  E
+0000008 角屋______   50    F 52 91 44  9  0
+0000009 米原______   68    F 60 89 33 18  6
+0000010 柳本______   50    F 95 60 35 93 76
+0000011 安武______   55    F 92 56 83 96 75
+FIN
+
+# 入力用tmpファイルからBOM付きCRLFとBOM付きCRの各ファイルを作る
+BOMandEOLvariation $tmp-in1 $tmp-in1BOMCRLF $tmp-in1BOMCR
+BOMandEOLvariation $tmp-in2 $tmp-in2BOMCRLF $tmp-in2BOMCR
+
+# BOM付きCRLF
+${com} $tmp-in1BOMCRLF $tmp-in2BOMCRLF > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4-1"
+
+# BOM付きCR
+${com} $tmp-in1BOMCR $tmp-in2BOMCR > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4-2"
+
+# pipe接続
+
+# BOM付きCRLF
+cat $tmp-in1BOMCRLF | ${com} - $tmp-in2BOMCRLF > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4-3"
+
+# BOM付きCR
+cat $tmp-in1BOMCR | ${com} - $tmp-in2BOMCR > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4-4"
+
+###########################################
 rm -f $tmp-*
 echo "${pythonversion} ${name}" OK
 exit 0

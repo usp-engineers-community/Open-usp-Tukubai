@@ -43,6 +43,14 @@ ERROR_CHECK(){
 	exit 1
 }
 
+BOMandEOLvariation(){	# BOM無しLF改行ファイル（$1）からBOM付きCRLF改行ファイル（$2）とBOM付きCR改行ファイル（$3）を生成する
+	 [ $# -eq 3 ]; ERROR_CHECK "TESTスクリプト内のBOMandEOLvariation()でファイル指定が不正"
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r\n/g' -e 's/$/\r/' $1 >$2	# $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r/g' $1 | tr '\n' '\r' >$3	# $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
+}
+
+ [ -e  ${commandpath}/keta ];  ERROR_CHECK "ketaコマンドがみつからない"
+
 ###########################################
 #TEST1
 # 入力データは番号 氏名 年齢 性別 教科(A B C D E)別点数
@@ -57,7 +65,7 @@ cat << FIN > $tmp-in
 0000007 梶川______ 42 F 50 2  33 15 62
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 0000000 浜地______ 50 F 91 59 20 76 54 300
 0000001 鈴田______ 50 F 46 39 8  5  21 119
 0000003 杉山______ 26 F 30 50 71 36 30 217
@@ -66,9 +74,15 @@ cat << FIN > $tmp-out
 0000007 梶川______ 42 F 50 2  33 15 62 162
 FIN
 
-${com} num=4 $tmp-in > $tmp-ans
+${com} num=4 $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST1 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1-1 error"
+
+# NFを使用したフィールド指定
+
+${com} num=NF-5 $tmp-in > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1-2 error"
 
 ###########################################
 #TEST2
@@ -89,7 +103,7 @@ No 氏名 年齢 性別 A B C D E
 0000007 梶川______ 42 F 50 2  33 15 62
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
      No       氏名 年齢 性別  A  B  C  D  E   @
 0000000 浜地______   50    F 91 59 20 76 54 300
 0000001 鈴田______   50    F 46 39  8  5 21 119
@@ -99,12 +113,101 @@ cat << FIN > $tmp-out
 0000007 梶川______   42    F 50  2 33 15 62 162
 FIN
 
-${com} +h num=4 $tmp-in | ${ketacom} > $tmp-ans
+${com} +h num=4 $tmp-in | ${ketacom} - > $tmp-out
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST2 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2-1 error"
+
+${com} +h num=NF-5 $tmp-in | ${ketacom} - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2-2 error"
 
 ###########################################
+#TEST3
+# 入力データは教科(A B C D E)別点数
+# 教科別の点数(1フィールド目以降)を集計して最終フィールドの次に追加する
+# num=0として全フィールドを対象とする
 
+cat << FIN > $tmp-in
+91 59 20 76 54
+46 39 8  5  21
+30 50 71 36 30
+58 71 20 10 6
+82 79 16 21 80
+50 2  33 15 62
+FIN
+
+cat << FIN > $tmp-ans
+91 59 20 76 54 300
+46 39 8  5  21 119
+30 50 71 36 30 217
+58 71 20 10 6 165
+82 79 16 21 80 278
+50 2  33 15 62 162
+FIN
+
+${com} num=0 $tmp-in > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-1 error"
+
+# num指定を省略するとnum=0と解釈する
+
+${com} $tmp-in > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-2 error"
+
+###########################################
+#TEST4
+#TEST1の拡大版
+# BOM付き/BOM無しと改行記号CRLF/CR/LFの試験
+# 入力データは番号 氏名 年齢 性別 教科(A B C D E)別点数
+# 教科別の点数(5フィールド目以降)を集計して最終フィールドの次に追加する
+
+cat << FIN > $tmp-in
+0000000 浜地______ 50 F 91 59 20 76 54
+0000001 鈴田______ 50 F 46 39 8  5  21
+0000003 杉山______ 26 F 30 50 71 36 30
+0000004 白土______ 40 M 58 71 20 10 6
+0000005 崎村______ 50 F 82 79 16 21 80
+0000007 梶川______ 42 F 50 2  33 15 62
+FIN
+
+cat << FIN > $tmp-ans
+0000000 浜地______ 50 F 91 59 20 76 54 300
+0000001 鈴田______ 50 F 46 39 8  5  21 119
+0000003 杉山______ 26 F 30 50 71 36 30 217
+0000004 白土______ 40 M 58 71 20 10 6 165
+0000005 崎村______ 50 F 82 79 16 21 80 278
+0000007 梶川______ 42 F 50 2  33 15 62 162
+FIN
+
+# 入力用tmpファイルからBOM付きCRLFとBOM付きCRの各ファイルを作る
+BOMandEOLvariation $tmp-in $tmp-inBOMCRLF $tmp-inBOMCR
+
+# BOM付き/BOM無しと改行記号CRLF/CR/LFの検査
+
+# BOM付きCRLF
+${com} num=NF-5 $tmp-inBOMCRLF > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4-1 error"
+
+# BOM付きCR
+${com} num=NF-5 $tmp-inBOMCR > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4-2 error"
+
+# pipe接続
+
+# BOM付きCRLF
+cat $tmp-inBOMCRLF | ${com} num=NF-5 - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4-3 error"
+
+# BOM付きCR
+cat $tmp-inBOMCR | ${com} num=NF-5 - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4-4 error"
+
+###########################################
 rm -f $tmp-*
 echo "${pythonversion} ${name}" OK
 exit 0

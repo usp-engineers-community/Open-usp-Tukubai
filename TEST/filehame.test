@@ -42,6 +42,36 @@ ERROR_CHECK(){
 	exit 1
 }
 
+BOMandEOLvariation(){	# BOM無しLF改行ファイル（$1）からBOM付きCRLF改行ファイル（$2）とBOM付きCR改行ファイル（$3）を生成する
+	 [ $# -eq 3 ]; ERROR_CHECK "TESTスクリプト内のBOMandEOLvariation()でファイル指定が不正"
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r\n/g' -e 's/$/\r/' $1 >$2	# $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r/g' $1 | tr '\n' '\r' >$3	# $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
+}
+
+
+###########################################
+#TEST0
+# 挿入用ファイルが空の場合
+
+cat << FIN > $tmp-file1
+あいうえお
+INSERT
+さしすせそ
+FIN
+
+cat << FIN > $tmp-file2
+FIN
+
+cat << FIN > $tmp-ans
+あいうえお
+さしすせそ
+FIN
+
+${com} -lINSERT $tmp-file1 $tmp-file2 > $tmp-out
+
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST0 error"
+
 ###########################################
 #TEST1
 
@@ -55,13 +85,13 @@ cat << FIN > $tmp-file2
 かきくけこ
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 あいうえお
 かきくけこ
 さしすせそ
 FIN
 
-${com} -lINSERT $tmp-file1 $tmp-file2 > $tmp-ans
+${com} -lINSERT $tmp-file1 $tmp-file2 > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST1 error"
 
@@ -84,7 +114,7 @@ cat << FIN > $tmp-file3
 なにぬねの
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 あいうえお
 かきくけこ
 さしすせそ
@@ -93,16 +123,281 @@ cat << FIN > $tmp-out
 FIN
 
 ${com} -lINSERT_FIRST $tmp-file1 $tmp-file2	|
-${com} -lINSERT_NEXT - $tmp-file3 > $tmp-ans
+${com} -lINSERT_NEXT - $tmp-file3 > $tmp-out
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST2.1 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2-1 error"
 
 cat $tmp-file2					|
 ${com} -lINSERT_FIRST $tmp-file1 -		|
-${com} -lINSERT_NEXT - $tmp-file3 > $tmp-ans
+${com} -lINSERT_NEXT - $tmp-file3 > $tmp-out
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST2.2 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2-2 error"
 
+###########################################
+#TEST3
+#TEST1の拡大版
+# BOM付きCRLFとBOM付きCRの試験
+
+cat << FIN > $tmp-in1
+あいうえお
+INSERT
+たちつてと
+FIN
+
+cat << FIN > $tmp-in2
+かきくけこ
+さしすせそ
+FIN
+
+cat << FIN > $tmp-ans
+あいうえお
+かきくけこ
+さしすせそ
+たちつてと
+FIN
+
+# 入力用tmpファイルからBOM付きCRLFとBOM付きCRの各ファイルを作る
+BOMandEOLvariation $tmp-in1 $tmp-in1BOMCRLF $tmp-in1BOMCR
+BOMandEOLvariation $tmp-in2 $tmp-in2BOMCRLF $tmp-in2BOMCR
+
+# BOM付きUTF8ファイルCRLF
+${com} -lINSERT $tmp-in1BOMCRLF $tmp-in2BOMCRLF > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-1 error"
+
+# BOM付きUTF8ファイルCR
+${com} -lINSERT $tmp-in1BOMCR $tmp-in2BOMCR > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-2 error"
+
+# pipe接続1
+
+# BOM付きUTF8ファイルCRLF
+cat $tmp-in1BOMCRLF | ${com} -lINSERT - $tmp-in2BOMCRLF > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-3 error"
+
+# BOM付きUTF8ファイルCR
+cat $tmp-in1BOMCR | ${com} -lINSERT - $tmp-in2BOMCR > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-4 error"
+
+# pipe接続2
+
+# BOM付きUTF8ファイルCRLF
+cat $tmp-in2BOMCRLF | ${com} -lINSERT $tmp-in1BOMCRLF - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-5 error"
+
+# BOM付きUTF8ファイルCR
+cat $tmp-in2BOMCR | ${com} -lINSERT $tmp-in1BOMCR - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-6 error"
+
+###########################################
+#TEST4
+# NFC文字（濁音/半濁音が1文字）とNFD文字（濁音/半濁音が清音+結合用濁点/結合用半濁点の2文字で構成される）を同値化して処理する
+
+cat << FIN > $tmp-file1
+あいうえお
+がぎぐげご
+さしすせそ
+がぎぐげご
+FIN
+
+# $tmp-file1の説明
+#「がぎぐげご」はNFD
+
+cat << FIN > $tmp-file2
+かきくけこ
+FIN
+
+cat << FIN > $tmp-ans
+あいうえお
+かきくけこ
+さしすせそ
+かきくけこ
+FIN
+
+# $tmp-file1中の「がぎぐげご」の行（2か所）を「かきくけこ」に置換する
+# -lオプションの「がぎぐげご」はNFC
+${com} -lがぎぐげご $tmp-file1 $tmp-file2 > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4-1 error"
+
+# NFC/NFDを入れ替えて試験
+
+cat << FIN > $tmp-file1
+あいうえお
+がぎぐげご
+さしすせそ
+がぎぐげご
+FIN
+
+# $tmp-file1の説明
+#「がぎぐげご」はNFC
+
+cat << FIN > $tmp-file2
+かきくけこ
+FIN
+
+cat << FIN > $tmp-ans
+あいうえお
+かきくけこ
+さしすせそ
+かきくけこ
+FIN
+
+# $tmp-file1中の「がぎぐげご」の行（2か所）を「かきくけこ」に置換する
+# -lオプションの「がぎぐげご」はNFD
+${com} -lがぎぐげご $tmp-file1 $tmp-file2 > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4-2 error"
+
+# 濁音NFCの「ヷヸヴヹヺ」と濁音NFDの「ヷヸヴヹヺ」の試験
+
+cat << FIN > $tmp-file1
+あいうえお
+かきくけこ
+ヷヸヴヹヺ
+FIN
+
+# $tmp-file1の説明
+#「ヷヸヴヹヺ」はNFC
+
+cat << FIN > $tmp-file2
+ワヰウヱヲ
+FIN
+
+cat << FIN > $tmp-ans
+あいうえお
+かきくけこ
+ワヰウヱヲ
+FIN
+
+# -lオプションの「ヷヸヴヹヺ」はNFD
+${com} -lヷヸヴヹヺ $tmp-file1 $tmp-file2 > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4-3 error"
+
+# NFC/NFDを入れ替えて試験
+
+cat << FIN > $tmp-file1
+あいうえお
+かきくけこ
+ヷヸヴヹヺ
+FIN
+
+# $tmp-file1の説明
+#「ヷヸヴヹヺ」はNFD
+
+cat << FIN > $tmp-file2
+ワヰウヱヲ
+FIN
+
+cat << FIN > $tmp-ans
+あいうえお
+かきくけこ
+ワヰウヱヲ
+FIN
+
+# -lオプションの「ヷヸヴヹヺ」はNFC
+${com} -lヷヸヴヹヺ $tmp-file1 $tmp-file2 > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4-4 error"
+
+###########################################
+#TEST5
+# 文字列の「ゆるい一致」の試験
+
+# file1の中にIVSを含む文字列がありコマンドのオプションでUCSの文字列を与えて検索しfile2の内容で置換する
+cat << FIN > $tmp-file1
+齋󠄂藤 齋󠄂(U+9F4B;U+E0102)藤(U+85E4)
+齋󠄃藤 齋󠄃(U+9F4B;U+E0103)藤(U+85E4)
+齋󠄄藤 齋󠄄(U+9F4B;U+E0104)藤(U+85E4)
+齋󠄅藤 齋󠄅(U+9F4B;U+E0105)藤(U+85E4)
+齋󠄆藤 齋󠄆(U+9F4B;U+E0106)藤(U+85E4)
+渡(U+6E21)邉󠄐(U+9089;U+E0110) 渡邉󠄐
+渡(U+6E21)邉󠄑(U+9089;U+E0111) 渡邉󠄑
+渡(U+6E21)邉󠄒(U+9089;U+E0112) 渡邉󠄒
+渡(U+6E21)邉󠄓(U+9089;U+E0113) 渡邉󠄓
+渡(U+6E21)邉󠄔(U+9089;U+E0114) 渡邉󠄔
+渡(U+6E21)邉󠄕(U+9089;U+E0115) 渡邉󠄕
+FIN
+
+# $tmp-file1の説明
+# 第2欄は先頭欄の符号位置（文字コード）を明示したもの
+
+cat << FIN > $tmp-file2
+わたなべ
+FIN
+
+cat << FIN > $tmp-ans
+齋󠄂藤 齋󠄂(U+9F4B;U+E0102)藤(U+85E4)
+齋󠄃藤 齋󠄃(U+9F4B;U+E0103)藤(U+85E4)
+齋󠄄藤 齋󠄄(U+9F4B;U+E0104)藤(U+85E4)
+齋󠄅藤 齋󠄅(U+9F4B;U+E0105)藤(U+85E4)
+齋󠄆藤 齋󠄆(U+9F4B;U+E0106)藤(U+85E4)
+わたなべ
+わたなべ
+わたなべ
+わたなべ
+わたなべ
+わたなべ
+FIN
+
+# $tmp-file1中で「邉」にIVSを使用した「渡邉」の行（6か所）を「わたなべ」に置換する
+# -lオプションの「渡邉」はUCSで「渡(U+6E21)邉(U+9089)」
+${com} -l渡邉 $tmp-file1 $tmp-file2 > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5-1 error"
+
+# file1の中にIVSを含む文字列とUCSの文字列がありコマンドのオプションでIVSの文字列を与えて検索しfile2の内容で置換する
+cat << FIN > $tmp-file1
+齋󠄂(U+9F4B;U+E0102)藤(U+85E4) 齋󠄂藤
+齋󠄃(U+9F4B;U+E0103)藤(U+85E4) 齋󠄃藤
+齋󠄄(U+9F4B;U+E0104)藤(U+85E4) 齋󠄄藤
+齋󠄅(U+9F4B;U+E0105)藤(U+85E4) 齋󠄅藤
+齋󠄆(U+9F4B;U+E0106)藤(U+85E4) 齋󠄆藤
+齋(U+9F4B)藤(U+85E4) 齋藤
+渡邉󠄐 渡(U+6E21)邉󠄐(U+9089;U+E0110)
+渡邉󠄑 渡(U+6E21)邉󠄑(U+9089;U+E0111)
+渡邉󠄒 渡(U+6E21)邉󠄒(U+9089;U+E0112)
+渡邉󠄓 渡(U+6E21)邉󠄓(U+9089;U+E0113)
+渡邉󠄔 渡(U+6E21)邉󠄔(U+9089;U+E0114)
+渡邉󠄕 渡(U+6E21)邉󠄕(U+9089;U+E0115)
+FIN
+
+# $tmp-file1の説明
+# 第2欄は先頭欄の符号位置（文字コード）を明示したもの
+
+cat << FIN > $tmp-file2
+さいとう
+FIN
+
+cat << FIN > $tmp-ans
+齋󠄂(U+9F4B;U+E0102)藤(U+85E4) 齋󠄂藤
+齋󠄃(U+9F4B;U+E0103)藤(U+85E4) 齋󠄃藤
+さいとう
+齋󠄅(U+9F4B;U+E0105)藤(U+85E4) 齋󠄅藤
+齋󠄆(U+9F4B;U+E0106)藤(U+85E4) 齋󠄆藤
+さいとう
+渡邉󠄐 渡(U+6E21)邉󠄐(U+9089;U+E0110)
+渡邉󠄑 渡(U+6E21)邉󠄑(U+9089;U+E0111)
+渡邉󠄒 渡(U+6E21)邉󠄒(U+9089;U+E0112)
+渡邉󠄓 渡(U+6E21)邉󠄓(U+9089;U+E0113)
+渡邉󠄔 渡(U+6E21)邉󠄔(U+9089;U+E0114)
+渡邉󠄕 渡(U+6E21)邉󠄕(U+9089;U+E0115)
+FIN
+
+# $tmp-file1中でIVSを使用して-lオプションの「齋󠄄藤」と一致する「齋󠄄(U+9F4B;U+E0104)藤(U+85E4)」の行（1か所）と
+# UCSを使用した「齋(U+9F4B)藤(U+85E4)」の行（1か所）を「さいとう」に置換する
+# -lオプションの「齋󠄄藤」はIVSを使用した「齋󠄄(U+9F4B;U+E0104)藤(U+85E4)」
+${com} -l齋󠄄藤 $tmp-file1 $tmp-file2 > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5-2 error"
+
+###########################################
 rm -f $tmp-*
 echo "${pythonversion} ${name}" OK
 exit 0

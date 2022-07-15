@@ -42,6 +42,12 @@ ERROR_CHECK(){
 	exit 1
 }
 
+BOMandEOLvariation(){	# BOM無しLF改行ファイル（$1）からBOM付きCRLF改行ファイル（$2）とBOM付きCR改行ファイル（$3）を生成する
+	 [ $# -eq 3 ]; ERROR_CHECK "TESTスクリプト内のBOMandEOLvariation()でファイル指定が不正"
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r\n/g' -e 's/$/\r/' $1 >$2	# $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r/g' $1 | tr '\n' '\r' >$3	# $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
+}
+
 ###########################################
 #TEST1
 
@@ -53,7 +59,7 @@ cat << FIN > $tmp-in
 0000005 崎村______ 50 F 82 79 16 21 80
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 0000000 浜地______ 50 F 91 59 20 76 54
 0000001 鈴田______ 50 F 46 39  8  5 21
 0000003 杉山______ 26 F 30 50 71 36 30
@@ -61,9 +67,15 @@ cat << FIN > $tmp-out
 0000005 崎村______ 50 F 82 79 16 21 80
 FIN
 
-${com} $tmp-in > $tmp-ans
-diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST1 error"
+${com} $tmp-in > $tmp-out
+diff $tmp-ans $tmp-ans
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1-1 error"
+
+# stdin入力
+
+cat $tmp-in | ${com} -	> $tmp-out
+diff $tmp-ans $tmp-ans
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1-2 error"
 
 ###########################################
 #TEST1-2
@@ -85,9 +97,9 @@ cat << FIN > $tmp-out
 0000005 崎村______ 50 F 82 79 16 21 80
 FIN
 
-cat $tmp-in | ${com} > $tmp-ans
+cat $tmp-in | ${com} -	> $tmp-out
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST1-2 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1-2xxx error"
 
 ###########################################
 #TEST2 -v
@@ -100,13 +112,31 @@ cat << FIN > $tmp-in
 0000005 崎村______ 50 F 82 79 16 21 80
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 7 10 2 1 2 2 2 2 2
 FIN
 
-${com} -v $tmp-in > $tmp-ans
+${com} -v $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST2 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2-1 error"
+
+cat << FIN > $tmp-ans
+0000000 浜地______ 50 F 91 59 20 76 54
+0000001 鈴田______ 50 F 46 39  8  5 21
+0000003 杉山______ 26 F 30 50 71 36 30
+0000004 白土______ 40 M 58 71 20 10  6
+0000005 崎村______ 50 F 82 79 16 21 80
+FIN
+
+# コマンド置換
+
+${com} $(${com} -v $tmp-in) $tmp-in > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2-2 error"
+
+${com} `${com} -v $tmp-in` $tmp-in > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2-3 error"
 
 ###########################################
 #TEST3 --
@@ -119,7 +149,7 @@ cat << FIN > $tmp-in
 0000005 崎 50 F 82 79 16 21 80
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 0000000 浜地 50 F 91 59 20 76 54
 0000001 鈴田 50 F 46 39 8  5  21
 0000003 杉山 26 F 30 50 71 36 30
@@ -127,7 +157,7 @@ cat << FIN > $tmp-out
 0000005 崎   50 F 82 79 16 21 80
 FIN
 
-${com} -- $tmp-in | sed 's/ *$//' > $tmp-ans
+${com} -- $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST3 error"
 
@@ -142,7 +172,7 @@ cat << FIN > $tmp-in
 0000005 崎 50 F 82 79 16 21 80
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
    0000000   浜地 50 F  91 59 20 76 54
    0000001   鈴田 50 F  46 39  8  5 21
    0000003   杉山 26 F  30 50 71 36 30
@@ -150,18 +180,25 @@ cat << FIN > $tmp-out
    0000005     崎 50 F  82 79 16 21 80
 FIN
 
-${com} 10 6 2 -2 2 2 2 2 2 $tmp-in | sed 's/ *$//' > $tmp-ans
+${com} 10 6 2 -2 2 2 2 2 2 $tmp-in  > $tmp-out
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST4.1 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4-1 error"
 
 cat $tmp-in			|
-${com} 10 6 2 -2 2 2 2 2 2	|
-sed 's/ *$//' > $tmp-ans
+${com} 10 6 2 -2 2 2 2 2 2	 > $tmp-out
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST4.2 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4-2 error"
+
+${com} 10 6 2 -2 2x5 $tmp-in  > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4-3 error"
+
+${com} 10 6 2 -2 2xNF-4 $tmp-in  > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4-4 error"
 
 ###########################################
-#追加TEST1
+#TEST5
 # 代用対/結合文字列/IVS/SVSの処理検査
 
 cat << FIN > $tmp-in
@@ -169,44 +206,137 @@ cat << FIN > $tmp-in
 0000001 𠮷田 50 F 46 39 8  5  21 #𠮷(U+20BB7)代用対では𠮷(U+D842-U+DFB7)
 0000003 今川 26 F 30 50 71 36 30 #今(U+4ECA)
 0000004 𫝆川 40 M 58 71 20 10 6 #𫝆(U+2B746)代用対では𫝆(U+D86D-U+DF46)
-0000005 𫝆󠄁川 40 F 82 79 16 21 80 #IVSの例で𫝆󠄁(U+2B746_U+E0101)代用対では𫝆󠄁(U+D86D-U+DF46_U+DB40-U+DD01)
+0000005 𫝆󠄁川 40 F 82 79 16 21 80 #IVSの例で𫝆󠄁(U+2B746;U+E0101)代用対では𫝆󠄁(U+D86D-U+DF46;U+DB40-U+DD01)
 0000006 渡邊 50 F 33 56 27 40 72 #邊(U+908A)
-0000007 渡邊󠄊 36 F 51 30 15 22 81 #IVSの例で邊󠄊(U+908A_U+E010A)代用対では邊󠄊(U+908A_U+DB40-U+DD0A)
-0000008 渡邊󠄋 62 F 72 39 26 18 55 #IVSの例で邊󠄋(U+908A_U+E010B)代用対では邊󠄋(U+908A_U+DB40-U+DD0B)
-0000009 渡邊󠄌 52 F 33 48 33 33 25 #IVSの例で邊󠄌(U+908A_U+E010C)代用対では邊󠄌(U+908A_U+DB40-U+DD0C)
+0000007 渡邊󠄊 36 F 51 30 15 22 81 #IVSの例で邊󠄊(U+908A;U+E010A)代用対では邊󠄊(U+908A;U+DB40-U+DD0A)
+0000008 渡邊󠄋 62 F 72 39 26 18 55 #IVSの例で邊󠄋(U+908A;U+E010B)代用対では邊󠄋(U+908A;U+DB40-U+DD0B)
+0000009 渡邊󠄌 52 F 33 48 33 33 25 #IVSの例で邊󠄌(U+908A;U+E010C)代用対では邊󠄌(U+908A;U+DB40-U+DD0C)
 0000010 神山 38 F 64 67 40 21 36 #神(U+795E)
-0000011 神︀山 25 F 45 36 5 16 72 #SVSの例で神︀(U+795E_U+FE00)
+0000011 神︀山 25 F 45 36 5 16 72 #SVSの例で神︀(U+795E;U+FE00)
 0000012 羽田 18 F 76 75 22 32 25 #羽(U+7FBD)
-0000013 羽︀田 53 F 47 64 43 7 2 #SVSの例で羽︀(U+7FBD_U+FE00)
-0000014 か゚き゚く゚け゚こ゚ 45 F 88 43 9 37 62 #結合文字列の例でか゚(U+304B_U+309A)き゚(U+304D_U+309A)く゚(U+304F_U+309A)け゚(U+3051_U+309A)こ゚(U+3053_U+309A)
+0000013 羽︀田 53 F 47 64 43 7 2 #SVSの例で羽︀(U+7FBD;U+FE00)
+0000014 か゚き゚く゚け゚こ゚ 45 F 88 43 9 37 62 #結合文字列の例でか゚(U+304B;U+309A)き゚(U+304D;U+309A)く゚(U+304F;U+309A)け゚(U+3051;U+309A)こ゚(U+3053;U+309A)
 FIN
 
 # 文字の正しい表示には適切なfontの使用が求められる
-# Unicode符号位置を「字(U+xxxx)」の形式で表現する（符号位置第が第2面のときは「字(U+xxxxx)」）
+# Unicode符号位置を「字(U+xxxx)」の形式で表現する（符号位置が第2面のときは「字(U+xxxxx)」）
 # 代用対は「字(U+xxxx-U+yyyy)」の形式で表現する
-# 結合文字列/IVS/SVSは「字(U+xxxx_U+yyyy)」の形式で表現する
+# 結合文字列/IVS/SVSは「字(U+xxxx;U+yyyy)」の形式で表現する
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 0000000       吉田 50 F 91 59 20 76 54                                                                                            #吉(U+5409)
 0000001       𠮷田 50 F 46 39  8  5 21                                                                #𠮷(U+20BB7)代用対では𠮷(U+D842-U+DFB7)
 0000003       今川 26 F 30 50 71 36 30                                                                                            #今(U+4ECA)
 0000004       𫝆川 40 M 58 71 20 10  6                                                                #𫝆(U+2B746)代用対では𫝆(U+D86D-U+DF46)
-0000005       𫝆󠄁川 40 F 82 79 16 21 80                                 #IVSの例で𫝆󠄁(U+2B746_U+E0101)代用対では𫝆󠄁(U+D86D-U+DF46_U+DB40-U+DD01)
+0000005       𫝆󠄁川 40 F 82 79 16 21 80                                 #IVSの例で𫝆󠄁(U+2B746;U+E0101)代用対では𫝆󠄁(U+D86D-U+DF46;U+DB40-U+DD01)
 0000006       渡邊 50 F 33 56 27 40 72                                                                                            #邊(U+908A)
-0000007       渡邊󠄊 36 F 51 30 15 22 81                                         #IVSの例で邊󠄊(U+908A_U+E010A)代用対では邊󠄊(U+908A_U+DB40-U+DD0A)
-0000008       渡邊󠄋 62 F 72 39 26 18 55                                         #IVSの例で邊󠄋(U+908A_U+E010B)代用対では邊󠄋(U+908A_U+DB40-U+DD0B)
-0000009       渡邊󠄌 52 F 33 48 33 33 25                                         #IVSの例で邊󠄌(U+908A_U+E010C)代用対では邊󠄌(U+908A_U+DB40-U+DD0C)
+0000007       渡邊󠄊 36 F 51 30 15 22 81                                         #IVSの例で邊󠄊(U+908A;U+E010A)代用対では邊󠄊(U+908A;U+DB40-U+DD0A)
+0000008       渡邊󠄋 62 F 72 39 26 18 55                                         #IVSの例で邊󠄋(U+908A;U+E010B)代用対では邊󠄋(U+908A;U+DB40-U+DD0B)
+0000009       渡邊󠄌 52 F 33 48 33 33 25                                         #IVSの例で邊󠄌(U+908A;U+E010C)代用対では邊󠄌(U+908A;U+DB40-U+DD0C)
 0000010       神山 38 F 64 67 40 21 36                                                                                            #神(U+795E)
-0000011       神︀山 25 F 45 36  5 16 72                                                                            #SVSの例で神︀(U+795E_U+FE00)
+0000011       神︀山 25 F 45 36  5 16 72                                                                            #SVSの例で神︀(U+795E;U+FE00)
 0000012       羽田 18 F 76 75 22 32 25                                                                                            #羽(U+7FBD)
-0000013       羽︀田 53 F 47 64 43  7  2                                                                            #SVSの例で羽︀(U+7FBD_U+FE00)
-0000014 か゚き゚く゚け゚こ゚ 45 F 88 43  9 37 62 #結合文字列の例でか゚(U+304B_U+309A)き゚(U+304D_U+309A)く゚(U+304F_U+309A)け゚(U+3051_U+309A)こ゚(U+3053_U+309A)
+0000013       羽︀田 53 F 47 64 43  7  2                                                                            #SVSの例で羽︀(U+7FBD;U+FE00)
+0000014 か゚き゚く゚け゚こ゚ 45 F 88 43  9 37 62 #結合文字列の例でか゚(U+304B;U+309A)き゚(U+304D;U+309A)く゚(U+304F;U+309A)け゚(U+3051;U+309A)こ゚(U+3053;U+309A)
 FIN
 
-${com} $tmp-in > $tmp-ans
+${com} $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "追加TEST1 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5 error"
 
+###########################################
+#TEST6
+#TEST1の拡大版
+# BOM付きCRLFとBOM付きCRの試験
+
+cat << FIN > $tmp-in
+0000000 浜地______ 50 F 91 59 20 76 54
+0000001 鈴田______ 50 F 46 39 8  5  21
+0000003 杉山______ 26 F 30 50 71 36 30
+0000004 白土______ 40 M 58 71 20 10 6
+0000005 崎村______ 50 F 82 79 16 21 80
+FIN
+
+cat << FIN > $tmp-ans
+0000000 浜地______ 50 F 91 59 20 76 54
+0000001 鈴田______ 50 F 46 39  8  5 21
+0000003 杉山______ 26 F 30 50 71 36 30
+0000004 白土______ 40 M 58 71 20 10  6
+0000005 崎村______ 50 F 82 79 16 21 80
+FIN
+
+# 入力用tmpファイルからBOM付きCRLFとBOM付きCRの各ファイルを作る
+BOMandEOLvariation $tmp-in $tmp-inBOMCRLF $tmp-inBOMCR
+
+# BOM付きCRLF
+${com} $tmp-inBOMCRLF > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST6-1 eoor"
+
+# BOM付きCR
+${com} $tmp-inBOMCR > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "EST6-2 eoor"
+
+# pipe接続
+
+# BOM付きCRLF
+cat $tmp-inBOMCRLF | ${com} - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "EST6-3 eoor"
+
+# BOM付きCR
+cat $tmp-inBOMCR | ${com} - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "EST6-4 eoor"
+
+###########################################
+#TEST7 桁指定
+#TEST4の拡大版
+# BOM付きCRLFとBOM付きCRの試験
+
+cat << FIN > $tmp-in
+0000000 浜地 50 F 91 59 20 76 54
+0000001 鈴田 50 F 46 39 8 5 21
+0000003 杉山 26 F 30 50 71 36 30
+0000004 白土 40 M 58 71 20 10 6
+0000005 崎 50 F 82 79 16 21 80
+FIN
+
+cat << FIN > $tmp-ans
+   0000000   浜地 50 F  91 59 20 76 54
+   0000001   鈴田 50 F  46 39  8  5 21
+   0000003   杉山 26 F  30 50 71 36 30
+   0000004   白土 40 M  58 71 20 10  6
+   0000005     崎 50 F  82 79 16 21 80
+FIN
+
+# 入力用tmpファイルからBOM付きCRLFとBOM付きCRの各ファイルを作る
+BOMandEOLvariation $tmp-in $tmp-inBOMCRLF $tmp-inBOMCR
+
+# BOM付きCRLF
+${com} 10 6 2 -2 2xNF-4 $tmp-inBOMCRLF > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST7-1 error"
+
+# BOM付きCR
+${com} 10 6 2 -2 2xNF-4 $tmp-inBOMCR > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST7-2 error"
+
+# pipe接続
+
+# BOM付きCRLF
+cat $tmp-inBOMCRLF | ${com} 10 6 2 -2 2xNF-4 - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST7-3 error"
+
+# BOM付きCR
+cat $tmp-inBOMCR | ${com} 10 6 2 -2 2xNF-4 - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST7-4 error"
+
+###########################################
 rm -f $tmp-*
 echo "${pythonversion} ${name}" OK
 exit 0

@@ -42,136 +42,216 @@ ERROR_CHECK(){
 	exit 1
 }
 
+BOMandEOLvariation(){	# BOM無しLF改行ファイル（$1）からBOM付きCRLF改行ファイル（$2）とBOM付きCR改行ファイル（$3）を生成する
+	 [ $# -eq 3 ]; ERROR_CHECK "TESTスクリプト内のBOMandEOLvariation()でファイル指定が不正"
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r\n/g' -e 's/$/\r/' $1 >$2	# $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r/g' $1 | tr '\n' '\r' >$3	# $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
+}
+
 ###########################################
 # TEST1
 # 第１フィールドの tokyo を TOKYO に、第３フィールドの osaka をOSAKAに置換します。
 
-cat << FIN > $tmp-data1
+cat << FIN > $tmp-in
 tokyo 1234 tokyo 5678
 osaka 1234 osaka 5678
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 TOKYO 1234 tokyo 5678
 osaka 1234 OSAKA 5678
 FIN
 
-${com} 's/tokyo/TOKYO/1' 's/osaka/OSAKA/3' $tmp-data1 >$tmp-ans
+${com} 's/tokyo/TOKYO/1' 's/osaka/OSAKA/3' $tmp-in >$tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST1 error"
 
 ###########################################
-# 追加TEST1-1
+# TEST2
 # 第１フィールドの tokyo を TOKYO に、第３フィールドの osaka をOSAKAに置換します。
 # フィールド分割における連続空白/先頭空白/末尾空白の処理を確認
 
-cat << FIN > $tmp-data2
+cat << FIN > $tmp-in
  tokyo  1234  tokyo  5678 
  osaka  1234  osaka  5678 
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 TOKYO 1234 tokyo 5678
 osaka 1234 OSAKA 5678
 FIN
 
-${com} 's/tokyo/TOKYO/1' 's/osaka/OSAKA/3' $tmp-data2 >$tmp-ans
-diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "追加TEST1-1 error"
-
-###########################################
-# TEST2
-# 全フィールドの tokyo を yokohama に置換します。
-
-cat << FIN > $tmp-out
-yokohama 1234 yokohama 5678
-osaka 1234 osaka 5678
-FIN
-
-${com} 's/tokyo/yokohama/g' $tmp-data1 >$tmp-ans
+${com} 's/tokyo/TOKYO/1' 's/osaka/OSAKA/3' $tmp-in >$tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST2 error"
 
 ###########################################
 # TEST3
-# 正規表現を使います。
-cat << FIN > $tmp-data3
-Tokyo 1234
-tokyo 5678
-TOKYO 7777
+# 全フィールドの tokyo を yokohama に置換します。
+
+cat << FIN > $tmp-in
+tokyo 1234 tokyo 5678
+osaka 1234 osaka 5678
 FIN
 
-cat << FIN > $tmp-out
-東京 1234
-東京 5678
-TOKYO 7777
+cat << FIN > $tmp-ans
+yokohama 1234 yokohama 5678
+osaka 1234 osaka 5678
 FIN
 
-${com} -e 's/^[Tt]okyo$/東京/1' $tmp-data3 >$tmp-ans
+${com} 's/tokyo/yokohama/g' $tmp-in >$tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST3 error"
 
 ###########################################
 # TEST4
-# 大文字/小文字を区別しない正規表現を使います。
+# 正規表現を使います。
 
-cat << FIN > $tmp-out
-東京 1234
-東京 5678
-東京 7777
+cat << FIN > $tmp-in
+Tokyo 1234
+tokyo 5678
+TOKYO 7777
 FIN
 
-${com} -i 's/^tokyo$/東京/1' $tmp-data3 >$tmp-ans
+cat << FIN > $tmp-ans
+東京 1234
+東京 5678
+TOKYO 7777
+FIN
+
+${com} -e 's/^[Tt]okyo$/東京/1' $tmp-in >$tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST4 error"
 
 ###########################################
 # TEST5
-# 複数の置換指定を使います。
+# 大文字/小文字を区別しない正規表現を使います。
 
-cat << FIN > $tmp-out
-川崎 1234
-横浜 5678
-川崎 7777
+cat << FIN > $tmp-ans
+東京 1234
+東京 5678
+東京 7777
 FIN
 
-${com} 's/tokyo/横浜/1' -i 's/tokyo/川崎/1' $tmp-data3 >$tmp-ans
+${com} -i 's/^tokyo$/東京/1' $tmp-in >$tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST5 error"
 
 ###########################################
 # TEST6
-# 置換指定の区切り文字 '/' を置換対象にする場合。
+# 複数の置換指定を使います。
 
-cat << FIN > $tmp-data6
-001 /home/MANUAL/TOOL/fsed.txt
-FIN
-
-cat << FIN > $tmp-out
-001 -home-MANUAL-TOOL-fsed.txt
-FIN
-
-${com} 's,/,-,2' $tmp-data6 >$tmp-ans
-diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST6 error"
-
-###########################################
-# 追加TEST1
-# 標準入力ファイルを置換対象として複数の置換指定を使います。
-
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 川崎 1234
 横浜 5678
 川崎 7777
 FIN
 
-cat $tmp-data3 | ${com} 's/tokyo/横浜/1' -i 's/tokyo/川崎/1' - >$tmp-ans
+${com} 's/tokyo/横浜/1' -i 's/tokyo/川崎/1' $tmp-in >$tmp-out
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "追加TEST1 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST6 error"
 
 ###########################################
+# TEST7
+# 置換指定の区切り文字 '/' を置換対象にする場合。
 
+cat << FIN > $tmp-in
+001 /home/MANUAL/TOOL/fsed.txt
+FIN
+
+cat << FIN > $tmp-ans
+001 -home-MANUAL-TOOL-fsed.txt
+FIN
+
+${com} 's,/,-,2' $tmp-in >$tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST7 error"
+
+###########################################
+# TEST8
+# 標準入力ファイルを置換対象として複数の置換指定を使います。
+
+cat << FIN > $tmp-in
+Tokyo 1234
+tokyo 5678
+TOKYO 7777
+FIN
+
+cat << FIN > $tmp-ans
+川崎 1234
+横浜 5678
+川崎 7777
+FIN
+
+cat $tmp-in | ${com} 's/tokyo/横浜/1' -i 's/tokyo/川崎/1' - >$tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST8 error"
+
+###########################################
+# TEST9
+# TEST1の拡大版
+# BOM付きCRLFとBOM付きCRの試験
+# 第１フィールドの tokyo を TOKYO に、第３フィールドの osaka をOSAKAに置換します。
+
+cat << FIN > $tmp-in
+tokyo 1234 tokyo 5678
+osaka 1234 osaka 5678
+FIN
+
+cat << FIN > $tmp-ans
+TOKYO 1234 tokyo 5678
+osaka 1234 OSAKA 5678
+FIN
+
+# 入力用tmpファイルからBOM付きCRLFとBOM付きCRの各ファイルを作る
+BOMandEOLvariation $tmp-in $tmp-inBOMCRLF $tmp-inBOMCR
+
+# BOM付きUTF8ファイルCRLF
+${com} 's/tokyo/TOKYO/1' 's/osaka/OSAKA/3' $tmp-inBOMCRLF > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST9-1 error"
+
+# BOM付きUTF8ファイルCR
+${com} 's/tokyo/TOKYO/1' 's/osaka/OSAKA/3' $tmp-inBOMCR > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST9-2 error"
+
+# pipe接続
+
+# BOM付きUTF8ファイルCRLF
+cat $tmp-inBOMCRLF | ${com} 's/tokyo/TOKYO/1' 's/osaka/OSAKA/3' - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST9-3 error"
+
+# BOM付きUTF8ファイルCR
+cat $tmp-inBOMCR | ${com} 's/tokyo/TOKYO/1' 's/osaka/OSAKA/3' - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST9-4 error"
+
+###########################################
+# TEST10
+# NFC文字（濁音/半濁音が1文字）とNFD文字（濁音/半濁音が清音+結合用濁点/結合用半濁点の2文字で構成される）を同値化して処理する
+
+# 濁音にNFD文字を使用している
+cat << FIN > $tmp-in
+りんご 1234 りんご abcd
+バナナ 5678 バナナ efgh
+ぶどう 7777 ぶどう ijkl
+FIN
+
+# 置換されなかったNFD文字はそのまま出力される
+cat << FIN > $tmp-ans
+apple 1234 りんご abcd
+banana 5678 バナナ efgh
+grape 7777 ぶどう ijkl
+FIN
+
+# 置換指定文字列にはNFC文字を使用している
+${com} 's/りんご/apple/1' 's/バナナ/banana/1' 's/ぶどう/grape/1' $tmp-in >$tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST10 error"
+
+###########################################
 rm -f $tmp-*
 echo "${pythonversion} ${name}" OK
-
 exit 0

@@ -42,6 +42,12 @@ ERROR_CHECK(){
 	exit 1
 }
 
+BOMandEOLvariation(){	# BOM無しLF改行ファイル（$1）からBOM付きCRLF改行ファイル（$2）とBOM付きCR改行ファイル（$3）を生成する
+	 [ $# -eq 3 ]; ERROR_CHECK "TESTスクリプト内のBOMandEOLvariation()でファイル指定が不正"
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r\n/g' -e 's/$/\r/' $1 >$2	# $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r/g' $1 | tr '\n' '\r' >$3	# $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
+}
+
 ###########################################
 #TEST1
 
@@ -49,11 +55,11 @@ cat << FIN > $tmp-in
 我々は宇宙人だ。
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 &#x6211;&#x3005;&#x306f;&#x5b87;&#x5b99;&#x4eba;&#x3060;&#x3002;
 FIN
 
-${com} < $tmp-in > $tmp-ans
+${com} < $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST1 error"
 
@@ -65,11 +71,11 @@ cat << FIN > $tmp-in
 𠀋
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 &#xd840;&#xdc0b;
 FIN
 
-${com} < $tmp-in > $tmp-ans
+${com} < $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST2 error"
 
@@ -81,14 +87,73 @@ cat << FIN > $tmp-in
 abcdefg
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 &#x61;&#x62;&#x63;&#x64;&#x65;&#x66;&#x67;
 FIN
 
-${com} < $tmp-in > $tmp-ans
+${com} < $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST3 error"
 
+###########################################
+#TEST4
+# 代用対/結合文字列/IVS/SVSの処理検査
+
+cat << FIN > $tmp-in
+神︀邊󠄊𠀋一 か゚12345
+FIN
+
+# 「神︀」はSVSの例で神︀(U+795E;U+FE00)
+# 「邊󠄊」はIVSの例で邊󠄊(U+908A;U+E010A)代用対では邊󠄊(U+908A;U+DB40-U+DD0A)
+# 「𠀋」は𠀋(U+2000B)代用対では𠀋(U+D840-U+DC0B)
+# 「か゚」は結合文字列の例でか゚(U+304B;U+309A)
+
+cat << FIN > $tmp-ans
+&#x795e;&#xfe00;&#x908a;&#xdb40;&#xdd0a;&#xd840;&#xdc0b;&#x4e00;&#x20;&#x304b;&#x309a;&#x31;&#x32;&#x33;&#x34;&#x35;
+FIN
+
+${com} < $tmp-in > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4 error"
+
+###########################################
+#TEST5
+#TEST1の拡大版
+# BOM付きCRLFとBOM付きCRの試験
+
+cat << FIN > $tmp-in
+我々は宇宙人だ。
+FIN
+
+cat << FIN > $tmp-ans
+&#x6211;&#x3005;&#x306f;&#x5b87;&#x5b99;&#x4eba;&#x3060;&#x3002;
+FIN
+
+# 入力用tmpファイルからBOM付きCRLFとBOM付きCRの各ファイルを作る
+BOMandEOLvariation $tmp-in $tmp-inBOMCRLF $tmp-inBOMCR
+
+# BOM付きCRLF
+${com}  <$tmp-inBOMCRLF > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5-1 error"
+
+# BOM付きCR
+${com}  <$tmp-inBOMCR > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5-2"
+
+# pipe接続
+
+# BOM付きCRLFcat $tmp-inBOMCRLF | ${com} > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5-3"
+
+# BOM付きCR
+cat $tmp-inBOMCR | ${com} > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5-4"
+
+###########################################
 rm -f $tmp-*
 echo "${pythonversion} ${name}" OK
 exit 0

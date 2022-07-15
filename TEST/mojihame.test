@@ -42,6 +42,12 @@ ERROR_CHECK(){
 	exit 1
 }
 
+BOMandEOLvariation(){	# BOM無しLF改行ファイル（$1）からBOM付きCRLF改行ファイル（$2）とBOM付きCR改行ファイル（$3）を生成する
+	 [ $# -eq 3 ]; ERROR_CHECK "TESTスクリプト内のBOMandEOLvariation()でファイル指定が不正"
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r\n/g' -e 's/$/\r/' $1 >$2	# $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r/g' $1 | tr '\n' '\r' >$3	# $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
+}
+
 ###########################################
 #TEST1
 
@@ -56,13 +62,13 @@ cat << FIN > $tmp-template
 3rd=%3 4th=%4
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 1st=a
 2nd=b
 3rd=c 4th=d
 FIN
 
-${com} $tmp-template $tmp-in > $tmp-ans
+${com} $tmp-template $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST1 error"
 
@@ -80,24 +86,24 @@ cat << FIN > $tmp-template
 3rd=%3 4th=%4
 FIN
 
-cat << FIN > $tmp-out1
+cat << FIN > $tmp-ans1
 1st=a
 2nd=
 3rd= 4th=d
 FIN
 
-cat << FIN > $tmp-out2
+cat << FIN > $tmp-ans2
 1st=
 2nd=@
 3rd=@ 4th=d
 FIN
 
-${com}  $tmp-template $tmp-in > $tmp-ans
-diff $tmp-ans $tmp-out1
+${com}  $tmp-template $tmp-in > $tmp-out
+diff $tmp-ans1 $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST2-1 error"
 
-${com}  -da $tmp-template $tmp-in > $tmp-ans
-diff $tmp-ans $tmp-out2
+${com}  -da $tmp-template $tmp-in > $tmp-out
+diff $tmp-ans2 $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST2-2 error"
 
 ###########################################
@@ -113,25 +119,25 @@ cat << FIN > $tmp-template
 3rd=%3 4th=%4
 FIN
 
-cat << FIN > $tmp-out1
+cat << FIN > $tmp-ans1
 1st=a 2nd=b
 3rd=c 4th=d
 1st=w 2nd=x
 3rd=y 4th=z
 FIN
 
-cat << FIN > $tmp-out2
+cat << FIN > $tmp-ans2
 1st=a 2nd=b
 3rd=c 4th=d
 1st=w 2nd=x
 3rd=y 4th=z
 FIN
-${com}  -l $tmp-template $tmp-in > $tmp-ans
-diff $tmp-ans $tmp-out1
+${com}  -l $tmp-template $tmp-in > $tmp-out
+diff $tmp-ans1 $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST3-1 error"
 
-${com}  -r $tmp-template $tmp-in > $tmp-ans
-diff $tmp-ans $tmp-out2
+${com}  -r $tmp-template $tmp-in > $tmp-out
+diff $tmp-ans2 $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST3-2 error"
 
 ###########################################
@@ -150,14 +156,14 @@ LABEL
 footer %2
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 header %1
 1st=a 2nd=b
 1st=y 2nd=z
 footer %2
 FIN
 
-${com}  -lLABEL $tmp-template $tmp-in > $tmp-ans
+${com}  -lLABEL $tmp-template $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST4 error"
 
@@ -192,7 +198,7 @@ K2
 MEMBER
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 氏名＝佐藤
 地名＝東京
 地名＝大阪
@@ -207,7 +213,7 @@ cat << FIN > $tmp-out
 性別＝女
 FIN
 
-${com}   -lK1  $tmp-template  $tmp-kbn1 | ${com} -lK2 -  $tmp-kbn2 | ${com} -lMEMBER - $tmp-member > $tmp-ans
+${com}   -lK1  $tmp-template  $tmp-kbn1 | ${com} -lK2 -  $tmp-kbn2 | ${com} -lMEMBER - $tmp-member > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST5 error"
 
@@ -227,14 +233,14 @@ LABEL
 footer %2
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 header %1
 1st= 2nd=b
 1st= 2nd=z
 footer %2
 FIN
 
-${com}  -lLABEL -dxyz $tmp-template $tmp-in > $tmp-ans
+${com}  -lLABEL -dxyz $tmp-template $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST6 error"
 
@@ -259,7 +265,7 @@ LABEL-2
 LABEL-1
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 表題 %1
 氏名＝山田
 地名＝東京 時刻＝10:00
@@ -270,7 +276,7 @@ cat << FIN > $tmp-out
 地名＝神戸 時刻＝15:30
 FIN
 
-${com}  -hLABEL $tmp-template $tmp-in > $tmp-ans
+${com}  -hLABEL $tmp-template $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST7 error"
 
@@ -289,18 +295,18 @@ cat << FIN > $tmp-template
 <input type="text" value="%3" />
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 <input type="text" value="usp lab" />
 <input type="text" value="usp_lab" />
 <input type="text" value="      __" />
 FIN
 
-${com}  $tmp-template $tmp-in > $tmp-ans
+${com}  $tmp-template $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST8 error"
 
 ###########################################
-#追加TEST2
+#TEST9
 
 cat << FIN > $tmp-in
 𠆢 @
@@ -313,18 +319,107 @@ cat << FIN > $tmp-template
 3rd=%3 4th=%4
 FIN
 
-cat << FIN > $tmp-out2
+cat << FIN > $tmp-ans2
 1st=
 2nd=@
 3rd=@ 4th=d
 FIN
 
-${com}  -d𠆢 $tmp-template $tmp-in > $tmp-ans
-diff $tmp-ans $tmp-out2
-[ $? -eq 0 ] ; ERROR_CHECK "追加TEST2 error"
+${com}  -d𠆢 $tmp-template $tmp-in > $tmp-out
+diff $tmp-ans2 $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST9 error"
 
 # 「𠆢」は𠆢(U+201A2)代用対では𠆢(U+D840-U+DDA2)
 
+###########################################
+#TEST10
+#TEST1の拡大版
+# BOM付きCRLFとBOM付きCRの試験
+
+cat << FIN > $tmp-in
+a b
+c d
+FIN
+
+cat << FIN > $tmp-template
+1st=%1
+2nd=%2
+3rd=%3 4th=%4
+FIN
+
+cat << FIN > $tmp-ans
+1st=a
+2nd=b
+3rd=c 4th=d
+FIN
+
+# 入力用tmpファイルからBOM付きCRLFとBOM付きCRの各ファイルを作る
+BOMandEOLvariation $tmp-in $tmp-inBOMCRLF $tmp-inBOMCR
+BOMandEOLvariation $tmp-template $tmp-templateBOMCRLF $tmp-templateBOMCR
+
+# BOM付きCRLF
+${com} $tmp-templateBOMCRLF $tmp-inBOMCRLF > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST10-1 error"
+
+# BOM付きCR
+${com} $tmp-templateBOMCR $tmp-inBOMCR > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST10-2 error"
+
+# pipe接続
+
+# BOM付きCRLF
+cat $tmp-inBOMCRLF | ${com} $tmp-templateBOMCRLF - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST10-3 error"
+
+# BOM付きCR
+cat $tmp-inBOMCR | ${com} $tmp-templateBOMCR - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST10-4 error"
+
+###########################################
+#TEST11
+# NFC文字（濁音/半濁音が1文字）とNFD文字（濁音/半濁音が清音+結合用濁点/結合用半濁点の2文字で構成される）を同値化して処理する
+
+cat << FIN > $tmp-in1
+ゔ @
+@ d
+FIN
+
+# $tmp-in1の1行目にある「ゔ」（U+3094）はNFC
+
+cat << FIN > $tmp-in2
+ゔ @
+@ d
+FIN
+
+# $tmp-in2の1行目にある「ゔ」（U+3046;U+3099）はNFD
+
+cat << FIN > $tmp-template
+1st=%1
+2nd=%2
+3rd=%3 4th=%4
+FIN
+
+cat << FIN > $tmp-ans
+1st=
+2nd=@
+3rd=@ 4th=d
+FIN
+
+${com}  -dゔ $tmp-template $tmp-in1 > $tmp-out
+# -dオプションの「ゔ」（U+3046;U+3099）はNFD
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST11-1 error"
+
+${com}  -dゔ $tmp-template $tmp-in2 > $tmp-out
+# -dオプションの「ゔ」（U+3094）はNFC
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST11-2 error"
+
+###########################################
 rm -f $tmp-*
 echo "${pythonversion} ${name}" OK
 exit 0

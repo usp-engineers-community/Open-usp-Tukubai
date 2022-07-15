@@ -42,66 +42,11 @@ ERROR_CHECK(){
 	exit 1
 }
 
-###########################################
-#TEST00
-# 不連続キー
-
-cat << FIN > $tmp-master
-B a A nameA1
-C c A nameAC
-FIN
-
-cat << FIN > $tmp-tran
-x B z A x
-x C x A x
-x A w B x
-x B y C x
-FIN
-
-cat << FIN > $tmp-data
-x B z A a nameA1 x
-x C x A c nameAC x
-FIN
-
-${com} key=4@2@2@4 $tmp-master $tmp-tran > $tmp-ok
-diff $tmp-ok $tmp-data
-
-[ $? -eq 0 ] ; ERROR_CHECK "TEST00 error"
-
-###########################################
-#TEST0
-# 連続するキー
-
-cat << FIN > $tmp-tran
-1 A 0000000 91 59 20 76 54
-2 A 0000001 46 39 8  5  21
-3 A 0000003 30 50 71 36 30
-4 A 0000004 58 71 20 10 6
-5 A 0000005 82 79 16 21 80
-6 B 0000007 50 2  33 15 62
-7 B 0000008 52 91 44 9  0
-8 C 0000009 60 89 33 18 6
-9 C 0000010 95 60 35 93 76
-10 C 0000011 92 56 83 96 75
-FIN
-
-cat << FIN > $tmp-master
-A 0000003 杉山______ 26 F
-A 0000005 崎村______ 50 F
-B 0000007 梶川______ 42 F
-C 0000010 柳本______ 50 F
-FIN
-
-cat << FIN > $tmp-out
-3 A 0000003 杉山______ 26 F 30 50 71 36 30
-5 A 0000005 崎村______ 50 F 82 79 16 21 80
-6 B 0000007 梶川______ 42 F 50 2  33 15 62
-9 C 0000010 柳本______ 50 F 95 60 35 93 76
-FIN
-
-${com} key=2/3 $tmp-master $tmp-tran > $tmp-ans
-diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST0 error"
+BOMandEOLvariation(){	# BOM無しLF改行ファイル（$1）からBOM付きCRLF改行ファイル（$2）とBOM付きCR改行ファイル（$3）を生成する
+	 [ $# -eq 3 ]; ERROR_CHECK "TESTスクリプト内のBOMandEOLvariation()でファイル指定が不正"
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r\n/g' -e 's/$/\r/' $1 >$2	# $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r/g' $1 | tr '\n' '\r' >$3	# $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
+}
 
 ###########################################
 #TEST1
@@ -119,14 +64,70 @@ cat << FIN > $tmp-master
 0000004
 FIN
 
-cat << FIN > $tmp-out
-0000001 鈴田______ 50 F 46 39 8  5  21
+cat << FIN > $tmp-ans
+0000001 鈴田______ 50 F 46 39 8 5 21
 0000004 白土______ 40 M 58 71 20 10 6
 FIN
 
-${com} key=1 $tmp-master $tmp-tran > $tmp-ans
+${com} key=1 $tmp-master $tmp-tran > $tmp-out
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST1 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1-1 error"
+
+# tranのキーフィールドが「重複のある昇順」になっている例で実行は正常終了する
+
+cat << FIN > $tmp-tran
+0000000 浜地______ 50 F 91 59 20 76 54
+0000001 鈴田______ 50 F 46 39 8  5  21
+0000001 杉山______ 26 F 30 50 71 36 30
+0000004 白土______ 40 M 58 71 20 10 6
+0000005 崎村______ 50 F 82 79 16 21 80
+FIN
+
+cat << FIN > $tmp-master
+0000001
+0000004
+FIN
+
+cat << FIN > $tmp-ans
+0000001 鈴田______ 50 F 46 39 8 5 21
+0000001 杉山______ 26 F 30 50 71 36 30
+0000004 白土______ 40 M 58 71 20 10 6
+FIN
+
+${com} key=1 $tmp-master $tmp-tran > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1-2 error"
+
+# masterのキーフィールドが「重複のない昇順」になっていない例
+
+cat << FIN > $tmp-master
+0000001
+0000004
+0000004
+FIN
+
+echo TEST1で「masterのキーフィールドが「重複のない昇順」になっていない例」を実行しエラーメッセージが出るように設定されている
+
+${com} key=1 $tmp-master $tmp-tran > $tmp-out
+
+# tranのキーフィールドが「昇順」になっていない例
+
+cat << FIN > $tmp-tran
+0000000 浜地______ 50 F 91 59 20 76 54
+0000001 鈴田______ 50 F 46 39 8  5  21
+0000000 杉山______ 26 F 30 50 71 36 30
+0000004 白土______ 40 M 58 71 20 10 6
+0000005 崎村______ 50 F 82 79 16 21 80
+FIN
+
+cat << FIN > $tmp-master
+0000001
+0000004
+FIN
+
+echo TEST1で「tranのキーフィールドが「昇順」になっていない例」を実行しエラーメッセージが出るように設定されている
+
+${com} key=1 $tmp-master $tmp-tran > $tmp-out
 
 ###########################################
 #TEST2
@@ -144,8 +145,8 @@ cat << FIN > $tmp-master
 0000004 yyy
 FIN
 
-cat << FIN > $tmp-out
-0000001 xxx 鈴田______ 50 F 46 39 8  5  21
+cat << FIN > $tmp-ans
+0000001 xxx 鈴田______ 50 F 46 39 8 5 21
 0000004 yyy 白土______ 40 M 58 71 20 10 6
 FIN
 
@@ -155,10 +156,10 @@ cat << FIN > $tmp-ng
 0000005 崎村______ 50 F 82 79 16 21 80
 FIN
 
-${com} +ng key=1 $tmp-master $tmp-tran > $tmp-ans 2> $tmp-ans2
+${com} +ng key=1 $tmp-master $tmp-tran > $tmp-out 2> $tmp-out2
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST2-1 error"
-diff $tmp-ans2 $tmp-ng
+diff $tmp-ng $tmp-out2
 [ $? -eq 0 ] ; ERROR_CHECK "TEST2-2 error"
 
 ###########################################
@@ -176,15 +177,224 @@ cat << FIN > $tmp-master
 003 -931
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 BBB 002 123 上田
 CCC 003 -931 太田
 FIN
 
-${com} key=2 $tmp-master $tmp-tran > $tmp-ans
+${com} key=2 $tmp-master $tmp-tran > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST3 error"
 
+###########################################
+#TEST4
+# 不連続キー
+
+cat << FIN > $tmp-tran
+x B z A x
+x C x A x
+x A w B x
+x B y C x
+FIN
+
+cat << FIN > $tmp-master
+B a A nameA1
+C c A nameAC
+FIN
+
+cat << FIN > $tmp-ans
+x B z A a nameA1 x
+x C x A c nameAC x
+FIN
+
+${com} key=4@2@2@4 $tmp-master $tmp-tran > $tmp-out
+diff $tmp-ans $tmp-out
+
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4 error"
+
+###########################################
+#TEST5
+# キー指定で「数値、範囲(/)、列挙(@)、NF、NF-<n>」の組み合わせ
+
+cat << FIN > $tmp-tran
+1 A 0000000 91 59 20 76 54
+2 B 0000000 46 39 8  5  21
+3 A 0000001 30 50 71 36 30
+4 A 0000001 58 71 20 10 6
+5 C 0000002 82 79 16 21 80
+6 D 0000002 50 2  33 15 62
+7 C 0000003 52 91 44 9  0
+8 D 0000003 60 89 33 18 6
+9 E 0000004 95 60 35 93 76
+10 F 0000004 92 56 83 96 75
+FIN
+
+# tranはキーとなる第3フィールド,第2フィールドの組で昇順になっていてキーの組には重複がある
+
+cat << FIN > $tmp-master
+A 0000001 杉山______ 26 F
+C 0000002 崎村______ 50 F
+D 0000002 梶川______ 42 F
+E 0000004 柳本______ 50 F
+FIN
+
+cat << FIN > $tmp-ans
+3 A 0000001 杉山______ 26 F 30 50 71 36 30
+4 A 0000001 杉山______ 26 F 58 71 20 10 6
+5 C 0000002 崎村______ 50 F 82 79 16 21 80
+6 D 0000002 梶川______ 42 F 50 2 33 15 62
+9 E 0000004 柳本______ 50 F 95 60 35 93 76
+FIN
+
+${com} key=3/2 $tmp-master $tmp-tran > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5-1 error"
+
+# コマンドの説明
+# キー指定の「NF-5/NF-6@NF-5@NF-6@3/2@2/3@3@2@NF-6/NF-5」はNF=8で「3～2と3と2と3～2と2～3と3と2と2～3」となり重複を解消して「3,2」と整理される
+
+${com} key=NF-5/NF-6@NF-5@NF-6@3/2@2/3@3@2@NF-6/NF-5 $tmp-master $tmp-tran > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5-2 error"
+
+###########################################
+#TEST6
+#TEST1の拡大版
+# BOM付き/BOM無しと改行記号CRLF/CR/LFの試験
+
+cat << FIN > $tmp-tran
+0000000 浜地______ 50 F 91 59 20 76 54
+0000001 鈴田______ 50 F 46 39 8  5  21
+0000003 杉山______ 26 F 30 50 71 36 30
+0000004 白土______ 40 M 58 71 20 10 6
+0000005 崎村______ 50 F 82 79 16 21 80
+FIN
+
+cat << FIN > $tmp-master
+0000001
+0000004
+FIN
+
+cat << FIN > $tmp-ans
+0000001 鈴田______ 50 F 46 39 8 5 21
+0000004 白土______ 40 M 58 71 20 10 6
+FIN
+
+# 入力用tmpファイルからBOM付きCRLFとBOM付きCRの各ファイルを作る
+BOMandEOLvariation $tmp-master $tmp-masterBOMCRLF $tmp-masterBOMCR
+BOMandEOLvariation $tmp-tran $tmp-tranBOMCRLF $tmp-tranBOMCR
+
+# tmp-masterの試験
+
+# BOM付きCRLF
+${com} key=1 $tmp-masterBOMCRLF $tmp-tran > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST6-1 error"
+
+# BOM付きCR
+${com} key=1 $tmp-masterBOMCR $tmp-tran > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST6-2 error"
+
+# tmp-masterのpipe接続試験
+
+# BOM付きCRLF
+cat $tmp-masterBOMCRLF | ${com} key=1 - $tmp-tran > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST6-3 error"
+
+# BOM付きCR
+cat $tmp-masterBOMCR | ${com} key=1 - $tmp-tran > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST6-4 error"
+
+# tmp-tranの試験
+
+# BOM付きCRLF
+${com} key=1 $tmp-master $tmp-tranBOMCRLF > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST6-5 error"
+
+# BOM付きCR
+${com} key=1 $tmp-master $tmp-tranBOMCR > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST6-6 error"
+
+# tmp-tranのpipe接続試験
+
+# BOM付きCRLF
+cat $tmp-tranBOMCRLF | ${com} key=1 $tmp-master -  > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST6-7 error"
+
+# BOM付きCR
+cat $tmp-tranBOMCR | ${com} key=1 $tmp-master -  > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST6-8 error"
+
+###########################################
+#TEST7
+# キーに0を指定すると「全欄指定」となる
+
+cat << FIN > $tmp-tran
+0000000 浜地______ 50 F 91 59 20 76 54
+0000001 鈴田______ 50 F 46 39 8  5  21
+0000003 杉山______ 26 F 30 50 71 36 30
+0000004 白土______ 40 M 58 71 20 10 6
+0000005 崎村______ 50 F 82 79 16 21 80
+FIN
+
+cat << FIN > $tmp-master
+0000000 太田______ 50 F 91 59 20 76 54 A
+0000001 鈴田______ 50 F 46 39 8  5  21 B
+0000003 上田______ 26 F 30 50 71 36 30 C
+0000004 白土______ 40 M 58 71 20 10 6 D
+0000005 上田______ 50 F 82 79 16 21 80 E
+FIN
+
+cat << FIN > $tmp-ans
+0000001 鈴田______ 50 F 46 39 8 5 21 B
+0000004 白土______ 40 M 58 71 20 10 6 D
+FIN
+
+${com} key=0 $tmp-master $tmp-tran > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST7-1 error"
+
+# キー指定にひとつでも0があれば全欄指定となる
+
+${com} key=0@5/3 $tmp-master $tmp-tran > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST7-2 error"
+
+###########################################
+#TEST8
+# TEST1の変形
+# tranの欄数に変化がある例
+# 
+cat << FIN > $tmp-tran
+0000000 浜地______ 50 F 91 59 20 76 54
+0000001 鈴田______ 50 F 46 39 8  5  21
+0000003 杉山______ 26 F 30 50 71 36
+0000004 白土______ 40 M 58 71 20 10 6
+0000005 崎村______ 50 F 82 79 16 21 80
+FIN
+
+cat << FIN > $tmp-master
+0000001
+0000004
+FIN
+
+cat << FIN > $tmp-ans
+0000001 鈴田______ 50 F 46 39 8 5 21
+0000004 白土______ 40 M 58 71 20 10 6
+FIN
+
+${com} key=1 $tmp-master $tmp-tran > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST8 error"
+
+###########################################
 rm -f $tmp-*
 echo "${pythonversion} ${name}" OK
 exit 0

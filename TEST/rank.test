@@ -42,6 +42,12 @@ ERROR_CHECK(){
 	exit 1
 }
 
+BOMandEOLvariation(){	# BOM無しLF改行ファイル（$1）からBOM付きCRLF改行ファイル（$2）とBOM付きCR改行ファイル（$3）を生成する
+	 [ $# -eq 3 ]; ERROR_CHECK "TESTスクリプト内のBOMandEOLvariation()でファイル指定が不正"
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r\n/g' -e 's/$/\r/' $1 >$2	# $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r/g' $1 | tr '\n' '\r' >$3	# $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
+}
+
 ###########################################
 #TEST1
 # 引数を何も指定しないときは、単純に行番号を追加する
@@ -57,7 +63,7 @@ USA SAM_______ 29
 USA TOM_______ 35
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 1 JPN 杉山______ 26
 2 JPN 崎村______ 27
 3 JPN 梶川______ 27
@@ -68,7 +74,7 @@ cat << FIN > $tmp-out
 8 USA TOM_______ 35
 FIN
 
-${com} $tmp-in > $tmp-ans
+${com} $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST1 error"
 
@@ -76,7 +82,7 @@ diff $tmp-ans $tmp-out
 #TEST2
 # ref指定
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 1 JPN 杉山______ 26
 2 JPN 崎村______ 27
 3 JPN 梶川______ 27
@@ -87,15 +93,19 @@ cat << FIN > $tmp-out
 4 USA TOM_______ 35
 FIN
 
-${com} ref=1 $tmp-in > $tmp-ans
+${com} ref=1 $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST2 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2-1 error"
+
+cat $tmp-in | ${com} ref=1 > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2-2 error"
 
 ###########################################
 #TEST3
 # key指定
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 1 JPN 杉山______ 26
 2 JPN 崎村______ 27
 2 JPN 梶川______ 27
@@ -106,15 +116,19 @@ cat << FIN > $tmp-out
 8 USA TOM_______ 35
 FIN
 
-${com} key=3 $tmp-in > $tmp-ans
+${com} key=3 $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST3 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-1 error"
+
+cat $tmp-in | ${com} key=3 > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-2 error"
 
 ###########################################
 #TEST4
 # refとkey指定
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 1 JPN 杉山______ 26
 2 JPN 崎村______ 27
 2 JPN 梶川______ 27
@@ -125,10 +139,127 @@ cat << FIN > $tmp-out
 4 USA TOM_______ 35
 FIN
 
-${com} ref=1 key=3 $tmp-in > $tmp-ans
+${com} ref=1 key=3 $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST4 error"
 
+###########################################
+#TEST5
+# refとkey指定
+#   ref指定については「数値、範囲(/)、列挙(@)、NF、NF-<n>」の組み合わせ
+#   key指定についてはNFとNF-<n>の使用の検査
+
+cat << FIN > $tmp-in
+JPN 東 杉山______ 26
+JPN 東 崎村______ 27
+JPN 西 梶川______ 27
+JPN 西 柳本______ 30
+USA East BOB_______ 25
+USA East GEROGE____ 29
+USA West SAM_______ 29
+USA West TOM_______ 35
+FIN
+
+cat << FIN > $tmp-ans
+1 JPN 東 杉山______ 26
+2 JPN 東 崎村______ 27
+1 JPN 西 梶川______ 27
+2 JPN 西 柳本______ 30
+1 USA East BOB_______ 25
+2 USA East GEROGE____ 29
+1 USA West SAM_______ 29
+2 USA West TOM_______ 35
+FIN
+
+${com} ref=NF-3/NF-2@NF-3@NF-2@2/1@1/2@2@1@NF-2/NF-3 key=NF $tmp-in > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5 error"
+
+###########################################
+#TEST6
+#TEST1の拡大版
+# BOM付きCRLFとBOM付きCRの試験
+# 引数を何も指定しないときは、単純に行番号を追加する
+
+cat << FIN > $tmp-in
+JPN 杉山______ 26
+JPN 崎村______ 27
+JPN 梶川______ 27
+JPN 柳本______ 30
+USA BOB_______ 25
+USA GEROGE____ 29
+USA SAM_______ 29
+USA TOM_______ 35
+FIN
+
+cat << FIN > $tmp-ans
+1 JPN 杉山______ 26
+2 JPN 崎村______ 27
+3 JPN 梶川______ 27
+4 JPN 柳本______ 30
+5 USA BOB_______ 25
+6 USA GEROGE____ 29
+7 USA SAM_______ 29
+8 USA TOM_______ 35
+FIN
+
+# 入力用tmpファイルからBOM付きCRLFとBOM付きCRの各ファイルを作る
+BOMandEOLvariation $tmp-in $tmp-inBOMCRLF $tmp-inBOMCR
+
+# BOM付きCRLF
+${com} $tmp-inBOMCRLF > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST6-1 error"
+
+# BOM付きCR
+${com} $tmp-inBOMCR > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST6-2 error"
+
+# pipe接続
+
+# BOM付きCRLF
+cat $tmp-inBOMCRLF | ${com} - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST6-3 error"
+
+# BOM付きCR
+cat $tmp-inBOMCR | ${com} - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST6-4 error"
+
+###########################################
+#TEST7
+# refとkey指定
+# NFC文字（濁音/半濁音が1文字）とNFD文字（濁音/半濁音が清音+結合用濁点/結合用半濁点の2文字で構成される）を同値化して処理する
+
+cat << FIN > $tmp-in
+がぎぐげご 杉山______ あいうえお 「がぎぐげご」は濁音NFC
+がぎぐげご 崎村______ だぢづでど 「がぎぐげご」は濁音NFD「だぢづでど」は濁音NFC
+がぎぐげご 梶川______ だぢづでど 「がぎぐげご」は濁音NFC「だぢづでど」は濁音NFD
+がぎぐげご 柳本______ かきくけこ 「がぎぐげご」は濁音NFD
+ざじずぜぞ BOB_______ さしすせそ 「ざじずぜぞ」は濁音NFC
+ざじずぜぞ GEROGE____ ばびぶべぼ 「ざじずぜぞ」は濁音NFD「ばびぶべぼ」は濁音NFC
+ざじずぜぞ SAM_______ ばびぶべぼ 「ざじずぜぞ」は濁音NFC「ばびぶべぼ」は濁音NFD
+ざじずぜぞ TOM_______ たちつてと 「ざじずぜぞ」は濁音NFD
+FIN
+
+cat << FIN > $tmp-ans
+1 がぎぐげご 杉山______ あいうえお 「がぎぐげご」は濁音NFC
+2 がぎぐげご 崎村______ だぢづでど 「がぎぐげご」は濁音NFD「だぢづでど」は濁音NFC
+2 がぎぐげご 梶川______ だぢづでど 「がぎぐげご」は濁音NFC「だぢづでど」は濁音NFD
+4 がぎぐげご 柳本______ かきくけこ 「がぎぐげご」は濁音NFD
+1 ざじずぜぞ BOB_______ さしすせそ 「ざじずぜぞ」は濁音NFC
+2 ざじずぜぞ GEROGE____ ばびぶべぼ 「ざじずぜぞ」は濁音NFD「ばびぶべぼ」は濁音NFC
+2 ざじずぜぞ SAM_______ ばびぶべぼ 「ざじずぜぞ」は濁音NFC「ばびぶべぼ」は濁音NFD
+4 ざじずぜぞ TOM_______ たちつてと 「ざじずぜぞ」は濁音NFD
+FIN
+
+${com} ref=1 key=3 $tmp-in > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST7 error"
+
+###########################################
 rm -f $tmp-*
 echo "${pythonversion} ${name}" OK
 exit 0

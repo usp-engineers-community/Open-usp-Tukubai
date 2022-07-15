@@ -42,25 +42,31 @@ ERROR_CHECK(){
 	exit 1
 }
 
+BOMandEOLvariation(){	# BOM無しLF改行ファイル（$1）からBOM付きCRLF改行ファイル（$2）とBOM付きCR改行ファイル（$3）を生成する
+	 [ $# -eq 3 ]; ERROR_CHECK "TESTスクリプト内のBOMandEOLvariation()でファイル指定が不正"
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r\n/g' -e 's/$/\r/' $1 >$2	# $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r/g' $1 | tr '\n' '\r' >$3	# $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
+}
+
 ###########################################
 # TEST1
 # 指定ファイルの表示幅を出します。
 
-cat << FIN > $tmp-data
+cat << FIN > $tmp-in
 1234
 東京
 ｵｵｻｶ
 オオサカ
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 4
 4
 4
 8
 FIN
 
-${com} $tmp-data >$tmp-ans
+${com} $tmp-in >$tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST1 error"
 
@@ -68,12 +74,12 @@ diff $tmp-ans $tmp-out
 # TEST2
 # -v オプションで表示幅に変化のあった行番号を出力します。
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 1 4
 4 8
 FIN
 
-${com} -v $tmp-data >$tmp-ans
+${com} -v $tmp-in >$tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST2 error"
 
@@ -81,20 +87,20 @@ diff $tmp-ans $tmp-out
 # TEST3
 # -f オプションでファイル名もあわせて出力します。標準入力の場合は、ファイル名は STDIN となります。
 
-cat << FIN > $tmp-file1
+cat << FIN > $tmp-in1
 1234
 FIN
 
-cat << FIN > $tmp-file2
+cat << FIN > $tmp-in2
 abcdef
 FIN
 
-cat << FIN > $tmp-out
-$tmp-file1 4
-$tmp-file2 6
+cat << FIN > $tmp-ans
+$tmp-in1 4
+$tmp-in2 6
 FIN
 
-${com} -f $tmp-file1 $tmp-file2 >$tmp-ans
+${com} -f $tmp-in1 $tmp-in2 >$tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST3 error"
 
@@ -102,12 +108,12 @@ diff $tmp-ans $tmp-out
 # TEST4
 # -v オプションと併用すると、ファイル名、行番号、表示幅の順になります。
 
-cat << FIN > $tmp-out
-$tmp-file1 1 4
-$tmp-file2 1 6
+cat << FIN > $tmp-ans
+$tmp-in1 1 4
+$tmp-in2 1 6
 FIN
 
-${com} -vf $tmp-file1 $tmp-file2 >$tmp-ans
+${com} -vf $tmp-in1 $tmp-in2 >$tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST4 error"
 
@@ -115,20 +121,20 @@ diff $tmp-ans $tmp-out
 # TEST5
 # 標準入力から入力する
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 STDIN 4
-$tmp-file2 6
+$tmp-in2 6
 FIN
 
-cat $tmp-file1 | ${com} -f - $tmp-file2 >$tmp-ans
+cat $tmp-in1 | ${com} -f - $tmp-in2 >$tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST5 error"
 
 ###########################################
-# 追加TEST1
+# TEST6
 # 代用対/結合文字列/IVS/SVSの処理検査
 
-cat << FIN > $tmp-data
+cat << FIN > $tmp-in
 吉田
 𠮷田
 今川
@@ -145,28 +151,28 @@ cat << FIN > $tmp-data
 か゚き゚く゚け゚こ゚
 FIN
 
-# $tmp-dataの説明
+# $tmp-inの説明
 #吉田 #吉(U+5409)
 #𠮷田 #𠮷(U+20BB7)代用対では𠮷(U+D842-U+DFB7)
 #今川 #今(U+4ECA)
 #𫝆川 #𫝆(U+2B746)代用対では𫝆(U+D86D-U+DF46)
-#𫝆󠄁川 #IVSの例で𫝆󠄁(U+2B746_U+E0101)代用対では𫝆󠄁(U+D86D-U+DF46_U+DB40-U+DD01)
+#𫝆󠄁川 #IVSの例で𫝆󠄁(U+2B746;U+E0101)代用対では𫝆󠄁(U+D86D-U+DF46;U+DB40-U+DD01)
 #渡邊 #邊(U+908A)
-#渡邊󠄊 #IVSの例で邊󠄊(U+908A_U+E010A)代用対では邊󠄊(U+908A_U+DB40-U+DD0A)
-#渡邊󠄋 #IVSの例で邊󠄋(U+908A_U+E010B)代用対では邊󠄋(U+908A_U+DB40-U+DD0B)
-#渡邊󠄌 #IVSの例で邊󠄌(U+908A_U+E010C)代用対では邊󠄌(U+908A_U+DB40-U+DD0C)
+#渡邊󠄊 #IVSの例で邊󠄊(U+908A;U+E010A)代用対では邊󠄊(U+908A;U+DB40-U+DD0A)
+#渡邊󠄋 #IVSの例で邊󠄋(U+908A;U+E010B)代用対では邊󠄋(U+908A;U+DB40-U+DD0B)
+#渡邊󠄌 #IVSの例で邊󠄌(U+908A;U+E010C)代用対では邊󠄌(U+908A;U+DB40-U+DD0C)
 #神山 #神(U+795E)
-#神︀山 #SVSの例で神︀(U+795E_U+FE00)
+#神︀山 #SVSの例で神︀(U+795E;U+FE00)
 #羽田 #羽(U+7FBD)
-#羽︀田 #SVSの例で羽︀(U+7FBD_U+FE00)
-#か゚き゚く゚け゚こ゚ #結合文字列の例でか゚(U+304B_U+309A)き゚(U+304D_U+309A)く゚(U+304F_U+309A)け゚(U+3051_U+309A)こ゚(U+3053_U+309A)
+#羽︀田 #SVSの例で羽︀(U+7FBD;U+FE00)
+#か゚き゚く゚け゚こ゚ #結合文字列の例でか゚(U+304B;U+309A)き゚(U+304D;U+309A)く゚(U+304F;U+309A)け゚(U+3051;U+309A)こ゚(U+3053;U+309A)
 
 # 文字の正しい表示には適切なfontの使用が求められる
-# Unicode符号位置を「字(U+xxxx)」の形式で表現する（符号位置第が第2面のときは「字(U+xxxxx)」）
+# Unicode符号位置を「字(U+xxxx)」の形式で表現する（符号位置が第2面のときは「字(U+xxxxx)」）
 # 代用対は「字(U+xxxx-U+yyyy)」の形式で表現する
-# 結合文字列/IVS/SVSは「字(U+xxxx_U+yyyy)」の形式で表現する
+# 結合文字列/IVS/SVSは「字(U+xxxx;U+yyyy)」の形式で表現する
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 4
 4
 4
@@ -183,11 +189,56 @@ cat << FIN > $tmp-out
 10
 FIN
 
-${com} $tmp-data >$tmp-ans
+${com} $tmp-in >$tmp-out
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "追加TEST1 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST6 error"
 
+###########################################
+# TEST7
+# TEST1の拡大版
+# BOM付きCRLFとBOM付きCRの試験
+# 指定ファイルの表示幅を出します。
+
+cat << FIN > $tmp-in
+1234
+東京
+ｵｵｻｶ
+オオサカ
+FIN
+
+cat << FIN > $tmp-ans
+4
+4
+4
+8
+FIN
+
+# 入力用tmpファイルからBOM付きCRLFとBOM付きCRの各ファイルを作る
+BOMandEOLvariation $tmp-in $tmp-inBOMCRLF $tmp-inBOMCR
+
+# BOM付きUTF8ファイルCRLF
+${com} $tmp-inBOMCRLF > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST7-1 error"
+
+# BOM付きUTF8ファイルCR
+${com} $tmp-inBOMCR > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST7-2 error"
+
+# pipe接続
+
+# BOM付きUTF8ファイルCRLF
+cat $tmp-inBOMCRLF | ${com} - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST7-3 error"
+
+# BOM付きUTF8ファイルCR
+cat $tmp-inBOMCR | ${com} - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST7-4 error"
+
+###########################################
 rm -f $tmp-*
 echo "${pythonversion} ${name}" OK
-
 exit 0

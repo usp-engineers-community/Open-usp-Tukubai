@@ -1,0 +1,952 @@
+#!/bin/bash
+#!/usr/local/bin/bash -xv # コマンド処理系の変更例
+#
+# test script of formhame
+#
+# usage: [<test-path>/]formhame.test [<command-path> [<python-version>]]
+#
+#            <test-path>は
+#                    「現ディレクトリーからみた」本スクリプトの相対パス
+#                    または本スクリプトの完全パス
+#                    省略時は現ディレクトリーを仮定する
+#            <command-path>は
+#                    「本スクリプトのディレクトリーからみた」test対象コマンドの相対パス
+#                    またはtest対象コマンドの完全パス
+#                    省略時は本スクリプトと同じディレクトリーを仮定する
+#                    値があるときまたは空値（""）で省略を示したときはあとにつづく<python-version>を指定できる
+#            <python-version>は
+#                    使用するpython処理系のversion（minor versionまで指定可）を指定する
+#                    （例 python2 python2.6 phthon3 python3.4など）
+#                    単にpythonとしたときは現実行環境下でのdefault versionのpythonを使用する
+#                    文字列"python"は大文字/小文字の区別をしない
+#                    省略時はpythonを仮定する
+name=formhame # test対象コマンドの名前
+testpath=$(dirname $0) # 本スクリプト実行コマンドの先頭部($0)から本スクリプトのディレトリー名をとりだす
+cd $testpath # 本スクリプトのあるディレクトリーへ移動
+if test "$2" = ""; # <python-version>($2)がなければ
+	then pythonversion="python" # default versionのpythonとする
+	else pythonversion="$2" # <python-version>($2)があれば指定versionのpythonとする
+fi
+if test "$1" = ""; # <command-path>($1)がなければ
+	then commandpath="." # test対象コマンドは現ディレクトリーにある
+	else commandpath="$1" # <command-path>($1)があればtest対象コマンドは指定のディレクトリーにある
+fi
+com="${pythonversion} ${commandpath}/${name}" # python処理系によるtest対象コマンド実行の先頭部
+tmp=/tmp/$$
+
+ERROR_CHECK(){
+	[ "$(echo ${PIPESTATUS[@]} | tr -d ' 0')" = "" ] && return
+	echo $1
+	echo "${pythonversion} ${name}" NG
+	rm -f $tmp-*
+	exit 1
+}
+
+BOMandEOLvariation(){	# BOM無しLF改行ファイル（$1）からBOM付きCRLF改行ファイル（$2）とBOM付きCR改行ファイル（$3）を生成する
+	 [ $# -eq 3 ]; ERROR_CHECK "TESTスクリプト内のBOMandEOLvariation()でファイル指定が不正"
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r\n/g' -e 's/$/\r/' $1 >$2	# $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r/g' $1 | tr '\n' '\r' >$3	# $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
+}
+
+###########################################
+#TEST0（$tmp-htmlにchecked="checked"なし）
+
+cat << FIN > $tmp-html
+<html><body>
+<form name="name_form">
+<input type="text" name="name_text1" />
+<input type="text" name="name_text2" />
+<input type="radio" name="name_radio" value="a"/>
+<input type="radio" name="name_radio" value="b"/>
+<input type="checkbox" name="name_checkbox" value="x"/>
+<input type="checkbox" name="name_checkbox" value="y"/>
+<textarea name="name_textarea">
+</textarea>
+<select name="name_pulldown">
+<option value="pd1">pd1</option>
+<option value="pd2">pd2</option>
+<option value="pd3">pd3</option>
+</select>
+<input type="submit" name="submit" />
+</form>
+</body></html>
+FIN
+
+cat << FIN > $tmp-name
+name_text1 hello
+name_text2
+name_radio b
+name_checkbox y
+name_textarea usp\nlaboratory
+name_pulldown pd3
+FIN
+
+cat << FIN > $tmp-ans
+<html><body>
+<form name="name_form">
+<input type="text" name="name_text1" value="hello"/>
+<input type="text" name="name_text2" />
+<input type="radio" name="name_radio" value="a"/>
+<input type="radio" name="name_radio" value="b" checked="checked" />
+<input type="checkbox" name="name_checkbox" value="x"/>
+<input type="checkbox" name="name_checkbox" value="y" checked="checked" />
+<textarea name="name_textarea">
+usp
+laboratory
+</textarea>
+<select name="name_pulldown">
+<option value="pd1">pd1</option>
+<option value="pd2">pd2</option>
+<option value="pd3" selected="selected">pd3</option>
+</select>
+<input type="submit" name="submit" />
+</form>
+</body></html>
+FIN
+
+${com} $tmp-html $tmp-name > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST0 error"
+
+###########################################
+#TEST1
+
+cat << FIN > $tmp-html
+<html><body>
+<form name="name_form">
+<input type="text" name="name_text1" />
+<input type="text" name="name_text2" />
+<input type="radio" name="name_radio" value="a" checked="checked" />
+<input type="radio" name="name_radio" value="b"/>
+<input type="checkbox" name="name_checkbox" value="x"/>
+<input type="checkbox" name="name_checkbox" value="y"/>
+<textarea name="name_textarea">
+</textarea>
+<select name="name_pulldown">
+<option value="pd1">pd1</option>
+<option value="pd2">pd2</option>
+<option value="pd3">pd3</option>
+</select>
+<input type="submit" name="submit" />
+</form>
+</body></html>
+FIN
+
+cat << FIN > $tmp-name
+name_text1 hello
+name_text2
+name_radio b
+name_checkbox y
+name_textarea usp\nlaboratory
+name_pulldown pd3
+FIN
+
+cat << FIN > $tmp-ans
+<html><body>
+<form name="name_form">
+<input type="text" name="name_text1" value="hello"/>
+<input type="text" name="name_text2" />
+<input type="radio" name="name_radio" value="a" />
+<input type="radio" name="name_radio" value="b" checked="checked" />
+<input type="checkbox" name="name_checkbox" value="x"/>
+<input type="checkbox" name="name_checkbox" value="y" checked="checked" />
+<textarea name="name_textarea">
+usp
+laboratory
+</textarea>
+<select name="name_pulldown">
+<option value="pd1">pd1</option>
+<option value="pd2">pd2</option>
+<option value="pd3" selected="selected">pd3</option>
+</select>
+<input type="submit" name="submit" />
+</form>
+</body></html>
+FIN
+
+${com} $tmp-html $tmp-name > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1 error"
+
+###########################################
+#TEST2 -i
+
+cat << FIN > $tmp-html
+<html><body>
+<form name="name_form">
+<input type="text" name="name_text1" />
+<input type="text" name="name_text2" value="hello"/>
+<input type="radio" name="name_radio" value="a" checked="checked" />
+<input type="radio" name="name_radio" value="b"/>
+<input type="checkbox" name="name_checkbox" value="x"/>
+<input type="checkbox" name="name_checkbox" value="y"/>
+<textarea name="name_textarea">
+</textarea>
+<select name="name_pulldown">
+<option value="pd1">pd1</option>
+<option value="pd2">pd2</option>
+<option value="pd3">pd3</option>
+</select>
+<input type="submit" name="submit" />
+</form>
+</body></html>
+FIN
+
+cat << FIN > $tmp-name
+name_text1 hello
+name_text2 _
+name_radio b
+name_checkbox y
+name_textarea usp\nlaboratory
+name_pulldown pd3
+FIN
+
+cat << FIN > $tmp-ans
+<html><body>
+<form name="name_form">
+<input type="text" name="name_text1" value="hello"/>
+<input type="text" name="name_text2" />
+<input type="radio" name="name_radio" value="a" />
+<input type="radio" name="name_radio" value="b" checked="checked" />
+<input type="checkbox" name="name_checkbox" value="x"/>
+<input type="checkbox" name="name_checkbox" value="y" checked="checked" />
+<textarea name="name_textarea">
+usp
+laboratory
+</textarea>
+<select name="name_pulldown">
+<option value="pd1">pd1</option>
+<option value="pd2">pd2</option>
+<option value="pd3" selected="selected">pd3</option>
+</select>
+<input type="submit" name="submit" />
+</form>
+</body></html>
+FIN
+
+${com} -i_ $tmp-html $tmp-name > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2 error"
+
+###########################################
+#TEST3 -d
+
+cat << FIN > $tmp-html
+<html><body>
+<form name="name_form">
+<input type="text" name="name_text1" />
+<input type="text" name="name_text2" />
+<input type="radio" name="name_radio" value="a" checked="checked" />
+<input type="radio" name="name_radio" value="b"/>
+<input type="checkbox" name="name_checkbox" value="x"/>
+<input type="checkbox" name="name_checkbox" value="y"/>
+<textarea name="name_textarea">
+</textarea>
+<select name="name_pulldown">
+<option value="pd1">pd1</option>
+<option value="pd2">pd2</option>
+<option value="pd3">pd3</option>
+</select>
+<input type="submit" name="submit" />
+</form>
+</body></html>
+FIN
+
+cat << FIN > $tmp-name
+name_text1 は_ろ_う
+name_text2 _
+name_radio b
+name_checkbox y
+name_textarea usp\nlaboratory
+name_pulldown pd3
+FIN
+
+cat << FIN > $tmp-ans
+<html><body>
+<form name="name_form">
+<input type="text" name="name_text1" value="は ろ う"/>
+<input type="text" name="name_text2" value=" "/>
+<input type="radio" name="name_radio" value="a" />
+<input type="radio" name="name_radio" value="b" checked="checked" />
+<input type="checkbox" name="name_checkbox" value="x"/>
+<input type="checkbox" name="name_checkbox" value="y" checked="checked" />
+<textarea name="name_textarea">
+usp
+laboratory
+</textarea>
+<select name="name_pulldown">
+<option value="pd1">pd1</option>
+<option value="pd2">pd2</option>
+<option value="pd3" selected="selected">pd3</option>
+</select>
+<input type="submit" name="submit" />
+</form>
+</body></html>
+FIN
+
+${com} -d_ $tmp-html $tmp-name > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3 error"
+
+###########################################
+#TEST4 -i -d
+
+cat << FIN > $tmp-html
+<html><body>
+<form name="name_form">
+<input type="text" name="name_text1" />
+<input type="text" name="name_text2" />
+<input type="radio" name="name_radio" value="a" checked="checked" />
+<input type="radio" name="name_radio" value="b"/>
+<input type="checkbox" name="name_checkbox" value="x"/>
+<input type="checkbox" name="name_checkbox" value="y"/>
+<textarea name="name_textarea">
+</textarea>
+<select name="name_pulldown">
+<option value="pd1">pd1</option>
+<option value="pd2">pd2</option>
+<option value="pd3">pd3</option>
+</select>
+<input type="submit" name="submit" />
+</form>
+</body></html>
+FIN
+
+cat << FIN > $tmp-name
+name_text1 は_ろ\_う
+name_text2 _
+name_radio b
+name_checkbox y
+name_textarea usp\nlaboratory
+name_pulldown pd3
+FIN
+
+cat << FIN > $tmp-ans
+<html><body>
+<form name="name_form">
+<input type="text" name="name_text1" value="は ろ_う"/>
+<input type="text" name="name_text2" />
+<input type="radio" name="name_radio" value="a" />
+<input type="radio" name="name_radio" value="b" checked="checked" />
+<input type="checkbox" name="name_checkbox" value="x"/>
+<input type="checkbox" name="name_checkbox" value="y" checked="checked" />
+<textarea name="name_textarea">
+usp
+laboratory
+</textarea>
+<select name="name_pulldown">
+<option value="pd1">pd1</option>
+<option value="pd2">pd2</option>
+<option value="pd3" selected="selected">pd3</option>
+</select>
+<input type="submit" name="submit" />
+</form>
+</body></html>
+FIN
+
+${com} -i_ -d_ $tmp-html $tmp-name > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4 error"
+
+###########################################
+#TEST5
+# htmlテンプレートに空行があるとき
+# INPUT,NAME,VALUEなどHTML要素が大文字の時
+# への対処試験
+
+cat << FIN > $tmp-html
+<html><body>
+<form NAME="name_form">
+<INPUT TYPE="text" NAME="name_text1" />
+<INPUT TYPE="text" NAME="name_text2"  VALUE="dummy-text"/>
+<INPUT TYPE="radio" NAME="name_radio" VALUE="a"/>
+<INPUT TYPE="radio" NAME="name_radio" VALUE="b"/>
+<INPUT TYPE="checkbox" NAME="name_checkbox" VALUE="x" CHECKED="CHECKED"/>
+<INPUT TYPE="checkbox" NAME="name_checkbox" VALUE="y"/>
+
+<textarea NAME="name_textarea">
+</textarea>
+<select NAME="name_pulldown">
+<option VALUE="pd1">pd1</option>
+<option VALUE="pd2">pd2</option>
+<option VALUE="pd3">pd3</option>
+</select>
+<INPUT TYPE="SUBMIT" NAME="name_submit" VALUE="dummy-submit"/>
+</form>
+</body></html>
+FIN
+
+cat << FIN > $tmp-name
+name_text1 hello
+name_text2 test2
+name_radio b
+name_checkbox y
+name_textarea usp\nlaboratory
+name_pulldown pd3
+name_submit 送る
+b bbbbbb
+FIN
+
+cat << FIN > $tmp-ans
+<html><body>
+<form NAME="name_form">
+<INPUT TYPE="text" NAME="name_text1" value="hello"/>
+<INPUT TYPE="text" NAME="name_text2"  value="test2"/>
+<INPUT TYPE="radio" NAME="name_radio" VALUE="a"/>
+<INPUT TYPE="radio" NAME="name_radio" VALUE="b" checked="checked" />
+<INPUT TYPE="checkbox" NAME="name_checkbox" VALUE="x" />
+<INPUT TYPE="checkbox" NAME="name_checkbox" VALUE="y" checked="checked" />
+
+<textarea NAME="name_textarea">
+usp
+laboratory
+</textarea>
+<select NAME="name_pulldown">
+<option VALUE="pd1">pd1</option>
+<option VALUE="pd2">pd2</option>
+<option VALUE="pd3" selected="selected">pd3</option>
+</select>
+<INPUT TYPE="SUBMIT" NAME="name_submit" value="送る"/>
+</form>
+</body></html>
+FIN
+
+${com} $tmp-html $tmp-name > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5 error"
+
+###########################################
+#TEST6
+# -i指定で4バイト文字（Unicode符号位置がU+FFFF超の文字）を与える
+
+cat << FIN > $tmp-html
+<html><body>
+<form name="name_form">
+<input type="text" name="name_text1" />
+<input type="text" name="name_text2" value="こんにちは"/>
+<input type="radio" name="name_radio" value="a" checked="checked" />
+<input type="radio" name="name_radio" value="b"/>
+<input type="checkbox" name="name_checkbox" value="x"/>
+<input type="checkbox" name="name_checkbox" value="y"/>
+<textarea name="name_textarea">
+</textarea>
+<select name="name_pulldown">
+<option value="pd1">pd1</option>
+<option value="pd2">pd2</option>
+<option value="pd3">pd3</option>
+</select>
+<input type="submit" name="submit" />
+</form>
+</body></html>
+FIN
+
+cat << FIN > $tmp-name
+name_text1 hello
+name_text2 𠆢
+name_radio b
+name_checkbox y
+name_textarea usp\nlaboratory
+name_pulldown pd3
+FIN
+
+cat << FIN > $tmp-ans
+<html><body>
+<form name="name_form">
+<input type="text" name="name_text1" value="hello"/>
+<input type="text" name="name_text2" />
+<input type="radio" name="name_radio" value="a" />
+<input type="radio" name="name_radio" value="b" checked="checked" />
+<input type="checkbox" name="name_checkbox" value="x"/>
+<input type="checkbox" name="name_checkbox" value="y" checked="checked" />
+<textarea name="name_textarea">
+usp
+laboratory
+</textarea>
+<select name="name_pulldown">
+<option value="pd1">pd1</option>
+<option value="pd2">pd2</option>
+<option value="pd3" selected="selected">pd3</option>
+</select>
+<input type="submit" name="submit" />
+</form>
+</body></html>
+FIN
+
+${com} -i𠆢 $tmp-html $tmp-name > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST6 error"
+
+###########################################
+#TEST7
+# -d指定で4バイト文字（Unicode符号位置がU+FFFF超の文字）を与える
+
+cat << FIN > $tmp-html
+<html><body>
+<form name="name_form">
+<input type="text" name="name_text1" />
+<input type="text" name="name_text2" value="こんにちは"/>
+<input type="radio" name="name_radio" value="a" checked="checked" />
+<input type="radio" name="name_radio" value="b"/>
+<input type="checkbox" name="name_checkbox" value="x"/>
+<input type="checkbox" name="name_checkbox" value="y"/>
+<textarea name="name_textarea">
+</textarea>
+<select name="name_pulldown">
+<option value="pd1">pd1</option>
+<option value="pd2">pd2</option>
+<option value="pd3">pd3</option>
+</select>
+<input type="submit" name="submit" />
+</form>
+</body></html>
+FIN
+
+cat << FIN > $tmp-name
+name_text1 は𠆢ろ𠆢う
+name_text2 𠆢
+name_radio b
+name_checkbox y
+name_textarea usp\nlaboratory
+name_pulldown pd3
+FIN
+
+cat << FIN > $tmp-ans
+<html><body>
+<form name="name_form">
+<input type="text" name="name_text1" value="は ろ う"/>
+<input type="text" name="name_text2" value=" "/>
+<input type="radio" name="name_radio" value="a" />
+<input type="radio" name="name_radio" value="b" checked="checked" />
+<input type="checkbox" name="name_checkbox" value="x"/>
+<input type="checkbox" name="name_checkbox" value="y" checked="checked" />
+<textarea name="name_textarea">
+usp
+laboratory
+</textarea>
+<select name="name_pulldown">
+<option value="pd1">pd1</option>
+<option value="pd2">pd2</option>
+<option value="pd3" selected="selected">pd3</option>
+</select>
+<input type="submit" name="submit" />
+</form>
+</body></html>
+FIN
+
+${com} -d𠆢 $tmp-html $tmp-name > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST7 error"
+
+# 「𠆢」は𠆢(U+201A2)代用対では𠆢(U+D840-U+DDA2)
+
+###########################################
+#TEST8
+# -i指定と-d指定で4バイト文字（Unicode符号位置がU+FFFF超の文字）を与える
+
+cat << FIN > $tmp-html
+<html><body>
+<form name="name_form">
+<input type="text" name="name_text1" value="はろう"/>
+<input type="text" name="name_text2" value="こんにちは"/>
+<input type="radio" name="name_radio" value="a" checked="checked" />
+<input type="radio" name="name_radio" value="b"/>
+<input type="checkbox" name="name_checkbox" value="x"/>
+<input type="checkbox" name="name_checkbox" value="y"/>
+<textarea name="name_textarea">
+</textarea>
+<select name="name_pulldown">
+<option value="pd1">pd1</option>
+<option value="pd2">pd2</option>
+<option value="pd3">pd3</option>
+</select>
+<input type="submit" name="submit" />
+</form>
+</body></html>
+FIN
+
+cat << FIN > $tmp-name
+name_text1 は𠆢ろ\𠆢う
+name_text2 𠆢
+name_radio b
+name_checkbox y
+name_textarea usp\nlaboratory
+name_pulldown pd3
+FIN
+
+cat << FIN > $tmp-ans
+<html><body>
+<form name="name_form">
+<input type="text" name="name_text1" value="は ろ𠆢う"/>
+<input type="text" name="name_text2" />
+<input type="radio" name="name_radio" value="a" />
+<input type="radio" name="name_radio" value="b" checked="checked" />
+<input type="checkbox" name="name_checkbox" value="x"/>
+<input type="checkbox" name="name_checkbox" value="y" checked="checked" />
+<textarea name="name_textarea">
+usp
+laboratory
+</textarea>
+<select name="name_pulldown">
+<option value="pd1">pd1</option>
+<option value="pd2">pd2</option>
+<option value="pd3" selected="selected">pd3</option>
+</select>
+<input type="submit" name="submit" />
+</form>
+</body></html>
+FIN
+
+${com} -i𠆢 -d𠆢 $tmp-html $tmp-name > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST8 error"
+
+# 「𠆢」は𠆢(U+201A2)代用対では𠆢(U+D840-U+DDA2)
+
+###########################################
+#TEST9
+#TEST0の拡大版
+# BOM付きCRLFとBOM付きCRの試験
+
+cat << FIN > $tmp-html
+<html><body>
+<form name="name_form">
+<input type="text" name="name_text1" />
+<input type="text" name="name_text2" />
+<input type="radio" name="name_radio" value="a"/>
+<input type="radio" name="name_radio" value="b"/>
+<input type="checkbox" name="name_checkbox" value="x"/>
+<input type="checkbox" name="name_checkbox" value="y"/>
+<textarea name="name_textarea">
+</textarea>
+<select name="name_pulldown">
+<option value="pd1">pd1</option>
+<option value="pd2">pd2</option>
+<option value="pd3">pd3</option>
+</select>
+<input type="submit" name="submit" />
+</form>
+</body></html>
+FIN
+
+cat << FIN > $tmp-name
+name_text1 hello
+name_text2
+name_radio b
+name_checkbox y
+name_textarea usp\nlaboratory
+name_pulldown pd3
+FIN
+
+cat << FIN > $tmp-ans
+<html><body>
+<form name="name_form">
+<input type="text" name="name_text1" value="hello"/>
+<input type="text" name="name_text2" />
+<input type="radio" name="name_radio" value="a"/>
+<input type="radio" name="name_radio" value="b" checked="checked" />
+<input type="checkbox" name="name_checkbox" value="x"/>
+<input type="checkbox" name="name_checkbox" value="y" checked="checked" />
+<textarea name="name_textarea">
+usp
+laboratory
+</textarea>
+<select name="name_pulldown">
+<option value="pd1">pd1</option>
+<option value="pd2">pd2</option>
+<option value="pd3" selected="selected">pd3</option>
+</select>
+<input type="submit" name="submit" />
+</form>
+</body></html>
+FIN
+
+# 入力用tmpファイルからBOM付きCRLFとBOM付きCRの各ファイルを作る
+BOMandEOLvariation $tmp-html $tmp-htmlBOMCRLF $tmp-htmlBOMCR
+BOMandEOLvariation $tmp-name $tmp-nameBOMCRLF $tmp-nameBOMCR
+
+# BOM付きUTF8ファイルCRLF
+${com} $tmp-htmlBOMCRLF $tmp-nameBOMCRLF > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST9-1 error"
+
+# BOM付きUTF8ファイルCR
+${com} $tmp-htmlBOMCR $tmp-nameBOMCR > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST9-2 error"
+
+# pipe接続1
+
+# BOM付きUTF8ファイルCRLF
+cat $tmp-htmlBOMCRLF | ${com} - $tmp-nameBOMCRLF > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST9-3 error"
+
+# BOM付きUTF8ファイルCR
+cat $tmp-htmlBOMCR | ${com} - $tmp-nameBOMCR > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST9-4 error"
+
+# pipe接続2
+
+# BOM付きUTF8ファイルCRLF
+cat $tmp-nameBOMCRLF | ${com} $tmp-htmlBOMCRLF - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST9-5 error"
+
+# BOM付きUTF8ファイルCR
+cat $tmp-nameBOMCR | ${com} $tmp-htmlBOMCR - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST9-6 error"
+
+###########################################
+#TEST10（$tmp-htmlにchecked="checked"なし）
+# NFC文字（濁音/半濁音が1文字）とNFD文字（濁音/半濁音が清音+結合用濁点/結合用半濁点の2文字で構成される）を同値化して処理する
+
+# 濁音/半濁音はすべてNFD
+cat << FIN > $tmp-html
+<html><body>
+<form name="name_form">
+<input type="text" name="name_がぎぐげご" />
+<input type="text" name="name_ざじずぜぞ" />
+<input type="radio" name="name_だぢづでど" value="a"/>
+<input type="radio" name="name_だぢづでど" value="b"/>
+<input type="checkbox" name="name_ばびぶべぼ" value="x"/>
+<input type="checkbox" name="name_ばびぶべぼ" value="y"/>
+<textarea name="name_ぱぴぷぺぽ">
+</textarea>
+<select name="name_ヷヸヴヹヺ">
+<option value="pd1">pd1</option>
+<option value="pd2">pd2</option>
+<option value="pd3">pd3</option>
+</select>
+<input type="submit" name="submit" />
+</form>
+</body></html>
+FIN
+
+# 濁音/半濁音はすべてNFC
+cat << FIN > $tmp-name
+name_がぎぐげご hello
+name_ざじずぜぞ
+name_だぢづでど b
+name_ばびぶべぼ y
+name_ぱぴぷぺぽ usp\nlaboratory
+name_ヷヸヴヹヺ pd3
+FIN
+
+# 濁音/半濁音はすべてNFD
+cat << FIN > $tmp-ans
+<html><body>
+<form name="name_form">
+<input type="text" name="name_がぎぐげご" value="hello"/>
+<input type="text" name="name_ざじずぜぞ" />
+<input type="radio" name="name_だぢづでど" value="a"/>
+<input type="radio" name="name_だぢづでど" value="b" checked="checked" />
+<input type="checkbox" name="name_ばびぶべぼ" value="x"/>
+<input type="checkbox" name="name_ばびぶべぼ" value="y" checked="checked" />
+<textarea name="name_ぱぴぷぺぽ">
+usp
+laboratory
+</textarea>
+<select name="name_ヷヸヴヹヺ">
+<option value="pd1">pd1</option>
+<option value="pd2">pd2</option>
+<option value="pd3" selected="selected">pd3</option>
+</select>
+<input type="submit" name="submit" />
+</form>
+</body></html>
+FIN
+
+${com} $tmp-html $tmp-name > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST10 error"
+
+###########################################
+#TEST11
+# NFC文字（濁音/半濁音が1文字）とNFD文字（濁音/半濁音が清音+結合用濁点/結合用半濁点の2文字で構成される）を同値化して処理する
+# -i指定と-d指定でNFD文字を与える
+# nameファイルでNFD文字を使用する
+
+cat << FIN > $tmp-html
+<html><body>
+<form name="name_form">
+<input type="text" name="name_text1" value="はろう"/>
+<input type="text" name="name_text2" value="こんにちは"/>
+<input type="radio" name="name_radio" value="a" checked="checked" />
+<input type="radio" name="name_radio" value="b"/>
+<input type="checkbox" name="name_checkbox" value="x"/>
+<input type="checkbox" name="name_checkbox" value="y"/>
+<textarea name="name_textarea">
+</textarea>
+<select name="name_pulldown">
+<option value="pd1">pd1</option>
+<option value="pd2">pd2</option>
+<option value="pd3">pd3</option>
+</select>
+<input type="submit" name="submit" />
+</form>
+</body></html>
+FIN
+
+# $tmp-name1の中の「ヷヸヴヹヺ」は濁音NFC
+cat << FIN > $tmp-name1
+name_text1 はヷヸヴヹヺろ\ヷヸヴヹヺう
+name_text2 ヷヸヴヹヺ
+name_radio b
+name_checkbox y
+name_textarea usp\nlaboratory
+name_pulldown pd3
+FIN
+
+# $tmp-name2の中の「ヷヸヴヹヺ」は濁音NFD
+cat << FIN > $tmp-name2
+name_text1 はヷヸヴヹヺろ\ヷヸヴヹヺう
+name_text2 ヷヸヴヹヺ
+name_radio b
+name_checkbox y
+name_textarea usp\nlaboratory
+name_pulldown pd3
+FIN
+
+cat << FIN > $tmp-ans
+<html><body>
+<form name="name_form">
+<input type="text" name="name_text1" value="は ろヷヸヴヹヺう"/>
+<input type="text" name="name_text2" />
+<input type="radio" name="name_radio" value="a" />
+<input type="radio" name="name_radio" value="b" checked="checked" />
+<input type="checkbox" name="name_checkbox" value="x"/>
+<input type="checkbox" name="name_checkbox" value="y" checked="checked" />
+<textarea name="name_textarea">
+usp
+laboratory
+</textarea>
+<select name="name_pulldown">
+<option value="pd1">pd1</option>
+<option value="pd2">pd2</option>
+<option value="pd3" selected="selected">pd3</option>
+</select>
+<input type="submit" name="submit" />
+</form>
+</body></html>
+FIN
+
+# コマンド行の-iヷヸヴヹヺと-dヷヸヴヹヺは濁音NFD
+${com} -iヷヸヴヹヺ -dヷヸヴヹヺ $tmp-html $tmp-name1 > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST11-1 error"
+
+# コマンド行の-iヷヸヴヹヺと-dヷヸヴヹヺは濁音NFC
+${com} -iヷヸヴヹヺ -dヷヸヴヹヺ $tmp-html $tmp-name2 > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST11-2 error"
+
+###########################################
+#TEST12
+# 文字列の「ゆるい一致」の試験
+
+# 濁音/半濁音はすべてNFD
+cat << FIN > $tmp-html
+<html><body>
+<form name="name_form">
+<input type="text" name="name_齋󠄃藤" />
+<input type="text" name="name_齋󠄄藤" />
+<input type="text" name="name_塚󠄄本" value="甲"/>
+<input type="text" name="name_塚󠄆本" value="乙"/>
+<input type="radio" name="name_渡邉󠄐" value="a" checked="checked" />
+<input type="radio" name="name_渡邉" value="b"/>
+<input type="checkbox" name="name_ばびぶべぼ" value="x" checked="checked" />
+<input type="checkbox" name="name_ばびぶべぼ" value="y"/>
+<textarea name="name_ぱぴぷぺぽ">
+</textarea>
+<select name="name_ヷヸヴヹヺ">
+<option value="pd1">pd1</option>
+<option value="pd2">pd2</option>
+<option value="pd3">pd3</option>
+</select>
+<input type="submit" name="submit" />
+</form>
+</body></html>
+FIN
+
+# tmp-htmlの説明
+
+#<html><body>
+#<form name="name_form">
+#<input type="text" name="name_齋󠄃藤" />	# 齋󠄃(U+9F4B;U+E0103)藤(U+85E4) IVS
+#<input type="text" name="name_齋󠄄藤" />	# 齋󠄄(U+9F4B;U+E0104)藤(U+85E4) IVS
+#<input type="text" name="name_塚󠄄本" value="甲"/>	# 塚󠄄(U+585A;U+E0104)本(U+672C) IVS
+#<input type="text" name="name_塚󠄆本" value="乙"/>	# 塚󠄆(U+585A;U+E0106)本(U+672C) IVS
+#<input type="radio" name="name_渡邉󠄐" value="a" checked="checked" />	# 渡(U+6E21)邉󠄐(U+9089;U+E0110) IVS
+#<input type="radio" name="name_渡邉" value="b"/>	# 渡(U+6E21)邉(U+9089) UCS
+#<input type="checkbox" name="name_ばびぶべぼ" value="x" checked="checked" />
+#<input type="checkbox" name="name_ばびぶべぼ" value="y"/>
+#<textarea name="name_ぱぴぷぺぽ">
+#</textarea>
+#<select name="name_ヷヸヴヹヺ">
+#<option value="pd1">pd1</option>
+#<option value="pd2">pd2</option>
+#<option value="pd3">pd3</option>
+#</select>
+#<input type="submit" name="submit" />
+#</form>
+#</body></html>
+
+# 濁音/半濁音はすべてNFC
+cat << FIN > $tmp-name
+name_齋藤 は切ろ\切う
+name_渡邉󠄐 b
+name_塚󠄄本 Ａ
+name_塚󠄆本 切󠄂
+name_ばびぶべぼ y
+name_ぱぴぷぺぽ usp\nlaboratory
+name_ヷヸヴヹヺ pd3
+FIN
+
+# tmp-nameの説明
+
+#name_齋藤 は切ろ\切う	# 齋(U+9F4B)藤(U+85E4) UCS 値部の「は切ろ\切う」の中の「切」は切(U+5207)でUCS
+#name_渡邉󠄐 b	# 渡(U+6E21)邉󠄐(U+9089;U+E0110) IVS
+#name_塚󠄄本 Ａ	# 塚󠄄(U+585A;U+E0104)本(U+672C) IVS
+#name_塚󠄆本 切󠄂	# 塚󠄆(U+585A;U+E0106)本(U+672C) IVS 値部の「切󠄂」は切󠄂(U+5207;U+E0102)でIVS
+#name_ばびぶべぼ y
+#name_ぱぴぷぺぽ usp\nlaboratory
+#name_ヷヸヴヹヺ pd3
+
+# 濁音/半濁音はすべてNFD
+cat << FIN > $tmp-ans
+<html><body>
+<form name="name_form">
+<input type="text" name="name_齋󠄃藤" value="は ろ切う"/>
+<input type="text" name="name_齋󠄄藤" value="は ろ切う"/>
+<input type="text" name="name_塚󠄄本" value="Ａ"/>
+<input type="text" name="name_塚󠄆本" />
+<input type="radio" name="name_渡邉󠄐" value="a" />
+<input type="radio" name="name_渡邉" value="b" checked="checked" />
+<input type="checkbox" name="name_ばびぶべぼ" value="x" />
+<input type="checkbox" name="name_ばびぶべぼ" value="y" checked="checked" />
+<textarea name="name_ぱぴぷぺぽ">
+usp
+laboratory
+</textarea>
+<select name="name_ヷヸヴヹヺ">
+<option value="pd1">pd1</option>
+<option value="pd2">pd2</option>
+<option value="pd3" selected="selected">pd3</option>
+</select>
+<input type="submit" name="submit" />
+</form>
+</body></html>
+FIN
+
+# -i切󠄂は切󠄂(U+5207;U+E0102)を使用 -d切󠄃は切󠄃(U+5207;U+E0103)を使用
+${com} -i切󠄂 -d切󠄃 $tmp-html $tmp-name > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST12 error"
+
+###########################################
+rm -f $tmp-*
+echo "${pythonversion} ${name}" OK
+exit 0
+

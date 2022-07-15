@@ -42,6 +42,12 @@ ERROR_CHECK(){
 	exit 1
 }
 
+BOMandEOLvariation(){	# BOM無しLF改行ファイル（$1）からBOM付きCRLF改行ファイル（$2）とBOM付きCR改行ファイル（$3）を生成する
+	 [ $# -eq 3 ]; ERROR_CHECK "TESTスクリプト内のBOMandEOLvariation()でファイル指定が不正"
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r\n/g' -e 's/$/\r/' $1 >$2	# $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r/g' $1 | tr '\n' '\r' >$3	# $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
+}
+
 ###########################################
 #TEST1
 
@@ -53,7 +59,7 @@ cat << FIN > $tmp-in
 -0.0034
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 1.0
 3.4
 12.0
@@ -61,13 +67,13 @@ cat << FIN > $tmp-out
 0.0
 FIN
 
-${com} 1.1 $tmp-in > $tmp-ans
+${com} 1.1 $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST1.1 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1-1 error"
 
-cat $tmp-in | ${com} 1.1 > $tmp-ans
+cat $tmp-in | ${com} 1.1 > $tmp-out
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST1.2 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1-2 error"
 
 ###########################################
 #TEST2
@@ -81,7 +87,7 @@ cat << FIN > $tmp-in
 -0.1
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 0
 0
 10
@@ -90,9 +96,9 @@ cat << FIN > $tmp-out
 0
 FIN
 
-${com} 1.01 $tmp-in > $tmp-ans
+${com} 1.01 $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST2.1 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2 error"
 
 ###########################################
 #TEST3
@@ -101,15 +107,87 @@ cat << FIN > $tmp-in
 0.5 0.05
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 1 0.1
 FIN
 
-${com} 1.0 2.1 $tmp-in > $tmp-ans
+${com} 1.0 2.1 $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST3.1 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3 error"
 
+###########################################
+#TEST4
+# フィールドの重複解消と昇順化の確認
 
+cat << FIN > $tmp-in
+01 0.3418 1.5283 9.0023 7.1234 1234
+02 3.1242 7.1423 6.5861 2.7735 1235
+03 6.8254 2.6144 4.3234 3.4231 -1234
+04 7.0343 3.3312 7.8678 1.3295 -1235
+FIN
+
+cat << FIN > $tmp-ans
+01 0 1.5 9.00 7.123 1230
+02 3 7.1 6.59 2.774 1240
+03 7 2.6 4.32 3.423 -1230
+04 7 3.3 7.87 1.330 -1240
+FIN
+
+${com} 2.0 3.1 4.2 5.3 6.01 $tmp-in > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4-1 error"
+
+${com} 3.1 2.0 3.1 4.2 6.01 5.3 $tmp-in > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4-2 error"
+
+###########################################
+#TEST5
+#TEST1の拡大版
+# BOM付きCRLFとBOM付きCRの試験
+
+cat << FIN > $tmp-in
+1
+3.42
+12.012
+-3.92
+-0.0034
+FIN
+
+cat << FIN > $tmp-ans
+1.0
+3.4
+12.0
+-3.9
+0.0
+FIN
+
+# 入力用tmpファイルからBOM付きCRLFとBOM付きCRの各ファイルを作る
+BOMandEOLvariation $tmp-in $tmp-inBOMCRLF $tmp-inBOMCR
+
+# BOM付きCRLF
+${com} 1.1 $tmp-inBOMCRLF > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5-1 error"
+
+# BOM付きCR
+${com} 1.1 $tmp-inBOMCR > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5-2 error"
+
+# pipe接続
+
+# BOM付きCRLF
+cat $tmp-inBOMCRLF | ${com} 1.1 - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5-3 error"
+
+# BOM付きCR
+cat $tmp-inBOMCR | ${com} 1.1 - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5-4 error"
+
+###########################################
 rm -f $tmp-*
 echo "${pythonversion} ${name}" OK
 exit 0

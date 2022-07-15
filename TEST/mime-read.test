@@ -42,46 +42,42 @@ ERROR_CHECK(){
 	exit 1
 }
 
+BOMandEOLvariation(){	# BOM無しLF改行ファイル（$1）からBOM付きCRLF改行ファイル（$2）とBOM付きCR改行ファイル（$3）を生成する
+	 [ $# -eq 3 ]; ERROR_CHECK "TESTスクリプト内のBOMandEOLvariation()でファイル指定が不正"
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r\n/g' -e 's/$/\r/' $1 >$2	# $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r/g' $1 | tr '\n' '\r' >$3	# $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
+}
+
 ###########################################
 #TEST1
 
 cat << FIN > $tmp-in
-Return-Path: tounaka@gmail.com
+Return-Path: zzzz@gmail.com
 Received: by conbox033-v id 53e9a3fa685e2e;
 	Tue, 12 Aug 2014 14:19:54 +0900
-Received: from conmx512.nifty.com (conmx512.nifty.com [172.16.169.198])
-	by conbox033-v.nifty.com (Postfix) with ESMTP id 3C4A85C0B4
-	for <togasi.masatomo@nifty.ne.jp>; Tue, 12 Aug 2014 14:19:54 +0900 (JST)
-Authentication-Results: nifty.com; spf=pass smtp.mailfrom=tounaka@gmail.com; sender-id=pass
-	 header.Sender=tounaka@gmail.com; dkim=pass header.i=@gmail.com
-Received: from mail-la0-f51.google.com (mail-la0-f51.google.com [209.85.215.51])
-	by conmx512.nifty.com  with ESMTP id s7C5JqCi017885
-	for <togasi.masatomo@nifty.ne.jp>; Tue, 12 Aug 2014 14:19:52 +0900
-X-Nifty-SrcIP: [209.85.215.51]
-Received: by mail-la0-f51.google.com with SMTP id pn19so7485082lab.10
-        for <togasi.masatomo@nifty.ne.jp>; Mon, 11 Aug 2014 22:19:51 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=mime-version:sender:date:message-id:subject:from:to:cc:content-type;
-        bh=eKZKB6mqEzSIaeEJgMsa20NXVXdpswOTyNeG9arPE0k=;
-        b=xnamAJVUxAHPqOHeozXHya0GR50O3rgeclhl3njEkmvyLyj+S+3vbDKQkvNF5+6WjJ
-         Ptl9IUgtUhXmL3s9oaCMTCmbJjCI//oG3UWRbPYlubFjd7YFOB/NXd7+CM99CkWz+4yl
-         xJ2f0gHgFYdY0l4N47UbSN21oUFgDpfUwg4aITp/JqtaN4Ujw/jQO+6eGfoATC48z5Hu
-         SwOes0Gqg6/elxK+Jzk5jpj1zkawic+9CjboJq8r3jLyllJ56xP3/Wk3/51HAMvy28tN
-         OT/vZhzbh2NcklH25DcvVIttczWnHsUH8beVbfgfXEskrnmpyQQoEHxQduSa33I/5ANd
-         EMuw==
+Received: from conmx123.nifty.com (conmx123.nifty.com [169.15.161.177])
+	by conbox045-v.nifty.com (Postfix) with ESMTP id 3C4A85C0B4
+	for <xxxx.yyyy@nifty.ne.jp>; Tue, 12 Aug 2014 14:19:54 +0900 (JST)
+Authentication-Results: nifty.com; spf=pass smtp.mailfrom=zzzz@gmail.com; sender-id=pass
+	 header.Sender=zzzz@gmail.com; dkim=pass header.i=@gmail.com
+Received: from mail-la2-f65.google.com (mail-la2-f65.google.com [212.74.232.35])
+	by conmx123.nifty.com  with ESMTP id s7C5JqCi017885
+	for <xxxx.yyyy@nifty.ne.jp>; Tue, 12 Aug 2014 14:19:52 +0900
+X-Nifty-SrcIP: [212.74.232.35]
+Received: by mail-la2-f65.google.com with SMTP id pn19so7485082lab.10
+        for <xxxx.yyyy@nifty.ne.jp>; Mon, 11 Aug 2014 22:19:51 -0700 (PDT)
 MIME-Version: 1.0
 X-Received: by 10.152.205.100 with SMTP id lf4mr1891686lac.8.1407820791395;
  Mon, 11 Aug 2014 22:19:51 -0700 (PDT)
-Sender: tounaka@gmail.com
+Sender: zzzz@gmail.com
 Received: by 10.112.120.236 with HTTP; Mon, 11 Aug 2014 22:19:51 -0700 (PDT)
 Date: Tue, 12 Aug 2014 14:19:51 +0900
 X-Google-Sender-Auth: S3Ec6AhtmnJ8wMGWpZjrQ0CveV0
 Message-ID: <CABKUWYNG8Z7RdETqi=FsfYJGmnHxKoyzXxFgHedHezxcDLU=ew@mail.gmail.com>
-Subject: =?UTF-8?B?77yY5pyI44Gu6Kqy6aGM44Gn44GZ44CC?=
-From: =?UTF-8?B?55W25Luy5a+b5ZOy?= <tounaka@usp-lab.com>
-To: =?UTF-8?B?5Yao5qir6ZuF5paH?= <togasi.masatomo@nifty.ne.jp>
-Cc: Ken Okada <k-okada@usp-lab.com>
+Subject: =?UTF-8?B?44GT44KT44Gr44Gh44GvIOa1puWztuiKseWtkOOBp+OBmQ==?=
+From: =?UTF-8?B?5rWm5bO26Iqx5a2Q?= <zzzz@usp-lab.com>
+To: =?UTF-8?B?5bGx55Sw5aSq6YOO?= <xxxx.yyyy@nifty.ne.jp>
+Cc: Abc Def <a-def@usp-lab.com>
 Content-Type: multipart/mixed;
 		boundary=001a11349d262dd5d6050067d2e9
 
@@ -94,46 +90,76 @@ Content-Type: text/plain; charset=UTF-8;
 		name=test
 Content-Transfer-Encoding: base64
 
-55W25Luy44Gn44GZ44CC44GK5LiW6Kmx44Gr44Gq44KK44G+44GZ44CCDQoNCu+8mOaciOOBruiq
-sumhjOOBp+OBmeOBjOOAgeWFiOWbnuOBiuOBl+OCieOBm+OBl+OBn+OCiOOBhuOBq+OAgeS7iuW+
+44GT44KT44Gr44Gh44Gv44CC5rWm5bO26Iqx5a2Q44Gn44GZ44CC44GN44KH44GG44Gv44KI44GE44GK5aSp5rCX44Gn44GZ44CC
 --001a11349d262dd5d2050067d2e7
 Content-Type: text/html; charset=UTF-8
 Content-Transfer-Encoding: base64
 
-PGRpdiBkaXI9Imx0ciI+55W25Luy44Gn44GZ44CC44GK5LiW6Kmx44Gr44Gq44KK44G+44GZ44CC
-PGRpdj48YnI+PC9kaXY+PGRpdj7vvJjmnIjjga7oqrLpoYzjgafjgZnjgYzjgIHlhYjlm57jgYrj
+PGRpdj7jgZPjgpPjgavjgaHjga/jgILmtabls7boirHlrZDjgafjgZnjgILjgY3jgofjgYbjga/jgojjgYTjgYrlpKnmsJfjgafjgZnjgII8L2Rpdj4=
 --001a11349d262dd5d2050067d2e7--
 --001a11349d262dd5d6050067d2e9
 Content-Type: application/zip;
 		name="20140812.zip"
 Content-Disposition: attachment; filename="20140812.zip"
 Content-Transfer-Encoding: binary
-X-Attachment-Id: f_hyqs55i80
+X-Attachment-Id: t_soek38j65
 
 abc def--001a11349d262dd5d6050067d2e9--
 FIN
 
-cat << FIN > $tmp-out
-55W25Luy44Gn44GZ44CC44GK5LiW6Kmx44Gr44Gq44KK44G+44GZ44CCDQoNCu+8mOaciOOBruiq
-sumhjOOBp+OBmeOBjOOAgeWFiOWbnuOBiuOBl+OCieOBm+OBl+OBn+OCiOOBhuOBq+OAgeS7iuW+
+cat << FIN > $tmp-ans
+44GT44KT44Gr44Gh44Gv44CC5rWm5bO26Iqx5a2Q44Gn44GZ44CC44GN44KH44GG44Gv44KI44GE44GK5aSp5rCX44Gn44GZ44CC
 FIN
 
-${com}  test $tmp-in > $tmp-ans
+${com} test $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST1 error"
 
 ###########################################
 #TEST2
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 3 name=test
 5 name=20140812.zip
 5 filename=20140812.zip
 FIN
 
-${com}  -v $tmp-in > $tmp-ans
+${com}  -v $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST2 error"
+
+###########################################
+#TEST3
+#TEST1の拡大版
+# BOM付きCRLFとBOM付きCRの試験
+
+# 入力用tmpファイルからBOM付きCRLFとBOM付きCRの各ファイルを作る
+BOMandEOLvariation $tmp-in $tmp-inBOMCRLF $tmp-inBOMCR
+
+cat << FIN > $tmp-ans
+44GT44KT44Gr44Gh44Gv44CC5rWm5bO26Iqx5a2Q44Gn44GZ44CC44GN44KH44GG44Gv44KI44GE44GK5aSp5rCX44Gn44GZ44CC
+FIN
+
+# BOM付きCRLF
+${com} test $tmp-inBOMCRLF > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-1 error"
+
+# BOM付きCR
+${com} test $tmp-inBOMCR > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-2 error"
+
+# pipe接続
+
+# BOM付きCRLF
+cat $tmp-inBOMCRLF | ${com} test - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-3 error"
+
+# BOM付きCR
+cat $tmp-inBOMCR | ${com} test - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-4 error"
 
 ###########################################
 rm -f $tmp-*

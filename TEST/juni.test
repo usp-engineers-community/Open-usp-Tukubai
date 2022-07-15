@@ -42,6 +42,12 @@ ERROR_CHECK(){
 	exit 1
 }
 
+BOMandEOLvariation(){	# BOM無しLF改行ファイル（$1）からBOM付きCRLF改行ファイル（$2）とBOM付きCR改行ファイル（$3）を生成する
+	 [ $# -eq 3 ]; ERROR_CHECK "TESTスクリプト内のBOMandEOLvariation()でファイル指定が不正"
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r\n/g' -e 's/$/\r/' $1 >$2	# $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r/g' $1 | tr '\n' '\r' >$3	# $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
+}
+
 ###########################################
 #TEST1
 
@@ -51,20 +57,20 @@ cat << FIN > $tmp-in
 田中
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 1 山田
 2 江頭
 3 田中
 FIN
 
-${com} $tmp-in > $tmp-ans
+${com} $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST1.1 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1-1 error"
 
 cat $tmp-in   |
-${com} > $tmp-ans
+${com} - > $tmp-out
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST1.2 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1-2 error"
 
 ###########################################
 #TEST2
@@ -77,7 +83,7 @@ cat << FIN > $tmp-in
 002 e
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 1 001 a
 2 001 b
 3 001 c
@@ -85,15 +91,265 @@ cat << FIN > $tmp-out
 2 002 e
 FIN
 
-${com} 1 1 $tmp-in > $tmp-ans
+${com} 1 1 $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST2.1 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2-1 error"
 
 cat $tmp-in		|
-${com} 1 1 > $tmp-ans
+${com} 1 1 - > $tmp-out
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST2.2 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2-2 error"
 
+###########################################
+#TEST3
+# 逆順処理
+
+cat << FIN > $tmp-in
+001 001 a
+001 001 b
+001 001 c
+002 002 d
+002 002 e
+FIN
+
+cat << FIN > $tmp-ans
+1 001 001 a
+2 001 001 b
+3 001 001 c
+1 002 002 d
+2 002 002 e
+FIN
+
+${com} 2 1 $tmp-in > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-1 error"
+
+cat $tmp-in		|
+${com} 2 1  > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-2 error"
+
+###########################################
+#TEST4
+# 各キーフィールドの順位を階層的に出力する
+
+cat << FIN > $tmp-in
+A A1 A11 A111
+A A1 A11 A112
+A A1 A12 A121
+A A1 A12 A122
+A A2 A21 A211
+A A2 A21 A212
+A A2 A22 A221
+A A2 A22 A222
+B B1 B11 B111
+B B1 B11 B112
+B B1 B12 B121
+B B1 B12 B122
+B B2 B21 B211
+B B2 B21 B212
+B B2 B22 B221
+B B2 B22 B222
+FIN
+
+cat << FIN > $tmp-ans
+1 1 1 A A1 A11 A111
+1 1 1 A A1 A11 A112
+1 1 2 A A1 A12 A121
+1 1 2 A A1 A12 A122
+1 2 1 A A2 A21 A211
+1 2 1 A A2 A21 A212
+1 2 2 A A2 A22 A221
+1 2 2 A A2 A22 A222
+2 1 1 B B1 B11 B111
+2 1 1 B B1 B11 B112
+2 1 2 B B1 B12 B121
+2 1 2 B B1 B12 B122
+2 2 1 B B2 B21 B211
+2 2 1 B B2 B21 B212
+2 2 2 B B2 B22 B221
+2 2 2 B B2 B22 B222
+FIN
+
+${com} -h 1 3 $tmp-in > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4-1 error"
+
+cat $tmp-in | ${com} -h 1 3 > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4-2 error"
+
+###########################################
+#TEST5
+#TEST1の拡大版
+# BOM付きCRLFとBOM付きCRの試験
+
+cat << FIN > $tmp-in
+山田
+江頭
+田中
+FIN
+
+cat << FIN > $tmp-ans
+1 山田
+2 江頭
+3 田中
+FIN
+
+# 入力用tmpファイルからBOM付きCRLFとBOM付きCRの各ファイルを作る
+BOMandEOLvariation $tmp-in $tmp-inBOMCRLF $tmp-inBOMCR
+
+# BOM付きCRLF
+${com} $tmp-inBOMCRLF > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5-1 error"
+
+# BOM付きCR
+${com} $tmp-inBOMCR > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5-2 error"
+
+# pipe接続
+
+# BOM付きCRLF
+cat $tmp-inBOMCRLF | ${com} - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5-3 error"
+
+# BOM付きCR
+cat $tmp-inBOMCR | ${com} - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5-4 error"
+
+###########################################
+#TEST6
+#TEST2の拡大版
+# BOM付きCRLFとBOM付きCRの試験
+
+cat << FIN > $tmp-in
+001 a
+001 b
+001 c
+002 d
+002 e
+FIN
+
+cat << FIN > $tmp-ans
+1 001 a
+2 001 b
+3 001 c
+1 002 d
+2 002 e
+FIN
+
+# 入力用tmpファイルからBOM付きCRLFとBOM付きCRの各ファイルを作る
+BOMandEOLvariation $tmp-in $tmp-inBOMCRLF $tmp-inBOMCR
+
+# BOM付きCRLF
+${com} 1 1 $tmp-inBOMCRLF > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST6-1 error"
+
+# BOM付きCR
+${com} 1 1 $tmp-inBOMCR > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST6-2 error"
+
+# pipe接続
+
+# BOM付きCRLF
+cat $tmp-inBOMCRLF | ${com} 1 1 - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST6-3 error"
+
+# BOM付きCR
+cat $tmp-inBOMCR | ${com} 1 1 - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST6-4 error"
+
+###########################################
+#TEST7
+# NFC文字（濁音/半濁音が1文字）とNFD文字（濁音/半濁音が清音+結合用濁点/結合用半濁点の2文字で構成される）を同値化して処理する
+
+cat << FIN > $tmp-in
+がぎぐげご 濁音NFC a
+がぎぐげご 濁音NFD b
+がぎぐげご 濁音NFC c
+ぱぴぷぺぽ 半濁音NFC d
+ぱぴぷぺぽ 半濁音NFD e
+ぱぴぷぺぽ 半濁音NFC f
+FIN
+
+cat << FIN > $tmp-ans
+1 がぎぐげご 濁音NFC a
+2 がぎぐげご 濁音NFD b
+3 がぎぐげご 濁音NFC c
+1 ぱぴぷぺぽ 半濁音NFC d
+2 ぱぴぷぺぽ 半濁音NFD e
+3 ぱぴぷぺぽ 半濁音NFC f
+FIN
+
+${com} 1 1 $tmp-in > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST7-1 error"
+
+cat $tmp-in		|
+${com} 1 1 - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST7-2 error"
+
+###########################################
+#TEST8
+# 各キーフィールドの順位を階層的に出力する
+# NFC文字（濁音/半濁音が1文字）とNFD文字（濁音/半濁音が清音+結合用濁点/結合用半濁点の2文字で構成される）を同値化して処理する
+
+cat << FIN > $tmp-in
+が が1 が11 が111 #「が」は濁音NFC
+が が1 が11 が112 #「が」は濁音NFD
+が が1 が12 が121 #「が」は濁音NFC
+が が1 が12 が122 #「が」は濁音NFD
+が が2 が21 が211 #「が」は濁音NFC
+が が2 が21 が212 #「が」は濁音NFD
+が が2 が22 が221 #「が」は濁音NFC
+が が2 が22 が222 #「が」は濁音NFD
+ぱ ぱ1 ぱ11 ぱ111 #「ぱ」は半濁音NFC
+ぱ ぱ1 ぱ11 ぱ112 #「ぱ」は半濁音NFD
+ぱ ぱ1 ぱ12 ぱ121 #「ぱ」は半濁音NFC
+ぱ ぱ1 ぱ12 ぱ122 #「ぱ」は半濁音NFD
+ぱ ぱ2 ぱ21 ぱ211 #「ぱ」は半濁音NFC
+ぱ ぱ2 ぱ21 ぱ212 #「ぱ」は半濁音NFD
+ぱ ぱ2 ぱ22 ぱ221 #「ぱ」は半濁音NFC
+ぱ ぱ2 ぱ22 ぱ222 #「ぱ」は半濁音NFD
+FIN
+
+cat << FIN > $tmp-ans
+1 1 1 が が1 が11 が111 #「が」は濁音NFC
+1 1 1 が が1 が11 が112 #「が」は濁音NFD
+1 1 2 が が1 が12 が121 #「が」は濁音NFC
+1 1 2 が が1 が12 が122 #「が」は濁音NFD
+1 2 1 が が2 が21 が211 #「が」は濁音NFC
+1 2 1 が が2 が21 が212 #「が」は濁音NFD
+1 2 2 が が2 が22 が221 #「が」は濁音NFC
+1 2 2 が が2 が22 が222 #「が」は濁音NFD
+2 1 1 ぱ ぱ1 ぱ11 ぱ111 #「ぱ」は半濁音NFC
+2 1 1 ぱ ぱ1 ぱ11 ぱ112 #「ぱ」は半濁音NFD
+2 1 2 ぱ ぱ1 ぱ12 ぱ121 #「ぱ」は半濁音NFC
+2 1 2 ぱ ぱ1 ぱ12 ぱ122 #「ぱ」は半濁音NFD
+2 2 1 ぱ ぱ2 ぱ21 ぱ211 #「ぱ」は半濁音NFC
+2 2 1 ぱ ぱ2 ぱ21 ぱ212 #「ぱ」は半濁音NFD
+2 2 2 ぱ ぱ2 ぱ22 ぱ221 #「ぱ」は半濁音NFC
+2 2 2 ぱ ぱ2 ぱ22 ぱ222 #「ぱ」は半濁音NFD
+FIN
+
+${com} -h 1 3 $tmp-in > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST8-1 error"
+
+cat $tmp-in | ${com} -h 1 3 > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST8-2 error"
+
+###########################################
 rm -f $tmp-*
 echo "${pythonversion} ${name}" OK
 exit 0
