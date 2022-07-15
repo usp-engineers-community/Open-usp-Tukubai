@@ -42,8 +42,14 @@ ERROR_CHECK(){
 	exit 1
 }
 
+BOMandEOLvariation(){	# BOM無しLF改行ファイル（$1）からBOM付きCRLF改行ファイル（$2）とBOM付きCR改行ファイル（$3）を生成する
+	 [ $# -eq 3 ]; ERROR_CHECK "TESTスクリプト内のBOMandEOLvariation()でファイル指定が不正"
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r\n/g' -e 's/$/\r/' $1 >$2	# $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r/g' $1 | tr '\n' '\r' >$3	# $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
+}
+
 ###########################################
-#TEST1: no option use
+#TEST1: no option used
 
 cat << FIN > $tmp-in
 山田
@@ -51,11 +57,11 @@ cat << FIN > $tmp-in
 田中
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 山田 山本 田中
 FIN
 
-${com} $tmp-in > $tmp-ans
+${com} $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST1 error"
 
@@ -68,12 +74,12 @@ cat << FIN > $tmp-in
 002 田中
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 001 山田 山本
 002 田中
 FIN
 
-${com} num=1 $tmp-in > $tmp-ans
+${com} num=1 $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST2 error"
 
@@ -88,18 +94,18 @@ cat << FIN > $tmp-in
 002 中
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 001 山田 山本
 001 武田
 002 田中 中
 FIN
 
-${com} num=1 -2 $tmp-in > $tmp-ans
+${com} num=1 -2 $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST2-1 error"
 
 cat $tmp-in		|
-${com} num=1 -2 > $tmp-ans
+${com} num=1 -2 - > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST2-2 error"
 
@@ -114,19 +120,181 @@ cat << FIN > $tmp-in
 002 中
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 001 山田 001 山本 001 武田 002 田中 002 中
 FIN
 
-${com} $tmp-in > $tmp-ans
+${com} $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST3.1 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-1 error"
 
 cat $tmp-in		|
-${com}			> $tmp-ans
+${com} -		> $tmp-out
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST3.2 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-2 error"
 
+###########################################
+#TEST4 -d指定
+
+cat <<FIN >$tmp-in
+0000000 浜地______ 50 F 91
+0000000 浜地______ 50 F 59
+0000000 浜地______ 50 F 20
+0000000 浜地______ 50 F 76
+0000001 鈴田______ 50 F 46
+0000001 鈴田______ 50 F 39
+0000001 鈴田______ 50 F 8
+0000001 鈴田______ 50 F 5
+0000003 杉山______ 26 F 30
+0000003 杉山______ 26 F 50
+0000003 杉山______ 26 F 71
+0000003 杉山______ 26 F 36
+0000004 白土______ 40 M 58
+0000004 白土______ 40 M 71
+0000004 白土______ 40 M 20
+0000004 白土______ 40 M 10
+FIN
+
+cat <<FIN >$tmp-ans1
+0000000 浜地______ 50 F 91@59@20@76
+0000001 鈴田______ 50 F 46@39@8@5
+0000003 杉山______ 26 F 30@50@71@36
+0000004 白土______ 40 M 58@71@20@10
+FIN
+
+cat <<FIN >$tmp-ans2
+0000000 浜地______ 50 F 91n59n20n76
+0000001 鈴田______ 50 F 46n39n8n5
+0000003 杉山______ 26 F 30n50n71n36
+0000004 白土______ 40 M 58n71n20n10
+FIN
+
+${com} -d@ num=4 $tmp-in >$tmp-out
+diff $tmp-ans1 $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4-1 error"
+
+${com} -d'n' num=4 $tmp-in >$tmp-out
+diff $tmp-ans2 $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4-2 error"
+
+###########################################
+#TEST5
+# -d指定で4バイト文字（Unicode符号位置がU+FFFF超の文字）を与える
+
+cat <<FIN >$tmp-in
+0000000 浜地______ 50 F 91
+0000000 浜地______ 50 F 59
+0000000 浜地______ 50 F 20
+0000000 浜地______ 50 F 76
+0000001 鈴田______ 50 F 46
+0000001 鈴田______ 50 F 39
+0000001 鈴田______ 50 F 8
+0000001 鈴田______ 50 F 5
+0000003 杉山______ 26 F 30
+0000003 杉山______ 26 F 50
+0000003 杉山______ 26 F 71
+0000003 杉山______ 26 F 36
+0000004 白土______ 40 M 58
+0000004 白土______ 40 M 71
+0000004 白土______ 40 M 20
+0000004 白土______ 40 M 10
+FIN
+
+cat <<FIN >$tmp-ans
+0000000 浜地______ 50 F 91𠆢59𠆢20𠆢76
+0000001 鈴田______ 50 F 46𠆢39𠆢8𠆢5
+0000003 杉山______ 26 F 30𠆢50𠆢71𠆢36
+0000004 白土______ 40 M 58𠆢71𠆢20𠆢10
+FIN
+
+${com} -d𠆢 num=4 $tmp-in >$tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5 error"
+
+###########################################
+#TEST6
+#TEST1の拡大版
+# BOM付きCRLFとBOM付きCRの試験
+# no option used
+
+cat << FIN > $tmp-in
+山田
+山本
+田中
+FIN
+
+cat << FIN > $tmp-ans
+山田 山本 田中
+FIN
+
+# 入力用tmpファイルからBOM付きCRLFとBOM付きCRの各ファイルを作る
+BOMandEOLvariation $tmp-in $tmp-inBOMCRLF $tmp-inBOMCR
+
+# BOM付きCRLF
+${com} $tmp-inBOMCRLF > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST6-1 error"
+
+# BOM付きCR
+${com} $tmp-inBOMCR > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST6-2 error"
+
+# pipe接続
+
+# BOM付きCRLF
+cat $tmp-inBOMCRLF | ${com} - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST6-3 error"
+
+# BOM付きCR
+cat $tmp-inBOMCR | ${com} - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST6-4 error"
+
+###########################################
+#TEST7
+# TEST5の変型版
+# NFC文字（濁音/半濁音が1文字）とNFD文字（濁音/半濁音が清音+結合用濁点/結合用半濁点の2文字で構成される）を同値化して処理する
+# numで指定されたキーフィールドの値に関してNFC文字とNFD文字が混在するときの処理
+# -d指定でNFD文字（「が(U+304B;U+3099)」）を与え出力ファイルにはNFC文字（「が(U+304C)」）をフィールドセパレータとする
+
+# $tmp-inで同一キー値（第1欄～第4欄の結合文字列）が4行にわたっているように見えるが前半の2行の濁音はNFC文字で後半2行ではNFD文字となっている
+
+cat <<FIN >$tmp-in
+0000000 浜地がぎぐげご 50 F 91
+0000000 浜地がぎぐげご 50 F 59
+0000000 浜地がぎぐげご 50 F 20
+0000000 浜地がぎぐげご 50 F 76
+0000001 鈴田ざじずぜぞ 50 F 46
+0000001 鈴田ざじずぜぞ 50 F 39
+0000001 鈴田ざじずぜぞ 50 F 8
+0000001 鈴田ざじずぜぞ 50 F 5
+0000003 杉山だぢづでど 26 F 30
+0000003 杉山だぢづでど 26 F 50
+0000003 杉山だぢづでど 26 F 71
+0000003 杉山だぢづでど 26 F 36
+0000004 白土ばびぶべぼ 40 M 58
+0000004 白土ばびぶべぼ 40 M 71
+0000004 白土ばびぶべぼ 40 M 20
+0000004 白土ばびぶべぼ 40 M 10
+FIN
+
+# 出力するときはnumで指定されたキーフィールドの値はNFC文字に統一される
+
+cat <<FIN >$tmp-ans
+0000000 浜地がぎぐげご 50 F 91が59が20が76
+0000001 鈴田ざじずぜぞ 50 F 46が39が8が5
+0000003 杉山だぢづでど 26 F 30が50が71が36
+0000004 白土ばびぶべぼ 40 M 58が71が20が10
+FIN
+
+${com} -dが num=4 $tmp-in >$tmp-out
+
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST7 error"
+
+###########################################
 rm -f $tmp-*
 echo "${pythonversion} ${name}" OK
 exit 0

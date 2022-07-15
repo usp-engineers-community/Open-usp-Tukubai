@@ -38,8 +38,14 @@ ERROR_CHECK(){
 	[ "$(echo ${PIPESTATUS[@]} | tr -d ' 0')" = "" ] && return
 	echo $1
 	echo "${pythonversion} ${name}" NG
-	rm -f $tmp-*
+	rm -Rf $tmp-*
 	exit 1
+}
+
+BOMandEOLvariation(){	# BOM無しLF改行ファイル（$1）からBOM付きCRLF改行ファイル（$2）とBOM付きCR改行ファイル（$3）を生成する
+	 [ $# -eq 3 ]; ERROR_CHECK "TESTスクリプト内のBOMandEOLvariation()でファイル指定が不正"
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r\n/g' -e 's/$/\r/' $1 >$2	# $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r/g' $1 | tr '\n' '\r' >$3	# $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
 }
 
 ###########################################
@@ -53,7 +59,7 @@ cat << FIN > $tmp-input
 0000005 崎村______ 50 F 82 79 16 21 80
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 $tmp-0000000
 $tmp-0000001
 $tmp-0000003
@@ -62,19 +68,24 @@ $tmp-0000005
 FIN
 
 ${com} "$tmp-%1" $tmp-input
-echo $tmp-000000? | tr ' ' '\n' > $tmp-ans
+# 分割ファイルのリストを作成
+echo $tmp-000000? | tr ' ' '\n' > $tmp-out
+# 分割ファイルのリストを検査
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST1.1 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1-1 error"
 
+# 分割ファイルから元ファイルの再現検査
 cat $tmp-out		|
 xargs cat		|
 diff $tmp-input -
-[ $? -eq 0 ] ; ERROR_CHECK "TEST1.2 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1-2 error"
 
+# 分割ファイルの削除
 cat $tmp-out | xargs rm
+
 ###########################################
 #TEST2
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 $tmp-0000000/0000000
 $tmp-0000001/0000001
 $tmp-0000003/0000003
@@ -83,13 +94,17 @@ $tmp-0000005/0000005
 FIN
 
 ${com} "$tmp-%1/%1" $tmp-input
-echo $tmp-000000?/* | tr ' ' '\n' > $tmp-ans
+# 分割ファイルのリストを作成
+echo $tmp-000000?/* | tr ' ' '\n' > $tmp-out
+# 分割ファイルのリストを検査
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST2 error"
 
 rm -Rf $tmp-*
+
 ###########################################
 #TEST3
+
 cat << FIN > $tmp-input
 0000000 浜地______ 50 F 91 59 20 76 54
 0000001 鈴田______ 50 F 46 39 8  5  21
@@ -98,7 +113,7 @@ cat << FIN > $tmp-input
 0000005 崎村______ 50 F 82 79 16 21 80
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 $tmp-0000000
 $tmp-0000001
 $tmp-0000003
@@ -107,15 +122,144 @@ $tmp-0000005
 FIN
 
 ${com} -d "$tmp-%1" $tmp-input
-echo $tmp-000000? | tr ' ' '\n' > $tmp-ans
+# 分割ファイルのリストを作成
+echo $tmp-000000? | tr ' ' '\n' > $tmp-out
+# 分割ファイルのリストを検査
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST3.1 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-1 error"
 
+# 分割ファイルから元ファイルの再現検査
+# -d指定があると分割ファイルでは元ファイルの連続空白は単一空白に変換されている
 cat $tmp-out		|
 xargs cat		|
 diff <(sed 's/^[^ ]* //' $tmp-input | sed 's/  */ /g') -
-[ $? -eq 0 ] ; ERROR_CHECK "TEST3.2 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-2 error"
 
+# 分割ファイルの削除
+cat $tmp-out | xargs rm
+
+###########################################
+#TEST4
+#TEST1の拡大版
+# BOM付きCRLFとBOM付きCRの試験
+
+cat << FIN > $tmp-input
+0000000 浜地______ 50 F 91 59 20 76 54
+0000001 鈴田______ 50 F 46 39 8  5  21
+0000003 杉山______ 26 F 30 50 71 36 30
+0000004 白土______ 40 M 58 71 20 10 6
+0000005 崎村______ 50 F 82 79 16 21 80
+FIN
+
+cat << FIN > $tmp-ans
+$tmp-0000000
+$tmp-0000001
+$tmp-0000003
+$tmp-0000004
+$tmp-0000005
+FIN
+
+# 入力用tmpファイルからBOM付きCRLFとBOM付きCRの各ファイルを作る
+BOMandEOLvariation $tmp-input $tmp-inputBOMCRLF $tmp-inputBOMCR
+
+# BOM付きCRLF
+${com} "$tmp-%1" $tmp-inputBOMCRLF
+# 分割ファイルのリストを作成
+echo $tmp-000000? | tr ' ' '\n' > $tmp-out
+# 分割ファイルのリストを検査
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4-1 error"
+# 分割ファイルから元ファイルの再現検査
+cat $tmp-out	|	xargs cat	|	diff $tmp-input -
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4-2 error"
+# 分割ファイルの削除
+cat $tmp-out | xargs rm
+
+# BOM付きCR
+${com} "$tmp-%1" $tmp-inputBOMCR
+# 分割ファイルのリストを作成
+echo $tmp-000000? | tr ' ' '\n' > $tmp-out
+# 分割ファイルのリストを検査
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4-3 error"
+# 分割ファイルから元ファイルの再現検査
+cat $tmp-out	|	xargs cat	|	diff $tmp-input -
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4-4 error"
+# 分割ファイルの削除
+cat $tmp-out | xargs rm
+
+# pipe接続
+
+# BOM付きCRLF
+cat $tmp-inputBOMCRLF | ${com} "$tmp-%1" -
+# 分割ファイルのリストを作成
+echo $tmp-000000? | tr ' ' '\n' > $tmp-out
+# 分割ファイルのリストを検査
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4-5 error"
+# 分割ファイルから元ファイルの再現検査
+cat $tmp-out	|	xargs cat	|	diff $tmp-input -
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4-6 error"
+# 分割ファイルの削除
+cat $tmp-out | xargs rm
+
+# BOM付きCR
+cat $tmp-inputBOMCR | ${com} "$tmp-%1" -
+# 分割ファイルのリストを作成
+echo $tmp-000000? | tr ' ' '\n' > $tmp-out
+# 分割ファイルのリストを検査
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4-7 error"
+# 分割ファイルから元ファイルの再現検査
+cat $tmp-out	|	xargs cat	|	diff $tmp-input -
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4-8 error"
+# 分割ファイルの削除
+cat $tmp-out | xargs rm
+
+###########################################
+#TEST5
+# TEST1の変形版
+# キー欄から部分文字列を抽出して分割ファイルの名前に使用する
+# 例として「$tmp-keycut-%1.3.6」は「入力ファイル第1欄の3文字目から6文字を「$tmp-keycut-」の後に付加して分割出力ファイル名とする」という指定になる
+# 文字位置と文字数は半角単位で数える
+# キー欄にはNFD文字（濁音/半濁音が清音+結合用濁点/結合用半濁点の2文字で構成される）を使用しているがひとつの全角文字とみなされる
+#
+
+# 第1欄のひらがな濁音/単濁音はNFD
+cat << FIN > $tmp-input
+がぎぐげご0 浜地______ 50 F 91 59 20 76 54
+ざじずぜぞ1 鈴田______ 50 F 46 39 8  5  21
+だぢづでど3 杉山______ 26 F 30 50 71 36 30
+ばびぶべぼ4 白土______ 40 M 58 71 20 10 6
+ぱぴぷぺぽ5 崎村______ 50 F 82 79 16 21 80
+FIN
+
+cat << FIN > $tmp-ans
+$tmp-keycut-ぎぐげ
+$tmp-keycut-じずぜ
+$tmp-keycut-ぢづで
+$tmp-keycut-びぶべ
+$tmp-keycut-ぴぷぺ
+FIN
+
+${com} "$tmp-keycut-%1.3.6" $tmp-input
+# 分割ファイルのリストを作成
+echo $tmp-keycut-* | tr ' ' '\n' > $tmp-out
+
+# 分割ファイルのリストを検査
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5-1 error"
+
+# 分割ファイルから元ファイルの再現検査
+cat $tmp-out		|
+xargs cat		|
+diff $tmp-input -
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5-2 error"
+
+# 分割ファイルの削除
+cat $tmp-out | xargs rm
+
+###########################################
 rm -Rf $tmp-*
 echo "${pythonversion} ${name}" OK
 exit 0

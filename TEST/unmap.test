@@ -42,6 +42,12 @@ ERROR_CHECK(){
 	exit 1
 }
 
+BOMandEOLvariation(){	# BOM無しLF改行ファイル（$1）からBOM付きCRLF改行ファイル（$2）とBOM付きCR改行ファイル（$3）を生成する
+	 [ $# -eq 3 ]; ERROR_CHECK "TESTスクリプト内のBOMandEOLvariation()でファイル指定が不正"
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r\n/g' -e 's/$/\r/' $1 >$2	# $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r/g' $1 | tr '\n' '\r' >$3	# $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
+}
+
 ###########################################
 #TEST1
 
@@ -51,7 +57,7 @@ a 1 0 0
 b 0 2 3
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 a あ 1
 a い 0
 a う 0
@@ -60,7 +66,7 @@ b い 2
 b う 3
 FIN
 
-${com} num=1 $tmp-in > $tmp-ans
+${com} num=1 $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST1 error"
 
@@ -68,7 +74,7 @@ diff $tmp-ans $tmp-out
 #TEST2
 # stdin入力
 
-cat $tmp-in | ${com} num=1 > $tmp-ans
+cat $tmp-in | ${com} num=1 > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST2 error"
 
@@ -83,14 +89,14 @@ cat << FIN > $tmp-in
 002 b店 210 237
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 001 a店 01/01 103
 001 a店 01/02 157
 002 b店 01/01 210
 002 b店 01/02 237
 FIN
 
-${com} num=2 $tmp-in > $tmp-ans
+${com} num=2 $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST-E1 error"
 
@@ -112,7 +118,7 @@ d店 A 75 72 34 74 91 98 101
 d店 B 48 42 19 43 51 69 90
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 a店 1日目 103 62
 a店 2日目 157 94
 a店 3日目 62 30
@@ -143,11 +149,9 @@ d店 6日目 98 69
 d店 7日目 101 90
 FIN
 
-${com} num=1 $tmp-in > $tmp-ans
+${com} num=1 $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST-E2 error"
-
-###########################################
 
 ###########################################
 #TEST-E3
@@ -163,10 +167,9 @@ c店 81 52 76 49 38 21 81 48 98 61 109 91 136 110
 d店 75 48 72 42 34 19 74 43 91 51 98 69 101 90
 FIN
 
-${com} +yarr num=1 $tmp-in > $tmp-ans
+${com} +yarr num=1 $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST-E5-1 error"
-
+[ $? -eq 0 ] ; ERROR_CHECK "TEST-E3-1 error"
 
 # インデックスの行がない場合には+arrオプションを使用する。
 
@@ -178,11 +181,185 @@ c店 81 52 76 49 38 21 81 48 98 61 109 91 136 110
 d店 75 48 72 42 34 19 74 43 91 51 98 69 101 90
 FIN
 
-${com} +arr num=1 $tmp-in2 > $tmp-ans
+${com} +arr num=1 $tmp-in2 > $tmp-out
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST-E5-2 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST-E3-2 error"
 
+###########################################
+#TEST-E8
+# 例8
+# num=<n>x<m>で縦キー<n>個、横キー<m>個にすることができる。横キーはヘッダー<m>行から得る。
 
+# 横ヘッダーが2行ある
+cat << FIN > $tmp-in1
+* * Y1 Y1 Y2 Y2
+* * Z1 Z2 Z1 Z2
+X1 A 1 2 3 4
+X1 B 8 7 6 5
+X2 A 5 6 7 8
+X2 B 4 3 2 1
+FIN
+
+cat << FIN > $tmp-ans
+X1 Y1 Z1 1 8
+X1 Y1 Z2 2 7
+X1 Y2 Z1 3 6
+X1 Y2 Z2 4 5
+X2 Y1 Z1 5 4
+X2 Y1 Z2 6 3
+X2 Y2 Z1 7 2
+X2 Y2 Z2 8 1
+FIN
+
+${com}  num=1x2 $tmp-in1 > $tmp-out
+
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST-E8-1 error"
+
+# +yarrオプションを指定することでデータ部の複数列に展開されたデータを行に戻すことができる。
+
+# 横ヘッダーが2行ある
+# 横インデックスが付いている
+cat << FIN > $tmp-in2
+* Y1 Y1 Y1 Y1 Y2 Y2 Y2 Y2
+* Z1 Z1 Z2 Z2 Z1 Z1 Z2 Z2
+* a b a b a b a b
+X1 1 8 2 7 3 6 4 5
+X2 5 4 6 3 7 2 8 1
+FIN
+
+${com} +yarr num=1x2 $tmp-in2 > $tmp-out
+
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST-E8-2 error"
+
+# インデックス行がないときは+arrオプションを指定する。
+
+# 横ヘッダーが2行ある
+# 横インデックスはない
+cat << FIN > $tmp-in3
+* Y1 Y1 Y1 Y1 Y2 Y2 Y2 Y2
+* Z1 Z1 Z2 Z2 Z1 Z1 Z2 Z2
+X1 1 8 2 7 3 6 4 5
+X2 5 4 6 3 7 2 8 1
+FIN
+
+${com} +arr num=1x2 $tmp-in3 > $tmp-out
+
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST-E8-3 error"
+
+###########################################
+#TEST3
+#TEST1の拡大版
+# BOM付きCRLFとBOM付きCRの試験
+
+cat << FIN > $tmp-in
+* あ い う
+a 1 0 0
+b 0 2 3
+FIN
+
+cat << FIN > $tmp-ans
+a あ 1
+a い 0
+a う 0
+b あ 0
+b い 2
+b う 3
+FIN
+
+# 入力用tmpファイルからBOM付きCRLFとBOM付きCRの各ファイルを作る
+BOMandEOLvariation $tmp-in $tmp-inBOMCRLF $tmp-inBOMCR
+
+# BOM付きCRLF
+${com} num=1 $tmp-inBOMCRLF > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-1 error"
+
+# BOM付きCR
+${com} num=1 $tmp-inBOMCR > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-2 error"
+
+# pipe接続
+
+# BOM付きCRLF
+cat $tmp-inBOMCRLF | ${com} num=1 - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-3 error"
+
+# BOM付きCR
+cat $tmp-inBOMCR | ${com} num=1 - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-4 error"
+
+###########################################
+#TEST-E9
+# TEST-E2の変型版
+# 例2
+# データ部が複数種ある場合には複数列にマッピングが実施される
+# 第2列にはA B C ...と順にインデックスが付いている。
+# NFC文字（濁音/半濁音が1文字）とNFD文字（濁音/半濁音が清音+結合用濁点/結合用半濁点の2文字で構成される）を同値化して処理する
+# numで指定されたキーフィールドの値に関してNFC文字とNFD文字が混在するときの処理
+
+# 入力ファイルtmp-inの中では
+#	ひとつめの「が(U+304B;U+3099)」（NFD）と ふたつめの「が(U+304C)」（NFC）
+#	ひとつめの「ぎ(U+304D;U+3099)」（NFD）と ふたつめの「ぎ(U+304E)」（NFC）
+#	ひとつめの「ぐ(U+304F;U+3099)」（NFD）と ふたつめの「ぐ(U+3050)」（NFC）
+#	ひとつめの「げ(U+3051;U+3099)」（NFD）と ふたつめの「げ(U+3052)」（NFC）
+#	が混在している
+
+cat << FIN > $tmp-in
+* * 1日目 2日目 3日目 4日目 5日目 6日目 7日目
+が店 A 103 157 62 131 189 350 412
+が店 B 62 94 30 84 111 20 301
+ぎ店 A 210 237 150 198 259 421 589
+ぎ店 B 113 121 82 105 189 287 493
+ぐ店 A 81 76 38 81 98 109 136
+ぐ店 B 52 49 21 48 61 91 110
+げ店 A 75 72 34 74 91 98 101
+げ店 B 48 42 19 43 51 69 90
+FIN
+
+# 出力ではキー値はNFC正規化された文字列となる
+
+cat << FIN > $tmp-ans
+が店 1日目 103 62
+が店 2日目 157 94
+が店 3日目 62 30
+が店 4日目 131 84
+が店 5日目 189 111
+が店 6日目 350 20
+が店 7日目 412 301
+ぎ店 1日目 210 113
+ぎ店 2日目 237 121
+ぎ店 3日目 150 82
+ぎ店 4日目 198 105
+ぎ店 5日目 259 189
+ぎ店 6日目 421 287
+ぎ店 7日目 589 493
+ぐ店 1日目 81 52
+ぐ店 2日目 76 49
+ぐ店 3日目 38 21
+ぐ店 4日目 81 48
+ぐ店 5日目 98 61
+ぐ店 6日目 109 91
+ぐ店 7日目 136 110
+げ店 1日目 75 48
+げ店 2日目 72 42
+げ店 3日目 34 19
+げ店 4日目 74 43
+げ店 5日目 91 51
+げ店 6日目 98 69
+げ店 7日目 101 90
+FIN
+
+${com} num=1 $tmp-in > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST-E9 error"
+
+###########################################
 rm -f $tmp-*
 echo "${pythonversion} ${name}" OK
 exit 0

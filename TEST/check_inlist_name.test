@@ -42,6 +42,22 @@ ERROR_CHECK(){
 	exit 1
 }
 
+ERROR_CHECK0(){
+	[ "$(echo ${PIPESTATUS[@]} | tr -d ' 0')" = "" ] && return
+	echo $1
+	echo "${pythonversion} ${name}" NG
+	rm -f /tmp/OS_FILE
+	rm -f /tmp/ABC_FILE
+	rm -f $tmp-*
+	exit 1
+}
+
+BOMandEOLvariation(){	# BOM無しLF改行ファイル（$1）からBOM付きCRLF改行ファイル（$2）とBOM付きCR改行ファイル（$3）を生成する
+	 [ $# -eq 3 ]; ERROR_CHECK "TESTスクリプト内のBOMandEOLvariation()でファイル指定が不正"
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r\n/g' -e 's/$/\r/' $1 >$2	# $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r/g' $1 | tr '\n' '\r' >$3	# $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
+}
+
 ###########################################
 # TEST1
 # 通常のリスト内存在チェック
@@ -70,15 +86,11 @@ B_003 fgh
 B_004 _
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 B_003 /tmp/ABC_FILE
 FIN
 
-${com} $tmp-check $tmp-data >$tmp-ans
-
-rm -f /tmp/OS_FILE
-rm -f /tmp/ABC_FILE
-
+${com} $tmp-check $tmp-data >$tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST1 error"
 
@@ -110,17 +122,17 @@ B_02 4
 C 1
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 A_02 B_02 $tmp-list1
 C $tmp-list2
 FIN
 
-${com} $tmp-check $tmp-data >$tmp-ans
+${com} $tmp-check $tmp-data >$tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST2 error"
 
 ###########################################
-# 追加TEST1
+# TEST3
 # 複数チェック（3項目）
 
 cat << FIN > $tmp-check
@@ -149,16 +161,283 @@ C_01 5
 C_02 6
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 A_02 B_02 C_02 $tmp-list1
 FIN
 
-${com} $tmp-check $tmp-data >$tmp-ans
+${com} $tmp-check $tmp-data >$tmp-out
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "追加TEST1 error"
-###########################################
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3 error"
 
+###########################################
+# TEST4
+# TEST1の拡大版
+# BOM付き/BOM無しと改行記号CRLF/CR/LFの試験
+# 通常のリスト内存在チェック
+
+cat << FIN > $tmp-check
+A /tmp/OS_FILE
+B /tmp/ABC_FILE
+FIN
+
+cat << FIN > /tmp/OS_FILE
+Linux     # comment
+UNIX      # comment
+Windows   # comment
+FIN
+
+cat << FIN > /tmp/ABC_FILE
+abc   # comment
+cde   # comment
+FIN
+
+cat << FIN > $tmp-data
+A Linux
+B_001 abc
+B_002 cde
+B_003 fgh
+B_004 _
+FIN
+
+cat << FIN > $tmp-ans
+B_003 /tmp/ABC_FILE
+FIN
+
+# 入力用tmpファイルからBOM付きCRLFとBOM付きCRの各ファイルを作る
+BOMandEOLvariation $tmp-data $tmp-dataBOMCRLF $tmp-dataBOMCR
+BOMandEOLvariation $tmp-check $tmp-checkBOMCRLF $tmp-checkBOMCR
+
+# BOM付きUTF8ファイルCRLF
+${com} $tmp-checkBOMCRLF $tmp-dataBOMCRLF > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK0 "BOM付きUTF8ファイルCRLF→エラー"
+
+# BOM付きUTF8ファイルCR
+${com} $tmp-checkBOMCR $tmp-dataBOMCR > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK0 "BOM付きUTF8ファイルCR→エラー"
+
+# pipe接続
+
+# BOM付きUTF8ファイルCRLF
+cat $tmp-dataBOMCRLF | ${com} $tmp-checkBOMCRLF - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK0 "BOM付きUTF8ファイルCRLF→エラー"
+
+# BOM付きUTF8ファイルCR
+cat $tmp-dataBOMCR | ${com} $tmp-checkBOMCR - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK0 "BOM付きUTF8ファイルCR→エラー"
+
+###########################################
+# TEST5
+# TEST3の変形版
+# NFC文字（濁音/半濁音が1文字）とNFD文字（濁音/半濁音が清音+結合用濁点/結合用半濁点の2文字で構成される）を同値化して処理する
+# 複数チェック（3項目）
+
+# tag部にはNFC文字を使用する
+cat << FIN > $tmp-check
+げ $tmp-list2
+が.ぎ.ぐ $tmp-list1
+FIN
+
+# 非コメントの各欄にはNFC文字を使用する
+cat << FIN > $tmp-list1
+ガギグゲゴ ダヂヅデド パピプペポ # comment
+バビブベボ パピプペポ ヷヸヴヹヺ # comment
+FIN
+
+# 非コメントの各欄にはNFC文字を使用する
+cat << FIN > $tmp-list2
+パピプペポ  # comment
+ヷヸヴヹヺ  # comment
+アイウエオ  # comment
+FIN
+
+# name部とvalue部にはNFD文字を使用する
+cat << FIN > $tmp-data
+が_01 ガギグゲゴ
+げ パピプペポ
+が_02 ザジズゼゾ
+き_01 ダヂヅデド
+ぎ_02 バビブベボ
+ぐ_01 パピプペポ
+ぐ_02 ヷヸヴヹヺ
+あ ゴゴゴゴゴ
+FIN
+
+# 出力にはすべてNFC文字を使用する
+cat << FIN > $tmp-ans
+が_02 ぎ_02 ぐ_02 $tmp-list1
+FIN
+
+# through文字列にはNFC文字を使用する
+${com} --through ゴゴゴゴゴ $tmp-check $tmp-data >$tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5 error"
+
+###########################################
+# TEST6
+# TEST5の変形版
+# 文字列の「ゆるい一致」の試験
+# 複数チェック（3項目）
+
+# checkファイル
+cat << FIN > $tmp-check
+A.B.C $tmp-list1
+D $tmp-list2
+FIN
+
+# listファイル1
+# コメント欄では文字列をUnicode符号位置で説明
+cat << FIN > $tmp-list1
+齋󠄂藤 佐藤 田中 # 齋󠄂(U+9F4B;U+E0102)藤(U+85E4) IVS 佐(U+4F50)藤(U+85E4)と田(U+7530)中(U+4E2D)はUCS
+齋󠄃藤 佐藤 田中 # 齋󠄃(U+9F4B;U+E0103)藤(U+85E4) IVS 佐(U+4F50)藤(U+85E4)と田(U+7530)中(U+4E2D)はUCS
+齋󠄄藤 佐藤 田中 # 齋󠄄(U+9F4B;U+E0104)藤(U+85E4) IVS 佐(U+4F50)藤(U+85E4)と田(U+7530)中(U+4E2D)はUCS
+FIN
+
+# $tmp-list1にない文字列の例
+#齋󠄅藤 # 齋󠄅(U+9F4B;U+E0105)藤(U+85E4) IVS
+#齋󠄆藤 # 齋󠄆(U+9F4B;U+E0106)藤(U+85E4) IVS
+#齋藤 # 齋(U+9F4B)藤(U+85E4) UCS
+
+# listファイル2
+# コメント欄では文字列をUnicode符号位置で説明
+cat << FIN > $tmp-list2
+渡邉󠄐 # 渡(U+6E21)邉󠄐(U+9089;U+E0110) IVS
+渡邉󠄑 # 渡(U+6E21)邉󠄑(U+9089;U+E0111) IVS
+渡邉󠄒 # 渡(U+6E21)邉󠄒(U+9089;U+E0112) IVS
+FIN
+
+# $tmp-list2にない文字列の例
+#渡邉󠄓 # 渡(U+6E21)邉󠄓(U+9089;U+E0113) IVS
+#渡邉󠄔 # 渡(U+6E21)邉󠄔(U+9089;U+E0114) IVS
+#渡邉 # 渡(U+6E21)邉(U+9089) UCS
+
+# nameファイル
+cat << FIN > $tmp-data
+A_01 齋藤
+A_02 齋󠄆藤
+A_03 齋󠄄藤
+A_04 齋󠄂藤
+A_05 齋󠄃藤
+A_06 齋󠄅藤
+B_01 佐藤
+B_02 佐藤
+B_03 佐藤
+B_04 佐藤
+B_05 佐藤
+B_06 佐藤
+C_01 田中
+C_02 田中
+C_03 田中
+C_04 田中
+C_05 田中
+C_06 田中
+C_07 渡邉󠄓
+D_01 渡邉
+D_02 渡邉󠄐
+D_03 渡邉󠄔
+FIN
+
+# $tmp-dataの説明
+#A_01 齋藤 # 齋(U+9F4B)藤(U+85E4) UCS 「齋(U+9F4B)」は基底文字「齋(U+9F4B)」を持つどのIVSとも一致する
+#A_02 齋󠄆藤 # 齋󠄆(U+9F4B;U+E0106)藤(U+85E4) IVS リスト1にない
+#A_03 齋󠄄藤 # 齋󠄄(U+9F4B;U+E0104)藤(U+85E4) IVS リスト1にある
+#A_04 齋󠄂藤 # 齋󠄂(U+9F4B;U+E0102)藤(U+85E4) IVS リスト1にある
+#A_05 齋󠄃藤 # 齋󠄃(U+9F4B;U+E0103)藤(U+85E4) IVS リスト1にある
+#A_06 齋󠄅藤 # 齋󠄅(U+9F4B;U+E0105)藤(U+85E4) IVS リスト1にない
+#B_01 佐藤 # 佐(U+4F50)藤(U+85E4) UCS リスト1にある
+#B_02 佐藤 # 佐(U+4F50)藤(U+85E4) UCS リスト1にある
+#B_03 佐藤 # 佐(U+4F50)藤(U+85E4) UCS リスト1にある
+#B_04 佐藤 # 佐(U+4F50)藤(U+85E4) UCS リスト1にある
+#B_05 佐藤 # 佐(U+4F50)藤(U+85E4) UCS リスト1にある
+#B_06 佐藤 # 佐(U+4F50)藤(U+85E4) UCS リスト1にある
+#C_01 田中 # 田(U+7530)中(U+4E2D) UCS リスト1にある
+#C_02 田中 # 田(U+7530)中(U+4E2D) UCS リスト1にある
+#C_03 田中 # 田(U+7530)中(U+4E2D) UCS リスト1にある
+#C_04 田中 # 田(U+7530)中(U+4E2D) UCS リスト1にある
+#C_05 田中 # 田(U+7530)中(U+4E2D) UCS リスト1にある
+#C_06 田中 # 田(U+7530)中(U+4E2D) UCS リスト1にある
+#C_07 渡邉󠄓 # 渡(U+6E21)邉󠄓(U+9089;U+E0113) IVS リスト1にないがthrough文字列と一致するのでcheckされない
+#D_01 渡邉 # 渡(U+6E21)邉(U+9089) UCS 「邉(U+9089)」は基底文字「邉(U+9089)」を持つどのIVSとも一致しthrough文字列とも「ゆるい文字列一致」をする
+#D_02 渡邉󠄐 # 渡(U+6E21)邉󠄐(U+9089;U+E0110) IVS リスト2にある
+#D_03 渡邉󠄔 # 渡(U+6E21)邉󠄔(U+9089;U+E0114) IVS リスト2にない
+
+# 出力
+cat << FIN > $tmp-ans
+A_02 B_02 C_02 $tmp-list1
+A_06 B_06 C_06 $tmp-list1
+D_03 $tmp-list2
+FIN
+
+# through文字列には「渡邉󠄓」（渡(U+6E21)邉󠄓(U+9089;U+E0113)）を使用する
+${com} --through 渡邉󠄓 $tmp-check $tmp-data >$tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST6 error"
+
+###########################################
+# TEST7
+# tagに対する文字列の「ゆるい一致」の試験
+# 複数チェック（3項目）
+
+cat << FIN > $tmp-check
+押切 $tmp-list2
+齋󠄃藤.渡邉󠄐.渡邊󠄉 $tmp-list1
+FIN
+
+# $tmp-checlの説明
+#押切 $tmp-list2	# 押(U+62BC)切(U+5207)はともにUCS
+#齋󠄃藤.渡邉󠄐.渡邊󠄉 $tmp-list1	# 齋󠄃(U+9F4B;U+E0103)藤(U+85E4).渡(U+6E21)邉󠄐(U+9089;U+E0110).渡(U+6E21)邊󠄉(U+908A;U+E0109)でIVSを使用
+
+cat << FIN > $tmp-list1
+1 3 5 # comment
+4 5 6 # comment
+FIN
+
+cat << FIN > $tmp-list2
+5  # comment
+6  # comment
+7  # comment
+FIN
+
+cat << FIN > $tmp-data
+押切󠄂 5
+齋󠄃藤_01 1
+齋󠄃藤_02 2
+渡邉_01 3
+渡邉_02 4
+渡邊󠄉_01 5
+渡邊󠄉_02 6
+FIN
+
+# $tmp-dataの説明
+#押切󠄂 5	# 押(U+62BC)切󠄂(U+5207;U+E0102)はIVSを使用
+#齋󠄃藤_01 1	# 齋󠄃(U+9F4B;U+E0103)藤(U+85E4)はIVSを使用
+#齋󠄃藤_02 2	# 齋󠄃(U+9F4B;U+E0103)藤(U+85E4)はIVSを使用
+#渡邉_01 3	# 渡(U+6E21)邉(U+9089)はともにUCSを使用
+#渡邉_02 4	# 渡(U+6E21)邉(U+9089)はともにUCSを使用
+#渡邊󠄉_01 5	# 渡(U+6E21)邊󠄉(U+908A;U+E0109)はIVSを使用
+#渡邊󠄉_02 6	# 渡(U+6E21)邊󠄉(U+908A;U+E0109)はIVSを使用
+
+cat << FIN > $tmp-ans
+齋󠄃藤_02 渡邉_02 渡邊󠄉_02 $tmp-list1
+FIN
+
+# $tmp-ansの説明
+#齋󠄃藤_02 渡邉_02 渡邊󠄉_02 $tmp-list1
+# tag名は$tmp-dataにあるものを使用している
+# このため「渡邉_02」の「渡邉」は「渡(U+6E21)邉(U+9089)」で
+# $tmp-checkにある「齋󠄃藤.渡邉󠄐.渡邊󠄉」の2番目の「渡(U+6E21)邉󠄐(U+9089;U+E0110)」とは異なるので要注意
+# 「渡(U+6E21)邉(U+9089)」と「渡(U+6E21)邉󠄐(U+9089;U+E0110)」は「ゆるい文字一致」で一致する
+
+${com} $tmp-check $tmp-data >$tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST7 error"
+
+###########################################
+rm -f /tmp/OS_FILE
+rm -f /tmp/ABC_FILE
 rm -f $tmp-*
 echo "${pythonversion} ${name}" OK
-
 exit 0

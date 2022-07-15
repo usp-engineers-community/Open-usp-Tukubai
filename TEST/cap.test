@@ -42,8 +42,116 @@ ERROR_CHECK(){
 	exit 1
 }
 
+BOMandEOLvariation(){	# BOM無しLF改行ファイル（$1）からBOM付きCRLF改行ファイル（$2）とBOM付きCR改行ファイル（$3）を生成する
+	 [ $# -eq 3 ]; ERROR_CHECK "TESTスクリプト内のBOMandEOLvariation()でファイル指定が不正"
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r\n/g' -e 's/$/\r/' $1 >$2	# $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r/g' $1 | tr '\n' '\r' >$3	# $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
+}
+
 ###########################################
 # TEST1
+# フィールドを指定する場合
+# フィールドの列挙指定と範囲指定の連続混用および重複指定解消の試験
+
+cat << FIN > $tmp-data
+001 japan america
+002 england russia
+FIN
+
+cat << FIN > $tmp-ans
+001 JAPAN america
+002 ENGLAND russia
+FIN
+
+${com} 1 2 $tmp-data > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1-1 error"
+
+${com} 1/2@1@2@NF-1/1 2/1@2@1@1/NF-2 $tmp-data > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1-2 error"
+
+###########################################
+# TEST2
+# -d (direct) 指定の場合
+
+cat << FIN > $tmp-ans
+JAPAN
+FIN
+
+${com} -d japan > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2 error"
+
+###########################################
+# TEST2-1
+# -d指定で4バイト文字（Unicode符号位置がU+FFFF超の文字）を与える
+
+cat << FIN > $tmp-ans
+JAPAN𠆢日本
+FIN
+
+# 「𠆢」は𠆢(U+201A2)代用対では𠆢(U+D840-U+DDA2)
+
+${com} -d japan𠆢日本 > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2-1 error"
+
+###########################################
+# TEST3
+# 全フィールドを対象とするふたつの方法
+#  フィールド指定を省略する
+#  フィールド番号に0を指定する（このとき同時に指定した他のフィールド番号は無視される）
+
+cat << FIN > $tmp-data
+001 japan america
+002 england russia
+FIN
+
+cat << FIN > $tmp-ans
+001 JAPAN AMERICA
+002 ENGLAND RUSSIA
+FIN
+
+${com} $tmp-data > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-1 error"
+
+${com} 0 4 $tmp-data > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-2 error"
+
+###########################################
+# TEST4
+# -d (direct) で空白のある文字列を指定する場合
+
+cat << FIN > $tmp-ans
+JAPAN AMERICA
+FIN
+
+${com} -d "japan america" > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4 error"
+
+###########################################
+# TEST4-1
+# -d (direct) で空白のある文字列を指定する場合
+# -d指定で4バイト文字（Unicode符号位置がU+FFFF超の文字）を与える
+
+cat << FIN > $tmp-ans
+JAPAN𠆢日本 AMERICA𠆢米国
+FIN
+
+# 「𠆢」は𠆢(U+201A2)代用対では𠆢(U+D840-U+DDA2)
+
+${com} -d "japan𠆢日本 america𠆢米国" > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4-1 error"
+
+###########################################
+# TEST5
+# TEST1の拡大版
+# BOM付き/BOM無しと改行記号CRLF/CR/LFの試験
 # フィールドを指定する場合
 
 cat << FIN > $tmp-data
@@ -51,60 +159,37 @@ cat << FIN > $tmp-data
 002 england russia
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 001 JAPAN america
 002 ENGLAND russia
 FIN
 
-${com} 1 2 $tmp-data > $tmp-ans
+# 入力用tmpファイルからBOM付きCRLFとBOM付きCRの各ファイルを作る
+BOMandEOLvariation $tmp-data $tmp-dataBOMCRLF $tmp-dataBOMCR
+
+# BOM付きCRLF
+${com} 1 2 $tmp-dataBOMCRLF > $tmp-out
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST1 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5-1 error"
+
+# BOM付きCR
+${com} 1 2 $tmp-dataBOMCR > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5-2 error"
+
+# pipe接続
+
+# BOM付きCRLF
+cat $tmp-dataBOMCRLF | ${com} 1 2 - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5-3 error"
+
+# BOM付きCR
+cat $tmp-dataBOMCR | ${com} 1 2 - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5-4 error"
 
 ###########################################
-# TEST2
-# -d (direct) 指定の場合
-
-cat << FIN > $tmp-out
-JAPAN
-FIN
-
-${com} -d japan > $tmp-ans
-diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST2 error"
-
-###########################################
-# TEST3
-# フィールド指定を省略して全フィールドを対象とする場合
-
-cat << FIN > $tmp-data
-001 japan america
-002 england russia
-FIN
-
-cat << FIN > $tmp-out
-001 JAPAN AMERICA
-002 ENGLAND RUSSIA
-FIN
-
-${com} $tmp-data > $tmp-ans
-diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST3 error"
-
-###########################################
-# TEST4
-# -d (direct) で空白のある文字列を指定する場合
-
-cat << FIN > $tmp-out
-JAPAN AMERICA
-FIN
-
-${com} -d "japan america" > $tmp-ans
-diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST4 error"
-
-###########################################
-
 rm -f $tmp-*
 echo "${pythonversion} ${name}" OK
-
 exit 0

@@ -42,6 +42,12 @@ ERROR_CHECK(){
 	exit 1
 }
 
+BOMandEOLvariation(){	# BOM無しLF改行ファイル（$1）からBOM付きCRLF改行ファイル（$2）とBOM付きCR改行ファイル（$3）を生成する
+	 [ $# -eq 3 ]; ERROR_CHECK "TESTスクリプト内のBOMandEOLvariation()でファイル指定が不正"
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r\n/g' -e 's/$/\r/' $1 >$2	# $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r/g' $1 | tr '\n' '\r' >$3	# $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
+}
+
 ###########################################
 #TEST1
 
@@ -53,7 +59,7 @@ cat << FIN > $tmp-in
 0000005 崎村______ 50 F 82 79 16 21 80
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 浜地______ F
 鈴田______ F
 江頭______ F
@@ -61,14 +67,14 @@ cat << FIN > $tmp-out
 崎村______ F
 FIN
 
-${com} 2 4 $tmp-in > $tmp-ans
+${com} 2 4 $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST1 error"
 
 ###########################################
 #TEST2
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 0000 浜地______
 0001 鈴田______
 0003 江頭______
@@ -76,14 +82,14 @@ cat << FIN > $tmp-out
 0005 崎村______
 FIN
 
-${com} 1.4 2 $tmp-in > $tmp-ans
+${com} 1.4 2 $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST2 error"
 
 ###########################################
 #TEST3
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 浜地 50
 鈴田 50
 江頭 26
@@ -91,14 +97,14 @@ cat << FIN > $tmp-out
 崎村 50
 FIN
 
-${com} 2.1.4 3 $tmp-in > $tmp-ans
+${com} 2.1.4 3 $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST3 error"
 
 ###########################################
 #TEST4
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 0000000 浜地______ 50 F 91 59 20 76 54
 0000001 鈴田______ 50 F 46 39 8  5  21
 0000003 江頭______ 26 F 30 50 71 36 30
@@ -106,14 +112,14 @@ cat << FIN > $tmp-out
 0000005 崎村______ 50 F 82 79 16 21 80
 FIN
 
-${com} 0 $tmp-in > $tmp-ans
+${com} 0 $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST4 error"
 
 ###########################################
 #TEST5
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 F 0000000 浜地______ 50 F 91 59 20 76 54
 F 0000001 鈴田______ 50 F 46 39 8  5  21
 F 0000003 江頭______ 26 F 30 50 71 36 30
@@ -121,14 +127,14 @@ M 0000004 白土______ 40 M 58 71 20 10 6
 F 0000005 崎村______ 50 F 82 79 16 21 80
 FIN
 
-${com} 4 0 $tmp-in > $tmp-ans
+${com} 4 0 $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST5 error"
 
 ###########################################
 #TEST6
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 浜地______ 50 F 91
 鈴田______ 50 F 46
 江頭______ 26 F 30
@@ -136,7 +142,7 @@ cat << FIN > $tmp-out
 崎村______ 50 F 82
 FIN
 
-${com} 2/5 $tmp-in > $tmp-ans
+${com} 2/5 $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST6 error"
 
@@ -151,7 +157,7 @@ cat << FIN > $tmp-in
 0000005 崎村______ 50 F 82 79 16 21 80
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 0000000 59 54
 0000001 39 21
 0000003 50 30
@@ -159,14 +165,14 @@ cat << FIN > $tmp-out
 0000005 79 80
 FIN
 
-${com} 1 NF-3 NF $tmp-in > $tmp-ans
+${com} 1 NF-3 NF $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST7-1 error"
 
 ###########################################
 #TEST7-2
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 0000000 59 20 76 54
 0000001 39 8 5 21
 0000003 50 71 36 30
@@ -174,10 +180,9 @@ cat << FIN > $tmp-out
 0000005 79 16 21 80
 FIN
 
-${com} 1 NF-3/NF $tmp-in > $tmp-ans
+${com} 1 NF-3/NF $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST7-2 error"
-
 
 ############################################
 #TEST8
@@ -189,73 +194,81 @@ diff $tmp-ans $tmp-out
 #c   d e
 #FIN
 #
-#cat << FIN > $tmp-out
+#cat << FIN > $tmp-ans
 #a b
 #c d e
 #FIN
 #
-#${com} 1/NF $tmp-in > $tmp-ans
+#${com} 1/NF $tmp-in > $tmp-out
 #diff $tmp-ans $tmp-out
 #[ $? -eq 0 ] ; ERROR_CHECK "TEST8 error"
 #
 ###########################################
 #TEST9
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 2007
 FIN
 
-${com} -d 1.1.4 "20070401 12345" > $tmp-ans
+${com} -d 1.1.4 "20070401 12345" > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST9 error"
 
 ###########################################
 #TEST10
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 ｳｴｵｶ
 FIN
 
-echo ｱｲｳｴｵｶｷｸｹｵ | ${com} 1.3.4 > $tmp-ans
+echo ｱｲｳｴｵｶｷｸｹｵ | ${com} 1.3.4 > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST10 error"
 
 ###########################################
 #TEST11
+# 「Error[self] : 部分文字列の開始位置が全角文字の内部になります。」でerrorとなる
 
-echo ＵＳＰ研究所 | ${com} 1.2.4 > $tmp-ans 2> /dev/null
-# Error[self] : 部分文字列の開始位置が全角文字の内部になります。
+echo TEST11はエラーで終了するように設定されている
+
+echo ＵＳＰ研究所 | ${com} 1.2.4 > $tmp-out
 [ $? -eq 1 ] ; ERROR_CHECK "TEST11 error"
 
 ###########################################
 #TEST12
+# 「Error[self] : 部分文字列の開始位置が後ろすぎます。」でerrorとなる
 
-echo ＵＳＰ研究所 | ${com} 1.20 > $tmp-ans 2> /dev/null
-# Error[self] : 部分文字列の開始位置が後ろすぎます。
+echo TEST12はエラーで終了するように設定されている
+
+echo ＵＳＰ研究所 | ${com} 1.20 > $tmp-out
 [ $? -eq 1 ] ; ERROR_CHECK "TEST12 error"
 
 ###########################################
 #TEST13
+# 「Error[self] : 部分文字列の開始位置が全角文字の内部になります。」でerrorとなる
 
-echo ＵＳＰ研究所 | ${com} 1.2 > $tmp-ans 2> /dev/null
-# Error[self] : 部分文字列の開始位置が全角文字の内部になります。
+echo TEST13はエラーで終了するように設定されている
+
+echo ＵＳＰ研究所 | ${com} 1.2 > $tmp-out
 [ $? -eq 1 ] ; ERROR_CHECK "TEST13 error"
 
 ###########################################
 #TEST14
+# 「Error[self] : 部分文字列の開始位置が後ろすぎます。」でerrorとなる
 
-echo 123 | ${com} 1.4 > $tmp-ans 2> /dev/null
-# Error[self] : 部分文字列の開始位置が後ろすぎます。
+echo TEST14はエラーで終了するように設定されている
+
+echo 123 | ${com} 1.4 > $tmp-out
 [ $? -eq 1 ] ; ERROR_CHECK "TEST14 error"
 
 ###########################################
 #TEST15
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 1い2
 FIN
 
-echo あ1い2 | ${com} 1.3 > $tmp-ans
+echo あ1い2 | ${com} 1.3 > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST15 error"
 
@@ -266,11 +279,11 @@ cat << FIN > ./tmp.$$
 1 2 3 4
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 4
 FIN
 
-${com} 4 ./tmp.$$ > $tmp-ans
+${com} 4 ./tmp.$$ > $tmp-out
 rm -f ./tmp.$$
 
 diff $tmp-ans $tmp-out
@@ -283,16 +296,16 @@ cat << FIN > $tmp-in
 1 2 3 4567
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 67
 FIN
 
-${com} NF.3.2 $tmp-in > $tmp-ans
+${com} NF.3.2 $tmp-in > $tmp-out
 
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST17-1 error"
 
-${com} NF.3.2 < $tmp-in > $tmp-ans
+${com} NF.3.2 < $tmp-in > $tmp-out
 
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST17-2 error"
@@ -304,17 +317,17 @@ cat << FIN > $tmp-in
 1　2
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 1　2
 FIN
 
-${com} 1 < $tmp-in > $tmp-ans
+${com} 1 < $tmp-in > $tmp-out
 
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST18 error"
 
 ###########################################
-#追加TEST1
+#TEST19
 # 代用対/結合文字列/IVS/SVSの処理検査 ファイルからの読み込み
 
 cat << FIN > $tmp-in
@@ -322,24 +335,24 @@ cat << FIN > $tmp-in
 0000001 ______𠮷田 50 F 46 39 8  5  21 #𠮷(U+20BB7)代用対では𠮷(U+D842-U+DFB7)
 0000003 ______今川 26 F 30 50 71 36 30 #今(U+4ECA)
 0000004 ______𫝆川 40 M 58 71 20 10 6 #𫝆(U+2B746)代用対では𫝆(U+D86D-U+DF46)
-0000005 ______𫝆󠄁川 40 F 82 79 16 21 80 #IVSの例で𫝆󠄁(U+2B746_U+E0101)代用対では𫝆󠄁(U+D86D-U+DF46_U+DB40-U+DD01)
+0000005 ______𫝆󠄁川 40 F 82 79 16 21 80 #IVSの例で𫝆󠄁(U+2B746;U+E0101)代用対では𫝆󠄁(U+D86D-U+DF46;U+DB40-U+DD01)
 0000006 ______渡邊 50 F 33 56 27 40 72 #邊(U+908A)
-0000007 ______渡邊󠄊 36 F 51 30 15 22 81 #IVSの例で邊󠄊(U+908A_U+E010A)代用対では邊󠄊(U+908A_U+DB40-U+DD0A)
-0000008 ______渡邊󠄋 62 F 72 39 26 18 55 #IVSの例で邊󠄋(U+908A_U+E010B)代用対では邊󠄋(U+908A_U+DB40-U+DD0B)
-0000009 ______渡邊󠄌 52 F 33 48 33 33 25 #IVSの例で邊󠄌(U+908A_U+E010C)代用対では邊󠄌(U+908A_U+DB40-U+DD0C)
+0000007 ______渡邊󠄊 36 F 51 30 15 22 81 #IVSの例で邊󠄊(U+908A;U+E010A)代用対では邊󠄊(U+908A;U+DB40-U+DD0A)
+0000008 ______渡邊󠄋 62 F 72 39 26 18 55 #IVSの例で邊󠄋(U+908A;U+E010B)代用対では邊󠄋(U+908A;U+DB40-U+DD0B)
+0000009 ______渡邊󠄌 52 F 33 48 33 33 25 #IVSの例で邊󠄌(U+908A;U+E010C)代用対では邊󠄌(U+908A;U+DB40-U+DD0C)
 0000010 ______神山 38 F 64 67 40 21 36 #神(U+795E)
-0000011 ______神︀山 25 F 45 36 5 16 72 #SVSの例で神︀(U+795E_U+FE00)
+0000011 ______神︀山 25 F 45 36 5 16 72 #SVSの例で神︀(U+795E;U+FE00)
 0000012 ______羽田 18 F 76 75 22 32 25 #羽(U+7FBD)
-0000013 ______羽︀田 53 F 47 64 43 7 2 #SVSの例で羽︀(U+7FBD_U+FE00)
-0000014 か゚き゚く゚け゚こ゚ 45 F 88 43 9 37 62 #結合文字列の例でか゚(U+304B_U+309A)き゚(U+304D_U+309A)く゚(U+304F_U+309A)け゚(U+3051_U+309A)こ゚(U+3053_U+309A)
+0000013 ______羽︀田 53 F 47 64 43 7 2 #SVSの例で羽︀(U+7FBD;U+FE00)
+0000014 か゚き゚く゚け゚こ゚ 45 F 88 43 9 37 62 #結合文字列の例でか゚(U+304B;U+309A)き゚(U+304D;U+309A)く゚(U+304F;U+309A)け゚(U+3051;U+309A)こ゚(U+3053;U+309A)
 FIN
 
 # 文字の正しい表示には適切なfontの使用が求められる
-# Unicode符号位置を「字(U+xxxx)」の形式で表現する（符号位置第が第2面のときは「字(U+xxxxx)」）
+# Unicode符号位置を「字(U+xxxx)」の形式で表現する（符号位置が第2面のときは「字(U+xxxxx)」）
 # 代用対は「字(U+xxxx-U+yyyy)」の形式で表現する
-# 結合文字列/IVS/SVSは「字(U+xxxx_U+yyyy)」の形式で表現する
+# 結合文字列/IVS/SVSは「字(U+xxxx;U+yyyy)」の形式で表現する
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 吉田 F
 𠮷田 F
 今川 F
@@ -356,28 +369,104 @@ cat << FIN > $tmp-out
 け゚こ゚ F
 FIN
 
-${com} 2.7.4 4 $tmp-in > $tmp-ans
+${com} 2.7.4 4 $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "追加TEST1 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST19 error"
 
 ###########################################
-#追加TEST2
+#TEST20
 # 代用対/結合文字列/IVS/SVSの処理検査 -d指定による
 
-${com} -d 1.3.4 2.1.5 "神︀邊󠄊𠀋一 か゚12345" > $tmp-ans
-
-# 「神︀」はSVSの例で神︀(U+795E_U+FE00)
-# 「邊󠄊」はIVSの例で邊󠄊(U+908A_U+E010A)代用対では邊󠄊(U+908A_U+DB40-U+DD0A)
-# 「𠀋」は𠀋(U+2000B)代用対では𠀋(U+D840-U+DC0B)
-# 「か゚」は結合文字列の例でか゚(U+304B_U+309A)
-
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 邊󠄊𠀋 か゚123
 FIN
 
-diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "追加TEST2 error"
+${com} -d 1.3.4 2.1.5 "神︀邊󠄊𠀋一 か゚12345" > $tmp-out
 
+# 「神︀」はSVSの例で神︀(U+795E;U+FE00)
+# 「邊󠄊」はIVSの例で邊󠄊(U+908A;U+E010A)代用対では邊󠄊(U+908A;U+DB40-U+DD0A)
+# 「𠀋」は𠀋(U+2000B)代用対では𠀋(U+D840-U+DC0B)
+# 「か゚」は結合文字列の例でか゚(U+304B;U+309A)
+
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST20 error"
+
+###########################################
+#TEST21
+#TEST1の拡大版（指定フィールドはTEST1の「2,4」から「1,2,4」に変更して行頭のBOMの影響をみる
+# BOM付きCRLFとBOM付きCRの試験
+
+cat << FIN > $tmp-in
+0000000 浜地______ 50 F 91 59 20 76 54
+0000001 鈴田______ 50 F 46 39 8  5  21
+0000003 江頭______ 26 F 30 50 71 36 30
+0000004 白土______ 40 M 58 71 20 10 6
+0000005 崎村______ 50 F 82 79 16 21 80
+FIN
+
+cat << FIN > $tmp-ans
+0000000 浜地______ F
+0000001 鈴田______ F
+0000003 江頭______ F
+0000004 白土______ M
+0000005 崎村______ F
+FIN
+
+# 入力用tmpファイルからBOM付きCRLFとBOM付きCRの各ファイルを作る
+BOMandEOLvariation $tmp-in $tmp-inBOMCRLF $tmp-inBOMCR
+
+# BOM付きCRLF
+${com} 1 2 4 $tmp-inBOMCRLF > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST21-1 error"
+
+# BOM付きCR
+${com} 1 2 4 $tmp-inBOMCR > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST21-2 error"
+
+# pipe接続
+
+# BOM付きCRLF
+cat $tmp-inBOMCRLF | ${com} 1 2 4 - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST21-3 error"
+
+# BOM付きCR
+cat $tmp-inBOMCR | ${com} 1 2 4 - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST21-4 error"
+
+###########################################
+#TEST22
+# TEST3を原型とする
+
+cat << FIN > $tmp-in
+0000000 浜地______ 50 F 91 59 20 76 54
+0000001 鈴田______ 50 F 46 39 8  5  21
+0000003 江頭______ 26 F 30 50 71 36 30
+0000004 白土______ 40 M 58 71 20 10 6
+0000005 崎村______ 50 F 82 79 16 21 80
+FIN
+
+cat << FIN > $tmp-ans
+50 浜地 000
+50 鈴田 001
+26 江頭 003
+40 白土 004
+50 崎村 005
+FIN
+
+# コマンドの説明
+# フィールド指定の「NF-6@NF-6@NF-7.1.4 NF-8.5.3@3@1.5.3」はNF=9なので「3と3と2.1.4と1.5.3と3と1.5.3」となり
+# 重複を解消して整理すると「3と2.1.4と1.5.3」となる
+
+${com} NF-6@NF-6@NF-7.1.4 NF-8.5.3@3@1.5.3 $tmp-in > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST22 error"
+
+###########################################
 rm -f $tmp-*
 echo "${pythonversion} ${name}" OK
 exit 0
+

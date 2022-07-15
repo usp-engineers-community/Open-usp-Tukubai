@@ -45,8 +45,8 @@ ERROR_CHECK(){
 ###########################################
 #TEST1
 
-${com} 1 2 3 4 5 > $tmp-ans
-[ "$(cat $tmp-ans)" -eq 15 -a $? -eq 0 ] ; ERROR_CHECK "TEST1 error"
+${com} 1 2 3 4 5 > $tmp-out
+[ "$(cat $tmp-out)" -eq 15 -a $? -eq 0 ] ; ERROR_CHECK "TEST1 error"
 
 
 rm -f $tmp-*

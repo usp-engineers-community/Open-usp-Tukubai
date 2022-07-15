@@ -42,22 +42,28 @@ ERROR_CHECK(){
 	exit 1
 }
 
+BOMandEOLvariation(){	# BOM無しLF改行ファイル（$1）からBOM付きCRLF改行ファイル（$2）とBOM付きCR改行ファイル（$3）を生成する
+	 [ $# -eq 3 ]; ERROR_CHECK "TESTスクリプト内のBOMandEOLvariation()でファイル指定が不正"
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r\n/g' -e 's/$/\r/' $1 >$2	# $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r/g' $1 | tr '\n' '\r' >$3	# $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
+}
+
 ###########################################
 # TEST1
 # 指定したフィールドが完全一致した行のみ表示する
 
-cat << FIN > $tmp-data
+cat << FIN > $tmp-in
 0001 a
 0002 b
 0003 c
 0004 c
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 0001 a
 FIN
 
-${com}  1 "0001" <$tmp-data >$tmp-ans
+${com}  1 "0001" <$tmp-in >$tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST1 error"
 
@@ -65,12 +71,12 @@ diff $tmp-ans $tmp-out
 # TEST2
 # 指定したフィールドが完全一致した行のみ表示する
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 0003 c
 0004 c
 FIN
 
-${com} 2 c <$tmp-data >$tmp-ans
+${com} 2 c <$tmp-in >$tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST2 error"
 
@@ -80,14 +86,14 @@ diff $tmp-ans $tmp-out
 # <str> が同じものであれば、無条件に全レコードを出力し、
 # 異なるものであれば、--through を指定しなかったように動作します。
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 0001 a
 0002 b
 0003 c
 0004 c
 FIN
 
-${com} --through _ 2 _ <$tmp-data >$tmp-ans
+${com} --through _ 2 _ <$tmp-in >$tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST3 error"
 
@@ -97,30 +103,186 @@ diff $tmp-ans $tmp-out
 # <str> が同じものであれば、無条件に全レコードを出力し、
 # 異なるものであれば、--through を指定しなかったように動作します。
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 0001 a
 FIN
 
-${com} --through _ 2 a <$tmp-data >$tmp-ans
+${com} --through _ 2 a <$tmp-in >$tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST4 error"
 
 ###########################################
 # TEST5
-# NR をフィールドに設定した場合は行の最後のフィールドを指す。
+# 指定したフィールドが完全一致した行のみ表示する
+# TEST1の拡大版
+# BOM付きCRLFとBOM付きCRの試験
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
+0001 a
+FIN
+
+# 入力用tmpファイルからBOM付きCRLFとBOM付きCRの各ファイルを作る
+BOMandEOLvariation $tmp-in $tmp-inBOMCRLF $tmp-inBOMCR
+
+${com}  1 "0001" <$tmp-inBOMCRLF >$tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5-1 error"
+
+${com}  1 "0001" <$tmp-inBOMCR >$tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5-2 error"
+
+###########################################
+# TEST6
+# 指定したフィールドが完全一致した行のみ表示する
+# TEST2の拡大版
+# BOM付きCRLFとBOM付きCRの試験
+# BOM削除をしなくてもたまたまOKとなる例
+
+cat << FIN > $tmp-ans
 0003 c
 0004 c
 FIN
 
-${com} NF c <$tmp-data >$tmp-ans
+${com} 2 c <$tmp-inBOMCRLF >$tmp-out	# 第2欄を見るのでファイル先頭にBOMがあってもかまわない
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST5 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST6-1 error"
+
+${com} 2 c <$tmp-inBOMCR >$tmp-out	# 第2欄を見るのでファイル先頭にBOMがあってもかまわない
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST6-2 error"
 
 ###########################################
+# TEST7
+# NFC文字/NFD文字が混在する場合の対処試験
+#  NFC文字:全角ひらがな/全角カタカナの濁音/半濁音
+#  NFD文字:全角ひらがな/全角カタカナの清音に結合用濁点/結合用半濁点を連接したもの
 
+cat << FIN > $tmp-in
+0001 あいうえお 清音
+0002 ゔ 濁音NFC
+0003 ゔ 濁音NFD
+0004 かきくけこ 清音
+0005 がぎぐげご 濁音NFC
+0006 がぎぐげご 濁音NFD
+0007 さしすせそ 清音
+0008 ざじずぜぞ 濁音NFC
+0009 ざじずぜぞ 濁音NFD
+0010 たちつてと 清音
+0011 だぢづでど 濁音NFC
+0012 だぢづでど 濁音NFD
+0013 はひふへほ 清音
+0014 ばびぶべぼ 濁音NFC
+0015 ばびぶべぼ 濁音NFD
+0016 ぱぴぷぺぽ 半濁音NFC
+0017 ぱぴぷぺぽ 半濁音NFD
+0018 アイウエオ 清音
+0019 ヴ 濁音NFC
+0020 ヴ 濁音NFD
+0021 カキクケコ 清音
+0022 ガギグゲゴ 濁音NFC
+0023 ガギグゲゴ 濁音NFD
+0024 サシスセソ 清音
+0025 ザジズゼゾ 濁音NFC
+0026 ザジズゼゾ 濁音NFD
+0027 タチツテト 清音
+0028 ダヂヅデド 濁音NFC
+0029 ダヂヅデド 濁音NFD
+0030 ハヒフヘホ 清音
+0031 バビブベボ 濁音NFC
+0032 バビブベボ 濁音NFD
+0033 パピプペポ 半濁音NFC
+0034 パピプペポ 半濁音NFD
+0035 ヷヸヹヺ 濁音NFC
+0036 ヷヸヹヺ 濁音NFD
+FIN
+
+cat << FIN > $tmp-ans
+0005 がぎぐげご 濁音NFC
+0006 がぎぐげご 濁音NFD
+FIN
+
+cat << FIN > $tmp-ans2
+0035 ヷヸヹヺ 濁音NFC
+0036 ヷヸヹヺ 濁音NFD
+FIN
+
+# 指定フィールドの指定値「がぎぐげご」はNFCだがファイルのフィールド値がNFDであってもmatchする
+${com}  2 "がぎぐげご" <$tmp-in >$tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST7-1 error"
+
+# 指定フィールドの指定値「がぎぐげご」はNFDだがファイルのフィールド値がNFCであってもmatchする
+${com}  2 "がぎぐげご" <$tmp-in >$tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST7-2 error"
+
+# 指定フィールドの指定値「ヷヸヹヺ」はNFCだがファイルのフィールド値がNFDであってもmatchする
+${com}  2 "ヷヸヹヺ" <$tmp-in >$tmp-out
+diff $tmp-ans2 $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST7-3 error"
+
+# throughオプションの値「がぎぐげご」（NFC）と指定フィールドの指定値「がぎぐげご」（NFD）はNFC/NFDを同一視すれば一致するので全レコードが出力される
+${com}  --through "がぎぐげご" 2 "がぎぐげご" <$tmp-in >$tmp-out
+diff $tmp-in $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST7-4 error"
+
+###########################################
+# TEST8
+# 文字列の「ゆるい一致」の試験
+# --through を指定したときは、
+# <str> が同じものであれば、無条件に全レコードを出力し、
+# 異なるものであれば、--through を指定しなかったように動作します。
+
+cat << FIN > $tmp-in
+0001 齋藤
+0002 齋󠄂藤
+0003 齋󠄃藤
+0004 齋󠄄藤
+0005 齋󠄅藤
+0006 齋󠄆藤
+FIN
+
+# $tmp-inの説明
+#0001 齋藤 # 齋(U+9F4B)藤(U+85E4) UCS
+#0002 齋󠄂藤 # 齋󠄂(U+9F4B;U+E0102)藤(U+85E4) IVS
+#0003 齋󠄃藤 # 齋󠄃(U+9F4B;U+E0103)藤(U+85E4) IVS
+#0004 齋󠄄藤 # 齋󠄄(U+9F4B;U+E0104)藤(U+85E4) IVS
+#0005 齋󠄅藤 # 齋󠄅(U+9F4B;U+E0105)藤(U+85E4) IVS
+#0006 齋󠄆藤 # 齋󠄆(U+9F4B;U+E0106)藤(U+85E4) IVS
+
+cat << FIN > $tmp-ans1
+0001 齋藤
+0006 齋󠄆藤
+FIN
+
+cat << FIN > $tmp-ans2
+0001 齋藤
+0002 齋󠄂藤
+0003 齋󠄃藤
+0004 齋󠄄藤
+0005 齋󠄅藤
+0006 齋󠄆藤
+FIN
+
+# 指定する文字列は「齋󠄆藤」（齋󠄆(U+9F4B;U+E0106)藤(U+85E4)）でIVSだが UCSの「齋藤」（齋(U+9F4B)藤(U+85E4)）とも「ゆるい文字列一致」で一致する
+# through文字列は指定文字列「齋󠄆藤」と一致しない
+${com} --through _ 2 "齋󠄆藤" $tmp-in >$tmp-out
+diff $tmp-ans1 $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST8-1 error"
+
+# 指定する文字列は「齋藤」（齋(U+9F4B)藤(U+85E4)）でUCSなので0001～0006のすべての行の第2欄と「ゆるい文字列一致」で一致する
+# through文字列は指定文字列「齋󠄆藤」と一致しない
+${com} --through _ 2 "齋藤" $tmp-in >$tmp-out
+diff $tmp-ans2 $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST8-2 error"
+
+# through文字列は指定文字列「_」と一致するのですべての入力行を出力する
+${com} --through _ 2 _ <$tmp-in >$tmp-out
+diff $tmp-ans2 $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST8-3 error"
+
+###########################################
 rm -f $tmp-*
 echo "${pythonversion} ${name}" OK
-
 exit 0

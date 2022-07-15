@@ -42,6 +42,36 @@ ERROR_CHECK(){
 	exit 1
 }
 
+BOMandEOLvariation(){	# BOM無しLF改行ファイル（$1）からBOM付きCRLF改行ファイル（$2）とBOM付きCR改行ファイル（$3）を生成する
+	 [ $# -eq 3 ]; ERROR_CHECK "TESTスクリプト内のBOMandEOLvariation()でファイル指定が不正"
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r\n/g' -e 's/$/\r/' $1 >$2	# $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r/g' $1 | tr '\n' '\r' >$3	# $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
+}
+
+###########################################
+# バックスラッシュ/チルダ/円記号/オーバーラインの変換について
+# ISO646日本版(JIS X 0201)において
+# ASCII文字コードのIRV(International Reference Version)で
+#  バックスラッシュ(0x5C)を円記号に
+#  チルダ(0x7E)をオーバーラインに
+# 設定しているが
+# zenではUnicode半角全角対応表に従って
+#  バックスラッシュとチルダについて
+#  「\」(U+005C)半角バックスラッシュ→「＼」(U+FF3C)全角バックスラッシュ
+#  「~」(U+007E)半角チルダ→「～」(U+FF5E)全角チルダ
+# の変換をする
+#  円記号とオーバーラインについては
+#  「¥」(U+00A5)半角円記号→「￥」(U+FFE5)全角円記号
+#  「‾」(U+203E)半角オーバーライン→「￣」(U+FFE3)全角オーバーライン
+# の変換をする
+#  マクロンについては
+#  「¯」(U+00AF)半角マクロン→「￣」(U+FFE3)全角マクロン
+# の変換をする
+# ここで
+#    使用するフォントによってはU+005Cは円記号に見えることがある
+#    Unicode半角全角対応表でのU+FFE3の正式名称は「全角マクロン」であり「全角オーバーライン」は仮称である
+#    「‾」(U+203E)半角オーバーラインと「¯」(U+00AF)半角マクロンの全角形はいずれも「￣」(U+FFE3)である
+
 ###########################################
 #TEST1
 #「¥」→「￥」の変換試験
@@ -51,13 +81,13 @@ cat << FIN > $tmp-in
 aBC
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 アイウ￥
 ａＢＣ
 FIN
 
 # 「¥」（U+00a5）半角円記号→「￥」（U+ffe5）全角円記号
-${com} $tmp-in > $tmp-ans
+${com} $tmp-in > $tmp-out
 
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST1 error"
@@ -70,17 +100,29 @@ cat << FIN > $tmp-in
 001 abcｱｲｳ ｴｵxyz
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 001 ａｂｃアイウ ｴｵxyz
 FIN
 
-${com} 2 $tmp-in > $tmp-ans
+${com} 2 $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST2.1 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2-1 error"
 
-cat $tmp-in | ${com} 2 > $tmp-ans
+cat $tmp-in | ${com} 2 > $tmp-out
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST2.2 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2-2 error"
+
+cat << FIN > $tmp-in
+001 abcｱｲｳ ｴｵxyz 123 456 789
+FIN
+
+cat << FIN > $tmp-ans
+001 ａｂｃアイウ ｴｵxyz １２３ ４５６ 789
+FIN
+
+${com} 2 5/4 2 $tmp-in > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2-3 error"
 
 ###########################################
 #TEST2k
@@ -90,15 +132,15 @@ cat << FIN > $tmp-in
 001 abcｱｲｳ ｴｵxyz
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 001 abcアイウ エオxyz
 FIN
 
-${com} -k $tmp-in > $tmp-ans
+${com} -k $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST2k-1 error"
 
-cat $tmp-in | ${com} -k > $tmp-ans
+cat $tmp-in | ${com} -k > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST2k-2 error"
 
@@ -112,14 +154,14 @@ cat << FIN > $tmp-in
 aBC
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 アイウ＼～
 ａＢＣ
 FIN
 
 # 「\」（U+005C）半角バックスラッシュ→「＼」（U+ff3c）全角バックスラッシュ
 # 「~」（U+007E）半角チルダ→「～」（U+ff5e）全角チルダ
-${com} $tmp-in > $tmp-ans
+${com} $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST3 error"
 
@@ -127,11 +169,11 @@ diff $tmp-ans $tmp-out
 #TEST4
 # -d指定
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 ００１　ａｂｃアイウ＼　エオｘｙｚ
 FIN
 
-${com} -d "001 abcｱｲｳ\\ ｴｵxyz" > $tmp-ans
+${com} -d "001 abcｱｲｳ\\ ｴｵxyz" > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST4 error"
 
@@ -148,7 +190,7 @@ PQRSTUVWXYZ[\\]^_
 pqrstuvwxyz{|}~
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 　！＂＃＄％＆＇（）＊＋，－．／
 ０１２３４５６７８９：；＜＝＞？
 ＠ＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯ
@@ -159,7 +201,7 @@ FIN
 
 # 「\」（U+005C）半角バックスラッシュ→「＼」（U+ff3c）全角バックスラッシュ
 # 「~」（U+007E）半角チルダ→「～」（U+ff5e）全角チルダ
-${com} $tmp-in > $tmp-ans
+${com} $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST5 error"
 
@@ -192,7 +234,7 @@ cat << FIN > $tmp-in
 ﾜﾞ ｦﾞ
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 ア　イ　ウ　エ　オ
 カ　キ　ク　ケ　コ
 サ　シ　ス　セ　ソ
@@ -217,7 +259,7 @@ cat << FIN > $tmp-out
 ヷ　ヺ
 FIN
 
-${com} $tmp-in > $tmp-ans
+${com} $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST6 error"
 
@@ -232,14 +274,14 @@ cat << FIN > $tmp-in
 ￗￚￛￜ
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 ㅤㄱㄲㄳㄴㄵㄶㄷㄸㄹㄺㄻㄼㄽㄾㄿ
 ㅀㅁㅂㅃㅄㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎㅏ
 ㅐㅑㅒㅓㅔㅕㅖㅗㅘㅙㅚㅛㅜㅝㅞㅟ
 ㅠㅡㅢㅣ
 FIN
 
-${com} $tmp-in > $tmp-ans
+${com} $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST7 error"
 
@@ -252,18 +294,121 @@ cat << FIN > $tmp-in
 ￨￩￪￫￬￭￮
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 ￠￡￢￣￣￤￥￦
 │←↑→↓■○
 FIN
 
-# 「‾」半角オーバーライン（U+203e）→「￣」全角マクロン（U+ffe3）
+# 「‾」半角オーバーライン（U+203e）→「￣」全角オーバーライン（U+ffe3）
 # 「¯」半角マクロン（U+00af）→「￣」全角マクロン（U+ffe3）
 # 「¥」（U+00a5）半角円記号→「￥」（U+ffe5）全角円記号
-${com} $tmp-in > $tmp-ans
+${com} $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST8 error"
 
+###########################################
+#TEST9
+# 4バイト文字（Unicode符号位置がU+FFFF超の文字）を与える
+
+cat <<FIN >$tmp-in
+001 abcｱｲｳ\\𠆢 ｴｵxyz
+FIN
+
+cat << FIN > $tmp-ans
+００１　ａｂｃアイウ＼𠆢　エオｘｙｚ
+FIN
+
+# 「𠆢」は𠆢(U+201A2)代用対では𠆢(U+D840-U+DDA2)
+
+${com} $tmp-in >$tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST9 error"
+
+###########################################
+#TEST10
+# -d指定で4バイト文字（Unicode符号位置がU+FFFF超の文字）を与える
+
+cat << FIN > $tmp-ans
+００１　ａｂｃアイウ＼𠆢　エオｘｙｚ
+FIN
+
+# 「𠆢」は𠆢(U+201A2)代用対では𠆢(U+D840-U+DDA2)
+
+${com} -d "001 abcｱｲｳ\\𠆢 ｴｵxyz" > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST10 error"
+
+###########################################
+#TEST11
+#TEST1の拡大版
+# BOM付き/BOM無しと改行記号CRLF/CR/LFの試験
+#「¥」→「￥」の変換試験
+
+cat << FIN > $tmp-in
+ｱｲｳ¥
+aBC
+FIN
+
+cat << FIN > $tmp-ans
+アイウ￥
+ａＢＣ
+FIN
+
+# 入力用tmpファイルからBOM付きCRLFとBOM付きCRの各ファイルを作る
+BOMandEOLvariation $tmp-in $tmp-inBOMCRLF $tmp-inBOMCR
+
+# 「¥」（U+00a5）半角円記号→「￥」（U+ffe5）全角円記号
+
+# BOM付き/BOM無しと改行記号CRLF/CR/LFの検査
+
+# BOM付きCRLF
+${com} $tmp-inBOMCRLF > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST11-1 error"
+
+# BOM付きCR
+${com} $tmp-inBOMCR > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST11-2 error"
+
+# pipe接続
+
+# BOM付きCRLF
+cat $tmp-inBOMCRLF | ${com} - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST11-3 error"
+
+# BOM付きCR
+cat $tmp-inBOMCR | ${com} - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST11-4 error"
+
+###########################################
+#TEST12
+# TEST2の変型版
+# キー指定の試験
+#  キー指定に使用できる記号
+#    /   a/bでフィールド番号aからフィールド番号bまでの区間を指定する a<=bの正順でもa>=bの逆順でもよい
+#    NF  入力行にあるフィールドの数を表わす NF-nとすると最後（最右端）のフィールドから数えてn番前のフィールドを意味する
+#    @   単一のフィールドまたはフィールド区間を連接するための区切りに使用する 複数回の連接もできる
+#  指定したフィールドに重複があっても単一化される
+
+cat << FIN > $tmp-in
+001 abcｱｲｳ ｴｵxyz 123 456 789
+FIN
+
+cat << FIN > $tmp-ans
+001 ａｂｃアイウ ｴｵxyz １２３ ４５６ 789
+FIN
+
+# コマンドの説明
+# フィールド指定の「NF-1/NF-2@2 NF-4@4」はNF=6なので「5と4と2と4と4」となり重複を解消して整理すると「2と4と5」となる
+
+${com} NF-1/NF-2@2 NF-4@4 $tmp-in > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST12 error"
+
+###########################################
 rm -f $tmp-*
 echo "${pythonversion} ${name}" OK
 exit 0

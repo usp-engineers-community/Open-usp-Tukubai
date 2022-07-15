@@ -25,10 +25,7 @@ testpath=$(dirname $0) # 本スクリプト実行コマンドの先頭部($0)か
 cd $testpath # 本スクリプトのあるディレクトリーへ移動
 if test "$2" = ""; # <python-version>($2)がなければ
 	then pythonversion="python" # default versionのpythonとする
-elif test "$2" = "runghc"; then
-	pythonversion=runghc
-else
-	pythonversion="$2" # <python-version>($2)があれば指定versionのpythonとする
+	else pythonversion="$2" # <python-version>($2)があれば指定versionのpythonとする
 fi
 if test "$1" = ""; # <command-path>($1)がなければ
 	then commandpath="." # test対象コマンドは現ディレクトリーにある
@@ -43,6 +40,12 @@ ERROR_CHECK(){
 	echo "${pythonversion} ${name}" NG
 	rm -f $tmp-*
 	exit 1
+}
+
+BOMandEOLvariation(){	# BOM無しLF改行ファイル（$1）からBOM付きCRLF改行ファイル（$2）とBOM付きCR改行ファイル（$3）を生成する
+	 [ $# -eq 3 ]; ERROR_CHECK "TESTスクリプト内のBOMandEOLvariation()でファイル指定が不正"
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r\n/g' -e 's/$/\r/' $1 >$2	# $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r/g' $1 | tr '\n' '\r' >$3	# $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
 }
 
 ###########################################
@@ -61,15 +64,15 @@ cat << FIN > $tmp-master
 0000004 A
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 0000000 * 浜地______ 50 F 91 59 20 76 54
-0000001 B 鈴田______ 50 F 46 39 8  5  21
+0000001 B 鈴田______ 50 F 46 39 8 5 21
 0000004 A 白土______ 40 M 58 71 20 10 6
 0000003 * 杉山______ 26 F 30 50 71 36 30
 0000005 * 崎村______ 50 F 82 79 16 21 80
 FIN
 
-${com} key=1 $tmp-master $tmp-tran > $tmp-ans
+${com} key=1 $tmp-master $tmp-tran > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST1 error"
 
@@ -88,14 +91,14 @@ cat << FIN > $tmp-master
 003 太田 石川 a
 FIN
 
-cat << FIN > $tmp-out
-DDD 004 堅田 **** *** へへへ
-BBB 002 上田 富山 abc おほほ
-CCC 003 太田 石川 a ふふふ
-AAA 001 山田 **** *** あはは
+cat << FIN > $tmp-ans
+004 堅田 **** *** DDD へへへ
+002 上田 富山 abc BBB おほほ
+003 太田 石川 a CCC ふふふ
+001 山田 **** *** AAA あはは
 FIN
 
-${com} key=2/3 $tmp-master $tmp-tran > $tmp-ans
+${com} key=2/3 $tmp-master $tmp-tran > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST2 error"
 
@@ -114,14 +117,14 @@ cat << FIN > $tmp-master
 003 太田 石川
 FIN
 
-cat << FIN > $tmp-out
-DDD 004 堅田 ****
-AAA 001 山田 ****
-CCC 003 太田 石川
-BBB 002 上田 富山
+cat << FIN > $tmp-ans
+004 堅田 **** DDD
+001 山田 **** AAA
+003 太田 石川 CCC
+002 上田 富山 BBB
 FIN
 
-${com} key=2/3 $tmp-master $tmp-tran > $tmp-ans
+${com} key=2/3 $tmp-master $tmp-tran > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST3 error"
 
@@ -140,16 +143,16 @@ cat << FIN > $tmp-master
 003 太田 石川
 FIN
 
-cat << FIN > $tmp-out
-CCC 003 太田 石川 ふふふ
-AAA 001 山田 **** あはは
-BBB 002 上田 富山 おほほ
-DDD 004 堅田 **** へへへ
+cat << FIN > $tmp-ans
+003 太田 石川 CCC ふふふ
+001 山田 **** AAA あはは
+002 上田 富山 BBB おほほ
+004 堅田 **** DDD へへへ
 FIN
 
-${com} key=2/3 $tmp-master $tmp-tran > $tmp-ans
+${com} key=2/3 $tmp-master $tmp-tran > $tmp-out
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST3 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4 error"
 
 ###########################################
 #TEST5
@@ -166,27 +169,27 @@ cat << FIN > $tmp-master
 003 太田 石川 a
 FIN
 
-cat << FIN > $tmp-out
-AAA 001 山田 @@ @@ あはは
-CCC 003 太田 石川 a ふふふ
-BBB 002 上田 富山 abc おほほ
-DDD 004 堅田 @@ @@ へへへ
+cat << FIN > $tmp-ans
+001 山田 @@ @@ AAA あはは
+003 太田 石川 a CCC ふふふ
+002 上田 富山 abc BBB おほほ
+004 堅田 @@ @@ DDD へへへ
 FIN
 
-${com} +@@ key=2/3 $tmp-master $tmp-tran > $tmp-ans
+${com} +@@ key=2/3 $tmp-master $tmp-tran > $tmp-out
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST5.1 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5-1 error"
 
-${com} -d@@ key=2/3 $tmp-master $tmp-tran > $tmp-ans
+${com} -d@@ key=2/3 $tmp-master $tmp-tran > $tmp-out
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST5.2 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5-2 error"
 
-cat $tmp-tran | ${com} -d@@ key=2/3 $tmp-master > $tmp-ans
+cat $tmp-tran | ${com} -d@@ key=2/3 $tmp-master > $tmp-out
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST5.3 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5-3 error"
 
 ###########################################
-#追加TEST1
+#TEST6
 # -d指定または+指定で4バイト文字（Unicode符号位置がU+20000以降の文字）を与える
 
 cat << FIN > $tmp-tran
@@ -201,27 +204,340 @@ cat << FIN > $tmp-master
 003 太田 石川 a
 FIN
 
-cat << FIN > $tmp-out
-AAA 001 山田 𠆢 𠆢 あはは
-CCC 003 太田 石川 a ふふふ
-BBB 002 上田 富山 abc おほほ
-DDD 004 堅田 𠆢 𠆢 へへへ
+cat << FIN > $tmp-ans
+001 山田 𠆢 𠆢 AAA あはは
+003 太田 石川 a CCC ふふふ
+002 上田 富山 abc BBB おほほ
+004 堅田 𠆢 𠆢 DDD へへへ
 FIN
 
-${com} +𠆢 key=2/3 $tmp-master $tmp-tran > $tmp-ans
+${com} +𠆢 key=2/3 $tmp-master $tmp-tran > $tmp-out
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "追加TEST1.1 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST6-1 error"
 
-${com} -d𠆢 key=2/3 $tmp-master $tmp-tran > $tmp-ans
+${com} -d𠆢 key=2/3 $tmp-master $tmp-tran > $tmp-out
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "追加TEST1.2 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST6-2 error"
 
-cat $tmp-tran | ${com} -d𠆢 key=2/3 $tmp-master > $tmp-ans
+cat $tmp-tran | ${com} -d𠆢 key=2/3 $tmp-master > $tmp-out
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "追加TEST1.3 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST6-3 error"
 
 # 「𠆢」は𠆢(U+201A2)代用対では𠆢(U+D840-U+DDA2)
 
+###########################################
+#TEST7
+#TEST1の拡大版
+# BOM付きCRLFとBOM付きCRの試験
+
+cat << FIN > $tmp-tran
+0000000 浜地______ 50 F 91 59 20 76 54
+0000001 鈴田______ 50 F 46 39 8  5  21
+0000004 白土______ 40 M 58 71 20 10 6
+0000003 杉山______ 26 F 30 50 71 36 30
+0000005 崎村______ 50 F 82 79 16 21 80
+FIN
+
+cat << FIN > $tmp-master
+0000001 B
+0000004 A
+FIN
+
+cat << FIN > $tmp-ans
+0000000 * 浜地______ 50 F 91 59 20 76 54
+0000001 B 鈴田______ 50 F 46 39 8 5 21
+0000004 A 白土______ 40 M 58 71 20 10 6
+0000003 * 杉山______ 26 F 30 50 71 36 30
+0000005 * 崎村______ 50 F 82 79 16 21 80
+FIN
+
+# 入力用tmpファイルからBOM付きCRLFとBOM付きCRの各ファイルを作る
+BOMandEOLvariation $tmp-master $tmp-masterBOMCRLF $tmp-masterBOMCR
+BOMandEOLvariation $tmp-tran $tmp-tranBOMCRLF $tmp-tranBOMCR
+
+# BOM付きCRLF
+${com} key=1 $tmp-masterBOMCRLF $tmp-tranBOMCRLF > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST7-1 error"
+
+# BOM付きCR
+${com} key=1 $tmp-masterBOMCR $tmp-tranBOMCR > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST7-2 error"
+
+# pipe接続（tmp-master/tmp-tran）
+
+# BOM付きCRLF
+cat $tmp-masterBOMCRLF | ${com} key=1 - $tmp-tranBOMCRLF > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST7-3 error"
+
+cat $tmp-tranBOMCRLF | ${com} key=1 $tmp-masterBOMCRLF - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST7-4 error"
+
+# BOM付きCR
+cat $tmp-masterBOMCR | ${com} key=1 - $tmp-tranBOMCR > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST7-5 error"
+
+cat $tmp-tranBOMCR | ${com} key=1 $tmp-masterBOMCR - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST7-6 error"
+
+###########################################
+#TEST8
+# TEST1の変形版
+# masterがキー値について昇順でなくキー値の同じものも複数ある場合の試験
+
+cat << FIN > $tmp-tran
+0000000 浜地______ 50 F 91 59 20 76 54
+0000001 鈴田______ 50 F 46 39 8  5  21
+0000004 白土______ 40 M 58 71 20 10 6
+0000003 杉山______ 26 F 30 50 71 36 30
+0000005 崎村______ 50 F 82 79 16 21 80
+FIN
+
+# masterからはキー値が同じ類のうち最後に現われたものが有効になる
+cat << FIN > $tmp-master
+0000001 B
+0000004 A
+0000001 Z
+FIN
+
+cat << FIN > $tmp-ans
+0000000 * 浜地______ 50 F 91 59 20 76 54
+0000001 Z 鈴田______ 50 F 46 39 8 5 21
+0000004 A 白土______ 40 M 58 71 20 10 6
+0000003 * 杉山______ 26 F 30 50 71 36 30
+0000005 * 崎村______ 50 F 82 79 16 21 80
+FIN
+
+${com} key=1 $tmp-master $tmp-tran > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST8 error"
+
+###########################################
+#TEST9
+# TEST1の変形版
+# NFC文字（濁音/半濁音が1文字）とNFD文字（濁音/半濁音が清音+結合用濁点/結合用半濁点の2文字で構成される）を同値化して処理する
+
+# tranの第1欄は濁音NFD
+cat << FIN > $tmp-tran
+0000000がぎぐげご 浜地______ 50 F 91 59 20 76 54
+0000001ざじずぜぞ 鈴田______ 50 F 46 39 8  5  21
+0000004ばびぶべぼ 白土______ 40 M 58 71 20 10 6
+0000003だぢづでど 杉山______ 26 F 30 50 71 36 30
+0000005ぱぴぷぺぽ 崎村______ 50 F 82 79 16 21 80
+FIN
+
+# masterの第1欄は濁音NFC
+cat << FIN > $tmp-master
+0000001ざじずぜぞ B
+0000004ばびぶべぼ A
+FIN
+
+# 出力は全欄がNFCとなる
+cat << FIN > $tmp-ans
+0000000がぎぐげご * 浜地______ 50 F 91 59 20 76 54
+0000001ざじずぜぞ B 鈴田______ 50 F 46 39 8 5 21
+0000004ばびぶべぼ A 白土______ 40 M 58 71 20 10 6
+0000003だぢづでど * 杉山______ 26 F 30 50 71 36 30
+0000005ぱぴぷぺぽ * 崎村______ 50 F 82 79 16 21 80
+FIN
+
+${com} key=1 $tmp-master $tmp-tran > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST9-1 error"
+
+# tranとmasterのNFC/NFDを入れ替える
+
+# tranの第1欄は濁音NFC
+cat << FIN > $tmp-tran
+0000000がぎぐげご 浜地______ 50 F 91 59 20 76 54
+0000001ざじずぜぞ 鈴田______ 50 F 46 39 8  5  21
+0000004ばびぶべぼ 白土______ 40 M 58 71 20 10 6
+0000003だぢづでど 杉山______ 26 F 30 50 71 36 30
+0000005ぱぴぷぺぽ 崎村______ 50 F 82 79 16 21 80
+FIN
+
+# masterの第1欄は濁音NFD
+cat << FIN > $tmp-master
+0000001ざじずぜぞ B
+0000004ばびぶべぼ A
+FIN
+
+# 出力は全欄がNFCとなる
+cat << FIN > $tmp-ans
+0000000がぎぐげご * 浜地______ 50 F 91 59 20 76 54
+0000001ざじずぜぞ B 鈴田______ 50 F 46 39 8 5 21
+0000004ばびぶべぼ A 白土______ 40 M 58 71 20 10 6
+0000003だぢづでど * 杉山______ 26 F 30 50 71 36 30
+0000005ぱぴぷぺぽ * 崎村______ 50 F 82 79 16 21 80
+FIN
+
+${com} key=1 $tmp-master $tmp-tran > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST9-2 error"
+
+###########################################
+#TEST10
+# 文字列の「ゆるい一致」の試験
+
+# tmp-masterにUCSがある場合のtmp-tranのIVSとのmatching
+
+cat << FIN > $tmp-tran
+浜地 0000000 50 F 91 59 20 76 54
+渡邉󠄐 0000001 50 F 46 39 8  5  21
+杉山 0000003 26 F 30 50 71 36 30
+渡邉󠄑 0000004 40 M 58 71 20 10 6
+崎村 0000005 50 F 82 79 16 21 80
+渡邉󠄒 0000006 40 M 55 72 21 8 20
+FIN
+
+# tmp-tranの説明
+# 2行目先頭欄の「渡邉󠄐」は「渡(U+6E21)邉󠄐(U+9089;U+E0110)」で2字目はIVS
+# 4行目先頭欄の「渡邉󠄑」は「渡(U+6E21)邉󠄑(U+9089;U+E0111)」で2字目はIVS
+# 6行目先頭欄の「渡邉󠄒」は「渡(U+6E21)邉󠄒(U+9089;U+E0112)」で2字目はIVS
+
+cat << FIN > $tmp-master
+渡邉 B
+崎村 A
+FIN
+
+# tmp-masterの説明
+# 1行目先頭欄の「渡邉」は「渡(U+6E21)邉(U+9089)」で2字目はUCS
+
+# tmp-masterの1行目は2字目がUCSの「邉(U+9089)」なのでtmp-tranにあるU+9089を基底文字とするすべてのIVSと一致する
+
+cat << FIN > $tmp-ans
+浜地 * 0000000 50 F 91 59 20 76 54
+渡邉󠄐 B 0000001 50 F 46 39 8 5 21
+杉山 * 0000003 26 F 30 50 71 36 30
+渡邉󠄑 B 0000004 40 M 58 71 20 10 6
+崎村 A 0000005 50 F 82 79 16 21 80
+渡邉󠄒 B 0000006 40 M 55 72 21 8 20
+FIN
+
+${com} key=1 $tmp-master $tmp-tran > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST10-1 error"
+
+# tmp-tranにUCSがある場合のtmp-masterのIVSとのmatching
+# masterの値部（非キー欄）についてdummy文字列のために変則的な表示幅計算の試験もする
+
+cat << FIN > $tmp-tran
+浜地 0000000 50 F 91 59 20 76 54
+渡邉 0000001 50 F 46 39 8  5  21
+杉山 0000003 26 F 30 50 71 36 30
+渡邉󠄐 0000004 40 M 58 71 20 10 6
+崎村 0000005 50 F 82 79 16 21 80
+FIN
+
+# tmp-tranの説明
+# 2行目先頭欄の「渡邉」は「渡(U+6E21)邉(U+9089)」で2字目はUCS
+# 4行目先頭欄の「渡邉󠄐」は「渡(U+6E21)邉󠄐(U+9089;U+E0110)」で2字目はIVS
+
+cat << FIN > $tmp-master
+渡邉󠄐 𫝆󠄁川 いまか゚わ
+渡邉󠄑 羽︀田 はた
+渡邉󠄒 𠮷田 よしだ
+FIN
+
+# tmp-masterの説明
+# 1行目の「渡邉󠄐」は「渡(U+6E21)邉󠄐(U+9089;U+E0110)」で2字目はIVS 「𫝆󠄁川」は「𫝆󠄁(U+2B746;U+E0101)川(U+5DDD)」 「いまか゚わ」は結合文字列「か゚(U+304B;U+309A)」を使用
+# 2行目の「渡邉󠄑」は「渡(U+6E21)邉󠄑(U+9089;U+E0111)」で2字目はIVS 「羽︀田」は「羽︀(U+7FBD;U+FE00)田(U+7530)」
+# 3行目の「渡邉󠄒」は「渡(U+6E21)邉󠄒(U+9089;U+E0112)」で2字目はIVS 「𠮷田」は「𠮷(U+20BB7)田(U+7530)」
+
+# tmp-tranの2行目先頭欄は2字目がUCSの「邉(U+9089)」なのでtmp-masterのU+9089を基底文字とするすべてのIVSと一致する
+#  （実際にはtmp-masterの最終行の「渡(U+6E21)邉󠄒(U+9089;U+E0112)」と一致してその値部「𠮷田 よしだ」が連結に使用される）←tmp-masterは後方からscanされるため
+# tmp-tranの4行目先頭欄は2字目がIVSの「邉󠄐(U+9089;U+E0110)」なのでtmp-masterの先頭行と一致してその値部「𫝆󠄁川 いまか゚わ」が連結に使用される
+
+cat << FIN > $tmp-ans
+浜地 **** ******** 0000000 50 F 91 59 20 76 54
+渡邉 𠮷田 よしだ 0000001 50 F 46 39 8 5 21
+杉山 **** ******** 0000003 26 F 30 50 71 36 30
+渡邉󠄐 𫝆󠄁川 いまか゚わ 0000004 40 M 58 71 20 10 6
+崎村 **** ******** 0000005 50 F 82 79 16 21 80
+FIN
+
+${com} key=1 $tmp-master $tmp-tran > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST10-2 error"
+
+###########################################
+#TEST11
+# TEST4の変型
+# キー指定の試験
+#  キー指定に使用できる記号
+#    /   a/bでフィールド番号aからフィールド番号bまでの区間を指定する a<=bの正順でもa>=bの逆順でもよい
+#    NF  入力行にあるフィールドの数を表わす NF-nとすると最後（最右端）のフィールドから数えてn番前のフィールドを意味する
+#    @   単一のフィールドまたはフィールド区間を連接するための区切りに使用する 複数回の連接もできる
+#  指定したフィールドに重複があっても単一化される
+
+cat << FIN > $tmp-tran
+DDD 004 堅田 へへへ 丁
+AAA 001 山田 あはは 甲
+CCC 003 太田 ふふふ 丙
+BBB 002 上田 おほほ 乙
+FIN
+
+cat << FIN > $tmp-master
+002 上田 富山 乙
+003 太田 石川 丙
+FIN
+
+cat << FIN > $tmp-ans
+004 堅田 丁 **** DDD へへへ
+001 山田 甲 **** AAA あはは
+003 太田 丙 石川 CCC ふふふ
+002 上田 乙 富山 BBB おほほ
+FIN
+
+# コマンドの説明
+# キー指定の「3/2@NF」は「3～2と5」となり「2,3,5」と整理される
+
+${com} key=3/2@NF $tmp-master $tmp-tran > $tmp-out
+
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST11 error"
+
+###########################################
+#TEST12
+# キーに0を指定すると「全欄指定」となる
+# TEST1を変形
+
+cat << FIN > $tmp-tran
+0000000 浜地______ 50 F 91 59 20 76 54
+0000001 鈴田______ 50 F 46 39 8  5  21
+0000004 白土______ 40 M 58 71 20 10 6
+0000003 杉山______ 26 F 30 50 71 36 30
+0000005 崎村______ 50 F 82 79 16 21 80
+FIN
+
+cat << FIN > $tmp-master
+0000001 鈴田______ 50 F 46 39 8  5  21 B
+0000004 白土______ 40 M 58 71 20 10 6 A
+FIN
+
+cat << FIN > $tmp-ans
+0000000 浜地______ 50 F 91 59 20 76 54 *
+0000001 鈴田______ 50 F 46 39 8 5 21 B
+0000004 白土______ 40 M 58 71 20 10 6 A
+0000003 杉山______ 26 F 30 50 71 36 30 *
+0000005 崎村______ 50 F 82 79 16 21 80 *
+FIN
+
+${com} key=0 $tmp-master $tmp-tran > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST12-1 error"
+
+# キー指定にひとつでも0があれば全欄指定となる
+${com} key=0@5/3 $tmp-master $tmp-tran > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST12-2 error"
+
+###########################################
 rm -f $tmp-*
 echo "${pythonversion} ${name}" OK
 exit 0

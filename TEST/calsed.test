@@ -42,6 +42,12 @@ ERROR_CHECK(){
 	exit 1
 }
 
+BOMandEOLvariation(){	# BOM無しLF改行ファイル（$1）からBOM付きCRLF改行ファイル（$2）とBOM付きCR改行ファイル（$3）を生成する
+	 [ $# -eq 3 ]; ERROR_CHECK "TESTスクリプト内のBOMandEOLvariation()でファイル指定が不正"
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r\n/g' -e 's/$/\r/' $1 >$2	# $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r/g' $1 | tr '\n' '\r' >$3	# $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
+}
+
 ###########################################
 # TEST1
 # 直接置換文字列を指定する。
@@ -51,25 +57,49 @@ cat << FIN > $tmp-data
 <td>AGE</td>
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 <td>usp</td>
 <td>25</td>
 FIN
 
-${com} NAME usp $tmp-data | ${com} AGE 25 - > $tmp-ans
+${com} NAME usp $tmp-data | ${com} AGE 25 - > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST1 error"
+
+###########################################
+# TEST1-1
+# 直接置換文字列を指定する。
+# 置換対象文字列に4バイト文字（Unicode符号位置がU+FFFF超の文字）を与える
+# 代用対/IVS/SVSの処理検査
+
+cat << FIN > $tmp-data2
+<td>神︀邊󠄊𠀋一</td>
+<td>AGE</td>
+FIN
+
+# 「神︀」はSVSの例で神︀(U+795E;U+FE00) 字体は神(U+FA19)と同じ（SVSをサポートするフォントのとき）
+# 「邊󠄊」はIVSの例で邊󠄊(U+908A;U+E010A)代用対では邊󠄊(U+908A;U+DB40-U+DD0A)
+# 「𠀋」は𠀋(U+2000B)代用対では𠀋(U+D840-U+DC0B)
+
+cat << FIN > $tmp-ans
+<td>神邊丈一</td>
+<td>25</td>
+FIN
+
+${com} 神︀邊󠄊𠀋一 神邊丈一 $tmp-data2 | ${com} AGE 25 - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1-1 error"
 
 ###########################################
 # TEST2
 # 置換後文字列に空白がある場合
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 <td>usp lab</td>
 <td>AGE</td>
 FIN
 
-${com} NAME "usp lab" $tmp-data > $tmp-ans
+${com} NAME "usp lab" $tmp-data > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST2 error"
 
@@ -77,12 +107,12 @@ diff $tmp-ans $tmp-out
 # TEST3
 # 置換後文字列にヌル文字列
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 <td></td>
 <td>AGE</td>
 FIN
 
-${com} NAME @ $tmp-data > $tmp-ans
+${com} NAME @ $tmp-data > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST3 error"
 
@@ -90,27 +120,92 @@ diff $tmp-ans $tmp-out
 # TEST4
 # ヌル文字列を変更する
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 <td>@</td>
 <td>AGE</td>
 FIN
 
-${com} -nx NAME @ $tmp-data > $tmp-ans
+${com} -nx NAME @ $tmp-data > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST4 error"
+
+###########################################
+# TEST4-1
+# ヌル文字列を変更する
+# -n指定と置換先文字列指定で4バイト文字（Unicode符号位置がU+FFFF超の文字）を与える
+# -n指定文字列と置換先文字列がともに「𠆢」なので置換元の文字列「NAME」はヌル（空）になる
+
+cat << FIN > $tmp-data2
+<td>NAME</td>
+<td>𠆢</td>
+FIN
+
+cat << FIN > $tmp-ans
+<td></td>
+<td>𠆢</td>
+FIN
+
+# 「𠆢」は𠆢(U+201A2)代用対では𠆢(U+D840-U+DDA2)
+
+${com} -n𠆢 NAME 𠆢 $tmp-data2 > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4-1 error"
+
+###########################################
+# TEST4-2
+# ヌル文字列を変更する
+# -n指定と置換先文字列指定で4バイト文字（Unicode符号位置がU+FFFF超の文字）を与える
+# -n指定文字列と置換先文字列がともに「神︀邊󠄊𠀋一」なので置換元の文字列「NAME」はヌル（空）になる
+# 代用対/IVS/SVSの処理検査
+
+cat << FIN > $tmp-data3
+<td>NAME</td>
+<td>𠆢</td>
+FIN
+
+cat << FIN > $tmp-ans
+<td></td>
+<td>𠆢</td>
+FIN
+
+# 「神︀」はSVSの例で神︀(U+795E;U+FE00) 字体は神(U+FA19)と同じ（SVSをサポートするフォントのとき）
+# 「邊󠄊」はIVSの例で邊󠄊(U+908A;U+E010A)代用対では邊󠄊(U+908A;U+DB40-U+DD0A)
+# 「𠀋」は𠀋(U+2000B)代用対では𠀋(U+D840-U+DC0B)
+
+# 「𠆢」は𠆢(U+201A2)代用対では𠆢(U+D840-U+DDA2)
+
+${com} -n神︀邊󠄊𠀋一 NAME 神︀邊󠄊𠀋一 $tmp-data3 > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4-2 error"
 
 ###########################################
 # TEST5
 # 空白に変換する文字を指定する
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 <td>usp lab</td>
 <td>AGE</td>
 FIN
 
-${com} -s_ NAME usp_lab $tmp-data > $tmp-ans
+${com} -s_ NAME usp_lab $tmp-data > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST5 error"
+
+###########################################
+# TEST5-1
+# 空白に変換する文字を指定する
+# -s指定と置換先文字列指定で4バイト文字（Unicode符号位置がU+FFFF超の文字）を与える
+
+cat << FIN > $tmp-ans
+<td>usp lab</td>
+<td>AGE</td>
+FIN
+
+# 「𠆢」は𠆢(U+201A2)代用対では𠆢(U+D840-U+DDA2)
+
+${com} -s𠆢 NAME usp𠆢lab $tmp-data > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5-1 error"
 
 ###########################################
 # TEST6
@@ -123,12 +218,12 @@ NAME usp
 AGE 25
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 <td>usp</td>
 <td>25</td>
 FIN
 
-${com} -f $tmp-script $tmp-data > $tmp-ans
+${com} -f $tmp-script $tmp-data > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST6 error"
 
@@ -144,12 +239,12 @@ NAME @
 AGE
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 <td></td>
 <td></td>
 FIN
 
-${com} -f $tmp-script2 $tmp-data > $tmp-ans
+${com} -f $tmp-script2 $tmp-data > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST7 error"
 
@@ -162,12 +257,12 @@ NAME  usp lab
 AGE 25
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 <td> usp lab </td>
 <td>25</td>
 FIN
 
-${com} -f $tmp-script3 $tmp-data > $tmp-ans
+${com} -f $tmp-script3 $tmp-data > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST8 error"
 
@@ -180,17 +275,452 @@ NAME usp_lab
 AGE 25
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 <td>usp lab</td>
 <td>25</td>
 FIN
 
-${com} -s_ -f $tmp-script4 $tmp-data > $tmp-ans
+${com} -s_ -f $tmp-script4 $tmp-data > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST9 error"
 
 ###########################################
+# TEST9-1
+# 空白文字に置換する文字を指定
+# -s指定で4バイト文字（Unicode符号位置がU+FFFF超の文字）を与える
+
+cat << FIN > $tmp-script4
+NAME usp𠆢lab
+AGE 25
+FIN
+
+cat << FIN > $tmp-ans
+<td>usp lab</td>
+<td>25</td>
+FIN
+
+# 「𠆢」は𠆢(U+201A2)代用対では𠆢(U+D840-U+DDA2)
+
+${com} -s𠆢 -f $tmp-script4 $tmp-data > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST9-1 error"
+
+###########################################
+# TEST10
+# TEST1の拡大版
+# BOM付き/BOM無しと改行記号CRLF/CR/LFの試験
+# 直接置換文字列を指定する。
+
+cat << FIN > $tmp-data
+<td>NAME</td>
+<td>AGE</td>
+FIN
+
+cat << FIN > $tmp-ans
+<td>usp</td>
+<td>25</td>
+FIN
+
+# 入力用tmpファイルからBOM付きCRLFとBOM付きCRの各ファイルを作る
+BOMandEOLvariation $tmp-data $tmp-dataBOMCRLF $tmp-dataBOMCR
+
+# BOM付きCRLF
+${com} NAME usp $tmp-dataBOMCRLF | ${com} AGE 25 - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST10-1 error"
+
+# BOM付きCR
+${com} NAME usp $tmp-dataBOMCR | ${com} AGE 25 - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST10-2 error"
+
+# pipe接続
+
+# BOM付きCRLF
+cat $tmp-dataBOMCRLF | ${com} NAME usp - | ${com} AGE 25 - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST10-3 error"
+
+# BOM付きCR
+cat $tmp-dataBOMCR | ${com} NAME usp - | ${com} AGE 25 - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST10-4 error"
+
+###########################################
+# TEST11
+# TEST6の拡大版
+# BOM付き/BOM無しと改行記号CRLF/CR/LFの試験
+# 変換元文字列と変換後文字列をセットにしたファイルを指定して、
+# 置換を行うことができます。
+# このファイルは name 形式であることが必要です。
+
+cat << FIN > $tmp-script
+NAME usp
+AGE 25
+FIN
+
+cat << FIN > $tmp-ans
+<td>usp</td>
+<td>25</td>
+FIN
+
+# 入力用tmpファイルからBOM付きCRLFとBOM付きCRの各ファイルを作る
+BOMandEOLvariation $tmp-data $tmp-dataBOMCRLF $tmp-dataBOMCR
+BOMandEOLvariation $tmp-script $tmp-scriptBOMCRLF $tmp-scriptBOMCR
+
+# BOM付きCRLF
+${com} -f $tmp-scriptBOMCRLF $tmp-dataBOMCRLF > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST11-1 error"
+
+# BOM付きCR
+${com} -f $tmp-scriptBOMCR $tmp-dataBOMCR > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST11-2 error"
+
+# pipe接続
+
+# BOM付きCRLF
+cat $tmp-dataBOMCRLF | ${com} -f $tmp-scriptBOMCRLF - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST11- error"
+
+# BOM付きCR
+cat $tmp-dataBOMCR | ${com} -f $tmp-scriptBOMCR - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST11-4 error"
+
+###########################################
+# TEST12
+# TEST1の変型版
+# NFC文字（濁音/半濁音が1文字）とNFD文字（濁音/半濁音が清音+結合用濁点/結合用半濁点の2文字で構成される）を同値化して処理する
+#
+
+# 変換対象ファイル1
+# 「がぎぐげご」と「ぱぴぷぺぽ」はNFD
+cat << FIN > $tmp-data1
+<td>がぎぐげご</td>
+<td>ぱぴぷぺぽ</td>
+FIN
+
+# 変換対象ファイル2
+# 「がぎぐげご」と「ぱぴぷぺぽ」はNFC
+cat << FIN > $tmp-data2
+<td>がぎぐげご</td>
+<td>ぱぴぷぺぽ</td>
+FIN
+
+# 変換指定ファイル1
+# 変換元文字列はNFC
+cat << FIN > $tmp-script1
+がぎぐげご usp
+ぱぴぷぺぽ 25
+FIN
+
+# 変換指定ファイル2
+# 変換元文字列はNFD
+cat << FIN > $tmp-script2
+がぎぐげご usp
+ぱぴぷぺぽ 25
+FIN
+
+# 変換指定ファイル3
+# 文字列はNFC
+cat << FIN > $tmp-script3
+がぎぐげご ぐ
+ぱぴぷぺぽ
+FIN
+
+# 変換指定ファイル4
+# 文字列はNFD
+cat << FIN > $tmp-script4
+がぎぐげご ぐ
+ぱぴぷぺぽ
+FIN
+
+# 変換指定ファイル5
+# 文字列はNFC
+cat << FIN > $tmp-script5
+がぎぐげご uspぐlab
+ぱぴぷぺぽ 2ぐ5
+FIN
+
+# 変換指定ファイル6
+# 文字列はNFD
+cat << FIN > $tmp-script6
+がぎぐげご uspぐlab
+ぱぴぷぺぽ 2ぐ5
+FIN
+
+# 正しい出力1
+cat << FIN > $tmp-ans1
+<td>usp</td>
+<td>25</td>
+FIN
+
+# 正しい出力2
+cat << FIN > $tmp-ans2
+<td></td>
+<td></td>
+FIN
+
+# 正しい出力3
+cat << FIN > $tmp-ans3
+<td>usp lab</td>
+<td>2 5</td>
+FIN
+
+# コマンド行で変換元文字列と変換先文字列を指定する例
+
+# TEST12-1
+# 置換対象ファイルにNFD文字がありコマンド行のパラメータにNFC文字がある場合
+# 「がぎぐげご」と「ぱぴぷぺぽ」はNFC
+${com} がぎぐげご usp $tmp-data1 | ${com} ぱぴぷぺぽ 25 - > $tmp-out
+diff $tmp-ans1 $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST12-1 error"
+
+# TEST12-2
+# 置換対象ファイルにNFC文字がありコマンド行のパラメータにNFD文字がある場合
+# 「がぎぐげご」と「ぱぴぷぺぽ」はNFD
+${com} がぎぐげご usp $tmp-data1 | ${com} ぱぴぷぺぽ 25 - > $tmp-out
+diff $tmp-ans1 $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST12-2 error"
+
+# 変換指定ファイルを使用する例
+
+# TEST12-3
+# 置換対象ファイル$tmp-data1にNFD文字があり変換指定ファイル$tmp-script1にNFC文字がある場合
+${com} -f $tmp-script1 $tmp-data1 > $tmp-out
+diff $tmp-ans1 $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST12-3 error"
+
+# TEST12-4
+# 置換対象ファイル$tmp-data2にNFC文字があり変換指定ファイル$tmp-script2にNFD文字がある場合
+${com} -f $tmp-script2 $tmp-data2 > $tmp-out
+diff $tmp-ans1 $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST12-4 error"
+
+# null文字に置換する文字を指定（-n指定）
+
+# TEST12-5
+# null文字に置換する文字の指定にNFD文字を使用し変換指定ファイル$tmp-script3のNFC文字と照合させる
+${com} -nぐ -f $tmp-script3 $tmp-data1 > $tmp-out
+diff $tmp-ans2 $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST12-5 error"
+
+# TEST12-6
+# null文字に置換する文字の指定にNFC文字を使用し変換指定ファイル$tmp-script4のNFD文字と照合させる
+${com} -nぐ -f $tmp-script4 $tmp-data2 > $tmp-out
+diff $tmp-ans2 $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST12-6 error"
+
+# 空白文字に置換する文字を指定（-s指定）
+
+# TEST12-7
+# 空白文字に置換する文字の指定にNFD文字を使用し変換指定ファイル$tmp-script5のNFC文字と照合させる
+${com} -sぐ -f $tmp-script5 $tmp-data1 > $tmp-out
+diff $tmp-ans3 $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST12-7 error"
+
+# TEST12-8
+# 空白文字に置換する文字の指定にNFC文字を使用し変換指定ファイル$tmp-script6のNFD文字と照合させる
+${com} -sぐ -f $tmp-script6 $tmp-data2 > $tmp-out
+diff $tmp-ans3 $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST12-8 error"
+
+###########################################
+# TEST13
+# 文字列の「ゆるい一致」の試験
+#
+
+# 変換対象ファイル1
+# 「齋藤」と「渡邉󠄐」は「齋」と「渡」についてUCSとIVSの両方がある
+cat << FIN > $tmp-data1
+齋藤 齋(U+9F4B)藤(U+85E4) UCS
+齋󠄄藤 齋󠄄(U+9F4B;U+E0104)藤(U+85E4) IVS
+齋󠄅藤 齋󠄅(U+9F4B;U+E0105)藤(U+85E4) IVS
+齋󠄆藤 齋󠄆(U+9F4B;U+E0106)藤(U+85E4) IVS
+渡邉󠄐 渡(U+6E21)邉󠄐(U+9089;U+E0110) IVS
+渡邉󠄑 渡(U+6E21)邉󠄑(U+9089;U+E0111) IVS
+渡邉󠄒 渡(U+6E21)邉󠄒(U+9089;U+E0112) IVS
+渡邉 渡(U+6E21)邉(U+9089) UCS
+FIN
+
+# 正しい出力1
+cat << FIN > $tmp-ans1
+さいとう 齋(U+9F4B)藤(U+85E4) UCS
+さいとう 齋󠄄(U+9F4B;U+E0104)藤(U+85E4) IVS
+さいとう 齋󠄅(U+9F4B;U+E0105)藤(U+85E4) IVS
+さいとう 齋󠄆(U+9F4B;U+E0106)藤(U+85E4) IVS
+わたなべ 渡(U+6E21)邉󠄐(U+9089;U+E0110) IVS
+わたなべ 渡(U+6E21)邉󠄑(U+9089;U+E0111) IVS
+わたなべ 渡(U+6E21)邉󠄒(U+9089;U+E0112) IVS
+わたなべ 渡(U+6E21)邉(U+9089) UCS
+FIN
+
+# 正しい出力2
+cat << FIN > $tmp-ans2
+さいとう 齋(U+9F4B)藤(U+85E4) UCS
+齋󠄄藤 齋󠄄(U+9F4B;U+E0104)藤(U+85E4) IVS
+さいとう 齋󠄅(U+9F4B;U+E0105)藤(U+85E4) IVS
+齋󠄆藤 齋󠄆(U+9F4B;U+E0106)藤(U+85E4) IVS
+渡邉󠄐 渡(U+6E21)邉󠄐(U+9089;U+E0110) IVS
+わたなべ 渡(U+6E21)邉󠄑(U+9089;U+E0111) IVS
+渡邉󠄒 渡(U+6E21)邉󠄒(U+9089;U+E0112) IVS
+わたなべ 渡(U+6E21)邉(U+9089) UCS
+FIN
+
+# 正しい出力3
+cat << FIN > $tmp-ans3
+ 齋(U+9F4B)藤(U+85E4) UCS
+ 齋󠄄(U+9F4B;U+E0104)藤(U+85E4) IVS
+ 齋󠄅(U+9F4B;U+E0105)藤(U+85E4) IVS
+ 齋󠄆(U+9F4B;U+E0106)藤(U+85E4) IVS
+渡邉󠄐 渡(U+6E21)邉󠄐(U+9089;U+E0110) IVS
+渡邉󠄑 渡(U+6E21)邉󠄑(U+9089;U+E0111) IVS
+渡邉󠄒 渡(U+6E21)邉󠄒(U+9089;U+E0112) IVS
+渡邉 渡(U+6E21)邉(U+9089) UCS
+FIN
+
+# 正しい出力4
+cat << FIN > $tmp-ans4
+ 齋(U+9F4B)藤(U+85E4) UCS
+齋󠄄藤 齋󠄄(U+9F4B;U+E0104)藤(U+85E4) IVS
+ 齋󠄅(U+9F4B;U+E0105)藤(U+85E4) IVS
+齋󠄆藤 齋󠄆(U+9F4B;U+E0106)藤(U+85E4) IVS
+渡邉󠄐 渡(U+6E21)邉󠄐(U+9089;U+E0110) IVS
+渡邉󠄑 渡(U+6E21)邉󠄑(U+9089;U+E0111) IVS
+渡邉󠄒 渡(U+6E21)邉󠄒(U+9089;U+E0112) IVS
+渡邉 渡(U+6E21)邉(U+9089) UCS
+FIN
+
+# 正しい出力5
+cat << FIN > $tmp-ans5
+さい とう 齋(U+9F4B)藤(U+85E4) UCS
+さい とう 齋󠄄(U+9F4B;U+E0104)藤(U+85E4) IVS
+さい とう 齋󠄅(U+9F4B;U+E0105)藤(U+85E4) IVS
+さい とう 齋󠄆(U+9F4B;U+E0106)藤(U+85E4) IVS
+わた なべ 渡(U+6E21)邉󠄐(U+9089;U+E0110) IVS
+わた なべ 渡(U+6E21)邉󠄑(U+9089;U+E0111) IVS
+わた なべ 渡(U+6E21)邉󠄒(U+9089;U+E0112) IVS
+わた なべ 渡(U+6E21)邉(U+9089) UCS
+FIN
+
+# コマンド行で変換元文字列と変換先文字列を指定する例
+# 変換指定ファイルを使用する例
+
+# TEST13-1
+# 変換元の「齋藤」の「齋」と「渡邉」の「邉」はUCSなので、入力ファイル中のIVSの「齋󠄄」を含む「齋󠄄藤」すべてを「さいとう」に、IVSの「邉」を含む「渡邉」すべてを「わたなべ」に置換する
+
+${com} 齋藤 さいとう $tmp-data1 | ${com} 渡邉 わたなべ - > $tmp-out
+diff $tmp-ans1 $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST13-1 error"
+
+# TEST13-2
+# 変換元の「齋󠄅藤」は「齋󠄅(U+9F4B;U+E0105)藤(U+85E4)」でIVS
+# 変換元の「渡邉󠄑」は「渡(U+6E21)邉󠄑(U+9089;U+E0111)」でIVS
+# なのでこれらと完全に一致する「齋󠄅藤」と「渡邉󠄑」を有する行においてのみ置換が実行される
+
+${com} 齋󠄅藤 さいとう $tmp-data1 | ${com} 渡邉󠄑 わたなべ - > $tmp-out
+diff $tmp-ans2 $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST13-2 error"
+
+# 変換指定ファイル1
+# 変換元の「齋藤」は「齋(U+9F4B)藤(U+85E4)」でUCS
+# 変換元の「渡邉」は「渡(U+6E21)邉(U+9089)」でUCS
+# なのでこれらと完全に一致する「齋藤」と「渡邉」を有する行
+# および基底文字「齋(U+9F4B)」を持つIVSの「齋」を含む「齋藤」と基底文字「邉(U+9089)」を持つIVSの「邉」を含む「渡邉」を有する行において置換が実行される
+
+cat << FIN > $tmp-script1
+齋藤 さいとう
+渡邉 わたなべ
+FIN
+
+# TEST13-3
+${com} -f $tmp-script1 $tmp-data1 > $tmp-out
+diff $tmp-ans1 $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST13-3 error"
+
+# 変換指定ファイル2
+# 変換元の「齋󠄅藤」は「齋󠄅(U+9F4B;U+E0105)藤(U+85E4)」でIVS
+# 変換元の「渡邉󠄑」は「渡(U+6E21)邉󠄑(U+9089;U+E0111)」でIVS
+# なのでこれらと完全に一致する「齋󠄅藤」と「渡邉󠄑」を有する行
+# およびUCSの「齋藤」と「渡邉」を有する行においてのみ置換が実行される
+
+cat << FIN > $tmp-script2
+齋󠄅藤 さいとう
+渡邉󠄑 わたなべ
+FIN
+
+# TEST13-4
+${com} -f $tmp-script2 $tmp-data1 > $tmp-out
+diff $tmp-ans2 $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST13-4 error"
+
+# null文字に置換する文字を指定（-n指定）
+
+# TEST13-5
+# 変換元の「齋藤」は「齋(U+9F4B)藤(U+85E4)」でUCS
+# 変換先の「渡邉」は「渡(U+6E21)邉(U+9089)」でUCS
+# -n指定の「渡邉」は「渡(U+6E21)邉(U+9089)」でUCS
+# 変換先と-n指定が一致するので変換元「齋藤」の実効的な変換先はnullとなる
+${com} -n渡邉 齋藤 渡邉 $tmp-data1 > $tmp-out
+diff $tmp-ans3 $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST13-5 error"
+
+# 変換指定ファイル3
+# 変換元の「齋藤」は「齋(U+9F4B)藤(U+85E4)」でUCS
+# 変換先の「渡邉」は「渡(U+6E21)邉(U+9089)」でUCS
+cat << FIN > $tmp-script3
+齋藤 渡邉
+あいうえお かきくけこ
+FIN
+
+# TEST13-6
+# -n指定の「渡邉」は「渡(U+6E21)邉(U+9089)」でUCS
+# 変換先と-n指定が一致するので変換元「齋藤」の実効的な変換先はnullとなる
+${com} -n渡邉 -f $tmp-script3 $tmp-data1 > $tmp-out
+diff $tmp-ans3 $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST13-6 error"
+
+# TEST13-7
+# 変換元の「齋󠄅藤」は「齋󠄅(U+9F4B;U+E0105)藤(U+85E4)」でIVS
+# 変換先の「渡邉」は「渡(U+6E21)邉(U+9089)」で UCS
+# -nの「渡邉󠄑」は「渡(U+6E21)邉󠄑(U+9089;U+E0111)」でIVS
+# 変換先と-n指定が「ゆるい一致」をするので変換元「齋藤」の実効的な変換先はnullとなる
+${com} -n渡邉󠄑 齋󠄅藤 渡邉 $tmp-data1 > $tmp-out
+diff $tmp-ans4 $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST13-7 error"
+
+# 変換指定ファイル4
+# 変換元の「齋󠄅藤」は「齋󠄅(U+9F4B;U+E0105)藤(U+85E4)」でIVS
+# 変換先の「渡邉」は「渡(U+6E21)邉(U+9089)」で UCS
+cat << FIN > $tmp-script4
+齋󠄅藤 渡邉󠄑
+あいうえお かきくけこ
+FIN
+
+# TEST13-8
+# -nの「渡邉󠄑」は「渡(U+6E21)邉󠄑(U+9089;U+E0111)」でIVS
+# 変換指定ファイル$tmp-script4中の変換元文字列の「齋󠄅藤」はIVSを使用するので自身と同一の文字列とUCSを使用した文字列に「ゆるい一致」をする
+# null文字に置換する文字の指定にIVSを使用し変換指定ファイル$tmp-script4中の変換先文字列にUCSを使用するので「ゆるい一致」をする
+# 変換先と-n指定が「ゆるい一致」をするので変換元「齋藤」の実効的な変換先はnullとなる
+${com} -n渡邉󠄑 -f $tmp-script4 $tmp-data1 > $tmp-out
+diff $tmp-ans4 $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST13-8 error"
+
+# 空白文字に置換する文字を指定（-s指定）
+
+# TEST13-9
+# 変換元の「齋藤」と「渡邉」はUCSなので入力ファイル中のUCS/IVSの「齋󠄄藤」すべてとUCS/IVSの「渡邉」すべてがhitする
+# 変換先は「さい齋󠄅とう」と「わた邉󠄑なべ」
+# ただし-s指定で「齋」=「齋(U+9F4B)」と「邉」=「邉(U+9089)」のUCS文字を使用しているので変換先文字列中の
+# 「齋󠄅」=「齋󠄅(U+9F4B;U+E0105)」と「邉󠄑」=「邉󠄑(U+9089;U+E0111)に対して「ゆるい一致」をして空白化する
+${com} -s齋 齋藤 さい齋󠄅とう $tmp-data1 | ${com} -s邉󠄑 渡邉 わた邉なべ - > $tmp-out
+diff $tmp-ans5 $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST0-9 error"
+
+###########################################
 rm -f $tmp-*
 echo "${pythonversion} ${name}" OK
-
 exit 0

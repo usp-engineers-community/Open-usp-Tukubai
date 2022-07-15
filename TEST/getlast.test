@@ -42,6 +42,12 @@ ERROR_CHECK(){
 	exit 1
 }
 
+BOMandEOLvariation(){	# BOM無しLF改行ファイル（$1）からBOM付きCRLF改行ファイル（$2）とBOM付きCR改行ファイル（$3）を生成する
+	 [ $# -eq 3 ]; ERROR_CHECK "TESTスクリプト内のBOMandEOLvariation()でファイル指定が不正"
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r\n/g' -e 's/$/\r/' $1 >$2	# $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r/g' $1 | tr '\n' '\r' >$3	# $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
+}
+
 ###########################################
 #TEST1
 
@@ -53,19 +59,19 @@ cat << FIN > $tmp-in
 003 aaa bbb
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 001 1.3 421
 002 123.0 11
 003 aaa bbb
 FIN
 
-${com} 1 1 $tmp-in > $tmp-ans
+${com} 1 1 $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST1.1 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1-1 error"
 
-cat $tmp-in | ${com} 1 1 > $tmp-ans
+cat $tmp-in | ${com} 1 1 > $tmp-out
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST1.2 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1-2 error"
 
 ###########################################
 #TEST2
@@ -73,20 +79,168 @@ diff $tmp-ans $tmp-out
 cat << FIN > $tmp-in
 001 江頭 1 942
 001 江頭 1.3 421
-002 上山田 -123.0 111
+001 上山田 -123.0 111
+002 上山田 -345.0 222
 002 上田 123.0 11
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 001 江頭 1.3 421
-002 上山田 -123.0 111
+001 上山田 -123.0 111
+002 上山田 -345.0 222
 002 上田 123.0 11
 FIN
 
-${com} 1 2 $tmp-in > $tmp-ans
+${com} 1 2 $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST2.1 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2-1 error"
 
+# 降順
+${com} 2 1 $tmp-in > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2-2 error"
+
+###########################################
+#TEST3
+#TEST1の拡大版
+# BOM付きCRLFとBOM付きCRの試験
+
+cat << FIN > $tmp-in
+001 1 942
+001 1.3 421
+002 -123.0 111
+002 123.0 11
+003 aaa bbb
+FIN
+
+cat << FIN > $tmp-ans
+001 1.3 421
+002 123.0 11
+003 aaa bbb
+FIN
+
+# 入力用tmpファイルからBOM付きCRLFとBOM付きCRの各ファイルを作る
+BOMandEOLvariation $tmp-in $tmp-inBOMCRLF $tmp-inBOMCR
+
+# BOM付きUTF8ファイルCRLF
+${com} 1 1 $tmp-inBOMCRLF > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-1 error"
+
+# BOM付きUTF8ファイルCR
+${com} 1 1 $tmp-inBOMCR > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-2 error"
+
+# pipe接続
+
+# BOM付きUTF8ファイルCRLF
+cat $tmp-inBOMCRLF | ${com} 1 1 - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-3 error"
+
+# BOM付きUTF8ファイルCR
+cat $tmp-inBOMCR | ${com} 1 1 - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-4 error"
+
+###########################################
+#TEST4
+# NFC文字（濁音/半濁音が1文字）とNFD文字（濁音/半濁音が清音+結合用濁点/結合用半濁点の2文字で構成される）を同値化して処理する
+
+cat << FIN > $tmp-in
+0001 あいうえお 清音
+0002 ゔ 濁音NFC
+0003 ゔ 濁音NFD
+0004 かきくけこ 清音
+0005 がぎぐげご 濁音NFC
+0006 がぎぐげご 濁音NFD
+0007 さしすせそ 清音
+0008 ざじずぜぞ 濁音NFC
+0009 ざじずぜぞ 濁音NFD
+0010 たちつてと 清音
+0011 だぢづでど 濁音NFC
+0012 だぢづでど 濁音NFD
+0013 はひふへほ 清音
+0014 ばびぶべぼ 濁音NFC
+0015 ばびぶべぼ 濁音NFD
+0016 ぱぴぷぺぽ 半濁音NFC
+0017 ぱぴぷぺぽ 半濁音NFD
+0018 アイウエオ 清音
+0019 ヴ 濁音NFC
+0020 ヴ 濁音NFD
+0021 カキクケコ 清音
+0022 ガギグゲゴ 濁音NFC
+0023 ガギグゲゴ 濁音NFD
+0024 サシスセソ 清音
+0025 ザジズゼゾ 濁音NFC
+0026 ザジズゼゾ 濁音NFD
+0027 タチツテト 清音
+0028 ダヂヅデド 濁音NFC
+0029 ダヂヅデド 濁音NFD
+0030 ハヒフヘホ 清音
+0031 バビブベボ 濁音NFC
+0032 バビブベボ 濁音NFD
+0033 パピプペポ 半濁音NFC
+0034 パピプペポ 半濁音NFD
+0035 ヷヸヹヺ 濁音NFC
+0036 ヷヸヹヺ 濁音NFD
+FIN
+cat << FIN > $tmp-ans1
+0001 あいうえお 清音
+0003 ゔ 濁音NFD
+0004 かきくけこ 清音
+0006 がぎぐげご 濁音NFD
+0007 さしすせそ 清音
+0009 ざじずぜぞ 濁音NFD
+0010 たちつてと 清音
+0012 だぢづでど 濁音NFD
+0013 はひふへほ 清音
+0015 ばびぶべぼ 濁音NFD
+0017 ぱぴぷぺぽ 半濁音NFD
+0018 アイウエオ 清音
+0020 ヴ 濁音NFD
+0021 カキクケコ 清音
+0023 ガギグゲゴ 濁音NFD
+0024 サシスセソ 清音
+0026 ザジズゼゾ 濁音NFD
+0027 タチツテト 清音
+0029 ダヂヅデド 濁音NFD
+0030 ハヒフヘホ 清音
+0032 バビブベボ 濁音NFD
+0034 パピプペポ 半濁音NFD
+0036 ヷヸヹヺ 濁音NFD
+FIN
+
+cat << FIN > $tmp-ans2
+0002 ゔ 濁音NFC
+0005 がぎぐげご 濁音NFC
+0008 ざじずぜぞ 濁音NFC
+0011 だぢづでど 濁音NFC
+0014 ばびぶべぼ 濁音NFC
+0016 ぱぴぷぺぽ 半濁音NFC
+0019 ヴ 濁音NFC
+0022 ガギグゲゴ 濁音NFC
+0025 ザジズゼゾ 濁音NFC
+0028 ダヂヅデド 濁音NFC
+0031 バビブベボ 濁音NFC
+0033 パピプペポ 半濁音NFC
+0035 ヷヸヹヺ 濁音NFC
+FIN
+
+# 指定key部について濁音NFCと濁音NFDの2通りがある場合は後方に出現のもの（濁音NFD）も同一とみなすので新出の行とはされない
+
+${com} 2 2 $tmp-in > $tmp-out
+diff $tmp-ans1 $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4-1 error"
+
+# +ng オプションに<fd>を指定すると、標準エラー出力のかわりに<fd>への出力が実施される。同じ指定key部の値を持つ行について最後の行以外を<fd>に出力する。
+
+${com} +ng4 2 2 $tmp-in >/dev/null 4>$tmp-out
+diff $tmp-ans2 $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4-2 error"
+
+###########################################
 rm -f $tmp-*
 echo "${pythonversion} ${name}" OK
 exit 0

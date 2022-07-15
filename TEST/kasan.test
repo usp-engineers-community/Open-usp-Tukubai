@@ -42,6 +42,12 @@ ERROR_CHECK(){
 	exit 1
 }
 
+BOMandEOLvariation(){	# BOM無しLF改行ファイル（$1）からBOM付きCRLF改行ファイル（$2）とBOM付きCR改行ファイル（$3）を生成する
+	 [ $# -eq 3 ]; ERROR_CHECK "TESTスクリプト内のBOMandEOLvariation()でファイル指定が不正"
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r\n/g' -e 's/$/\r/' $1 >$2	# $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r/g' $1 | tr '\n' '\r' >$3	# $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
+}
+
 ###########################################
 #TEST1
 
@@ -55,7 +61,7 @@ a店 6日目 350 20
 a店 7日目 412 301
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 a店 1日目 103 62 62
 a店 2日目 157 94 156
 a店 3日目 62 30 186
@@ -65,17 +71,17 @@ a店 6日目 350 20 401
 a店 7日目 412 301 702
 FIN
 
-${com} key=4 $tmp-in > $tmp-ans
+${com} key=4 $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST1.1 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1-1 error"
 
-cat $tmp-in | ${com} key=4 > $tmp-ans
+cat $tmp-in | ${com} key=4 > $tmp-out
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST1.2 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1-2 error"
 
-cat $tmp-in | ${com} key=4 - > $tmp-ans
+cat $tmp-in | ${com} key=4 - > $tmp-out
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST1.3 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1-3 error"
 
 ###########################################
 #TEST2
@@ -95,7 +101,7 @@ c店 3日目 38 21
 c店 4日目 81 48
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 a店 1日目 103 62 62
 a店 2日目 157 94 156
 a店 3日目 62 30 186
@@ -110,7 +116,7 @@ c店 3日目 38 21 122
 c店 4日目 81 48 170
 FIN
 
-${com} ref=1 key=4 $tmp-in > $tmp-ans
+${com} ref=1 key=4 $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST2 error"
 
@@ -127,7 +133,7 @@ a店 6日目 350 20
 a店 7日目 412 301
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 a店 1日目 103 62
 a店 2日目 157 156
 a店 3日目 62 186
@@ -137,13 +143,13 @@ a店 6日目 350 401
 a店 7日目 412 702
 FIN
 
-${com} +r key=4 $tmp-in > $tmp-ans
+${com} +r key=4 $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST3.1 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-1 error"
 
-${com} +r key=NF $tmp-in > $tmp-ans
+${com} +r key=NF $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST3.2 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-2 error"
 
 ###########################################
 #TEST4
@@ -157,7 +163,7 @@ B 2.34 江頭
 B 3 b
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 A 1 1 a
 A 1.2 2.2 江頭
 A 1.23 3.43 a
@@ -166,14 +172,137 @@ B 2.34 4.34 江頭
 B 3 7.34 b
 FIN
 
-${com} ref=1 key=2 $tmp-in > $tmp-ans
+${com} ref=1 key=2 $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST4.1 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4-1 error"
 
-${com} ref=1 key=NF-1 $tmp-in > $tmp-ans
+${com} ref=1 key=NF-1 $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST4.2 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4-2 error"
 
+###########################################
+#TEST5
+# refとkeyの逆順処理
+# キー指定で「数値、範囲(/)、列挙(@)、NF、NF-<n>」の組み合わせ
+
+cat << FIN > $tmp-in
+A A 1 1 a
+A A 1.2 1.2 江頭
+A A 1.23 1.23 a
+B B 2 2 b
+B B 2.34 2.34 江頭
+B B 3 3 b
+FIN
+
+cat << FIN > $tmp-ans
+A A 1 1 1 1 a
+A A 1.2 2.2 1.2 2.2 江頭
+A A 1.23 3.43 1.23 3.43 a
+B B 2 2 2 2 b
+B B 2.34 4.34 2.34 4.34 江頭
+B B 3 7.34 3 7.34 b
+FIN
+
+${com} ref=1/2 key=4/3 $tmp-in > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5-1 error"
+
+${com} ref=2/1 key=NF-1/NF-2 $tmp-in > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5-2 error"
+
+${com} ref=2/1 key=NF-1/NF-2@NF-2@NF-1@4@3@NF-2/NF-1 $tmp-in > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5-3 error"
+
+###########################################
+#TEST6
+#TEST1の拡大版
+# BOM付きCRLFとBOM付きCRの試験
+
+cat << FIN > $tmp-in
+a店 1日目 103 62
+a店 2日目 157 94
+a店 3日目 62 30
+a店 4日目 131 84
+a店 5日目 189 111
+a店 6日目 350 20
+a店 7日目 412 301
+FIN
+
+cat << FIN > $tmp-ans
+a店 1日目 103 62 62
+a店 2日目 157 94 156
+a店 3日目 62 30 186
+a店 4日目 131 84 270
+a店 5日目 189 111 381
+a店 6日目 350 20 401
+a店 7日目 412 301 702
+FIN
+
+# 入力用tmpファイルからBOM付きCRLFとBOM付きCRの各ファイルを作る
+BOMandEOLvariation $tmp-in $tmp-inBOMCRLF $tmp-inBOMCR
+
+# BOM付きCRLF
+${com} key=4 $tmp-inBOMCRLF > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST6-1 error"
+
+# BOM付きCR
+${com} key=4 $tmp-inBOMCR > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST6-2 error"
+
+# pipe接続
+
+# BOM付きCRLF
+cat $tmp-inBOMCRLF | ${com} key=4 - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST6-3 error"
+
+# BOM付きUTF8ファイルCR
+cat $tmp-inBOMCR | ${com} key=4 - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST6-4 error"
+
+###########################################
+#TEST7
+# TEST5の変型
+# refとkeyの逆順処理
+# キー指定で「数値、範囲(/)、列挙(@)、NF、NF-<n>」の組み合わせ
+# NFC文字（濁音/半濁音が1文字）とNFD文字（濁音/半濁音が清音+結合用濁点/結合用半濁点の2文字で構成される）を同値化して処理する
+
+cat << FIN > $tmp-in
+が が 1 1 #「が」は濁音NFC
+が が 1.2 1.2 #「が」は濁音NFD
+が が 1.23 1.23 #「が」は濁音NFC
+ぱ ぱ 2 2 #「ぱ」は半濁音NFC
+ぱ ぱ 2.34 2.34 #「ぱ」は半濁音NFD
+ぱ ぱ 3 3 #「ぱ」は半濁音NFC
+FIN
+
+cat << FIN > $tmp-ans
+が が 1 1 1 1 #「が」は濁音NFC
+が が 1.2 2.2 1.2 2.2 #「が」は濁音NFD
+が が 1.23 3.43 1.23 3.43 #「が」は濁音NFC
+ぱ ぱ 2 2 2 2 #「ぱ」は半濁音NFC
+ぱ ぱ 2.34 4.34 2.34 4.34 #「ぱ」は半濁音NFD
+ぱ ぱ 3 7.34 3 7.34 #「ぱ」は半濁音NFC
+FIN
+
+${com} ref=1/2 key=4/3 $tmp-in > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST7-1 error"
+
+${com} ref=2/1 key=NF-1/NF-2 $tmp-in > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST7-2 error"
+
+${com} ref=2/1 key=NF-1/NF-2@NF-2@NF-1@4@3@NF-2/NF-1 $tmp-in > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST7-3 error"
+
+###########################################
 rm -f $tmp-*
 echo "${pythonversion} ${name}" OK
 exit 0

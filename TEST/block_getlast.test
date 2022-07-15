@@ -42,6 +42,13 @@ ERROR_CHECK(){
 	exit 1
 }
 
+BOMandEOLvariation(){	# BOM無しLF改行ファイル（$1）からBOM付きCRLF改行ファイル（$2）とBOM付きCR改行ファイル（$3）を生成する
+	 [ $# -eq 3 ]; ERROR_CHECK "TESTスクリプト内のBOMandEOLvariation()でファイル指定が不正"
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r\n/g' -e 's/$/\r/' $1 >$2	# $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r/g' $1 | tr '\n' '\r' >$3	# $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
+}
+
+
 ###########################################
 # TEST1
 # 同じ伝票番号を持つレコードのうち、直近の日付のレコードを出力する。
@@ -49,7 +56,7 @@ ERROR_CHECK(){
 #  1:伝票No 2:行 3:項目１ 4:項目２ 5:入力年月日
 
 
-cat << FIN > $tmp-data
+cat << FIN > $tmp-in
 0001 1 A 15 20081203
 0001 2 K 25 20081203
 0001 3 F 35 20081203
@@ -59,19 +66,129 @@ cat << FIN > $tmp-data
 0002 1 H 80 20081208
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 0001 1 A 15 20081205
 0001 3 F 25 20081205
 0002 1 H 80 20081208
 FIN
 
-${com} key=NF-4 ref=NF $tmp-data > $tmp-ans
+${com} key=NF-4 ref=NF $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST1 error"
 
 ###########################################
+# TEST2
+# キーフィールドの列挙指定と範囲指定の連続混用および重複指定解消の試験
 
+# 同じ店番号と伝票番号を持つレコードのうち、直近の日付のレコードを出力する。
+# （data のレイアウト）
+#  1:店番号 2:伝票No 3:行 4:項目１ 5:項目２ 6:入力年月日
+
+
+cat << FIN > $tmp-data
+a店 0001 1 A 15 20081202
+a店 0001 2 K 25 20081203
+b店 0001 3 F 35 20081203
+b店 0001 1 A 15 20081205
+b店 0001 3 F 25 20081205
+c店 0002 2 X 30 20081201
+c店 0002 1 H 80 20081208
+FIN
+
+cat << FIN > $tmp-ans
+a店 0001 2 K 25 20081203
+b店 0001 1 A 15 20081205
+b店 0001 3 F 25 20081205
+c店 0002 1 H 80 20081208
+FIN
+
+${com} key=1/2@NF-5/NF-4@1@2@2/1 ref=NF $tmp-data > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2 error"
+
+###########################################
+#TEST3
+#TEST1の拡大版
+# BOM付きCRLFとBOM付きCRの試験
+# 同じ伝票番号を持つレコードのうち、直近の日付のレコードを出力する。
+# （data のレイアウト）
+#  1:伝票No 2:行 3:項目１ 4:項目２ 5:入力年月日
+
+
+cat << FIN > $tmp-in
+0001 1 A 15 20081203
+0001 2 K 25 20081203
+0001 3 F 35 20081203
+0001 1 A 15 20081205
+0001 3 F 25 20081205
+0002 2 X 30 20081201
+0002 1 H 80 20081208
+FIN
+
+cat << FIN > $tmp-ans
+0001 1 A 15 20081205
+0001 3 F 25 20081205
+0002 1 H 80 20081208
+FIN
+
+# 入力用tmpファイルからBOM付きCRLFとBOM付きCRの各ファイルを作る
+BOMandEOLvariation $tmp-in $tmp-inBOMCRLF $tmp-inBOMCR
+
+# BOM付きCRLF
+${com} key=NF-4 ref=NF $tmp-inBOMCRLF > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-1 error"
+
+# BOM付きCR
+${com} key=NF-4 ref=NF $tmp-inBOMCR > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-2 error"
+
+# pipe接続
+
+# BOM付きCRLF
+cat $tmp-inBOMCRLF | ${com} key=NF-4 ref=NF - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-3 error"
+
+# BOM付きCR
+cat $tmp-inBOMCR | ${com} key=NF-4 ref=NF - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-4 error"
+
+###########################################
+# TEST4
+# TEST2の変形版
+# NFC文字（濁音/半濁音が1文字）とNFD文字（濁音/半濁音が清音+結合用濁点/結合用半濁点の2文字で構成される）を同値化して処理する
+
+# 同じ店番号と伝票番号を持つレコードのうち、項目３が同じ最後のフロックを出力する。
+# （data のレイアウト）
+#  1:店番号 2:伝票No 3:行 4:項目１ 5:項目２ 6:項目３
+
+# 同一店名の2番目にはNFDを使用 同一店名/同一伝票番号で同一項目３の2番目（ふたつめの「ザジズゼゾ」）にはNFDを使用
+cat << FIN > $tmp-in
+がぎぐげご店 0001 1 A 15 あいうえお
+がぎぐげご店 0001 2 K 25 かきくけこ
+ざじずぜぞ店 0001 3 F 35 さしすせそ
+ざじずぜぞ店 0001 1 A 15 ザジズゼゾ
+ざじずぜぞ店 0001 3 F 25 ザジズゼゾ
+だぢづでど店 0002 2 X 30 たちつてと
+だぢづでど店 0002 1 H 80 なにぬねの
+FIN
+
+cat << FIN > $tmp-ans
+がぎぐげご店 0001 2 K 25 かきくけこ
+ざじずぜぞ店 0001 1 A 15 ザジズゼゾ
+ざじずぜぞ店 0001 3 F 25 ザジズゼゾ
+だぢづでど店 0002 1 H 80 なにぬねの
+FIN
+
+${com} key=NF-5/NF-4 ref=NF $tmp-in > $tmp-out
+
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4 error"
+
+###########################################
 rm -f $tmp-*
 echo "${pythonversion} ${name}" OK
-
 exit 0

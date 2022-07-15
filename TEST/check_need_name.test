@@ -42,8 +42,11 @@ ERROR_CHECK(){
 	exit 1
 }
 
-tmp=/tmp/$$
-
+BOMandEOLvariation(){	# BOM無しLF改行ファイル（$1）からBOM付きCRLF改行ファイル（$2）とBOM付きCR改行ファイル（$3）を生成する
+	 [ $# -eq 3 ]; ERROR_CHECK "TESTスクリプト内のBOMandEOLvariation()でファイル指定が不正"
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r\n/g' -e 's/$/\r/' $1 >$2	# $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r/g' $1 | tr '\n' '\r' >$3	# $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
+}
 
 ###########################################
 #TEST1: ordinaly use
@@ -61,8 +64,8 @@ FIN
 cat << FIN > $tmp-res
 FIN
 
-${com} $tmp-check $tmp-name > $tmp-ans ; ERROR_CHECK "Test1 error"
-diff $tmp-res $tmp-ans ; ERROR_CHECK "Test1 error"
+${com} $tmp-check $tmp-name > $tmp-out ; ERROR_CHECK "TEST1-1 error"
+diff $tmp-res $tmp-out ; ERROR_CHECK "TEST1-2 error"
 
 ###########################################
 #TEST2: ordinaly use
@@ -83,11 +86,11 @@ PAGE
 山田
 FIN
 
-${com} $tmp-check $tmp-name > $tmp-ans 
-[ $? -eq 1 ] ; ERROR_CHECK "Test2-1 error"
+${com} $tmp-check $tmp-name > $tmp-out
+[ $? -eq 1 ] ; ERROR_CHECK "TEST2-1 error"
 
-sort $tmp-ans	|
-diff - $tmp-res ; ERROR_CHECK "Test2-2 error"
+sort $tmp-out	|
+diff - $tmp-res ; ERROR_CHECK "TEST2-2 error"
 
 ###########################################
 #TEST3: blank option
@@ -100,28 +103,29 @@ cat << FIN > $tmp-name
 PAGE @@
 FIN
 
-${com} $tmp-check $tmp-name --blank > $tmp-ans 2>/dev/null
-# Error[check_need_name] : --blankオプションはコマンドの直後に指定してください。
-[ $? -eq 1 ] ; ERROR_CHECK "Test3-1 error"
+echo TEST3-1はエラーで終了するように設定されている
 
-${com} --blank @@ $tmp-check $tmp-name > $tmp-ans 
-[ $? -eq 1 ] ; ERROR_CHECK "Test3-2-1 error"
+${com} $tmp-check $tmp-name --blank > $tmp-out
+[ $? -eq 1 ] ; ERROR_CHECK "TEST3-1 error"
 
-diff $tmp-ans $tmp-check ; ERROR_CHECK "Test3-2-1 error"
+${com} --blank @@ $tmp-check $tmp-name > $tmp-out 
+[ $? -eq 1 ] ; ERROR_CHECK "TEST3-2-1 error"
 
-${com} --blank @ $tmp-check $tmp-name > $tmp-ans 
-[ $? -eq 0 ] ; ERROR_CHECK "Test3-3-1 error"
+diff $tmp-out $tmp-check ; ERROR_CHECK "TEST3-2-2 error"
 
-: |
-diff - $tmp-ans ; ERROR_CHECK "Test3-3-2 error"
-
-${com} $tmp-check --blank @@ $tmp-name > $tmp-ans 2>/dev/null
-# Error[check_need_name] : --blankオプションはコマンドの直後に指定してください。
-[ $? -eq 1 ] ; ERROR_CHECK "Test3-4-1 error"
+${com} --blank @ $tmp-check $tmp-name > $tmp-out 
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-3-1 error"
 
 : |
-diff - $tmp-ans ; ERROR_CHECK "Test3-4-2 error"
+diff - $tmp-out ; ERROR_CHECK "TEST3-3-2 error"
 
+echo TEST3-4-1はエラーで終了するように設定されている
+
+${com} $tmp-check --blank @@ $tmp-name > $tmp-out 
+[ $? -eq 1 ] ; ERROR_CHECK "TEST3-4-1 error"
+
+: |
+diff - $tmp-out ; ERROR_CHECK "TEST3-4-2 error"
 
 ###########################################
 #TEST4: no value
@@ -134,20 +138,20 @@ cat << FIN > $tmp-name
 PAGE
 FIN
 
-${com} $tmp-check $tmp-name > $tmp-ans
-[ $? -eq 1 ] ; ERROR_CHECK "Test4-1-1 error"
+${com} $tmp-check $tmp-name > $tmp-out
+[ $? -eq 1 ] ; ERROR_CHECK "TEST4-1-1 error"
 
-diff $tmp-ans $tmp-check ; ERROR_CHECK "Test4-1-2 error"
+diff $tmp-out $tmp-check ; ERROR_CHECK "TEST4-1-2 error"
 
 cat << FIN > $tmp-name
 PAGE _
 あいうえお aa
 FIN
 
-${com} $tmp-check $tmp-name > $tmp-ans
-[ $? -eq 1 ] ; ERROR_CHECK "Test4-2-1 error"
+${com} $tmp-check $tmp-name > $tmp-out
+[ $? -eq 1 ] ; ERROR_CHECK "TEST4-2-1 error"
 
-diff $tmp-ans $tmp-check ; ERROR_CHECK "Test4-2-2 error"
+diff $tmp-out $tmp-check ; ERROR_CHECK "TEST4-2-2 error"
 
 ###########################################
 #TEST5: underscore
@@ -162,10 +166,10 @@ PAGE aaa
 HOGE_001 aaho
 FIN
 
-${com} $tmp-check $tmp-name > $tmp-ans ; ERROR_CHECK "Test5-1 error"
+${com} $tmp-check $tmp-name > $tmp-out ; ERROR_CHECK "TEST5-1 error"
 
 : |
-diff - $tmp-ans ; ERROR_CHECK "Test5-2 error"
+diff - $tmp-out ; ERROR_CHECK "TEST5-2 error"
 
 ###########################################
 #TEST6: invalid underscore
@@ -180,12 +184,228 @@ PAGE aaa
 HOGE_001_ aaho
 FIN
 
-${com} $tmp-check $tmp-name > $tmp-ans 
-[ $? -eq 1 ] ; ERROR_CHECK "Test6-1 error"
+${com} $tmp-check $tmp-name > $tmp-out 
+[ $? -eq 1 ] ; ERROR_CHECK "TEST6-1 error"
 
 echo "HOGE"	|
-diff - $tmp-ans ; ERROR_CHECK "Test6-2 error"
+diff - $tmp-out ; ERROR_CHECK "TEST6-2 error"
 
+###########################################
+#TEST7: blank option
+# --blank指定に4バイト文字（Unicode符号位置がU+FFFF超の文字）を与える
+
+cat << FIN > $tmp-check
+PAGE
+FIN
+
+cat << FIN > $tmp-name
+PAGE 𠆢
+FIN
+
+# 「𠆢」は𠆢(U+201A2)代用対では𠆢(U+D840-U+DDA2)
+
+${com} --blank 𠆢 $tmp-check $tmp-name > $tmp-out 
+[ $? -eq 1 ] ; ERROR_CHECK "TEST7-1 error"
+
+diff $tmp-out $tmp-check ; ERROR_CHECK "TEST7-2 error"
+
+###########################################
+#TEST8
+#TEST1の拡大版
+# BOM付きと改行記号CRLF/CRの試験
+
+cat << FIN > $tmp-check
+HOGE
+PAGE
+FIN
+
+cat << FIN > $tmp-name
+PAGE aaa
+HOGE aaho ho
+FIN
+
+cat << FIN > $tmp-res
+FIN
+
+# 入力用tmpファイルからBOM付きCRLFとBOM付きCRの各ファイルを作る
+BOMandEOLvariation $tmp-check $tmp-checkBOMCRLF $tmp-checkBOMCR
+BOMandEOLvariation $tmp-name $tmp-nameBOMCRLF $tmp-nameBOMCR
+
+# BOM付きCRLF
+${com} $tmp-checkBOMCRLF $tmp-nameBOMCRLF > $tmp-out ; ERROR_CHECK "TEST8-1 error"
+diff $tmp-res $tmp-out ; ERROR_CHECK "TEST8-2 error"
+
+# BOM付きCR
+${com} $tmp-checkBOMCR $tmp-nameBOMCR > $tmp-out ; ERROR_CHECK "TEST8-3 error"
+diff $tmp-res $tmp-out ; ERROR_CHECK "TEST8-4 error"
+
+# pipe接続（tmp-check/tmp-name）
+
+# BOM付きCRLF
+cat $tmp-checkBOMCRLF | ${com} - $tmp-nameBOMCRLF > $tmp-out ; ERROR_CHECK "TEST8-5 error"
+diff $tmp-res $tmp-out ; ERROR_CHECK "TEST8-6 error"
+
+cat $tmp-nameBOMCRLF | ${com} $tmp-checkBOMCRLF - > $tmp-out ; ERROR_CHECK "TEST8-7 error"
+diff $tmp-res $tmp-out ; ERROR_CHECK "TEST8-8 error"
+
+# BOM付きCR
+cat $tmp-checkBOMCR | ${com} - $tmp-nameBOMCR > $tmp-out ; ERROR_CHECK "TEST8-9 error"
+diff $tmp-res $tmp-out ; ERROR_CHECK "TEST8-10 error"
+
+cat $tmp-nameBOMCR | ${com} $tmp-checkBOMCR - > $tmp-out ; ERROR_CHECK "TEST8-11 error"
+diff $tmp-res $tmp-out ; ERROR_CHECK "TEST8-12 error"
+
+###########################################
+#TEST9:
+# NFC文字（濁音/半濁音が1文字）とNFD文字（濁音/半濁音が清音+結合用濁点/結合用半濁点の2文字で構成される）を同値化して処理する
+
+cat << FIN > $tmp-check
+ゔ
+がぎぐげご
+ざじずぜぞ
+だぢづでど
+ばびぶべぼ
+ヴ
+ガギグゲゴ
+ザジズゼゾ
+ダヂヅデド
+バビブベボ
+パピプペポ
+ヷヸヴヹヺ
+FIN
+
+# $tmp-checkの説明
+# ひらがな/カタカナの濁音と半濁音ですべてNFC
+
+cat << FIN > $tmp-name
+あいうえお 清音
+ゔ 濁音NFD
+かきくけこ 清音
+がぎぐげご 濁音NFD
+さしすせそ 清音
+ざじずぜぞ 濁音NFD
+たちつてと 清音
+だぢづでど 濁音NFD
+はひふへほ 清音
+ばびぶべぼ 濁音NFD
+ぱぴぷぺぽ 半濁音NFD
+アイウエオ 清音
+ヴ 濁音NFD
+カキクケコ 清音
+ガギグゲゴ 濁音NFD
+サシスセソ 清音
+ザジズゼゾ 濁音NFD
+タチツテト 清音
+ダヂヅデド 濁音NFD
+ハヒフヘホ 清音
+バビブベボ 濁音NFD
+パピプペポ 半濁音NFD
+ヷヸヴヹヺ ヷヸヴヹヺは濁音NFD
+FIN
+
+# $tmp-nameの説明
+# ひらがな/カタカナの清音と濁音と半濁音で清音を除きすべてNFD
+
+cat << FIN > $tmp-res
+FIN
+
+cat << FIN > $tmp-res2
+ヷヸヴヹヺ
+FIN
+
+# $tmp-name中のNFDはNFCと同値化されるので$tmp-check中のkeyはすべて$tmp-name中に見い出されてエラーは生じない
+${com} $tmp-check $tmp-name > $tmp-out ; ERROR_CHECK "TEST9-1 error"
+diff $tmp-res $tmp-out ; ERROR_CHECK "TEST9-2 error"
+
+# --blankオプション
+echo TEST9-3はエラーで終了するように設定されている
+# --blankオプションで「ヷヸヴヹヺは濁音NFD」（NFC）を与えると$tmp-name中の第2欄「ヷヸヴヹヺは濁音NFD」（NFD）をnullとみなすのでエラーとなる
+${com} --blank ヷヸヴヹヺは濁音NFD $tmp-check $tmp-name > $tmp-out
+[ $? -eq 1 ] ; ERROR_CHECK "TEST9-3 error"	# エラーとならないときに"TEST9-3 error"となる
+
+# $tmp-outには残ったkeyの「ヷヸヴヹヺ」（NFC）が出力されているので照合する
+diff $tmp-res2 $tmp-out ; ERROR_CHECK "TEST9-4 error"
+
+###########################################
+#TEST10
+# TEST2の変型版
+# UCSとIVSの文字一致検査ではUVSの符号位置とIVSの基底文字の符号位置が等しいときは常に「一致」となる
+#  「UCS」とは単独で表示されるunicode文字で直後に「結合用文字/SVS異体字選択子/IVS異体字選択子」を連接していないものを差す
+#  「IVS」とは「UCS」となりうる符号位置（これを基定文字という）の直後にIVS異体字選択子を連接したもので前方部を「基底文字」という
+#  「IVS」は基底文字と異体字選択子の組で1字となる
+# ordinaly use
+
+# tmp-checkにUCSがありtmp-nameにIVSがある場合の検査
+
+cat << FIN > $tmp-check
+HOGE
+PAGE
+山田
+渡邉
+FIN
+
+# tmp-checkの説明
+# 「渡邉」は「渡(U+6E21)邉(U+9089)」で両字ともUCS
+
+cat << FIN > $tmp-name
+HOGE aaho ho
+渡邉󠄐 渡(U+6E21)邉󠄐(U+9089;U+E0110)
+渡邉󠄑 渡(U+6E21)邉󠄑(U+9089;U+E0111)
+渡邉󠄒 渡(U+6E21)邉󠄒(U+9089;U+E0112)
+FIN
+
+# tmp-nameの説明
+# 下部の3行すべてで先頭欄2字目がIVS
+
+cat << FIN | sort > $tmp-res
+PAGE
+山田
+FIN
+
+# tmp-nameにある「渡邉󠄐/渡邉󠄑/渡邉󠄒」の符号位置は
+# 渡(U+6E21)邉󠄐(U+9089;U+E0110)
+# 渡(U+6E21)邉󠄑(U+9089;U+E0111)
+# 渡(U+6E21)邉󠄒(U+9089;U+E0112)
+# なので
+# すべてtmp-checkの「渡邉」（符号位置で「渡(U+6E21)邉(U+9089)」）と一致する
+
+${com} $tmp-check $tmp-name > $tmp-out
+[ $? -eq 1 ] ; ERROR_CHECK "TEST10-1 error"
+
+sort $tmp-out	|
+diff - $tmp-res ; ERROR_CHECK "TEST10-2 error"
+
+# tmp-checkにIVSがありtmp-nameにUCSがある場合の検査
+
+cat << FIN > $tmp-check
+HOGE
+PAGE
+山田
+渡邉󠄐 渡(U+6E21)邉󠄐(U+9089;U+E0110)
+渡邉󠄑 渡(U+6E21)邉󠄑(U+9089;U+E0111)
+渡邉󠄒 渡(U+6E21)邉󠄒(U+9089;U+E0112)
+FIN
+
+cat << FIN > $tmp-name
+HOGE aaho ho
+渡邉 渡(U+6E21)邉(U+9089)
+FIN
+
+cat << FIN | sort > $tmp-res
+PAGE
+山田
+FIN
+
+# tmp-checkにあるIVSを2字目に持つ「渡邉󠄐/渡邉󠄑/渡邉󠄒」（IVSを2字目に持つ）すべては
+# tmp-nameの2字目がUCSの「渡邉」と「ゆるい一致」をする
+
+${com} $tmp-check $tmp-name > $tmp-out
+[ $? -eq 1 ] ; ERROR_CHECK "TEST10-3 error"
+
+sort $tmp-out	|
+diff - $tmp-res ; ERROR_CHECK "TEST10-4 error"
+
+###########################################
 rm $tmp-*
 echo "${pythonversion} ${name}" OK
 exit 0

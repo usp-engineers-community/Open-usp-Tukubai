@@ -42,8 +42,13 @@ ERROR_CHECK(){
 	exit 1
 }
 
-tmp=/tmp/$$
+BOMandEOLvariation(){	# BOM無しLF改行ファイル（$1）からBOM付きCRLF改行ファイル（$2）とBOM付きCR改行ファイル（$3）を生成する
+	 [ $# -eq 3 ]; ERROR_CHECK "TESTスクリプト内のBOMandEOLvariation()でファイル指定が不正"
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r\n/g' -e 's/$/\r/' $1 >$2	# $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r/g' $1 | tr '\n' '\r' >$3	# $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
+}
 
+###########################################
 cat << FIN > $tmp-name
 A01 1
 A02 2
@@ -55,12 +60,10 @@ FIN
 #TEST1: ordinaly use
 
 ANS=$( ${com} A01 $tmp-name )
-[ "${ANS}" = "1" ] ; ERROR_CHECK "Test1 error"
+[ "${ANS}" = "1" ] ; ERROR_CHECK "TEST1 error"
 
 ###########################################
 #TEST2: regular expression
-
-${com} -e '^A0[0-9]$' $tmp-name > $tmp-out
 
 cat << FIN > $tmp-ans
 1
@@ -68,12 +71,12 @@ cat << FIN > $tmp-ans
 3
 FIN
 
-diff $tmp-ans $tmp-out ; ERROR_CHECK "Test2 error"
+${com} -e '^A0[0-9]$' $tmp-name > $tmp-out
+
+diff $tmp-ans $tmp-out ; ERROR_CHECK "TEST2 error"
 
 ###########################################
 #TEST3: regular expression with output of names
-
-${com} -el '^A0[0-9]$' $tmp-name > $tmp-out
 
 cat << FIN > $tmp-ans
 A01 1
@@ -81,8 +84,247 @@ A02 2
 A03 3
 FIN
 
-diff $tmp-ans $tmp-out ; ERROR_CHECK "Test3 error"
+${com} -el '^A0[0-9]$' $tmp-name > $tmp-out
 
+diff $tmp-ans $tmp-out ; ERROR_CHECK "TEST3 error"
+
+###########################################
+#TEST4: -d指定
+
+cat << FIN > $tmp-name
+A usp
+B usp laboratory
+C
+FIN
+
+cat << FIN > $tmp-ans
+usp_laboratory
+FIN
+
+${com} -d_ B $tmp-name > $tmp-out
+
+diff $tmp-ans $tmp-out ; ERROR_CHECK "TEST4 error"
+
+###########################################
+#TEST5
+# -d指定で4バイト文字（Unicode符号位置がU+FFFF超の文字）を与える
+
+cat << FIN > $tmp-ans
+usp𠆢laboratory
+FIN
+
+# 「𠆢」は𠆢(U+201A2)代用対では𠆢(U+D840-U+DDA2)
+
+${com} -d𠆢 B $tmp-name > $tmp-out
+
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5 error"
+
+###########################################
+#TEST6
+# -d指定でIVS文字列を与える（IVS文字列の長さ判定の検査も行なう）
+
+cat << FIN > $tmp-ans
+usp邊󠄊laboratory
+FIN
+
+cat <<FIN >$tmp-errmsg
+Error[nameread] : dオプションの値が2文字以上です
+FIN
+
+${com} -d渡邊󠄊 B $tmp-name > $tmp-out 2>$tmp-err
+
+# 文字列「渡邊󠄊」を与えるのでエラーとなる
+
+diff $tmp-errmsg $tmp-err
+[ $? -eq 0 ] ; ERROR_CHECK "TEST6-1 error"
+
+${com} -d邊󠄊 B $tmp-name > $tmp-out 2>$tmp-err
+
+# 文字「邊󠄊」は1文字なのでエラーとはならない
+
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST6-2 error"
+
+# 「邊󠄊」はIVSの例で邊󠄊(U+908A;U+E010A)代用対では邊󠄊(U+908A;U+DB40-U+DD0A)
+
+###########################################
+#TEST7
+# -d指定でnullを与える
+
+cat << FIN > $tmp-ans
+usplaboratory
+FIN
+
+${com} -d B $tmp-name > $tmp-out
+
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST7 error"
+
+###########################################
+#TEST8
+# -i指定でnullデータの初期値を与える
+
+cat << FIN > $tmp-ans
+NULL
+FIN
+
+${com} -iNULL C $tmp-name > $tmp-out
+
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST8 error"
+
+###########################################
+#TEST9
+# -i指定でnullデータの初期値としてIVS文字列を与える
+
+cat << FIN > $tmp-ans
+渡邊󠄊
+FIN
+
+${com} -i渡邊󠄊 C $tmp-name > $tmp-out
+
+# 「邊󠄊」はIVSの例で邊󠄊(U+908A;U+E010A)代用対では邊󠄊(U+908A;U+DB40-U+DD0A)
+
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST9 error"
+
+###########################################
+#TEST10
+#TEST2の拡大版
+# BOM付きCRLFとBOM付きCRの試験
+
+cat << FIN > $tmp-name
+A01 1
+A02 2
+A03 3
+A10 5
+FIN
+
+cat << FIN > $tmp-ans
+1
+2
+3
+FIN
+
+# 入力用tmpファイルからBOM付きCRLFとBOM付きCRの各ファイルを作る
+BOMandEOLvariation $tmp-name $tmp-nameBOMCRLF $tmp-nameBOMCR
+
+# BOM付きCRLF
+${com} -e '^A0[0-9]$' $tmp-nameBOMCRLF > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST10-1 error"
+
+# BOM付きCR
+${com} -e '^A0[0-9]$' $tmp-nameBOMCR > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST10-2 error"
+
+# pipe接続
+
+# BOM付きCRLF
+cat $tmp-nameBOMCRLF | ${com} -e '^A0[0-9]$' - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST10-3 error"
+
+# BOM付きCR
+cat $tmp-nameBOMCR | ${com} -e '^A0[0-9]$' - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST10-4 error"
+
+###########################################
+#TEST11: regular expression
+# TEST2の変形版
+# NFC文字（濁音/半濁音が1文字）とNFD文字（濁音/半濁音が清音+結合用濁点/結合用半濁点の2文字で構成される）を同値化して処理する
+
+
+# $tmp-name1の「がぎぐげご」はNFD
+cat << FIN > $tmp-name1
+がぎぐげご01 1
+がぎぐげご02 2
+がぎぐげご03 3
+がぎぐげご10 5
+FIN
+
+# $tmp-name2の「がぎぐげご」はNFC
+cat << FIN > $tmp-name2
+がぎぐげご01 1
+がぎぐげご02 2
+がぎぐげご03 3
+がぎぐげご10 5
+FIN
+
+cat << FIN > $tmp-ans
+1
+2
+3
+FIN
+
+# 正規表現中の「がぎぐげご」はNFC
+${com} -e '^がぎぐげご0[0-9]$' $tmp-name1 > $tmp-out
+diff $tmp-ans $tmp-out ; ERROR_CHECK "TEST11-1 error"
+
+# 正規表現中の「がぎぐげご」はNFD
+${com} -e '^がぎぐげご0[0-9]$' $tmp-name2 > $tmp-out
+diff $tmp-ans $tmp-out ; ERROR_CHECK "TEST11-1 error"
+
+###########################################
+#TEST12: regular expression
+# TEST2の変形版
+# 文字列の「ゆるい一致」の試験
+
+cat << FIN > $tmp-name
+齋藤 齋(U+9F4B)藤(U+85E4) UCS
+齋󠄄藤 齋󠄄(U+9F4B;U+E0104)藤(U+85E4) IVS
+齋󠄅藤 齋󠄅(U+9F4B;U+E0105)藤(U+85E4) IVS
+齋󠄆藤 齋󠄆(U+9F4B;U+E0106)藤(U+85E4) IVS
+渡邉󠄐 渡(U+6E21)邉󠄐(U+9089;U+E0110) IVS
+渡邉󠄑 渡(U+6E21)邉󠄑(U+9089;U+E0111) IVS
+渡邉󠄒 渡(U+6E21)邉󠄒(U+9089;U+E0112) IVS
+渡邉 渡(U+6E21)邉(U+9089) UCS
+FIN
+
+cat << FIN > $tmp-ans1
+齋藤 齋(U+9F4B)藤(U+85E4) UCS
+齋󠄆藤 齋󠄆(U+9F4B;U+E0106)藤(U+85E4) IVS
+FIN
+
+cat << FIN > $tmp-ans2
+齋藤 齋(U+9F4B)藤(U+85E4) UCS
+齋󠄄藤 齋󠄄(U+9F4B;U+E0104)藤(U+85E4) IVS
+齋󠄅藤 齋󠄅(U+9F4B;U+E0105)藤(U+85E4) IVS
+齋󠄆藤 齋󠄆(U+9F4B;U+E0106)藤(U+85E4) IVS
+FIN
+
+cat << FIN > $tmp-ans3
+渡邉󠄐 渡(U+6E21)邉󠄐(U+9089;U+E0110) IVS
+渡邉 渡(U+6E21)邉(U+9089) UCS
+FIN
+
+cat << FIN > $tmp-ans4
+渡邉󠄐 渡(U+6E21)邉󠄐(U+9089;U+E0110) IVS
+渡邉󠄑 渡(U+6E21)邉󠄑(U+9089;U+E0111) IVS
+渡邉󠄒 渡(U+6E21)邉󠄒(U+9089;U+E0112) IVS
+渡邉 渡(U+6E21)邉(U+9089) UCS
+FIN
+
+# 指定する名前部の「齋󠄆藤」はIVSで「齋󠄆(U+9F4B;U+E0106)藤(U+85E4)」nameファイル中の対応するIVSと「ゆるい一致」でUCSの「齋(U+9F4B)藤(U+85E4)UCS」をhitする
+${com} -l '齋󠄆藤' $tmp-name > $tmp-out
+diff $tmp-ans1 $tmp-out ; ERROR_CHECK "TEST12-1 error"
+
+# 指定する名前部の「齋藤」はUCSで「齋(U+9F4B)藤(U+85E4)」nameファイル中の対応するUCSと「ゆるい一致」で「齋(U+9F4B)」を基底文字とするすべてのIVSをhitする
+${com} -l '齋藤' $tmp-name > $tmp-out
+diff $tmp-ans2 $tmp-out ; ERROR_CHECK "TEST12-2 error"
+
+# 指定する名前部の「渡邉󠄐」は「渡(U+6E21)邉󠄐(U+9089;U+E0110)」はIVSでnameファイル中の対応するIVSと「ゆるい一致」でUCSの「渡(U+6E21)邉(U+9089)」をhitする
+${com} -l '渡邉󠄐' $tmp-name > $tmp-out
+diff $tmp-ans3 $tmp-out ; ERROR_CHECK "TEST12-3 error"
+
+# 指定する名前部の「渡邉」は「渡(U+6E21)邉(U+9089)」はUCSでnameファイル中の対応するUCSと「ゆるい一致」で「邉(U+9089)」を基底文字とするすべてのIVSをhitする
+${com} -l '渡邉' $tmp-name > $tmp-out
+diff $tmp-ans4 $tmp-out ; ERROR_CHECK "TEST12-4 error"
+
+###########################################
 rm $tmp-*
 echo "${pythonversion} ${name}" OK
 exit 0

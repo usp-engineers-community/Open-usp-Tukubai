@@ -42,18 +42,24 @@ ERROR_CHECK(){
 	exit 1
 }
 
+BOMandEOLvariation(){	# BOM無しLF改行ファイル（$1）からBOM付きCRLF改行ファイル（$2）とBOM付きCR改行ファイル（$3）を生成する
+	 [ $# -eq 3 ]; ERROR_CHECK "TESTスクリプト内のBOMandEOLvariation()でファイル指定が不正"
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r\n/g' -e 's/$/\r/' $1 >$2	# $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r/g' $1 | tr '\n' '\r' >$3	# $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
+}
+
 ###########################################
 #TEST1
 
 echo -e 'HOGE=hoge&JPN=%E6%97%A5%E6%9C%AC' > $tmp-in
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 HOGE hoge
 JPN 日本
 FIN
 
-cat $tmp-in	|
-${com} 		> $tmp-ans
+cat $tmp-in |
+${com} - > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST1 error"
 
@@ -62,32 +68,267 @@ diff $tmp-ans $tmp-out
 
 echo -e 'HOGE=rm+-Rf&JPN=%E6%97%A5%E6%9C%AC' > $tmp-in
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 HOGE rm -Rf
 JPN 日本
 FIN
 
 cat $tmp-in	|
-${com} 		> $tmp-ans
+${com} -	> $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST2 error"
 
 ###########################################
-#追加TEST1
-# -d指定で4バイト文字（Unicode符号位置がU+20000以降の文字）を与える
+#TEST3
+# 値がないときと-i指定があるとき
 
-cat << FIN > $tmp-out
+echo 'place=&country=japan' >$tmp-in
+
+cat << FIN > $tmp-ans
+place
+country japan
+FIN
+
+cat $tmp-in |
+${com} - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-1 error"
+
+cat << FIN > $tmp-ans
+place somewhere
+country japan
+FIN
+
+cat $tmp-in |
+${com} -isomewhere - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-2 error"
+
+###########################################
+#TEST4
+# templateオプションの検査
+
+# $tmp-inをcatで作成する
+cat <<FIN >$tmp-in
+XXXX=A1&YYYY=B1
+FIN
+
+# $tmp-templateを作成する
+cat <<FIN  >$tmp-template
+<input type="radio" name="XXXX_%1" value="A" />
+<input type="radio" name="XXXX_%2" value="B" />
+<input type="radio" name="XXXX2" value="C" />
+<input type="radio" name="XXXX2" value="C" />
+<input type="checkbox" name="YYYY1" value="a" />
+<input type="checkbox" name="YYYY1" value="a" />
+<input type="checkbox" name="YYYY_%1" value="b" />
+<input type="checkbox" name="YYYY_%2" value="c" />
+FIN
+
+cat <<FIN >$tmp-ans
+XXXX A1
+YYYY B1
+XXXX2 _
+YYYY1 _
+FIN
+
+${com} -i_ --template $tmp-template $tmp-in >$tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TES4 error"
+
+###########################################
+#TEST5
+#TEST1の拡大版
+# BOM付きCRLFとBOM付きCRの試験
+# pipe接続をする
+
+# $tmp-inをechoで作成する
+echo -e 'HOGE=hoge&JPN=%E6%97%A5%E6%9C%AC' > $tmp-in
+
+cat << FIN > $tmp-ans
+HOGE hoge
+JPN 日本
+FIN
+
+# 入力用tmpファイルからBOM付きCRLFとBOM付きCRの各ファイルを作る
+BOMandEOLvariation $tmp-in $tmp-inBOMCRLF $tmp-inBOMCR
+
+# BOM付きCRLF
+cat $tmp-inBOMCRLF |
+${com} - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5-1 error"
+
+# BOM付きCR
+cat $tmp-inBOMCR |
+${com} - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5-2 error"
+
+# $tmp-inをcatで作成する
+cat <<FIN >$tmp-in
+HOGE=hoge&JPN=%E6%97%A5%E6%9C%AC
+FIN
+
+# 入力用tmpファイルからBOM付きCRLFとBOM付きCRの各ファイルを作る
+BOMandEOLvariation $tmp-in $tmp-inBOMCRLF $tmp-inBOMCR
+
+# BOM付きCRLF
+cat $tmp-inBOMCRLF |
+${com} - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5-3 error"
+
+# BOM付きCR
+cat $tmp-inBOMCR |
+${com} - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5-4 error"
+
+# -のかわりに/dev/fd/0を使用する
+
+# BOM付きCRLF
+cat $tmp-inBOMCRLF |
+${com} /dev/fd/0 > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5-5 error"
+
+# BOM付きCR
+cat $tmp-inBOMCR |
+${com} /dev/fd/0 > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5-6 error"
+
+# $tmp-inを作成する（複数行）
+# 主入力ファイルが複数行を持つときはエラーとなる
+
+cat <<FIN >$tmp-in
+HOGE=hoge&JPN=%E6%97%A5%E6%9C%AC
+ABC=abc&USA=%E6%97%A5%E6%9C%AC
+FIN
+
+echo TEST5-7はエラーで終了するように設定されている
+
+cat $tmp-in |
+${com} - > $tmp-out
+[ $? -ne 0 ] ; ERROR_CHECK "TEST5-7 error"
+
+echo TEST5-8はエラーで終了するように設定されている
+
+cat $tmp-in |
+${com} - > $tmp-out
+[ $? -ne 0 ] ; ERROR_CHECK "TEST5-8 error"
+
+###########################################
+#TEST6
+#TEST1の拡大版
+# BOM付きCRLFとBOM付きCRの試験
+# pipe接続をしない
+
+# $tmp-inをechoで作成する
+echo -e 'HOGE=hoge&JPN=%E6%97%A5%E6%9C%AC' > $tmp-in
+
+cat << FIN > $tmp-ans
+HOGE hoge
+JPN 日本
+FIN
+
+# 入力用tmpファイルからBOM付きCRLFとBOM付きCRの各ファイルを作る
+BOMandEOLvariation $tmp-in $tmp-inBOMCRLF $tmp-inBOMCR
+
+# BOM付きCRLF
+${com} $tmp-inBOMCRLF > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST6-1 error"
+
+# BOM付きCR
+${com} $tmp-inBOMCR > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST6-2 error"
+
+# $tmp-inをcatで作成する
+cat <<FIN >$tmp-in
+HOGE=hoge&JPN=%E6%97%A5%E6%9C%AC
+FIN
+
+cat << FIN > $tmp-ans
+HOGE hoge
+JPN 日本
+FIN
+
+# 入力用tmpファイルからBOM付きCRLFとBOM付きCRの各ファイルを作る
+BOMandEOLvariation $tmp-in $tmp-inBOMCRLF $tmp-inBOMCR
+
+# BOM付きCRLF
+${com} $tmp-inBOMCRLF > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST6-3 error"
+
+# BOM付きCR
+${com} $tmp-inBOMCR > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST6-4 error"
+
+# <template>オプションの検査
+
+# 空の$temp-inを作成する
+cat << FIN > $tmp-in
+FIN
+
+# $tmp-templateをcatで作成する
+cat <<FIN  >$tmp-template
+<input type="radio" name="XXXX" value="A" />
+<input type="radio" name="XXXX" value="B" />
+<input type="radio" name="XXXX" value="C" />
+<input type="checkbox" name="YYYY" value="a" />
+<input type="checkbox" name="YYYY" value="b" />
+<input type="checkbox" name="YYYY" value="c" />
+FIN
+
+cat <<FIN >$tmp-ans
+XXXX _
+YYYY _
+FIN
+
+# 入力用tmpファイルからBOM付きCRLFとBOM付きCRの各ファイルを作る
+# $tmp-inBOMCRLFと$tmp-inBOMCRはともにBOMのみの「空ファイル」となる
+BOMandEOLvariation $tmp-in $tmp-inBOMCRLF $tmp-inBOMCR
+BOMandEOLvariation $tmp-template $tmp-templateBOMCRLF $tmp-templateBOMCR
+
+# BOM付きCRLFのtemplate
+${com} -i_ --template $tmp-templateBOMCRLF $tmp-inBOMCRLF >$tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST6-5 error"
+
+# BOM付きCRのtemplate
+${com} -i_ --template $tmp-templateBOMCR $tmp-inBOMCR >$tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST6-6 error"
+
+# templateがpipeで標準入力となった場合
+
+# BOM付きCRのtemplateとBOMのみの「空ファイル」temp-in
+cat $tmp-templateBOMCR | ${com} -i_ --template - $tmp-inBOMCRLF >$tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST6-7 error"
+
+###########################################
+#TEST7
+# -d指定で4バイト文字（Unicode符号位置がU+FFFF超の文字）を与える
+
+cat << FIN > $tmp-ans
 place tokyo𠆢osaka
 country japan
 FIN
 
-echo 'place=tokyo osaka&country=japan' | ${com} -d𠆢 >$tmp-ans
+echo 'place=tokyo osaka&country=japan' | ${com} -d𠆢 >$tmp-out
 
 # 「𠆢」は𠆢(U+201A2)代用対では𠆢(U+D840-U+DDA2)
 
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "追加TEST1 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST7 error"
 
+###########################################
 rm -f $tmp-*
 echo "${pythonversion} ${name}" OK
 exit 0

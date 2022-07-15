@@ -42,6 +42,12 @@ ERROR_CHECK(){
 	exit 1
 }
 
+BOMandEOLvariation(){	# BOM無しLF改行ファイル（$1）からBOM付きCRLF改行ファイル（$2）とBOM付きCR改行ファイル（$3）を生成する
+	 [ $# -eq 3 ]; ERROR_CHECK "TESTスクリプト内のBOMandEOLvariation()でファイル指定が不正"
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r\n/g' -e 's/$/\r/' $1 >$2	# $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r/g' $1 | tr '\n' '\r' >$3	# $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
+}
+
 ###########################################
 # TEST1
 # 通常の連結
@@ -66,7 +72,7 @@ cat << FIN > $tmp-tran
 4 博多
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 2 大阪1 京橋
 2 大阪2 京橋
 1 東京1 上野
@@ -79,14 +85,14 @@ cat << FIN > $tmp-out
 2 大阪2 梅田
 FIN
 
-${com} key=1 $tmp-master $tmp-tran >$tmp-ans
+${com} key=1 $tmp-master $tmp-tran >$tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST1 error"
 
 ###########################################
 # TEST2
 
-cat << FIN > $tmp-ng-out
+cat << FIN > $tmp-ng-ans
 3 栄
 3 金山
 4 天神
@@ -96,14 +102,14 @@ FIN
 
 # ngオプションを使ってマッチしないレコードをファイルディスクリプター指定をして出力します。
 
-${com} +ng3 key=1 $tmp-master $tmp-tran > $tmp-ok-data 3> $tmp-ng-data
-diff $tmp-ng-data $tmp-ng-out
+${com} +ng3 key=1 $tmp-master $tmp-tran > $tmp-ok-out 3> $tmp-ng-out
+diff $tmp-ng-ans $tmp-ng-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST2-1 error"
 
 # ngオプションでファイルディスクリプター指定を省略すると、マッチしないレコードは標準エラー出力へ出力します。
 
-${com} +ng key=1 $tmp-master $tmp-tran > $tmp-ok-data 2> $tmp-ng-data
-diff $tmp-ng-data $tmp-ng-out
+${com} +ng key=1 $tmp-master $tmp-tran > $tmp-ok-out 2> $tmp-ng-out
+diff $tmp-ng-ans $tmp-ng-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST2-2 error"
 
 ###########################################
@@ -122,14 +128,14 @@ x x A B x x
 x x A A x x
 FIN
 
-cat << FIN > $tmp-data
+cat << FIN > $tmp-ans
 x x A B nameAB x x
 x x A A nameA1 x x
 x x A A nameA2 x x
 FIN
 
-${com} key=3/4 $tmp-master $tmp-tran > $tmp-ok
-diff $tmp-ok $tmp-data
+${com} key=3/4 $tmp-master $tmp-tran > $tmp-out
+diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST3 error"
 
 ###########################################
@@ -149,18 +155,18 @@ x B y C x
 x B z A x
 FIN
 
-cat << FIN > $tmp-data
+cat << FIN > $tmp-ans
 x C x A c nameAC x
 x B z A a nameA1 x
 x B z A b nameA2 x
 FIN
 
-${com} key=4@2 $tmp-master $tmp-tran > $tmp-ok
-diff $tmp-ok $tmp-data
+${com} key=4@2 $tmp-master $tmp-tran > $tmp-out
+diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST4 error"
 
 ###########################################
-# TEST4-2
+# TEST5
 # 離れたキーフィールドの場合(通常は使用しません)←3フィールド
 
 cat << FIN > $tmp-master
@@ -176,18 +182,18 @@ x B y C x
 x B z A x
 FIN
 
-cat << FIN > $tmp-data
+cat << FIN > $tmp-ans
 x C x A c nameAC x
 x B z A a nameA1 x
 x B z A b nameA2 x
 FIN
 
-${com} key=4@1@2 $tmp-master $tmp-tran > $tmp-ok
-diff $tmp-ok $tmp-data
-[ $? -eq 0 ] ; ERROR_CHECK "TEST4-2 error"
+${com} key=4@1@2 $tmp-master $tmp-tran > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5 error"
 
 ###########################################
-# 追加TEST1
+#TEST6
 # キーリストの重複解消試験(1)←3フィールドの重複解消
 
 cat << FIN > $tmp-master
@@ -203,18 +209,18 @@ x B y C x
 x B z A x
 FIN
 
-cat << FIN > $tmp-data
+cat << FIN > $tmp-ans
 x C x A c nameAC x
 x B z A a nameA1 x
 x B z A b nameA2 x
 FIN
 
-${com} key=4@2@2@4@4@2 $tmp-master $tmp-tran > $tmp-ok
-diff $tmp-ok $tmp-data
-[ $? -eq 0 ] ; ERROR_CHECK "追加TEST1 error"
+${com} key=4@2@2@4@4@2 $tmp-master $tmp-tran > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST6 error"
 
 ###########################################
-# 追加TEST2
+# TEST7
 # キーリストの重複解消試験(2)←2フィールドの重複解消
 
 cat << FIN > $tmp-master
@@ -223,19 +229,120 @@ x B b A nameA2
 x C c A nameAC
 FIN
 
-cat << FIN > $tmp-data
+cat << FIN > $tmp-ans
 x C x A c nameAC x
 x B z A a nameA1 x
 x B z A b nameA2 x
 FIN
 
-${com} key=4@1@2@1@2@4 $tmp-master $tmp-tran > $tmp-ok
-diff $tmp-ok $tmp-data
-[ $? -eq 0 ] ; ERROR_CHECK "追加TEST2 error"
+${com} key=4@1@2@1@2@4 $tmp-master $tmp-tran > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST7 error"
 
 ###########################################
+# TEST8
+# キーフィールドの列挙指定と範囲指定の連続混用および重複指定解消の試験
 
+cat << FIN > $tmp-master
+A A nameA1
+A A nameA2
+A B nameAB
+FIN
+
+cat << FIN > $tmp-tran
+x x B A x x
+x x A B x x
+x x A A x x
+FIN
+
+cat << FIN > $tmp-ans
+x x A B nameAB x x
+x x A A nameA1 x x
+x x A A nameA2 x x
+FIN
+
+${com} key=3/4@4@3@NF-3/NF-2@4/3 $tmp-master $tmp-tran > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST8 error"
+
+###########################################
+# TEST9
+# TEST1の拡大版
+# BOM付きCRLFとBOM付きCRの試験
+# 通常の連結
+
+cat << FIN > $tmp-master
+1 東京1
+1 東京2
+2 大阪1
+2 大阪2
+FIN
+
+cat << FIN > $tmp-tran
+3 栄
+2 京橋
+3 金山
+1 上野
+1 新宿
+4 天神
+2 難波
+3 熱田
+2 梅田
+4 博多
+FIN
+
+cat << FIN > $tmp-ans
+2 大阪1 京橋
+2 大阪2 京橋
+1 東京1 上野
+1 東京2 上野
+1 東京1 新宿
+1 東京2 新宿
+2 大阪1 難波
+2 大阪2 難波
+2 大阪1 梅田
+2 大阪2 梅田
+FIN
+
+# 入力用tmpファイルからBOM付きCRLFとBOM付きCRの各ファイルを作る
+BOMandEOLvariation $tmp-master $tmp-masterBOMCRLF $tmp-masterBOMCR
+BOMandEOLvariation $tmp-tran $tmp-tranBOMCRLF $tmp-tranBOMCR
+
+# BOM付きCRLF
+${com} key=1 $tmp-masterBOMCRLF $tmp-tranBOMCRLF >$tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST9-1 error"
+
+# BOM付きCR
+${com} key=1 $tmp-masterBOMCR $tmp-tranBOMCR >$tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST9-2 error"
+
+# pipe接続 master
+
+# BOM付きCRLF
+cat $tmp-masterBOMCRLF | ${com} key=1 - $tmp-tranBOMCRLF >$tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST9-3 error"
+
+# BOM付きCR
+cat $tmp-masterBOMCR | ${com} key=1 - $tmp-tranBOMCR >$tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST9-4 error"
+
+# pipe接続 tran
+
+# BOM付きCRLF
+cat $tmp-tranBOMCRLF | ${com} key=1 $tmp-masterBOMCRLF - >$tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST9-5 error"
+
+# BOM付きCR
+cat $tmp-tranBOMCR | ${com} key=1 $tmp-masterBOMCR - >$tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST9-6 error"
+
+###########################################
 rm -f $tmp-*
 echo "${pythonversion} ${name}" OK
-
 exit 0

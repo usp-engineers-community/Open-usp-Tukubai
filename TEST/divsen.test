@@ -43,6 +43,12 @@ ERROR_CHECK(){
 	exit 1
 }
 
+BOMandEOLvariation(){	# BOM無しLF改行ファイル（$1）からBOM付きCRLF改行ファイル（$2）とBOM付きCR改行ファイル（$3）を生成する
+	 [ $# -eq 3 ]; ERROR_CHECK "TESTスクリプト内のBOMandEOLvariation()でファイル指定が不正"
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r\n/g' -e 's/$/\r/' $1 >$2	# $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r/g' $1 | tr '\n' '\r' >$3	# $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
+}
+
 ###########################################
 #TEST1
 
@@ -50,18 +56,22 @@ cat << FIN > $tmp-in
 0.124 12412553 12345 -1242.32 2.24144
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 0.124 12413 12345 -1 0
 FIN
 
-${com} 2 4 5 $tmp-in > $tmp-ans
+${com} 2 4 5 $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST1.1 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1-1 error"
 
 cat $tmp-in	|
-${com} 2 4 5 > $tmp-ans
+${com} 2 4 5 > $tmp-out
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST1.2 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1-2 error"
+
+${com} 2 5/4 2 $tmp-in > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1-3 error"
 
 ###########################################
 #TEST2
@@ -70,24 +80,24 @@ cat << FIN > $tmp-in
 0.124 12412553 12345 -1242.32 2.24144
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 0.124 12412.553 12345 -1.24232 0.00224144
 FIN
 
 ${com} -s 2 4 5 $tmp-in 	|
-${marumecom} 2.6 4.8 5.11            > $tmp-ans
-cat $tmp-out		|
+${marumecom} 2.6 4.8 5.11            > $tmp-out
+cat $tmp-ans		|
 ${marumecom} 2.6 4.8 5.11     |
-diff $tmp-ans -
-[ $? -eq 0 ] ; ERROR_CHECK "TEST2.1 error"
+diff - $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2-1 error"
 
 cat $tmp-in	|
 ${com} -s 2 4 5 |
-${marumecom} 2.6 4.8 5.11            > $tmp-ans
-cat $tmp-out		|
+${marumecom} 2.6 4.8 5.11            > $tmp-out
+cat $tmp-ans		|
 ${marumecom} 2.6 4.8 5.11     |
-diff $tmp-ans -
-[ $? -eq 0 ] ; ERROR_CHECK "TEST2.2 error"
+diff - $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2-2 error"
 
 ###########################################
 #TEST3
@@ -102,7 +112,7 @@ cat << FIN > $tmp-in
 20060206 771100 400000
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 20060201 296 6710
 20060202 1300 3130
 20060203 310 20
@@ -111,11 +121,120 @@ cat << FIN > $tmp-out
 20060206 771 400
 FIN
 
-${com} 2 3 $tmp-in > $tmp-ans
+${com} 2 3 $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST3 error"
 
+###########################################
+#TEST4
+#TEST1の拡大版
+# BOM付きCRLFとBOM付きCRの試験
 
+cat << FIN > $tmp-in
+0.124 12412553 12345 -1242.32 2.24144
+FIN
+
+cat << FIN > $tmp-ans
+0.124 12413 12345 -1 0
+FIN
+
+# 入力用tmpファイルからBOM付きCRLFとBOM付きCRの各ファイルを作る
+BOMandEOLvariation $tmp-in $tmp-inBOMCRLF $tmp-inBOMCR
+
+# BOM付きUTF8ファイルCRLF
+${com} 2 4 5 $tmp-inBOMCRLF > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4-1 error"
+
+# BOM付きUTF8ファイルCR
+${com} 2 4 5 $tmp-inBOMCR > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4-2 error"
+
+# pipe接続
+
+# BOM付きUTF8ファイルCRLF
+cat $tmp-inBOMCRLF | ${com} 2 4 5 - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4-3 error"
+
+# BOM付きUTF8ファイルCR
+cat $tmp-inBOMCR | ${com} 2 4 5 - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4-4 error"
+
+# フィールド範囲指定
+
+# BOM付きUTF8ファイルCRLF
+${com} 2 5/4 2 $tmp-inBOMCRLF > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4-5 error"
+
+# BOM付きUTF8ファイルCR
+${com} 2 5/4 2 $tmp-inBOMCR > $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4-6 error"
+
+###########################################
+#TEST5
+# データ行の欄数がコマンドパラメータで指定された（処理対象）欄位置リスト中の最大値を超える場合の処理試験
+
+echo "1 2 3 4 5" | ${com} -s 2 3 4 > $tmp-out
+
+cat << FIN > $tmp-ans
+1 0.002 0.003 0.004 5
+FIN
+
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5-1 error"
+
+# 欄位置指定の変種（重複/降順/範囲/NF）の処理試験
+
+echo "1 2 3 4 5" | ${com} -s 2 3 3 2 NF-1/2 > $tmp-out
+
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5-2 error"
+
+###########################################
+#TEST6
+# TEST3の拡大版
+# キー指定の試験
+#  キー指定に使用できる記号
+#    /   a/bでフィールド番号aからフィールド番号bまでの区間を指定する a<=bの正順でもa>=bの逆順でもよい
+#    NF  入力行にあるフィールドの数を表わす NF-nとすると最後（最右端）のフィールドから数えてn番前のフィールドを意味する
+#    @   単一のフィールドまたはフィールド区間を連接するための区切りに使用する 複数回の連接もできる
+#  指定したフィールドに重複があっても単一化される
+
+cat << FIN > $tmp-in
+20060201 296030 6710000 100
+20060202 1300100 3130000 1000
+20060203 309500 20100 10000
+20060204 16300 300100 100000
+20060205 41000 210000 1000000
+20060206 771100 400000 10000000
+FIN
+
+cat << FIN > $tmp-ans
+20060201 296 6710 0
+20060202 1300 3130 1
+20060203 310 20 10
+20060204 16 300 100
+20060205 41 210 1000
+20060206 771 400 10000
+FIN
+
+${com} 2/4 $tmp-in > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST6-1 error"
+
+${com} 2 NF/3 $tmp-in > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST6-2 error"
+
+${com} NF@3/2@2/4 $tmp-in > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST6-3 error"
+
+###########################################
 rm -f $tmp-*
 echo "${pythonversion} ${name}" OK
 exit 0

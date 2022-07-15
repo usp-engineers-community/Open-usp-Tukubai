@@ -42,6 +42,12 @@ ERROR_CHECK(){
 	exit 1
 }
 
+BOMandEOLvariation(){	# BOM無しLF改行ファイル（$1）からBOM付きCRLF改行ファイル（$2）とBOM付きCR改行ファイル（$3）を生成する
+	 [ $# -eq 3 ]; ERROR_CHECK "TESTスクリプト内のBOMandEOLvariation()でファイル指定が不正"
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r\n/g' -e 's/$/\r/' $1 >$2	# $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r/g' $1 | tr '\n' '\r' >$3	# $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
+}
+
 ###########################################
 #TEST1
 # ふたつのfileの結合 出力の整形をする
@@ -49,29 +55,29 @@ ERROR_CHECK(){
 cat << FIN > $tmp-file1
 あいうえお
 hoge
-さしすせそ
-FIN
-
-cat << FIN > $tmp-file2
 かきくけこ
 FIN
 
-cat << FIN > $tmp-out
-あいうえお かきくけこ
-hoge
+cat << FIN > $tmp-file2
 さしすせそ
+たちつてと
+FIN
+
+cat << FIN > $tmp-ans
+あいうえお さしすせそ
+hoge たちつてと
+かきくけこ
 FIN
 
 # 出力の整形
 ${com} $tmp-file1 $tmp-file2	|
-sed 's/  */ /g'			|	# 連続空白は1個にする
-sed 's/  *$//'	 > $tmp-ans	# 行末の空白は削除する
+sed 's/  */ /g'	> $tmp-out	# 連続空白は1個にする
 
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST1 error"
 
 ###########################################
-#追加TEST1
+#TEST2
 # 3つのfileの結合 出力の整形はしない
 
 cat << FIN > $tmp-file1
@@ -98,7 +104,7 @@ C
 hoge3
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 A          B          C
 あいうえお
            かきくけこ
@@ -106,34 +112,32 @@ A          B          C
 hoge1      hoge2      hoge3
 FIN
 
-#${com} $tmp-file1 $tmp-file2  $tmp-file3 >@4.txt
-#${com2} $tmp-file1 $tmp-file2  $tmp-file3 >@4old.txt
-
-${com} $tmp-file1 $tmp-file2  $tmp-file3 >$tmp-ans
-[ $? -eq 0 ] ; ERROR_CHECK "追加TEST1-1 error"
+${com} $tmp-file1 $tmp-file2  $tmp-file3 >$tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2-1 error"
 
 # 標準入力を使用する
 
 cat $tmp-file1 | \
-${com} - $tmp-file2  $tmp-file3 >$tmp-ans
+${com} - $tmp-file2  $tmp-file3 >$tmp-out
 
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "追加TEST1-2 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2-2 error"
 
 cat $tmp-file2 | \
-${com} $tmp-file1 -  $tmp-file3 >$tmp-ans
+${com} $tmp-file1 -  $tmp-file3 >$tmp-out
 
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "追加TEST1-3 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2-3 error"
 
 cat $tmp-file3 | \
-${com} $tmp-file1 $tmp-file2 -   >$tmp-ans
+${com} $tmp-file1 $tmp-file2 -   >$tmp-out
 
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "追加TEST1-4 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2-4 error"
 
 ###########################################
-#追加TEST2
+#TEST3
 # 文字列幅の判定を確認する
 
 cat << FIN > $tmp-in1
@@ -158,21 +162,21 @@ FIN
 #𠮷田 #𠮷(U+20BB7)代用対では𠮷(U+D842-U+DFB7)
 #今川 #今(U+4ECA)
 #𫝆川 #𫝆(U+2B746)代用対では𫝆(U+D86D-U+DF46)
-#𫝆󠄁川 #IVSの例で𫝆󠄁(U+2B746_U+E0101)代用対では𫝆󠄁(U+D86D-U+DF46_U+DB40-U+DD01)
+#𫝆󠄁川 #IVSの例で𫝆󠄁(U+2B746;U+E0101)代用対では𫝆󠄁(U+D86D-U+DF46;U+DB40-U+DD01)
 #渡邊 #邊(U+908A)
-#渡邊󠄊 #IVSの例で邊󠄊(U+908A_U+E010A)代用対では邊󠄊(U+908A_U+DB40-U+DD0A)
-#渡邊󠄋 #IVSの例で邊󠄋(U+908A_U+E010B)代用対では邊󠄋(U+908A_U+DB40-U+DD0B)
-#渡邊󠄌 #IVSの例で邊󠄌(U+908A_U+E010C)代用対では邊󠄌(U+908A_U+DB40-U+DD0C)
+#渡邊󠄊 #IVSの例で邊󠄊(U+908A;U+E010A)代用対では邊󠄊(U+908A;U+DB40-U+DD0A)
+#渡邊󠄋 #IVSの例で邊󠄋(U+908A;U+E010B)代用対では邊󠄋(U+908A;U+DB40-U+DD0B)
+#渡邊󠄌 #IVSの例で邊󠄌(U+908A;U+E010C)代用対では邊󠄌(U+908A;U+DB40-U+DD0C)
 #神山 #神(U+795E)
-#神︀山 #SVSの例で神︀(U+795E_U+FE00)
+#神︀山 #SVSの例で神︀(U+795E;U+FE00)
 #羽田 #羽(U+7FBD)
-#羽︀田 #SVSの例で羽︀(U+7FBD_U+FE00)
-#か゚き゚ #結合文字列の例でか゚(U+304B_U+309A)き゚(U+304D_U+309A)
+#羽︀田 #SVSの例で羽︀(U+7FBD;U+FE00)
+#か゚き゚ #結合文字列の例でか゚(U+304B;U+309A)き゚(U+304D;U+309A)
 
 # 文字の正しい表示には適切なfontの使用が求められる
-# Unicode符号位置を「字(U+xxxx)」の形式で表現する（符号位置第が第2面のときは「字(U+xxxxx)」）
+# Unicode符号位置を「字(U+xxxx)」の形式で表現する（符号位置が第2面のときは「字(U+xxxxx)」）
 # 代用対は「字(U+xxxx-U+yyyy)」の形式で表現する
-# 結合文字列/IVS/SVSは「字(U+xxxx_U+yyyy)」の形式で表現する
+# 結合文字列/IVS/SVSは「字(U+xxxx;U+yyyy)」の形式で表現する
 
 cat << FIN > $tmp-in2
 91 59 20 76 54
@@ -191,7 +195,7 @@ cat << FIN > $tmp-in2
 88 43 9 37 62
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 0000000 吉田 50 F 91 59 20 76 54
 0000001 𠮷田 50 F 46 39 8  5  21
 0000003 今川 26 F 30 50 71 36 30
@@ -208,11 +212,67 @@ cat << FIN > $tmp-out
 0000014 か゚き゚ 45 F 88 43 9 37 62
 FIN
 
-${com} $tmp-in1 $tmp-in2 > $tmp-ans
+${com} $tmp-in1 $tmp-in2 > $tmp-out
 
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "追加TEST2 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3 error"
 
+###########################################
+#TEST4
+#TEST1の拡大版
+# BOM付きCRLFとBOM付きCRの試験
+# ふたつのfileの結合 出力の整形をする
+
+cat << FIN > $tmp-file1
+あいうえお
+hoge
+かきくけこ
+FIN
+
+cat << FIN > $tmp-file2
+さしすせそ
+たちつてと
+FIN
+
+cat << FIN > $tmp-ans
+あいうえお さしすせそ
+hoge たちつてと
+かきくけこ
+FIN
+
+# 入力用tmpファイルからBOM付きCRLFとBOM付きCRの各ファイルを作る
+BOMandEOLvariation $tmp-file1 $tmp-file1BOMCRLF $tmp-file1BOMCR
+BOMandEOLvariation $tmp-file2 $tmp-file2BOMCRLF $tmp-file2BOMCR
+
+# 出力は整形する
+
+# BOM付きCRLF
+${com} $tmp-file1BOMCRLF $tmp-file2BOMCRLF |
+sed 's/  */ /g'	>$tmp-out	# 連続空白は1個にする
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4-1 error"
+
+# BOM付きCR
+${com} $tmp-file1BOMCR $tmp-file2BOMCR |
+sed 's/  */ /g'	>$tmp-out	# 連続空白は1個にする
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4-2 error"
+
+# pipe接続
+
+# BOM付きCRLF
+cat $tmp-file2BOMCRLF | ${com} $tmp-file1BOMCRLF - |
+sed 's/  */ /g'	>$tmp-out	# 連続空白は1個にする
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4-3 error"
+
+# BOM付きCR
+cat $tmp-file2BOMCR | ${com} $tmp-file1BOMCR - |
+sed 's/  */ /g'>$tmp-out	# 連続空白は1個にする
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4-4 error"
+
+###########################################
 rm -f $tmp-*
 echo "${pythonversion} ${name}" OK
 exit 0
