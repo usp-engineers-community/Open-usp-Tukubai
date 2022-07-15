@@ -4,11 +4,11 @@
 # ycat 横ＣＡＴ（Open usp Tukubai版）
 # 
 # designed by Nobuaki Tounaka
-# written by Yoshio Katayama
+# written  by Masatomo Togashi
 #
 # The MIT License
 #
-# Copyright (C) 2011 Universal Shell Programming Laboratory
+# Copyright (C) 2020 Universal Shell Programming Laboratory
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,7 @@
 from __future__ import print_function
 
 _usage = "ycat [-n] file1 file2..."
-_version = "Fri Oct 21 11:26:06 JST 2011"
+_version = "Sat Jun 20 21:57:22 JST 2020"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
 wide_class = ["W","F","A"]	# 全角文字クラス
 
@@ -108,12 +108,12 @@ def isHalfWidth(c):
 #
 def isCombiningDiacriticalMark(cp):
 	# unicodeにおける合成可能文字のブロック内か？
-		#	0x3099 0x309a	仮名文字の合成可能濁点と合成可能半濁点
-		#	0x0300-0x036F	ダイアクリティカルマーク（合成可能）
-		#	0x1AB0-0x1AFF	ダイアクリティカルマーク（合成可能）拡張
-		#	0x1DC0-0x1DFF	ダイアクリティカルマーク（合成可能）補助
-		#	0x20D0-0x20FF	記号用ダイアクリティカルマーク（合成可能）
-		#	0xFE20-0xFE2F	半記号（合成可能）
+		# 0x3099 0x309a	仮名文字の合成可能濁点と合成可能半濁点
+		# 0x0300-0x036F	ダイアクリティカルマーク（合成可能）
+		# 0x1AB0-0x1AFF	ダイアクリティカルマーク（合成可能）拡張
+		# 0x1DC0-0x1DFF	ダイアクリティカルマーク（合成可能）補助
+		# 0x20D0-0x20FF	記号用ダイアクリティカルマーク（合成可能）
+		# 0xFE20-0xFE2F	半記号（合成可能）
 	if cp == 0x3099 or cp == 0x309a or \
 		0x0300<=cp and cp <=0x036F or \
 		0x1AB0<=cp and cp <=0x1AFF or \
@@ -128,8 +128,8 @@ def isCombiningDiacriticalMark(cp):
 #
 def isVariationSelector(cp):
 	# unicodeにおける異体字選択子のブロック内か？
-		#	0xFE00-0xFE0F	Variation Selectors Supplement	字形選択子補助（SVS用）
-		#	0xE0100-0xE01EF	Variation Selectors	字形選択子（IVS用）
+		# 0xFE00-0xFE0F	Variation Selectors Supplement	字形選択子補助（SVS用）
+		# 0xE0100-0xE01EF	Variation Selectors	字形選択子（IVS用）
 	if  0xFE00<=cp  and cp <=0xFE0F or \
 		0xE0100<=cp and cp <=0xE01EF:
 		return True
@@ -150,12 +150,12 @@ def strwidth(s):
 #
 # 文字列の分解
 #
-#	文字列を拡張文字の列に変換する	1文字が複数の符号位置であらわされている場合（代用対/結合文字/IVS/SVS）への対応
-#		分解結果はリストとなり各要素（拡張文字）は
-#			UCS2のときはリスト
-#				[ 通常文字または文字列としての代用対 , 結合文字または異体字選択子（2バイトまたは代用対）または空文字 ]
-#			UCS4のときは文字列
-#				文字列（通常文字に結合文字または異体字選択子が付くことがある）
+# 文字列を拡張文字の列に変換する	1文字が複数の符号位置であらわされている場合（代用対/結合文字/IVS/SVS）への対応
+# 	分解結果はリストとなり各要素（拡張文字）は
+# 		UCS2のときはリスト
+# 			[ 通常文字または文字列としての代用対 , 結合文字または異体字選択子（2バイトまたは代用対）または空文字 ]
+# 		UCS4のときは文字列
+# 			文字列（通常文字に結合文字または異体字選択子が付くことがある）
 def string2list(s):
 	StringList=[]
 	if isUCS2():
@@ -221,15 +221,51 @@ def string2list(s):
 #
 # 入力ファイルオープン
 #
-def open_file(n, mode = 'r'):
-	if n >= len(sys.argv) or sys.argv[n] == '-':
-		file = sys.stdin
+def open_file(n):
+	if n >= len(sys.argv):	filename = '-'
 	else:
-		try:
-			file = open(sys.argv[n], mode)
-		except:
-			error("ファイル %s をオープンできません。", sys.argv[n])
+		filename = sys.argv[n]
+	if filename == '-':	filename = '/dev/fd/0'	# sys.stdinをファイルディスクリプターで表記する
+	if Python3():	mode='r'
+	else:	mode='rU'	# Python2ではmodeがrUのときPython3と同様に読み込み時に各種改行記号がLF（\n）に統一される
+	try:
+		file = open(filename, mode)
+	except:
+		if filename=='/dev/fd/0':
+			error("標準入力ファイルをオープンできません。")
+		else:
+			error("ファイル '%s' をオープンできません。", filename)
 	return file
+
+# 改行符号（\r\n）の削除関数
+def rm_eol(line):
+	return line.rstrip("\r\n")	# 改行記号としてCRLF('\r\n')/CR('\r')/LF('\n')のすべてに対応する
+
+# BOMの取得関数
+def get_BOM():
+	if Python3():	return chr(int("FEFF",16))	# U+FEFFはBOMのUnicode符号位置
+	else:			return "\xEF\xBB\xBF"	# BOMは「EF BB BF」の3バイト
+
+# BOMの削除関数
+def rm_BOM(line):
+	global firstline
+	if not firstline: return line
+	firstline=False
+	if line.startswith(get_BOM()):	line=line[len(get_BOM()):]	# 行頭にBOMがあったらBOMを削除する
+	return line
+
+# ファイル入力行の前処理
+def preproc_line(line):
+	line=rm_eol(line)	# 行末の改行記号を削除する
+	line=rm_BOM(line)	# ファイル先頭行の行頭にBOMがあったらこれを削除する
+	return line
+
+# Python3か判定する
+def Python3():
+	if sys.version_info >= (3, 0):
+		return True
+	else:
+		return False
 
 #
 # 通常ファイルの判定
@@ -241,7 +277,7 @@ def isfile(fd):
 		return False
 
 #
-#メイン関数
+# メイン関数
 #
 if __name__ == '__main__':
 
@@ -274,8 +310,9 @@ if __name__ == '__main__':
 			os.unlink(tmp[1])
 			tmp = os.fdopen(tmp[0], 'w+')
 		wid = 0
+		firstline=True
 		for l in f:
-			l = l.rstrip('\n')
+			l=preproc_line(l)
 			wid = max(wid, strwidth(l))
 			if tmp:
 				print(l, file=tmp)
@@ -292,17 +329,18 @@ if __name__ == '__main__':
 		lines = []
 		exist = False
 		for f in files:
+			firstline=True
 			l = f[0].readline()
 			if l:
-				l = l.rstrip('\n')
+				l=preproc_line(l)
 				exist = True
 			l += ' ' * (f[1] - strwidth(l))	# 行の末尾に（fileの最大行幅-読んだ行の幅）分の空白を付けて最大行幅に合わせる
 			lines += [ l ]
-		if not exist:	# すべてのfileに読みべき行がなくなった
+		if not exist:	# すべてのfileに読むべき行がなくなった
 			sys.exit(0)
 		# 出力行を作成する
 		line=''	# 出力行
-		for i in range(len(lines) - 1):
+		for i in range(len(lines) - 1):	# 最後のfileのひとつ前まで
 			line+=lines[i] + ' ' * n	# 各fileの行のあとに空白を<n>個出力する
 		line=(line+lines[-1]).rstrip()+'\n'	# 最後のfileの行を加え行末の空白を削除し改行記号を付ける
 		sys.stdout.write(line)	# 実際にstdoutへ出力する

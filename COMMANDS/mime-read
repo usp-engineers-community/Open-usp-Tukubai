@@ -4,11 +4,11 @@
 # mime-read ＭＩＭＥ型式データリード（Open usp Tukubai版）
 # 
 # designed by Nobuaki Tounaka
-# written by Yoshio Katayama
+# written  by Masatomo Togashi
 #
 # The MIT License
 #
-# Copyright (C) 2011 Universal Shell Programming Laboratory
+# Copyright (C) 2020 Universal Shell Programming Laboratory
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +32,7 @@ from __future__ import print_function
 
 _usage = "mime-read <name> <file>"
 _usage1 = "mime-read -v <file>"
-_version = "Fri Oct 21 11:26:06 JST 2011"
+_version = "Sun Apr 19 23:32:18 JST 2020"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
 
 import re
@@ -53,24 +53,48 @@ def usage():
 #
 # 入力ファイルオープン
 #
-def open_file(n, mode = 'r'):
-	if n >= len(sys.argv) or sys.argv[n] == '-':
-		file = sys.stdin
+def open_file(n):
+	if n >= len(sys.argv):	filename = '-'
 	else:
-		try:
-			file = open(sys.argv[n], mode)
-		except:
-			error("ファイル '%s' をオープンできません。", sys.argv[n])
+		filename = sys.argv[n]
+	if filename == '-':	filename = '/dev/fd/0'	# sys.stdinをファイルディスクリプターで表記する
+	if Python3():	mode='r'
+	else:	mode='rU'	# Python2ではmodeがrUのときPython3と同様に読み込み時に各種改行記号がLF（\n）に統一される
+	try:
+		file = open(filename, mode)
+	except:
+		if filename=='/dev/fd/0':
+			error("標準入力ファイルをオープンできません。")
+		else:
+			error("ファイル '%s' をオープンできません。", filename)
 	return file
 
-#
-# 改行シーケンス（\r\n）の削除
-#
+# 改行符号（\r\n）の削除関数
 def rm_eol(line):
-	return line.rstrip('\n').rstrip('\r')
+	return line.rstrip("\r\n")	# 改行記号としてCRLF('\r\n')/CR('\r')/LF('\n')のすべてに対応する
+
+# BOMの取得関数
+def get_BOM():
+	if Python3():	return chr(int("FEFF",16))	# U+FEFFはBOMのUnicode符号位置
+	else:			return "\xEF\xBB\xBF"	# BOMは「EF BB BF」の3バイト
+
+# BOMの削除関数
+def rm_BOM(line):
+	global firstline
+	if not firstline: return line
+	firstline=False
+	if line.startswith(get_BOM()):	line=line[len(get_BOM()):]	# 行頭にBOMがあったらBOMを削除する
+	return line
+
+# Python3か判定する
+def Python3():
+	if sys.version_info >= (3, 0):
+		return True
+	else:
+		return False
 
 #
-# unfolding機能と改行記号除去機能付きの行入力（今の行と次の行とEOF判定を返す）
+# unfolding機能とBOM削除機能と改行記号除去機能付きの行入力（今の行と次の行とEOF判定を返す）
 #
 def getline(file,head,nextline):
 
@@ -78,15 +102,17 @@ def getline(file,head,nextline):
 		line=nextline
 		nextline=None
 	else:
-		line=file.readline() # しっぽ（CRLF）付き
+		line=file.readline() # しっぽ（改行記号）付き
 
 	if not line: # EOFに達した
 		return None,None,True
 
+	line=rm_BOM(line)	# 先頭行のBOMは削除する
+
 	if head: # header行のときはunfolding処理をする
-		nextline=file.readline() # しっぽ（CRLF）付き
+		nextline=file.readline() # しっぽ（改行記号）付き
 		# 複数行headerがあれば連結して1行にする
-		while nextline: # EOFに達するまで…
+		while nextline:
 			# 次の行の行頭でlinear-white-spaceを検索
 			r = re.match(r'(^[\t ])+', nextline)
 			# もしあればunfoldingを実行する
@@ -95,13 +121,13 @@ def getline(file,head,nextline):
 			# なければ論理行は完成
 			else:
 				break
-			nextline=file.readline() # しっぽ（CRLF）付き
+			nextline=file.readline() # しっぽ（改行記号）付き
 
-	line=rm_eol(line) # しっぽ（CRLF）を切る
+	line=rm_eol(line) # しっぽ（改行記号）を切る
 	return line,nextline,False # 今の行と次の行とEOF判定を返す
 
 #
-#メイン関数
+# メイン関数
 #
 if __name__ == '__main__':
 
@@ -133,6 +159,8 @@ if __name__ == '__main__':
 	n=1
 	nextline=None
 	eof=False
+
+	firstline=True
 
 	#
 	# メインループ

@@ -4,11 +4,11 @@
 # sm4 小計/中計挿入ツール（Open usp Tukubai版）
 # 
 # designed by Nobuaki Tounaka
-# written by Yoshio Katayama
+# written  by Masatomo Togashi
 #
 # The MIT License
 #
-# Copyright (C) 2011 Universal Shell Programming Laboratory
+# Copyright (C) 2020 Universal Shell Programming Laboratory
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,7 @@
 from __future__ import print_function
 
 _usage = "sm4 [+h] <k1> <k2> <d1> <d2> <s1> <s2> <file>"
-_version = "Fri Oct 21 11:26:06 JST 2011"
+_version = "Tue Oct 20 15:17:47 JST 2020"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
 _keypat = r'\d+|NF(-\d+)?$'
 wide_class = ["W","F","A"]	# 全角文字クラス
@@ -43,6 +43,9 @@ import os
 import sys
 from decimal import Decimal
 import unicodedata
+
+# 濁音と半濁音のNFD表記でNFC表記もできるもの→NFDtoNFC変換でNFCに統一する
+_comb_pat=r"(((う|か|き|く|け|こ|さ|し|す|せ|そ|た|ち|つ|て|と|は|ひ|ふ|へ|ほ|ウ|カ|キ|ク|ケ|コ|サ|シ|ス|セ|ソ|タ|チ|ツ|テ|ト|ハ|ヒ|フ|ヘ|ホ|ワ|ヰ|ヱ|ヲ)゙)|((は|ひ|ふ|へ|ほ|ハ|ヒ|フ|ヘ|ホ)゚))+"
 
 def error(msg, *arg):
 	print('Error[sm4] :', msg % arg, file=sys.stderr)
@@ -57,7 +60,6 @@ def usage():
 class FieldLine:
 	def __init__(self, line, allow_z = False):
 		self.__allow_zero = allow_z
-		line = line.rstrip('\n')
 		self.__fields = [ line ]
 		self.__fields += [ x for x in line.split(' ') if x ]
 
@@ -100,7 +102,7 @@ class FieldLine:
 # unicode 変換
 #
 def to_unicode(s):
-	if sys.version_info >= (3, 0): return s
+	if Python3(): return s
 	try:
 		return unicode(s, 'utf_8')
 	except:
@@ -193,12 +195,12 @@ def isHalfWidth(c):
 #
 def isCombiningDiacriticalMark(cp):
 	# unicodeにおける合成可能文字のブロック内か？
-		#	0x3099 0x309a	仮名文字の合成可能濁点と合成可能半濁点
-		#	0x0300-0x036F	ダイアクリティカルマーク（合成可能）
-		#	0x1AB0-0x1AFF	ダイアクリティカルマーク（合成可能）拡張
-		#	0x1DC0-0x1DFF	ダイアクリティカルマーク（合成可能）補助
-		#	0x20D0-0x20FF	記号用ダイアクリティカルマーク（合成可能）
-		#	0xFE20-0xFE2F	半記号（合成可能）
+		# 0x3099 0x309a	仮名文字の合成可能濁点と合成可能半濁点
+		# 0x0300-0x036F	ダイアクリティカルマーク（合成可能）
+		# 0x1AB0-0x1AFF	ダイアクリティカルマーク（合成可能）拡張
+		# 0x1DC0-0x1DFF	ダイアクリティカルマーク（合成可能）補助
+		# 0x20D0-0x20FF	記号用ダイアクリティカルマーク（合成可能）
+		# 0xFE20-0xFE2F	半記号（合成可能）
 	if cp == 0x3099 or cp == 0x309a or \
 		0x0300<=cp and cp <=0x036F or \
 		0x1AB0<=cp and cp <=0x1AFF or \
@@ -213,8 +215,8 @@ def isCombiningDiacriticalMark(cp):
 #
 def isVariationSelector(cp):
 	# unicodeにおける異体字選択子のブロック内か？
-		#	0xFE00-0xFE0F	Variation Selectors Supplement	字形選択子補助（SVS用）
-		#	0xE0100-0xE01EF	Variation Selectors	字形選択子（IVS用）
+		# 0xFE00-0xFE0F	Variation Selectors Supplement	字形選択子補助（SVS用）
+		# 0xE0100-0xE01EF	Variation Selectors	字形選択子（IVS用）
 	if  0xFE00<=cp  and cp <=0xFE0F or \
 		0xE0100<=cp and cp <=0xE01EF:
 		return True
@@ -235,12 +237,12 @@ def strwidth(s):
 #
 # 文字列の分解
 #
-#	文字列を拡張文字の列に変換する	1文字が複数の符号位置であらわされている場合（代用対/結合文字/IVS/SVS）への対応
-#		分解結果はリストとなり各要素（拡張文字）は
-#			UCS2のときはリスト
-#				[ 通常文字または文字列としての代用対 , 結合文字または異体字選択子（2バイトまたは代用対）または空文字 ]
-#			UCS4のときは文字列
-#				文字列（通常文字に結合文字または異体字選択子が付くことがある）
+# 文字列を拡張文字の列に変換する	1文字が複数の符号位置であらわされている場合（代用対/結合文字/IVS/SVS）への対応
+# 	分解結果はリストとなり各要素（拡張文字）は
+# 		UCS2のときはリスト
+# 			[ 通常文字または文字列としての代用対 , 結合文字または異体字選択子（2バイトまたは代用対）または空文字 ]
+# 		UCS4のときは文字列
+# 			文字列（通常文字に結合文字または異体字選択子が付くことがある）
 def string2list(s):
 	StringList=[]
 	if isUCS2():
@@ -306,15 +308,76 @@ def string2list(s):
 #
 # 入力ファイルオープン
 #
-def open_file(n, mode = 'r'):
-	if n >= len(sys.argv) or sys.argv[n] == '-':
-		file = sys.stdin
+def open_file(n):
+	if n >= len(sys.argv):	filename = '-'
 	else:
-		try:
-			file = open(sys.argv[n], mode)
-		except:
-			error("ファイル %s をオープンできません。", sys.argv[n])
+		filename = sys.argv[n]
+	if filename == '-':	filename = '/dev/fd/0'	# sys.stdinをファイルディスクリプターで表記する
+	if Python3():	mode='r'
+	else:	mode='rU'	# Python2ではmodeがrUのときPython3と同様に読み込み時に各種改行記号がLF（\n）に統一される
+	try:
+		file = open(filename, mode)
+	except:
+		if filename=='/dev/fd/0':
+			error("標準入力ファイルをオープンできません。")
+		else:
+			error("ファイル '%s' をオープンできません。", filename)
 	return file
+
+# 改行符号（\r\n）の削除関数
+def rm_eol(line):
+	return line.rstrip("\r\n")	# 改行記号としてCRLF('\r\n')/CR('\r')/LF('\n')のすべてに対応する
+
+# BOMの取得関数
+def get_BOM():
+	if Python3():	return chr(int("FEFF",16))	# U+FEFFはBOMのUnicode符号位置
+	else:			return "\xEF\xBB\xBF"	# BOMは「EF BB BF」の3バイト
+
+# BOMの削除関数
+def rm_BOM(line):
+	global firstline
+	if not firstline: return line
+	firstline=False
+	if line.startswith(get_BOM()):	line=line[len(get_BOM()):]	# 行頭にBOMがあったらBOMを削除する
+	return line
+
+# ファイル入力行の前処理
+def preproc_line(line):
+	line=rm_eol(line)	# 行末の改行記号を削除する
+	line=rm_BOM(line)	# ファイル先頭行の行頭にBOMがあったらこれを削除する
+	return line
+
+# Python3か判定する
+def Python3():
+	if sys.version_info >= (3, 0):
+		return True
+	else:
+		return False
+
+#
+# utf8 変換
+#
+def to_utf8(s):
+	try:
+		return s.encode('utf-8')
+	except:
+		error("内部エラー UTF8への変換に失敗しました。")
+
+#
+# NFDtoNFC()のre.sub()から指定patternがみつかるごとに呼ばれるのでNFD/NFC変換をして返す
+# 置換対象パターンはNFD文字:全角ひらがな/全角カタカナの清音に結合用濁点/結合用半濁点を連接したもの
+# 置換先文字はNFC文字:全角ひらがな/全角カタカナの濁音/半濁音
+#
+def replace(matchobj):
+	if Python3():	return unicodedata.normalize('NFC',matchobj.group(0))
+	else:	return to_utf8(unicodedata.normalize('NFC',to_unicode(matchobj.group(0))))	# Python2ではutf8→unicdoe→utf8の変換をする
+
+#
+# 全角ひらがな/全角カタカナの濁音/半濁音のNFC化
+#
+def NFDtoNFC(str):
+	# 全角ひらがな/全角カタカナの濁音/半濁音をNFCで統一して返す
+	return re.sub(pattern,replace,str)
 
 #
 # フィールド値の取得
@@ -326,12 +389,17 @@ def getval(line, n):
 		error("数値変換できません。")
 
 #
-#メイン関数
+# メイン関数
 #
 if __name__ == '__main__':
 
 	if len(sys.argv) < 7:
 		usage()
+
+	#
+	# NFD文字（清音+結合用濁点/結合用半濁点）検出のための正規表現パターンを準備
+	#
+	pattern=re.compile(_comb_pat)
 
 	#
 	# +h
@@ -359,6 +427,7 @@ if __name__ == '__main__':
 
 	file = open_file(7)
 
+	firstline=True
 	#
 	# ヘッダー出力
 	#
@@ -366,7 +435,8 @@ if __name__ == '__main__':
 		line = file.readline()
 		if not line:
 			sys.exit(0)
-		print(line, end=' ')
+		line=preproc_line(line)	# 入力行の前処理
+		print(line)
 
 	#
 	# １行入力
@@ -374,6 +444,7 @@ if __name__ == '__main__':
 	line = file.readline()
 	if not line:
 		sys.exit(0)
+	line=preproc_line(line)	# 入力行の前処理
 	line = FieldLine(line)
 	k1 = line.getFieldNum(k1)
 	k2 = line.getFieldNum(k2)
@@ -385,7 +456,11 @@ if __name__ == '__main__':
 		d2 = line.getFieldNum(d2)
 	s1 = line.getFieldNum(s1)
 	s2 = line.getFieldNum(s2)
-	if k1 > k2 or abs(d1) > abs(d2) or s1 > s2 or k2 > abs(d1) or abs(d2) > s1:
+	# 降順を昇順化
+	if k1 > k2:	k1,k2=k2,k1
+	if d1 > d2:	d1,d2=d2,d1
+	if s1 > s2:	s1,s2=s2,s1
+	if k2 > abs(d1) or abs(d2) > s1:
 		usage()
 
 	#
@@ -405,23 +480,25 @@ if __name__ == '__main__':
 		for i in range(s1, s2 + 1):
 			sum[i] = getval(line, i)
 		if (k1):
-			key = line.getField(k1, k2)
+			key = NFDtoNFC(line.getField(k1, k2))	# キーフィールド値はNFC正規化する
 	print(line.getField(0))	# 行全体を出力する
 
 	#
 	# メインループ
 	#
+	firstline=True
 	for line in file:
+		line=preproc_line(line)	# 入力行の前処理
 		line = FieldLine(line)
 		if DUMMY_CHAR in line.getField(abs(d1), abs(d2)):
 			print(line.getField(0))
 			continue
-		if line.getField(k1, k2) == key:
+		if NFDtoNFC(line.getField(k1, k2)) == key:	# キーフィールド値はNFC正規化する
 			for i in range(s1, s2 + 1):
 				sum[i] += getval(line, i)
 			print(line.getField(0))
 			continue
-		# 新しいkeyが出現した（2016年05月11日(水)14時23分46秒）
+		# 新しいkeyが出現した
 		if d1>0:	# d1/d2に数値が指定されているとき
 			print(key, dummy, end=' ')	# これまでのkeyとdummy文字列を出力
 		else:	# d1/d2に"x"が指定されているとき
@@ -431,7 +508,7 @@ if __name__ == '__main__':
 		print(sum[s2])
 		for i in range(s1, s2 + 1):
 			sum[i] = getval(line, i)
-		key = line.getField(k1, k2)
+		key = NFDtoNFC(line.getField(k1, k2))	# キーフィールド値はNFC正規化する
 		print(line.getField(0))	# 行全体を出力する
 
 	#

@@ -4,10 +4,11 @@
 # check_dble_name : name 形式データの重複チェックをする（Open usp Tukubai版）
 # 
 # designed by Nobuaki Tounaka
+# written  by Masatomo Togashi
 #
 # The MIT License
 #
-# Copyright (C) 2011 Universal Shell Programming Laboratory
+# Copyright (C) 2021 Universal Shell Programming Laboratory
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -30,11 +31,16 @@
 from __future__ import print_function
 import sys
 import itertools
+import re
+import unicodedata
 
 _usage = "check_dble_name <check_file> <name_file>"
 _usage2 = "[--through <string>]"
-_version = "Fri Oct 21 11:26:06 JST 2011"
+_version = "Sun Nov 21 17:29:32 JST 2021"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
+
+# 濁音と半濁音のNFD表記でNFC表記もできるもの→NFDtoNFC変換でNFCに統一する
+_comb_pat=r"(((う|か|き|く|け|こ|さ|し|す|せ|そ|た|ち|つ|て|と|は|ひ|ふ|へ|ほ|ウ|カ|キ|ク|ケ|コ|サ|シ|ス|セ|ソ|タ|チ|ツ|テ|ト|ハ|ヒ|フ|ヘ|ホ|ワ|ヰ|ヱ|ヲ)゙)|((は|ひ|ふ|へ|ほ|ハ|ヒ|フ|ヘ|ホ)゚))+"
 
 def error(msg, *arg):
 	print('Error[check_dble_name] :', msg % arg, file=sys.stderr)
@@ -47,21 +53,86 @@ def usage():
 	print("         ", _code, file=sys.stderr)
 	sys.exit(1)
 
-# ファイルオープン
-def open_file(filename, mode = 'r'):
-	# 入力でファイル名が'-'または省略なら標準入力とする
-	if mode=="r" and (filename=='-' or filename == None): 
-		file = sys.stdin
-	else: # その他の入力ファイルのとき
-		try:
-			file = open(filename, mode)
-		except:
+#
+# 入力ファイルオープン
+#
+def open_file(filename):
+	if filename == '-':	filename = '/dev/fd/0'	# sys.stdinをファイルディスクリプターで表記する
+	if Python3():	mode='r'
+	else:	mode='rU'	# Python2ではmodeがrUのときPython3と同様に読み込み時に各種改行記号がLF（\n）に統一される
+	try:
+		file = open(filename, mode)
+	except:
+		if filename=='/dev/fd/0':
+			error("標準入力ファイルをオープンできません。")
+		else:
 			error("ファイル '%s' をオープンできません。", filename)
 	return file
 
 # 改行符号（\r\n）の削除関数
 def rm_eol(line):
-	return line.rstrip('\n').rstrip('\r')
+	return line.rstrip("\r\n")	# 改行記号としてCRLF('\r\n')/CR('\r')/LF('\n')のすべてに対応する
+
+# BOMの取得関数
+def get_BOM():
+	if Python3():	return chr(int("FEFF",16))	# U+FEFFはBOMのUnicode符号位置
+	else:			return "\xEF\xBB\xBF"	# BOMは「EF BB BF」の3バイト
+
+# BOMの削除関数
+def rm_BOM(line):
+	global firstline
+	if not firstline: return line
+	firstline=False
+	if line.startswith(get_BOM()):	line=line[len(get_BOM()):]	# 行頭にBOMがあったらBOMを削除する
+	return line
+
+# ファイル入力行の前処理
+def preproc_line(line):
+	line=rm_eol(line)	# 行末の改行記号を削除する
+	line=rm_BOM(line)	# ファイル先頭行の行頭にBOMがあったらこれを削除する
+	return line
+
+# Python3か判定する
+def Python3():
+	if sys.version_info >= (3, 0):
+		return True
+	else:
+		return False
+
+#
+# utf8 変換
+#
+def to_utf8(s):
+	try:
+		return s.encode('utf-8')
+	except:
+		error("内部エラー UTF8への変換に失敗しました。")
+
+#
+# unicode 変換
+#
+def to_unicode(s):
+	if Python3(): return s
+	try:
+		return unicode(s, 'utf_8')
+	except:
+		error("不当なマルチバイト文字が含まれています。")
+
+#
+# NFDtoNFC()のre.sub()から指定patternがみつかるごとに呼ばれるのでNFD/NFC変換をして返す
+# 置換対象パターンはNFD文字:全角ひらがな/全角カタカナの清音に結合用濁点/結合用半濁点を連接したもの
+# 置換先文字はNFC文字:全角ひらがな/全角カタカナの濁音/半濁音
+#
+def replace(matchobj):
+	if Python3():	return unicodedata.normalize('NFC',matchobj.group(0))
+	else:	return to_utf8(unicodedata.normalize('NFC',to_unicode(matchobj.group(0))))	# Python2ではutf8→unicdoe→utf8の変換をする
+
+#
+# 全角ひらがな/全角カタカナの濁音/半濁音のNFC化
+#
+def NFDtoNFC(str):
+	# 全角ひらがな/全角カタカナの濁音/半濁音をNFCで統一して返す
+	return re.sub(pattern,replace,str)
 
 # tag部からtag名を切り出す
 def gettag(string):
@@ -72,17 +143,290 @@ def gettag(string):
 	else: # みつからないとき
 		return string
 
+#
+# 代用対前半部の判定
+#
+def isHighSurrogate(cp):
+	if 0xd800 <= cp and cp <= 0xdbff: return True
+	else:                             return False
+
+#
+# 代用対後半部の判定
+#
+def isLowSurrogate(cp):
+	if 0xdc00 <= cp and cp <= 0xdfff: return True
+	else:                             return False
+
+#
+# UCS2の判定
+#
+def isUCS2():
+	if sys.maxunicode==0xFFFF: return True
+	else:                      return False
+
+#
+# 合成可能文字の判定
+#
+def isCombiningDiacriticalMark(cp):
+	# unicodeにおける合成可能文字のブロック内か？
+		# 0x3099 0x309a	仮名文字の合成可能濁点と合成可能半濁点
+		# 0x0300-0x036F	ダイアクリティカルマーク（合成可能）
+		# 0x1AB0-0x1AFF	ダイアクリティカルマーク（合成可能）拡張
+		# 0x1DC0-0x1DFF	ダイアクリティカルマーク（合成可能）補助
+		# 0x20D0-0x20FF	記号用ダイアクリティカルマーク（合成可能）
+		# 0xFE20-0xFE2F	半記号（合成可能）
+	if cp == 0x3099 or cp == 0x309a or \
+		0x0300<=cp and cp <=0x036F or \
+		0x1AB0<=cp and cp <=0x1AFF or \
+		0x1DC0<=cp and cp <=0x1DFF or \
+		0x20D0<=cp and cp <=0x20FF or \
+		0xFE20<=cp and cp <=0xFE2F:
+		return True
+	else:	return False
+
+#
+# SVS異体字選択子（variation selector）の判定
+#
+def isSVSVariationSelector(cp):
+	# unicodeにおける異体字選択子のブロック内か？
+		# 0xFE00-0xFE0F	Variation Selectors Supplement	字形選択子補助（SVS用）
+	if  0xFE00<=cp  and cp <=0xFE0F:
+		return True
+	else:	return False
+
+#
+# IVS異体字選択子（variation selector）の判定
+#
+def isIVSVariationSelector(cp):
+	# unicodeにおける異体字選択子のブロック内か？
+		# 0xE0100-0xE01EF	Variation Selectors	字形選択子（IVS用）
+	if  0xE0100<=cp and cp <=0xE01EF:
+		return True
+	else:	return False
+
+#
+# 文字列の拡張文字列化
+#
+# 文字列を拡張文字列に変換する	1文字が複数の符号位置であらわされている場合（代用対/結合文字/IVS/SVS）への対応
+#	返値は(拡張文字,属性情報)のtuppleのlistでこれを「拡張文字列」とする
+# 	このうち
+#	拡張文字は
+# 		UCS2のときはリスト
+# 			[ 通常文字または文字列としての代用対 , 結合文字または異体字選択子（2バイトまたは代用対）または空文字 ]
+# 		UCS4のときは文字列
+# 			文字列（通常文字に結合文字または異体字選択子が付くことがある）
+#	属性情報は属性値（整数）となる
+#		属性は:
+#		UCS: 通常のUnicode文字（Universal Coded Character Set）
+#		CCS: 結合文字列（Combining Charactor Sequence）
+#		SVS: 標準異体字列（Standard Variation Sequence）
+#		IVS: 異体字列（Ideographic Variation Sequence）
+#		に分類される
+def toXstr(s):
+	StringList=[]
+	AttrList=[]	# 拡張文字列の属性リスト
+	if isUCS2():
+		surrogate_pair=False	# UCS2では代用対（surrogate pair）がありうる
+		prevchar=""
+		for c in s:
+			cp=ord(c)	# code point
+			# 代用対（[D800～DBFF]+[DC00～DFFF]のペア）の存在を考慮する
+			if not surrogate_pair:	# 代用対の処理中でなければ
+				if isHighSurrogate(cp):	# 代用対の前半部なら
+					surrogate_pair=True	# surrogate pair starts
+					HighSurrogate=c
+					HighSurrogateCp=cp
+					continue
+				if isLowSurrogate(cp):	error("代用対の構成が無効です。")	# 代用対の後半部が単独で現れた
+				elif isCombiningDiacriticalMark(cp):	# 合成可能文字なら
+					if prevchar=="":	error("結合文字列の構成が無効です。")	# 空文字の次に合成可能文字が現われた
+					StringList.append([prevchar,c])	# 先行文字と合成可能文字の組を追加（合成可能文字は第0面のみにある）
+					AttrList.append(CCS)
+					prevchar=""
+				elif isSVSVariationSelector(cp):	# 異体字選択子なら（代用対ではないのでSVS用異体字選択子の可能性のみ検査する）
+					if prevchar=="":	error("異体字列の構成が無効です。")	# 空文字の次に異体字選択子が現われた
+					StringList.append([prevchar,c])	# 先行文字とSVS用異体字選択子（2バイト）の組を追加
+					AttrList.append(SVS)
+					prevchar=""
+				else:	# 次となる普通の文字がきたら先行文字を単独で追加
+					if prevchar!="":
+						StringList.append([prevchar,""])	# 先行文字と空文字の組を追加
+						AttrList.append(UCS)
+					prevchar=c	# 先行文字とする
+			elif isLowSurrogate(cp):	# 代用対の処理中に代用対の後半部がきたら代用対の完成
+				surrogate_pair=False	# surrogate pair ends
+				sp=HighSurrogate+c	# 代用対を作る
+				uni = 0x10000 + (HighSurrogateCp - 0xD800) * 0x400 + (cp - 0xDC00);	# 代用対をdecodeする
+				if isIVSVariationSelector(uni):	# 代用対が異体字選択子なら（代用対なのでSVSてはなくIVSの可能性のみ検査する
+					if prevchar=="":	error("異体字列の構成が無効です。")	# 空文字の次に異体字選択子が現われた
+					StringList.append([prevchar,sp])	# 先行文字とIVS用異体字選択子（4バイト）の組を追加
+					AttrList.append(IVS)	# 代用対はIVS用異体字選択子
+					prevchar=""
+				else:	# 先行文字があって次に文字としての代用対が来た
+					if prevchar!="":
+						StringList.append([prevchar,""])	# 先行文字と空文字の組を追加
+						AttrList.append(UCS)
+					prevchar=sp	# 代用対を先行文字とする
+			else:	error("代用対の構成が無効です。")	# 代用対の前半部の次に代用対後半部以外が現われた
+		if surrogate_pair: 	error("代用対の構成が無効です。")	# 代用対の前半部で文字列の終端に達した
+		if prevchar!="":
+			StringList.append([prevchar,""])	# 最後の先行文字と空文字の組を追加
+			AttrList.append(UCS)
+	else:	# UCS4
+		prevchar=""
+		for c in s:
+			cp=ord(c)	# code point
+			if isCombiningDiacriticalMark(cp):	# 合成可能文字なら
+				if prevchar=="":	error("結合文字列の構成が無効です。")	# 空文字の次に合成可能文字が現われた
+				StringList.append(prevchar+c)	# 先行文字と合成可能文字の列を追加
+				AttrList.append(CCS)
+				prevchar=""
+			elif isSVSVariationSelector(cp) or isIVSVariationSelector(cp):	# 異体字選択子なら
+				if prevchar=="":	error("異体字列の構成が無効です。")	# 空文字の次に異体字選択子が現われた
+				StringList.append(prevchar+c)	# 先行文字と異体字選択子（4バイト）の列を追加
+				if isSVSVariationSelector(cp):
+					AttrList.append(SVS)
+				else:
+					AttrList.append(IVS)
+				prevchar=""
+			else:
+				if prevchar!="":
+					StringList.append(prevchar)	# 次となる普通の文字がきたら先行文字を単独で追加
+					AttrList.append(UCS)
+				prevchar=c	# 先行文字とする
+		if prevchar!="":
+			StringList.append(prevchar)	# 最後の先行文字を追加
+			AttrList.append(UCS)
+	return list(zip(StringList, AttrList))	# (Xchar,Xattr)のtuppleのlistを返す
+
+# XcharMatch 文字のゆるい一致検査
+#
+#	拡張文字同士で「ゆるい一致検査」をする
+#		通常文字が与えられたときは拡張文字列に変換してから比較する
+#		「拡張文字列」はtoXstr()が出力する文字単位のリストによる「文字列」
+#		ふたつの文字列で同じ位置の文字の比較は
+#			UCSとUCSのときは通常の文字比較で「一致/不一致」を決める
+#			IVSとIVSのときは基底文字と異体字選択子の両方が同じなら「一致」とする
+#			UCSとIVSのときはUCSと「IVSの基底文字」が同じなら（IVSの異体字選択子の値にかかわらず）「一致」（ゆるい一致）とする
+#		これは、IVSに対して、その基底文字に等しいUCSは「異体字選択子による微小な字体差を包摂していて文字比較においてwild-characterのようになっている」ということによる
+#		なお、UCSを表示したときに使用される字体は対応するIVSの異体字組があるときはfontシステムがその中からひとつを省略時字体（default glyph）として用いる
+def XcharMatch(char1,char2):
+	if type(char1)!=tuple:	# char1は通常文字
+		Xchar1=toXstr(to_unicode(char1))[0]	# 拡張文字に変換
+	else:
+		Xchar1=char1
+	if type(char2)!=tuple:	# char2は通常文字
+		Xchar2=toXstr(to_unicode(char2))[0]	# 拡張文字に変換
+	else:
+		Xchar2=char2
+	# (拡張文字,属性)のtupleを分解
+	char1=Xchar1[0]
+	char2=Xchar2[0]
+	attr1=Xchar1[1]
+	attr2=Xchar2[1]
+	if char1==char2:	# 拡張文字で一致のとき
+		return True
+	if char1[0]!=char2[0]:	# 拡張文字の基底文字部分が等しくないとき
+		return False	# 両文字はここで不一致となった
+	else:	# 文字の基底文字部分が等しいとき
+		if (attr1==UCS and attr2==IVS) or (attr1==IVS and attr2==UCS):	# 基底文字部分が等しく片方はUCSでもう一方はIVS異体字選択子
+			return True	# この拡張文字は一致←「片方はUCSでもう一方はIVS」は拡張部分が異なる場合の例外的一致
+		else:	# 基底文字部分が等しく両方に結合文字/SVS異体字選択子/（異なる）IVS異体字選択子
+		#　この段階では基底文字部分が等しく拡張部分が異なるままなので「例外」ではなく不一致となる
+			return False	# 両文字は不一致
+
+#
+# XstrMatch 文字列のゆるい一致検査
+#
+#	拡張文字列同士で「ゆるい一致検査」をする
+#		通常文字列が与えられたときは拡張文字列に変換してから比較する
+#		「拡張文字列」はtoXstr()が出力する文字単位のリストによる「文字列」
+#		ふたつの文字列で同じ位置の文字の比較はXcharMatch()で行なう
+def XstrMatch(str1,str2):
+	# 与えられた文字列が通常文字列のときは拡張文字列に変換しておく（文字列がUTF8ときときはunicodeへの変換もする）
+	if type(str1)!=list:
+		str1=toXstr(to_unicode(str1))
+	if type(str2)!=list:
+		str2=toXstr(to_unicode(str2))
+	if str1==str2:	# 全体一致
+		return True
+	if len(str1)!=len(str2):	# 拡張文字列長（文字数）が異なる
+		return False
+	for i in range(0,len(str1)):
+		if not XcharMatch(str1[i],str2[i]):
+			return False
+	return True	# 最後の文字まで一致した
+
+# リストメソッドのindex()を拡張文字列を使用した「文字列のゆるい一致検査」で実現する代用関数（拡張文字列入力版）
+def Xindex_in_list(Xstr1,Xstrlist):
+	if type(Xstr1)!=list:
+		Xstr1=toXstr(to_unicode(Xstr1))
+	for i in range(0,len(Xstrlist)):	# 拡張文字列リストの前方からみていく
+		Xstr2=Xstrlist[i]
+		if Xstr2==None:
+			continue
+		if type(Xstr2)!=list:
+			Xstr2=toXstr(to_unicode(Xstr2))
+		if XstrMatch(Xstr1,Xstr2):
+			return i	# Xstrlistのi番目でstrがみつかった
+	#raise ValueError	# strlistにstrがみつからなかったらValueError例外を送出する
+	return -1	# リストメソッドのindex()ではstrlistにstrがみつからなかったらValueError例外を送出するが代用関数では-1を返す
+
+# リストに対するin演算子を拡張文字列を使用した「文字列のゆるい一致検査」で実現する代用関数（拡張文字列入力版）
+def Xin_list(str,strlist):
+	if Xindex_in_list(str,strlist)>=0:
+		return True
+	return False
+
+#
+# 直接入力文字列の前処理
+#
+#  Python3においてコマンドラインからの直接入力文字列中にUnicode符号位置がU+FFFFを超えるコードがあると
+#  Unicode文字に正しく変換されない場合があることへの対処をする
+def utf2ucs(instr):
+	outstr=""	# 出力文字列
+	intlist=[]	# 作業用整数リスト
+	for char in instr:
+		if ord(char)>=0xdc00 and ord(char)<=0xdcff:	# 文字の符号位置がU+DCxxの範囲にあったら「UTF8もどき」
+			intlist.append(ord(char)-0xdc00)	# 0xdc00のげたをはずして整数リストに入れる
+		else:	# 通常文字がきたら
+			if len(intlist)>0:	# ここまでに「UTF8もどき」列を変換した整数リストがあったら
+				# bytesに変換してutf8からUCSへの変換をして出力文字列に追加
+				outstr+= bytes(intlist).decode("utf_8")
+				intlist=[]	# 整数リストを再初期化
+			outstr+=char	# 新しくきた通常文字を出力文字列に追加
+	# 「UTF8もどき」列を変換した整数リストが残っていたら
+	# bytesに変換してutf8からUCSへの変換をして出力文字列に追加
+	if len(intlist)>0:	outstr+= bytes(intlist).decode("utf_8")
+	return outstr
+
 # main
 
 if __name__ == '__main__':
 
-	ret_code = 0 # default値
+	ret_code = 0 # 初期値
 
 	# コマンドの説明表示
 	if len(sys.argv) <= 1 \
 	 or sys.argv[1] == '--help' \
 	 or sys.argv[1] == '--version':
 		usage()
+
+	#
+	# NFD文字（清音+結合用濁点/結合用半濁点）検出のための正規表現パターンを準備
+	#
+	pattern=re.compile(_comb_pat)
+
+	#
+	# 拡張文字列の各文字ごとの属性識別用定数
+	UCS,CCS,SVS,IVS=0,1,2,3
+	# UCS: 通常のUnicode文字（Universal Coded Character Set）
+	# CCS: 結合文字列（Combining Charactor Sequence）
+	# SVS: 標準異体字列（Standard Variation Sequence）
+	# IVS: 異体字列（Ideographic Variation Sequence）
+
+	# 「ゆるい文字列一致」の指定
+	LooseMatch=True	# 現在は固定
 
 	# パラメータ解析
 	numparam=0
@@ -94,7 +438,11 @@ if __name__ == '__main__':
 			del(sys.argv[1]) # popup
 			if len(sys.argv)<2:
 				error("--throughパラメータの値がありません")
-			through_string.append(sys.argv[1])
+			through_string_parameter=sys.argv[1]
+			# throughパラメータはNFC化しておく
+			if Python3():
+				through_string_parameter=utf2ucs(through_string_parameter)
+			through_string.append(NFDtoNFC(through_string_parameter))
 		else:
 			numparam+=1
 			if numparam==1: # expression
@@ -113,18 +461,41 @@ if __name__ == '__main__':
 	if len(through_string)==0:
 		through_string.append("_")
 
+	# through_stringを拡張文字列化する
+	if LooseMatch:
+		Xthrough_string=[]
+		for str in through_string:
+			Xstr=toXstr(to_unicode(str))
+			Xthrough_string.append(Xstr)
+
 	# checkファイルを開く
 	checkfile=open_file(check_filename)
 	checklist=[]
 	# checkファイルをすべて読み込む
+	firstline=True
 	for line in checkfile:
-		line=rm_eol(line)
+		line=preproc_line(line)
 		fields=line.split()
 		if len(fields)!=1:
 			error("checkファイルのフィールド数が1ではありません")
-		checklist.append(fields[0]) # checkするtag名を記憶する
+		if LooseMatch:
+			checklist.append(toXstr(to_unicode(NFDtoNFC(fields[0]))))	# checkするtag名を記憶する tag名はNFC化し拡張文字列化しておく
+		else:
+			checklist.append(NFDtoNFC(fields[0]))	# checkするtag名を記憶する tag名はNFC化しておく
 	if len(checklist)==0:
 		error("checkファイルが空です")
+
+	# checkファイルの重複検査をする
+	for pair in itertools.combinations(checklist,2): # checkファイルの各行のtag名の組み合わせを列挙
+		if LooseMatch:
+			tag1=pair[0]
+			tag2=pair[1]
+			if XstrMatch(tag1,tag2): error("checkファイルのtag部に重複があります")
+		else:
+			tag1=pair[0]
+			tag2=pair[1]
+			if tag1==tag2: error("checkファイルのtag部に重複があります")
+
 	# checkファイルを閉じる
 	checkfile.close()
 
@@ -133,14 +504,23 @@ if __name__ == '__main__':
 	namefilelines=[]
 	namelist=[]
 	# nameファイルをすべて読み込む
+	firstline=True
 	for line in namefile:
-		line=rm_eol(line)
+		line=preproc_line(line)
+		line=NFDtoNFC(line)	# 行全体をNFC化する
 		fields=line.split(' ',1) # 最初の半角空白で行を2分割する
 		if len(fields)!=2:
 			error("nameファイルのフィールド数が2ではありません")
+		namelist.append(fields[0])	# tag部を通常文字列でリスト化しておく
+		if LooseMatch:
+			fields[1]=toXstr(to_unicode(fields[1]))	# 値部を拡張文字列化
+			fields.append(toXstr(to_unicode(gettag(fields[0]))))	# tag部のtag名を拡張文字列化しfields[2]として追加する
+			#namefilelines.append(fields[:2]) # 追加部をのぞいたフィールドを記憶する
+		else:
+			fields.append(gettag(fields[0]))	# tag部のtag名をfields[2]として追加する
 		namefilelines.append(fields) # 全フィールドを記憶する
-		namelist.append(fields[0])
-	# name部の重複検査をする
+
+	# name部の重複検査をする（通常文字列で検査する）
 	if len(namelist)!=len(set(namelist)):
 		error("nameファイルのname部に重複があります")
 	if len(namefilelines)==0:
@@ -150,20 +530,41 @@ if __name__ == '__main__':
 
 	# nameファイルの各行の組み合わせに対しcheckファイルにあるtagのデータを総当たりで比較する
 	dblelist=[]
-	for pair in itertools.combinations(namefilelines,2): # nameファイルの各行の組み合わせを列挙
-		tag1=gettag(pair[0][0])
-		tag2=gettag(pair[1][0])
-		data1=pair[0][1]
-		data2=pair[1][1]
-		if not tag1 in checklist: continue # tag名がchecklistになければskipする
-		if not tag2 in checklist: continue # tag名がchecklistになければskipする
-		if data1 in through_string: continue # データがthrough文字列ならskipする
-		if data2 in through_string: continue # データがthrough文字列ならskipする
-		if tag1==tag2 and data1==data2: # 重複発見
-			ret_code=1
-			# 重複リストへ追加
-			dblelist.append(pair[0][0])
-			dblelist.append(pair[1][0])
+	for pair in itertools.combinations(namefilelines,2): # nameファイルの各行の組み合わせを列挙（tag名も値も拡張文字列）
+		#tag1=gettag(pair[0][0])
+		#tag2=gettag(pair[1][0])
+		if LooseMatch:
+			tag1=pair[0][2]	# 拡張文字列化したtag
+			tag2=pair[1][2]	# 拡張文字列化したtag
+		else:
+			tag1=pair[0][2]
+			tag2=pair[1][2]
+		data1=pair[0][1]	# data部はLooseMatchでは拡張文字列
+		data2=pair[1][1]	# data部はLooseMatchでは拡張文字列
+
+		# tag名がchecklistになければskipする
+		if LooseMatch:
+			if not Xin_list(tag1,checklist): continue
+			if not Xin_list(tag2,checklist): continue
+		else:
+			if not tag1 in checklist: continue
+			if not tag2 in checklist: continue
+		# データ部がthrough文字列ならskipする
+		if LooseMatch:
+			if Xin_list(data1,Xthrough_string): continue
+			if Xin_list(data2,Xthrough_string): continue
+		else:
+			if data1 in through_string: continue
+			if data2 in through_string: continue
+		# 重複がなければskipする
+		if LooseMatch:
+			if not XstrMatch(tag1,tag2) or not XstrMatch(data1,data2): continue
+		else:
+			if tag1 != tag2 or data1 != data2: continue
+		# 重複があったので出力用リストへ追加
+		ret_code=1
+		dblelist.append(pair[0][0])
+		dblelist.append(pair[1][0])
 
 	dblelist=sorted(set(dblelist),key=dblelist.index) # 集合化によってリストの重複を解消し元のリストにおける出現位置をキーとしてsort
 	for name in dblelist:

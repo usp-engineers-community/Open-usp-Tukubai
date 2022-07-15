@@ -4,11 +4,11 @@
 # yarr 横アレー: レコードをフィールドへ変換（Open usp Tukubai版）
 #
 # designed by Nobuaki Tounaka
-# written by Ryuichi Ueda
+# written  by Masatomo Togashi
 #
 # The MIT License
 #
-# Copyright (C) 2011 Universal Shell Programming Laboratory
+# Copyright (C) 2020 Universal Shell Programming Laboratory
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -28,14 +28,20 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from __future__ import print_function
+
 _usage = "yarr [num=<n>] [-<m>] <file>"
-_version = "Sun Apr  8 18:00:28 JST 2012"
+_version = "Fri Nov 20 17:00:13 JST 2020"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4+, 3.1, 3.2/UTF-8)"
 
 import re
 import os
 import sys
 import codecs
+import unicodedata
+
+# 濁音と半濁音のNFD表記でNFC表記もできるもの→NFDtoNFC変換でNFCに統一する
+_comb_pat=r"(((う|か|き|く|け|こ|さ|し|す|せ|そ|た|ち|つ|て|と|は|ひ|ふ|へ|ほ|ウ|カ|キ|ク|ケ|コ|サ|シ|ス|セ|ソ|タ|チ|ツ|テ|ト|ハ|ヒ|フ|ヘ|ホ|ワ|ヰ|ヱ|ヲ)゙)|((は|ひ|ふ|へ|ほ|ハ|ヒ|フ|ヘ|ホ)゚))+"
 
 class Operator:
 	def __init__(self):
@@ -46,20 +52,26 @@ class Operator:
 		self.value_delimiter = ' '
 
 	def setKeyNum(self,num):
-		self.key_num = int(num)
+		try:
+			self.key_num = int(num)
+		except:
+			die("キー範囲指定に誤りがあります。")
 		if self.key_num < 0:
 			die("キー範囲指定に誤りがあります。")
 
 	def setReturnNum(self,num):
-		self.return_num = int(num)
+		try:
+			self.return_num = int(num)
+		except:
+			die("数字指定に誤りがあります。")
 		if self.return_num <= 0:
 			die("数字指定に誤りがあります。")
 
 	def setValueDelimiter(self,str):
-		self.value_delimiter = str
+		self.value_delimiter = NFDtoNFC(utf2ucs(str))	# 直接指定文字列の前処理をしてからdelimiterを設定する 続いてNFC正規化をする
 
 	def output(self,tokens):
-		keys = tokens[0:self.key_num]
+		keys = list(map(NFDtoNFC,tokens[0:self.key_num]))	# token列に対してNFDtoNFC()を適用する
 		values = tokens[self.key_num:]
 
 		if arrayEqual(self.hold_keys,keys):
@@ -84,7 +96,7 @@ class Operator:
 		n = 0
 		while n < len(self.hold_values):
 			m = n + self.return_num
-			#指定列数を超えた場合は打ち切る
+			# 指定列数を超えた場合は打ち切る
 			if m >= len(self.hold_values): m = len(self.hold_values)
 
 			if len(self.hold_keys) != 0:
@@ -97,21 +109,14 @@ class Operator:
 
 			n += self.return_num
 
-		
-	def debugPrint(self):
-		print(self.key_num, self.return_num)
-
-def eprint(message):
-	sys.stderr.write(message)
-
 def die(message):
 	sys.stderr.write("Error[yarr] : %s\n" % message)
 	sys.exit(1)
 
 def printUsage():
-	sys.stderr.write("Usage    : %s\n" % _usage)
-	sys.stderr.write("Version  : %s\n" % _version)
-	sys.stderr.write("	  %s\n"% _code)
+	sys.stderr.write("Usage   : %s\n" % _usage)
+	sys.stderr.write("Version : %s\n" % _version)
+	sys.stderr.write("          %s\n"% _code)
 	sys.exit(1)
 
 def arrayEqual(array1,array2):
@@ -133,54 +138,145 @@ def prefixEqual(prefix,token):
 
 def getInFile(file_name):
 	if file_name != "-":
-		return codecs.open(arg,'r','utf-8')
+		return codecs.open(file_name,'r','utf-8')
 
-	#choice of stdin
-	if sys.version_info[0] < 3:
+	# choice of stdin
+	if not Python3():
 		return codecs.getreader('utf-8')(sys.stdin)
 
 	return codecs.getreader('utf-8')(sys.stdin.detach())
 
 def resetStdout():
-	if sys.version_info[0] < 3:
+	if not Python3():
 		return codecs.getwriter('utf-8')(sys.stdout)
 
 	return codecs.getwriter('utf-8')(sys.stdout.detach())
 
+#
+# 直接入力文字列の前処理
+#
+#  Python3においてコマンドラインからの直接入力文字列中にUnicode符号位置がU+FFFFを超えるコードがあると
+#  Unicode文字に正しく変換されない場合があることへの対処をする
+#  Python2/Python3両対応
+def utf2ucs(instr):
+	outstr=""	# 出力文字列
+	intlist=[]	# 作業用整数リスト
+	if not Python3():	return instr.decode('utf8')	# Python2のときはutf8からUCSへの変換をして返す
+	# Python3なら直接指定文字列の前処理をしてからUCSを返す
+	for char in instr:
+		if ord(char)>=0xdc00 and ord(char)<=0xdcff:	# 文字の符号位置がU+DCxxの範囲にあったら「UTF8もどき」
+			intlist.append(ord(char)-0xdc00)	# 0xdc00のげたをはずして整数リストに入れる
+		else:	# 通常文字がきたら
+			if len(intlist)>0:	# ここまでに「UTF8もどき」列を変換した整数リストがあったら
+				# bytesに変換してutf8からUCSへの変換をして出力文字列に追加
+				outstr+= bytes(intlist).decode("utf_8")
+				intlist=[]	# 整数リストを再初期化
+			outstr+=char	# 新しくきた通常文字を出力文字列に追加
+	# 「UTF8もどき」列を変換した整数リストが残っていたら
+	# bytesに変換してutf8からUCSへの変換をして出力文字列に追加
+	if len(intlist)>0:	outstr+= bytes(intlist).decode("utf_8")
+	return outstr
+
+# Python3か判定する
+def Python3():
+	if sys.version_info >= (3, 0):
+		return True
+	else:
+		return False
+
+#
+# utf8 変換
+#
+def to_utf8(s):
+	try:
+		return s.encode('utf-8')
+	except:
+		die("内部エラー UTF8への変換に失敗しました。")
+
+#
+# unicode 変換
+#
+def to_unicode(s):
+	if Python3(): return s
+	try:
+		return unicode(s, 'utf_8')
+	except:
+		die("不当なマルチバイト文字が含まれています。")
+
+#
+# NFDtoNFC()のre.sub()から指定patternがみつかるごとに呼ばれるのでNFD/NFC変換をして返す
+# 置換対象パターンはNFD文字:全角ひらがな/全角カタカナの清音に結合用濁点/結合用半濁点を連接したもの
+# 置換先文字はNFC文字:全角ひらがな/全角カタカナの濁音/半濁音
+#
+def replace(matchobj):
+	return unicodedata.normalize('NFC',matchobj.group(0))
+
+#
+# 全角ひらがな/全角カタカナの濁音/半濁音のNFC化
+#
+def NFDtoNFC(str):
+	# 全角ひらがな/全角カタカナの濁音/半濁音をNFCで統一して返す
+	return re.sub(pattern,replace,str)
+
+# BOMの取得関数
+def get_BOM():
+	if Python3():	return chr(int("FEFF",16))	# U+FEFFはBOMのUnicode符号位置
+	else:			return unichr(int("FEFF",16))	# U+FEFFはBOMのUnicode符号位置
+
+# BOMの削除関数
+def rm_BOM(line):
+	global firstline
+	if not firstline: return line
+	firstline=False
+	if line.startswith(get_BOM()):	line=line[len(get_BOM()):]	# 行頭にBOMがあったらBOMを削除する
+	return line
+
 ###########################################
-#メイン関数
+# メイン関数
 ###########################################
 if __name__ == '__main__':
 	
 	###########################################
-	#ヘルプ
-	if len(sys.argv) > 1:
-		if sys.argv[1] == '--help' or sys.argv[1] == '--version':
-			printUsage()
+	# 構文表示
+	if len(sys.argv) < 2: printUsage()
+	elif len(sys.argv) == 2:
+		if sys.argv[1] == '--help' or \
+		   sys.argv[1] == '--version':	printUsage()
+
+	#
+	# NFD文字（清音+結合用濁点/結合用半濁点）検出のための正規表現パターンを準備
+	#
+	if not Python3():
+		_comb_pat=to_unicode(_comb_pat)	# Python2のときは_comb_patをunicode化する
+	pattern=re.compile(_comb_pat)
 
 	###########################################
-	#処理クラスの準備とオプションの処理
+	# 処理クラスの準備とオプションの処理
 	op = Operator()
 
-	in_file_name = "-"
-
+	in_file_name = None
 	argc = len(sys.argv)
-	#ファイルか、num=か、-nか
+	# ファイルか、num=か、-nか
 	for i in range(1, argc):
 		arg = sys.argv[i]
 		if prefixEqual("-d",arg):	op.setValueDelimiter(arg[2:])
-		elif arg == "-":		pass
+		elif arg == "-":		in_file_name = arg
 		elif prefixEqual("-",arg):	op.setReturnNum(arg[1:])
 		elif prefixEqual("num=",arg):	op.setKeyNum(arg[4:])
 		else:				in_file_name = arg
+
+	if not in_file_name:
+		die("入力ファイルの指定がありません。")
 
 	in_file = getInFile(in_file_name)
 	sys.stdout = resetStdout()
 
 	###########################################
-	#出力
+	# 出力
+	firstline=True
 	for line in in_file:
 		line = line.rstrip()
+		if firstline:	line=rm_BOM(line)	# BOM処理
 		tokens = line.split(' ')
 		op.output(tokens)
 

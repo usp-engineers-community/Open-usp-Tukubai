@@ -4,11 +4,11 @@
 # map 縦ファイルを縦横ファイルに変換（Open usp Tukubai版）
 # 
 # designed by Nobuaki Tounaka
-# written by Yoshio Katayama
+# written  by Masatomo Togashi
 #
 # The MIT License
 #
-# Copyright (C) 2011 Universal Shell Programming Laboratory
+# Copyright (C) 2020 Universal Shell Programming Laboratory
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -35,18 +35,22 @@ _usage1 = "map +yarr [-<l>] num=<n>x<m> <file>"
 _usage2 = "map +arr  [-<l>] num=<n>x<m> <file>"
 _option = "-m<c>"
 _option1 = "-n"
-_version = "Sat Dec 10 21:04:17 JST 2011"
+_version = "Sat Sep 19 23:49:25 JST 2020"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
 _keypat = r'\d+$'
 _numpat = r'(\d+)(x\d+)?$'
 		# 1: num_x
 		# 2: 'x' + num_y
 
+# 濁音と半濁音のNFD表記でNFC表記もできるもの→NFDtoNFC変換でNFCに統一する
+_comb_pat=r"(((う|か|き|く|け|こ|さ|し|す|せ|そ|た|ち|つ|て|と|は|ひ|ふ|へ|ほ|ウ|カ|キ|ク|ケ|コ|サ|シ|ス|セ|ソ|タ|チ|ツ|テ|ト|ハ|ヒ|フ|ヘ|ホ|ワ|ヰ|ヱ|ヲ)゙)|((は|ひ|ふ|へ|ほ|ハ|ヒ|フ|ヘ|ホ)゚))+"
+
 import re
 import os
 import sys
 import stat
 import tempfile
+import unicodedata
 
 def error(msg, *arg):
 	print('Error[map] :', msg % arg, file=sys.stderr)
@@ -65,7 +69,6 @@ def usage():
 class FieldLine:
 	def __init__(self, line, allow_z = False):
 		self.__allow_zero = allow_z
-		line = line.rstrip('\n')
 		self.__fields = [ line ]
 		self.__fields += [ x for x in line.split(' ') if x ]
 
@@ -98,24 +101,92 @@ class FieldLine:
 		else:
 			e = self.getFieldNum(e)
 		if s <= e:
-			return ' '.join(self.__fields[s : e + 1])
+			return NFDtoNFC(' '.join(self.__fields[s : e + 1]))
 		else:
 			t = self.__fields[e : s + 1]
 			t.reverse()
-			return ' '.join(t)
+			return NFDtoNFC(' '.join(t))
 
 #
 # 入力ファイルオープン
 #
-def open_file(n, mode = 'r'):
-	if n >= len(sys.argv) or sys.argv[n] == '-':
-		file = sys.stdin
-	else:
-		try:
-			file = open(sys.argv[n], mode)
-		except:
-			error("ファイル %s をオープンできません。", sys.argv[n])
+def open_file(n):
+	if type(n) == type(0):
+		if n >= len(sys.argv):	n = '-'
+		else:	n = sys.argv[n]
+	original_file_name=n
+	if n == '-':	n = '/dev/fd/0'	# sys.stdinをファイルディスクリプターで表記する
+	if Python3():	mode='r'
+	else:	mode='rU'	# Python2ではmodeがrUのときPython3と同様に読み込み時に各種改行記号がLF（\n）に統一される
+	try:
+		file = open(n, mode)
+	except:
+		error("ファイル '%s' をオープンできません。", original_file_name)
 	return file
+
+# 改行符号（\r\n）の削除関数
+def rm_eol(line):
+	return line.rstrip("\r\n")	# 改行記号としてCRLF('\r\n')/CR('\r')/LF('\n')のすべてに対応する
+
+# BOMの取得関数
+def get_BOM():
+	if Python3():	return chr(int("FEFF",16))	# U+FEFFはBOMのUnicode符号位置
+	else:			return "\xEF\xBB\xBF"	# BOMは「EF BB BF」の3バイト
+
+# BOMの削除関数
+def rm_BOM(line):
+	global firstline
+	if not firstline: return line
+	firstline=False
+	if line.startswith(get_BOM()):	line=line[len(get_BOM()):]	# 行頭にBOMがあったらBOMを削除する
+	return line
+
+# ファイル入力行の前処理
+def preproc_line(line):
+	line=rm_eol(line)	# 行末の改行記号を削除する
+	line=rm_BOM(line)	# ファイル先頭行の行頭にBOMがあったらこれを削除する
+	return line
+
+# Python3か判定する
+def Python3():
+	if sys.version_info >= (3, 0):
+		return True
+	else:
+		return False
+
+#
+# unicode 変換
+#
+def to_unicode(s):
+	try:
+		return unicode(s, 'utf_8')
+	except:
+		error("不当なマルチバイト文字が含まれています。")
+
+#
+# utf8 変換
+#
+def to_utf8(s):
+	try:
+		return s.encode('utf-8')
+	except:
+		error("内部エラー UTF8への変換に失敗しました。")
+
+#
+# NFDtoNFC()のre.sub()から指定patternがみつかるごとに呼ばれるのでNFD/NFC変換をして返す
+# 置換対象パターンはNFD文字:全角ひらがな/全角カタカナの清音に結合用濁点/結合用半濁点を連接したもの
+# 置換先文字はNFC文字:全角ひらがな/全角カタカナの濁音/半濁音
+#
+def replace(matchobj):
+	if Python3():	return unicodedata.normalize('NFC',matchobj.group(0))
+	else:	return to_utf8(unicodedata.normalize('NFC',to_unicode(matchobj.group(0))))	# Python2ではutf8→unicdoe→utf8の変換をする
+
+#
+# 全角ひらがな/全角カタカナの濁音/半濁音のNFC化
+#
+def NFDtoNFC(str):
+	# 全角ひらがな/全角カタカナの濁音/半濁音をNFCで統一して返す
+	return re.sub(pattern,replace,str)
 
 #
 # 通常ファイルの判定
@@ -196,6 +267,7 @@ def do_map_array(file, key_y, num_x, num_y, numkey, nfld, L, pad, array):
 	oldkey = None
 	table = None
 	for line in file:
+		line=preproc_line(line)	# 入力行の前処理
 		line = FieldLine(line)
 		if line.getField(1, num_x) != oldkey:
 			putblk(table, len(key_y), nfld // L, L, subkey_x, oldkey)
@@ -239,6 +311,7 @@ def do_map(file, key_y, num_x, num_y, numkey, nfld, L, pad):
 	oldkey = None
 	table = None
 	for line in file:
+		line=preproc_line(line)	# 入力行の前処理
 		line = FieldLine(line)
 		if line.getField(1, num_x) != oldkey:
 			putblk(table, len(key_y), L, nfld // L, subkey_x, oldkey)
@@ -254,7 +327,7 @@ def do_map(file, key_y, num_x, num_y, numkey, nfld, L, pad):
 	putblk(table, len(key_y), L, nfld // L, subkey_x, oldkey)
 
 #
-#メイン関数
+# メイン関数
 #
 if __name__ == '__main__':
 
@@ -262,6 +335,11 @@ if __name__ == '__main__':
 	 or sys.argv[1] == '--help' \
 	 or sys.argv[1] == '--version':
 		usage()
+
+	#
+	# NFD文字（清音+結合用濁点/結合用半濁点）検出のための正規表現パターンを準備
+	#
+	pattern=re.compile(_comb_pat)
 
 	#
 	# +yarr / +yarr
@@ -332,9 +410,11 @@ if __name__ == '__main__':
 	#
 	nfld = 0
 	key_y = set([])
+	firstline=True
 	for line in file:
 		if tmp:
 			print(line, end='',file=tmp)	# 入力がstdinのときは一時ファイルに書き出す
+		line=preproc_line(line)	# 入力行の前処理
 		line = FieldLine(line)
 		if not nfld:
 			nfld = line.size()
@@ -367,6 +447,7 @@ if __name__ == '__main__':
 	#
 	# 2nd pass
 	#
+	firstline=True
 	if array:
 		do_map_array(file, key_y, num_x, num_y, numkey, nfld, L, pad, array)
 	else:

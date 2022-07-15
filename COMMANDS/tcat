@@ -4,11 +4,11 @@
 # tcat 縦ＣＡＴ（Open usp Tukubai版）
 # 
 # designed by Nobuaki Tounaka
-# written by Yoshio Katayama
+# written  by Masatomo Togashi
 #
 # The MIT License
 #
-# Copyright (C) 2011 Universal Shell Programming Laboratory
+# Copyright (C) 2020 Universal Shell Programming Laboratory
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -31,12 +31,13 @@
 from __future__ import print_function
 
 _usage = "tcat [-n] file1 file2..."
-_version = "Fri Oct 21 11:26:06 JST 2011"
+_version = "Sat Jun 20 21:57:22 JST 2020"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
 
 import re
 import os
 import sys
+import tempfile
 
 def error(msg, *arg):
 	print('Error[tcat] :', msg % arg, file=sys.stderr)
@@ -51,50 +52,110 @@ def usage():
 #
 # 入力ファイルオープン
 #
-def open_file(n, mode = 'r'):
-	if n >= len(sys.argv) or sys.argv[n] == '-':
-		file = sys.stdin
+def openReadFile(n):
+	file_name=sys.argv[n]
+	# 入力ファイル名が/dev/fd/xxのときは"-"（sys.stdin）に読み替える
+	if file_name == '-':	file_name = '/dev/fd/0'	# sys.stdinをファイルディスクリプターで表記する
+	if Python3():	readmode='r'
+	else:	readmode='rU'	# Python2ではmodeがrUのときPython3と同様に読み込み時に各種改行記号がLF（\n）に統一される
+	# /dev/fd/xxのとき
+	if file_name.startswith('/dev/fd/'):	# /dev/fd/xxが指定された
+		if file_name not in file_name_list:	# 指定されたときは一時ファイルに落としておく
+			# 新出のファイル名
+			file = tempfile.TemporaryFile(mode='w+')	# 返値用のfile（mode='r+'でもよい defaultではmode='w+b'でPython3では'w+b'はbyte用となる）
+			try:
+				fileToRead = open(file_name, readmode)
+			except:
+				if filename=='/dev/fd/0':
+					error("標準入力ファイルをオープンできません。")
+				else:
+					error("ファイル '%s' をオープンできません。", file_name)
+			for line in fileToRead:
+				file.write(line)	# mode='w+b'では「TypeError: 'str' does not support the buffer interface」が出る
+			file_name_list.append(file_name)	# ファイル名を記憶する
+			file_list.append(file)	# 一時ファイルを記憶する
+		else:	# すでに-または/dev/fd/xxが指定されているきは一時ファイルに落としたものを使用する
+			# 新出のファイル名ではない
+			file=file_list[file_name_list.index(file_name)]	# fileリストから返値用のfileを得る
+		file.seek(0)	# rewindする
 	else:
 		try:
-			file = open(sys.argv[n], mode)
+			file = open(file_name, readmode)
 		except:
-			error("ファイル %s をオープンできません。", sys.argv[n])
+			error("ファイル %s をオープンできません。", file_name)
+
 	return file
 
+# 改行符号（\r\n）の削除関数
+def rm_eol(line):
+	return line.rstrip("\r\n")	# 改行記号としてCRLF('\r\n')/CR('\r')/LF('\n')のすべてに対応する
+
+# BOMの取得関数
+def get_BOM():
+	if Python3():	return chr(int("FEFF",16))	# U+FEFFはBOMのUnicode符号位置
+	else:			return "\xEF\xBB\xBF"	# BOMは「EF BB BF」の3バイト
+
+# BOMの削除関数
+def rm_BOM(line):
+	global firstline
+	if not firstline: return line
+	firstline=False
+	if line.startswith(get_BOM()):	line=line[len(get_BOM()):]	# 行頭にBOMがあったらBOMを削除する
+	return line
+
+# ファイル入力行の前処理
+def preproc_line(line):
+	line=rm_eol(line)	# 行末の改行記号を削除する
+	line=rm_BOM(line)	# ファイル先頭行の行頭にBOMがあったらこれを削除する
+	return line
+
+# Python3か判定する
+def Python3():
+	if sys.version_info >= (3, 0):
+		return True
+	else:
+		return False
+
+# 入力ファイル（標準入力または/dev/fd/xx）に重複指定があるときのための（重複のない）既指定分に関する情報
+file_name_list=[]	# （重複のない）既指定分のファイル名
+file_list=[]	# （重複のない）既指定分の一時ファイル
+
 #
-#メイン関数
+# メイン関数
 #
 if __name__ == '__main__':
 
-	if len(sys.argv) <= 1:
-		usage()
+	# 構文表示
+	if len(sys.argv) < 2: usage()
+	elif len(sys.argv) == 2:
+		if sys.argv[1] == '--help' or \
+		   sys.argv[1] == '--version':	usage()
 
 	#
 	# -<n>
 	#
-	if re.match('-\d+$', sys.argv[1]) and int(sys.argv[1][1:]) > 0:
+	if re.match('-\d+$', sys.argv[1]):
 		n = int(sys.argv[1][1:])
 		del sys.argv[1]
-		if len(sys.argv) <= 1:
-			usage()
 	else:
 		n = 0
 
-	#
-	# 先頭ファイル
-	#
-	file = open_file(1)
-	for line in file:
-		print(line, end='')
+	if len(sys.argv) < 3:
+		error("ファイル名を二個以上指定してください。")
 
 	#
 	# メインループ
 	#
-	for i in range(2, len(sys.argv)):
-		if n > 0:
+	for i in range(1, len(sys.argv)):
+		if i > 1 and n > 0:
 			print('\n' * n, end='')
-		file = open_file(i)
-		for line in file:
-			print(line, end='')
+		file=openReadFile(i)	# 重複した入力ファイル（標準入力または/dev/fd/xx）にはひとつの一時ファイルがsetされる
+
+		firstline=True
+		while True:
+			line=file.readline()
+			if line=="": break	# EOF
+			line=preproc_line(line)
+			print(line)
 
 	sys.exit(0)

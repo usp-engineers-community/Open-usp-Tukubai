@@ -4,11 +4,11 @@
 # join1 シーケンシャルマッチングジョイン（Open usp Tukubai版）
 # 
 # designed by Nobuaki Tounaka
-# written by Yoshio Katayama
+# written  by Masatomo Togashi
 #
 # The MIT License
 #
-# Copyright (C) 2011 Universal Shell Programming Laboratory
+# Copyright (C) 2022 Universal Shell Programming Laboratory
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -30,16 +30,16 @@
 
 from __future__ import print_function
 
-_usage = "join1 [+ng<fd>] key=<n> <master> <tran>"
-_version = "Fri Oct 21 11:26:06 JST 2011"
+_usage = "join1 [+ng[<fd>]] key=<n> <master> [<tran>]"
+_version = "Sun Jun 19 23:55:51 JST 2022"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
-_keypat = r'(\d+|NF(-\d+)?)(([/@](\d+|NF(-\d+)?))*)$'
-		# 1: 1st field
-		# 3: 2nd and later fields with separator
+_keypat = r'((\d+|NF(-\d+)?)(/(\d+|NF(-\d+)?))?)(@((\d+|NF(-\d+)?)(/(\d+|NF(-\d+)?))?))*$'
+_keypatNF=r'(?P<m0>(?P<m01>\d+)|(?P<m02>NF(?P<m03>-\d+)?))(/(?P<m1>(?P<m11>\d+)|(?P<m12>NF(?P<m13>-\d+)?)))?$'
 
 import re
 import os
 import sys
+import codecs
 
 def error(msg, *arg):
 	print('Error[join1] :', msg % arg, file=sys.stderr)
@@ -51,131 +51,197 @@ def usage():
 	print("         ", _code, file=sys.stderr)
 	sys.exit(1)
 
-class FieldLine:
-	def __init__(self, line, allow_z = False):
-		self.__allow_zero = allow_z
-		line = line.rstrip('\n')
-		self.__fields = [ line ]
-		self.__fields += [ x for x in line.split(' ') if x ]
+# フィールドリストに対して先頭から指定位置までのフィールドを抽出して空白で連接する
+def getHead(fields,lastkeynum):
+	return ' '.join(getkeyvallist(fields, range(0,lastkeynum+1)))
 
-	def size(self):
-		return len(self.__fields) - 1
-
-	def getFieldNum(self, key):
-		if type(key) == type(0):
-			return key
-		if re.match(r'\d+$', key):
-			key = int(key)
-		elif key == 'NF':
-			key = self.size()
-		else:
-			key = self.size() - int(key[3:])
-			if key <= 0:
-				error("NF-x の x が大きすぎます。")
-		if key < 0:
-			error("フィールド番号が負です。")
-		if key == 0 and not self.__allow_zero:
-			error("フィールド番号が０です。")
-		if key > self.size():
-			error("フィールド番号が大きすぎます。")
-		return key
-
-	def getField(self, s, e = None):
-		s = self.getFieldNum(s)
-		if e == None:
-			e = s
-		else:
-			e = self.getFieldNum(e)
-		if s <= e:
-			return ' '.join(self.__fields[s : e + 1])
-		else:
-			t = self.__fields[e : s + 1]
-			t.reverse()
-			return ' '.join(t)
-
-	def getHead(self, n):
-		pat = '( *([^ ]+ +){%d}[^ ]+)' % (n - 2)
-		r = re.match(pat, self.__fields[0])
-		return r.group(1)
-
-	def getTail(self, n):
-		pat = ' *([^ ]+ +){%d}[^ ]+ ?(.*)' % (n - 1)
-		r = re.match(pat, self.__fields[0])
-		return r.group(2)
+# フィールドリストに対して指定位置の次から最後尾までのフィールドを（もしあれば）抽出して空白で連接する
+def getTail(fields,lastkeynum):
+	return ' '.join(getkeyvallist(fields, range(lastkeynum+1,len(fields))))
 
 #
-# 入力ファイルオープン
+# ファイルオープン
 #
-def open_file(n, mode = 'r'):
-	if n >= len(sys.argv) or sys.argv[n] == '-':
-		file = sys.stdin
+def open_file(filename, mode = 'r'):
+	if mode=="w":	# 出力ファイルのとき
+		filename = '/dev/fd/'+filename	# modeがwのときはファイル名は数字で与えられていてファイルディスクリプタにする
 	else:
-		try:
-			file = open(sys.argv[n], mode)
-		except:
-			error("ファイル %s をオープンできません。", sys.argv[n])
+		if filename == '-':	filename = '/dev/fd/0'	# sys.stdinをファイルディスクリプターで表記する
+		if not Python3():
+			mode='rU'	# Python2ではmodeがrUのときPython3と同様に読み込み時に各種改行記号がLF（\n）に統一される
+	try:
+		file = open(filename, mode)
+	except:
+		if filename=='/dev/fd/0':
+			error("標準入力ファイルをオープンできません。")
+		else:
+			error("ファイル '%s' をオープンできません。", filename)
 	return file
 
+# NF相対欄位置からNF（欄数）に応じた0発進の欄位置に変換する
+def getpos(base_pos):
+	# NF相対欄位置からの変換:
+	#  nのときはそのまま
+	#  0のときはNF（欄数）に
+	#  -nのときはNF-nに
+	# 0発進とするために-1を加える
+	if base_pos > 0:
+		pos=base_pos-1
+		if pos > NF-1:	error("フィールド番号が大きすぎます。%s",str(base_pos))
+	else:
+		pos=NF+base_pos-1
+		if pos < 0:	error("フィールド指定で NF-x の x が大きすぎます。 %s","NF-"+str(-base_pos))
+	return pos
+
+# NF相対欄位置リスト（rel_keylist）からNF（欄数）に応じた実際の欄位置リスト（keylist）を作成する
+def make_keylist(rel_keylist):
+	# rel_keylistの要素には区間をあらわす整数tupleの(start,end)と、単一欄をあらわす整数がある
+	if rel_keylist==[None]:	# 全欄指定
+		return list(range(0,NF))
+	keylist=[]
+	for fieldpos in rel_keylist:
+		if type(fieldpos)==int:	keylist.append(getpos(fieldpos))	# 単一欄
+		else:	# (a/b)の区間
+			start=getpos(fieldpos[0])
+			end=getpos(fieldpos[1])
+			if start <= end:	# 正順
+				keylist+=range(start,end+1)
+			else:	# 逆順
+				keylist+=range(start,end-1,-1)
+	for key in keylist:
+		if key < 0 or key >= NF:
+			error("キーの位置が行のフィールド範囲を逸脱しています。")
+	# 重複解消と整列をする（欄位置は0発進）
+	return sorted(set(keylist), key=keylist.index)	 # 集合化によってリストの重複を解消し元のリストにおける出現位置をキーとしてsort
+
+# 欄番号文字列をNF相対形式で整数化する
+def getFieldNum(str,str1,str2):
+	# n または NF または NF-x の形式の欄番号をNF相対形式の整数で確定する
+	# 正規表現で「\d+|NF(-\d+)?」にmatchする全体をstrが、「\d+」でmatchする部分をstr1が、「(-\d+)?」でmatchする部分をstr2が保持している
+	# NF相対形式の整数化:
+	#  単独のnが0のときはNone
+	#  単独のnが0以外のときは整数のn
+	#  単独のNFのときは整数の0
+	#  NF-nのときは整数の-n
+	# 実際の欄番号にする際には行ごとに得たNF（欄数）を使用して計算する
+	
+	if str1:	# n
+		fieldnum=int(str1)
+		if fieldnum==0:	# 欄番号0は全欄指定を意味する
+			fieldnum=None
+	else:	# NF-n または NF
+		if str2:	# NF-n
+			fieldnum=int(str2)
+		else:	# NF
+			fieldnum=0
+	return fieldnum
+
 #
-# key= の解析
+# ひとつの欄指定パラメータから欄番号リストを得る（区間指定にも対応する）
 #
-def getkey(line, arg):
-	k = re.match('key=' + _keypat, arg)
-	if k == None:
-		error("key 引数が正しくありません。");
-	key = [ line.getFieldNum(k.group(1)) ]
-	while k.group(3) != '':
-		sep = k.group(3)[0]
-		str = k.group(3)[1:]
-		k = re.match(_keypat, str)
-		n = line.getFieldNum(k.group(1))
-		if sep == '@':	# a@bのとき
-			key += [ n ]
-		elif key[-1] <= n:	# a/bで昇順のとき
-			key += list(range(key[-1] + 1, n + 1))
-		else:	# a/bで降順のとき
-			key += list(range(key[-1] - 1, n - 1, -1))
-	key=sorted(set(key),key=key.index) # 集合化によってリストの重複を解消し元のリストにおける出現位置をキーとしてsort
-	return key
+def getFieldList(field_param):
+	mobj = re.match(_keypat,field_param)	# 構文検査のために実行する
+	if not mobj:	# フィールド指定の形式が不正
+		error("フィールド指定の形式が不正です。 %s",field_param)
+	fieldlist=[]
+	concatlist=field_param.split("@")	# @で分割する
+	for fieldnum in concatlist:
+		mobj = re.match(_keypatNF,fieldnum)
+		start=getFieldNum(fieldnum,mobj.group('m01'),mobj.group('m03'))	# 前端部を得る
+		if mobj.group('m1'):	# a/bの形式で区間指定をしている
+			end=getFieldNum(fieldnum,mobj.group('m11'),mobj.group('m13'))	# 後端部を得る
+			fieldlist.append((start,end))	# 区間で確定
+		else:
+			fieldlist.append(start)	# 前端部単独で確定
+	if None in fieldlist:	return [None]	# 欄位置にひとつでも0を指定するものがあるときは全欄指定とする
+	return fieldlist
+
+#
+# tranファイルにおけるキーの欄番号リストからmasterファイルにおける対応欄番号リストを得る
+#
+def getmasterkeylist(keylist):
+	masterkeylist=[]
+	min_field=min(keylist)
+	for fn in keylist:
+		masterkeylist.append(fn-min_field)	# keylistの最小値が0に対応するようにshiftする
+	return masterkeylist
+
+#
+#	文字列のリストからkeylistにしたがって抽出する
+#
+def getkeyvallist(tokens,keylist):
+	keyvallist=[]
+	for fn in keylist:
+		keyvallist.append(tokens[fn])
+	return keyvallist
+
+# 改行符号（\r\n）の削除関数
+def rm_eol(line):
+	return line.rstrip("\r\n")	# 改行記号としてCRLF('\r\n')/CR('\r')/LF('\n')のすべてに対応する
+
+# BOMの取得関数
+def get_BOM():
+	if Python3():	return chr(int("FEFF",16))	# U+FEFFはBOMのUnicode符号位置
+	else:			return "\xEF\xBB\xBF"	# BOMは「EF BB BF」の3バイト
+
+# BOMの削除関数
+def rm_BOM(line):
+	global firstline
+	if not firstline: return line
+	firstline=False
+	if line.startswith(get_BOM()):	line=line[len(get_BOM()):]	# 行頭にBOMがあったらBOMを削除する
+	return line
+
+# ファイル入力行の前処理
+def preproc_line(line):
+	line=rm_eol(line)	# 行末の改行記号を削除する
+	line=rm_BOM(line)	# ファイル先頭行の行頭にBOMがあったらこれを削除する
+	line=re.sub(r' {2,}',' ',line)	# 入力行の連続空白を単空白にする
+	return line
+
+# Python3か判定する
+def Python3():
+	if sys.version_info >= (3, 0):
+		return True
+	else:
+		return False
 
 #
 # tran の後始末
 #
 def flush_tran(tran, ngfile, tline):
 	if ngfile:
-		print(tline.getField(0), file=ngfile)
+		print(tline, file=ngfile)
+		# tranの残りを出力する
 		for tline in tran:
-			print(tline, end='', file=ngfile)	# tlineは改行付きなのでendは空とする
-	else:
-		for tline in tran:
-			pass
+			tline=re.sub(r' {2,}',' ',tline)	# 入力行の連続空白を単空白にする
+			print(tline, end='',file=ngfile)	# tlineは改行付きなのでendは空とする
 	sys.exit(0)
 
 #
 # キー文字列の抽出
 #
-def keystr(line, key):
-	return ' '.join(map(line.getField, key))
+def keystr(tokens, key):
+	return ' '.join(getkeyvallist(tokens,key))
 
 #
 # 非キー文字列の抽出
 #
-def nonkeystr(line, key):
-	return ' '.join(map(line.getField, list(set(range(1,line.size()+1))-set(key))))
+def nonkeystr(tokens, key):
+	return ' '.join(getkeyvallist(tokens, sorted(set(range(0,len(tokens)))-set(key))))
 
 #
-#メイン関数
+# メイン関数
 #
 if __name__ == '__main__':
 
-	if len(sys.argv) < 3 \
-	 or sys.argv[1] == '--help' \
+	if len(sys.argv) < 3:	usage()	# 最小パラメータ構成は「join1 key=<n> <master>」
+	if sys.argv[1] == '--help' \
 	 or sys.argv[1] == '--version':
 		usage()
 
-	#
-	# +ng<fd>
-	#
+	# ngオプション処理
+	ng_option = False
 	if sys.argv[1][0:3] == '+ng':
 		if len(sys.argv[1]) == 3:
 			fd = 2
@@ -183,44 +249,65 @@ if __name__ == '__main__':
 			try:
 				fd = int(sys.argv[1][3:])
 			except:
-				error("ファイル記述子が正しくありません。")
-		try:
-			ngfile = os.fdopen(fd, 'w', 4096)
-		except:
-			error("ファイル記述子が正しくありません。")
+				error("ngオプションが正しくありません。")
+			if fd < 2:
+				error("ngオプションが正しくありません。")
+		ngfile=open_file(str(fd),mode="w")
 		del sys.argv[1]
-		if len(sys.argv) < 3:
-			usage()
 	else:
 		ngfile = None
 
-	mast = open_file(2)
-	tran = open_file(3)
+	# keyオプションを解析
+	if sys.argv[1][0:4] == 'key=':
+		num_str = sys.argv[1][4:]
+		if len(num_str)==0:
+			error("keyオプションに値がありません")
+		del sys.argv[1]
+	else:
+		error("invalid key position")
+
+	# keyパラメータからNF相対欄位置リストを作成する
+	rel_keylist = getFieldList(num_str)
+
+	# masterとtranを確定する
+	num_arg=len(sys.argv)	# ここまでで残ったargvの長さは2または3でなければならない
+	if num_arg<2:	error("実行パラメータが少なすぎます。")
+	if num_arg>3:	error("実行パラメータが多すぎます。")
+	mast=sys.argv[1]
+	if num_arg==2:	tran="-"	# tranが省略されたらtranとして標準入力を仮定する
+	else:	tran=sys.argv[2]	# tranが省略されていなければパラメータからとる
+	if mast==tran:
+		error("masterファイルとtranファイルが同じファイルです。")
+
+	# masterファイルとtranファイルを開く
+	mast = open_file(mast)
+	tran = open_file(tran)
 
 	#
 	# １行入力
 	#
+	firstline=True
 	tline = tran.readline()
 	if not tline:
 		sys.exit(0)
-	tline = FieldLine(tline)
+	tline= preproc_line(tline)
+	ttokens=tline.split()
+	NF=len(ttokens)	# NFを得る
+	tkey=make_keylist(rel_keylist)	# 指定フィールドのNF相対欄位置リストをNF（欄数）に応じた絶対欄位置リストに変換する
+	maxtkey=max(tkey)
+	tkstr = keystr(ttokens, tkey)
+	prev_tkstr=tkstr
 
+	firstline=True
 	mline = mast.readline()
 	if not mline:
 		flush_tran(tran, ngfile, tline)
-	mline = FieldLine(mline)
-
-	#
-	# key=
-	#
-	if sys.argv[1][:4] != 'key=':
-		usage()
-	tkey = getkey(tline, sys.argv[1])
-	ks = min(tkey)
-	ke = max(tkey)
-	mkey = [ t - ks + 1 for t in tkey ]
-	tkstr = keystr(tline, tkey)
-	mkstr = keystr(mline, mkey)
+	mline = preproc_line(mline)
+	mkey=getmasterkeylist(tkey)	# tranファイルにおけるキーの欄番号リストからmasterファイルにおける対応欄番号リストを得る
+	mtokens=mline.split()
+	if max(mkey)>len(mtokens):	error("masterの最大キー位置がmasterファイルのフィールド数を超えました。")	# 最大key番号がmasterの行の欄数を超えたらエラーとする
+	mkstr = keystr(mtokens, mkey)
+	prev_mkstr=mkstr
 
 	#
 	# メインループ
@@ -228,21 +315,37 @@ if __name__ == '__main__':
 	while True:
 		while tkstr > mkstr:
 			mline = mast.readline()
-			if not mline:
+			if not mline:	# masterファイルの終りに達した
 				flush_tran(tran, ngfile, tline)
-			mline = FieldLine(mline)
-			mkstr = keystr(mline, mkey)
+			mline = preproc_line(mline)
+			mkey=getmasterkeylist(tkey)	# tranファイルにおけるキーの欄番号リストからmasterファイルにおける対応欄番号リストを得る
+			mtokens=mline.split()
+			if max(mkey) >= len(mtokens):
+				error("masterの対応キー位置がmasterファイルのフィールド数を超えました。")	# key番号がmasterの行のサイズを超えたらエラーとする
+			mkstr = keystr(mtokens, mkey)
+			if mkstr <= prev_mkstr:
+				error("masterのキーフィールドが「重複のない昇順」になっていません")
+			prev_mkstr=mkstr
 		if tkstr == mkstr:	# tranのキーとmasterのキーが一致した
-			print(tline.getHead(ke+1),end='')	# tranの先頭からキーリスト終了番号までのフィールドを出力
-			mnkstr=nonkeystr(mline, mkey)	# masterの非キーフィールドを連結文字列として取得
+			print(getHead(ttokens,maxtkey),end='')	# tranの先頭からキーリスト最大番号までのフィールドを出力
+			mnkstr=nonkeystr(mtokens, mkey)	# masterの非キーフィールドを連結文字列として取得
 			if len(mnkstr)>0: print(' '+mnkstr,end='')	# もしmasterの非キーフィールドがあれば出力
-			if ke < tline.size():	# もしtranに最終キー位置より後のフィールドがあれば
-				print(' '+tline.getTail(ke),end='')	# tranのキーフィールド超を出力
+			if maxtkey < len(ttokens)-1:	# もしtranに最大キー位置より後のフィールドがあれば
+				print(' '+getTail(ttokens,maxtkey),end='')	# tranのキーフィールド超を出力
 			print()	# 改行して終り
 		elif ngfile:
-			print(tline.getField(0), file=ngfile)
+			print(tline, file=ngfile)
 		tline = tran.readline()
-		if not tline:
-			sys.exit(0)
-		tline = FieldLine(tline)
-		tkstr = keystr(tline, tkey)
+		if not tline:	# tranファイルの終りに達した
+			sys.exit(0)	# tranファイルにもうデータはないので正常終了する
+		tline= preproc_line(tline)
+		ttokens=tline.split()
+		nf=len(ttokens)	# 行の欄数を得る
+		if nf != NF:	# 行の欄数が変化したとき
+			NF=nf	# NFを更新する
+			tkey=make_keylist(rel_keylist)	# 指定フィールドのNF相対欄位置リストをNF（欄数）に応じた絶対欄位置リストに変換する
+			maxtkey=max(tkey)
+		tkstr = keystr(ttokens, tkey)
+		if tkstr < prev_tkstr:
+			error("tranのキーフィールドが昇順ではありません")
+		prev_tkstr=tkstr

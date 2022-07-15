@@ -4,10 +4,11 @@
 # isdate ８桁日付のチェック（Open usp Tukubai版）
 #
 # designed by Nobuaki Tounaka
+# written  by Masatomo Togashi
 #
 # The MIT License
 #
-# Copyright (C) 2011 Universal Shell Programming Laboratory
+# Copyright (C) 2020 Universal Shell Programming Laboratory
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +33,7 @@ import sys
 import calendar
 
 _usage = "isdate <date>"
-_version = "Fri Oct 21 11:26:06 JST 2011"
+_version = "Wed May 20 04:47:48 JST 2020"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
 
 def error(msg, *arg):
@@ -46,7 +47,7 @@ def usage():
 	sys.exit(1)
 
 #
-#メイン関数
+# メイン関数
 #
 if __name__ == '__main__':
 

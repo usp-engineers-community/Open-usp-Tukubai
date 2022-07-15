@@ -4,11 +4,11 @@
 # delf デリートフィールド（Open usp Tukubai版）
 #
 # designed by Nobuaki Tounaka
-# written by Ryuichi Ueda
+# written  by Masatomo Togashi
 #
 # The MIT License
 #
-# Copyright (C) 2012 Universal Shell Programming Laboratory
+# Copyright (C) 2022 Universal Shell Programming Laboratory
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -31,147 +31,223 @@
 from __future__ import print_function
 
 _usage = "delf <f1> <f2> ... [file]"
-_version = "Sat Mar 10 17:18:43 JST 2012"
+_version = "Thu Apr 21 00:58:47 JST 2022"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
+_keypat = r'((\d+|NF(-\d+)?)(/(\d+|NF(-\d+)?))?)(@((\d+|NF(-\d+)?)(/(\d+|NF(-\d+)?))?))*$'
+_keypatNF=r'(?P<m0>(?P<m01>\d+)|(?P<m02>NF(?P<m03>-\d+)?))(/(?P<m1>(?P<m11>\d+)|(?P<m12>NF(?P<m13>-\d+)?)))?$'
 
 import re
 import os
 import sys
 
-class Operator:
-	#コンストラクタ
-	def __init__(self):
-		self.del_fields = []
+#
+# 入力ファイルオープン
+#
+def open_file(n, mode = 'r'):
+	filename = sys.argv[n]	# 指定位置のコマンドパラメータをとる
+	if filename == '-':	# sys.stdinのとき
+		filename = '/dev/fd/0'	# ファイルディスクリプターで表記する
+	if not Python3():
+		mode='rU'	# Python2ではmodeがrUのときPython3と同様に読み込み時に各種改行記号がLF（\n）に統一される
+	# 標準入力も含めてopen()で開く
+	try:
+		file = open(filename, mode)
+		del sys.argv[n]
+	except:
+		if filename != '/dev/fd/0':
+			file = open('/dev/fd/0', mode)	# 通常ファイルのopen()で失敗したらsys.stdinを開く
+	return file
 
-	#この時点でファイル名と判別がついていること。
-	def addField(self, field_str):
+# NF相対欄位置からNF（欄数）に応じた0発進の欄位置に変換する
+def getpos(base_pos):
+	# NF相対欄位置からの変換:
+	#  nのときはそのまま
+	#  0のときはNF（欄数）
+	#  -nのときはNF-n
+	# 0発進とするために-1を加える
+	if base_pos > 0:
+		pos=base_pos-1
+		if pos > NF-1:	error("フィールド番号が大きすぎます。 %s",str(base_pos))
+	else:
+		pos=NF+base_pos-1
+		if pos < 0:	error("フィールド指定でNF-x の x が大きすぎます。 %s","NF-"+str(-base_pos))
+	return pos
 
-		p = field_str.split('/')
-		if len(p) == 1:
-			f = self.optionToField(p[0])
-			t = f
+# NF相対欄位置リスト（base_keylist）からNF（欄数）に応じた実際の欄位置リスト（keylist）を作成する
+def make_keylist(base_keylist):
+	# base_keylistの要素には区間をあらわす整数tupleの(start,end)と、単一欄をあらわす整数がある
+	keylist=[]
+	for fieldpos in base_keylist:
+		if type(fieldpos)==int:	keylist.append(getpos(fieldpos))	# 単一欄
+		else:	# (a/b)の区間
+			start=getpos(fieldpos[0])
+			end=getpos(fieldpos[1])
+			if start <= end:	# 正順
+				keylist+=range(start,end+1)
+			else:	# 逆順
+				keylist+=range(start,end-1,-1)
+	return list(set(keylist))	# 欄位置は0発進
+
+# 欄番号文字列をNF相対形式で整数化する
+def getFieldNum(str,str1,str2):
+	# n または NF または NF-x の形式の欄番号をNF相対形式の整数で確定する
+	# 正規表現で「\d+|NF(-\d+)?」にmatchする全体をstrが、「\d+」でmatchする部分をstr1が、「(-\d+)?」でmatchする部分をstr2が保持している
+	# NF相対形式の整数化:
+	#  nのときは整数のnに
+	#  NFのときは整数の0に
+	#  NF-nのときは整数の-nに
+	# 実際の欄番号にする際には行ごとに得たNF（欄数）を使用して計算する
+	if str1:	# n
+		fieldnum=int(str1)
+		if fieldnum==0:
+			error("フィールド指定に0があります。")
+	else:	# NF-n または NF
+		if str2:	# NF-n
+			fieldnum=int(str2)
+		else:	# NF
+			fieldnum=0
+	return fieldnum
+
+#
+# ひとつの欄指定パラメータから欄番号リストを得る（区間指定にも対応する）
+#
+def getFieldList(field_param):
+	mobj = re.match(_keypat,field_param)	# 構文検査のために実行する
+	if not mobj:	# フィールド指定の形式が不正
+		error("フィールド指定の形式が不正です。 %s",field_param)
+	fieldlist=[]
+	concatlist=field_param.split("@")	# @で分割する
+	for fieldnum in concatlist:
+		mobj = re.match(_keypatNF,fieldnum)
+		start=getFieldNum(fieldnum,mobj.group('m01'),mobj.group('m03'))	# 前端部を得る
+		if mobj.group('m1'):	# a/bの形式で区間指定をしている
+			end=getFieldNum(fieldnum,mobj.group('m11'),mobj.group('m13'))	# 後端部を得る
+			fieldlist.append((start,end))	# 区間で確定
 		else:
-			f = self.optionToField(p[0])
-			t = self.optionToField(p[1])
+			fieldlist.append(start)	# 前端部単独で確定
+	return fieldlist
 
-		self.del_fields.append([f,t])
+#
+#	コマンドのフィールド指定パラメータリストから処理対象のNF相対欄位置リストを作成する
+#
+def getTargetFields(args):
+	ans = []
+	for e in args:
+		ans+=getFieldList(e)
+	ans=list(set(ans)) # 集合化によってリストの重複を解消する
+	return ans
 
-	def getOptionNum(self):
-		return len(self.del_fields)
+def error(msg, *arg):
+	print('Error[delf] :', msg % arg, file=sys.stderr)
+	sys.exit(1)
 
-	def optionToField(self,pos):
-		if pos[0] == "N":
-			tmp = pos.split('-')
-			if len(tmp) == 1:	return -1
-			else:			return - 1 - int(tmp[1])
-		else:
-			return int(pos)
-
-	def output(self, tokens):
-		num = len(tokens)
-
-		for f,t in self.del_fields:
-			if f > 0:	f -= 1
-			elif f < 0:	f += num
-			else:		exit(0)
-			if t > 0:	t -= 1
-			elif t < 0:	t += num
-			else:		exit(0)
-
-			for i in range(f,t+1):
-				tokens[i] = None
-
-		tokens = [ e for e in tokens if e != None ]
-		if not Python3:
-			print(" ".join(tokens).encode('utf_8'))
-		else:
-			print(" ".join(tokens))
-
-def isFileName(s):
-	reg = r'(\d+|NF(-\d+)?)((\.\d+){,2})(/(\d|NF(-\d+)?)\3)?$'
-
-	p = re.compile(reg)
-	return p.match(s) == None
-
-def printUsage():
+def usage():
 	print("Usage    :", _usage, file=sys.stderr)
 	print("Version  :", _version, file=sys.stderr)
 	print("          ", _code, file=sys.stderr)
 	sys.exit(1)
 
+#
+# 直接入力文字列の前処理
+#
+#  Python3においてコマンドラインからの直接入力文字列中にUnicode符号位置がU+FFFFを超えるコードがあると
+#  Unicode文字に正しく変換されない場合があることへの対処をする
+def utf2ucs(instr):
+	outstr=""	# 出力文字列
+	intlist=[]	# 作業用整数リスト
+	for char in instr:
+		if ord(char)>=0xdc00 and ord(char)<=0xdcff:	# 文字の符号位置がU+DCxxの範囲にあったら「UTF8もどき」
+			intlist.append(ord(char)-0xdc00)	# 0xdc00のげたをはずして整数リストに入れる
+		else:	# 通常文字がきたら
+			if len(intlist)>0:	# ここまでに「UTF8もどき」列を変換した整数リストがあったら
+				# bytesに変換してutf8からUCSへの変換をして出力文字列に追加
+				outstr+= bytes(intlist).decode("utf_8")
+				intlist=[]	# 整数リストを再初期化
+			outstr+=char	# 新しくきた通常文字を出力文字列に追加
+	# 「UTF8もどき」列を変換した整数リストが残っていたら
+	# bytesに変換してutf8からUCSへの変換をして出力文字列に追加
+	if len(intlist)>0:	outstr+= bytes(intlist).decode("utf_8")
+	return outstr
+
+# 改行符号（\r\n）の削除関数
+def rm_eol(line):
+	return line.rstrip("\r\n")	# 改行記号としてCRLF('\r\n')/CR('\r')/LF('\n')のすべてに対応する
+
+# BOMの取得関数
+def get_BOM():
+	if Python3():	return chr(int("FEFF",16))	# U+FEFFはBOMのUnicode符号位置
+	else:			return "\xEF\xBB\xBF"	# BOMは「EF BB BF」の3バイト
+
+# BOMの削除関数
+def rm_BOM(line):
+	global firstline
+	if not firstline: return line
+	firstline=False
+	if line.startswith(get_BOM()):	line=line[len(get_BOM()):]	# 行頭にBOMがあったらBOMを削除する
+	return line
+
+# ファイル入力行の前処理
+def preproc_line(line):
+	line=rm_eol(line)	# 行末の改行記号を削除する
+	line=rm_BOM(line)	# ファイル先頭行の行頭にBOMがあったらこれを削除する
+	return line
+
+# Python3か判定する
+def Python3():
+	if sys.version_info >= (3, 0):
+		return True
+	else:
+		return False
+
 ###########################################
-#メイン関数
+# メイン関数
 ###########################################
 if __name__ == '__main__':
 
-	###########################################
-	#オプションの処理
-	###########################################
-
-	#ファイル名を入れる
-	filenames = []
-	filename_pos = []
-
-	argc = len(sys.argv)
-
-	op = Operator()
+	if len(sys.argv) < 2 \
+	 or sys.argv[1] == '--help' \
+	 or sys.argv[1] == '--version':
+		usage()
 
 	direct=False
 
-	#オプションを一個ずつ見ていく。
+	# -dオプションを検出する
+	argc=len(sys.argv)
 	for i in range(1, argc):
 		if sys.argv[i]=='-d':	# -dオプション
+			if len(sys.argv) < 4:	error("フィールドまたは文字列の指定がありません。")	# パラメータが足りない
 			direct=True
-		elif isFileName(sys.argv[i]):
-			filenames.append(sys.argv[i])
-			filename_pos.append(i)
-		else:
-			op.addField(sys.argv[i])
+			del sys.argv[i]
+			break
+	if direct:	# -dオプションなら入力文字列を得る
+		line=sys.argv[-1]	# パラメータ最後尾を入力文字列とする
+		sys.argv.pop()	# 入力文字列以外に少なくともひとつのフィールド指定が残る
+	else:	# -dオプションでなければファイル名を得る
+		# パラメータ最後尾（sys.argv[-1]）をファイル名としてそれが存在すれば開き
+		# 存在しなければ標準入力（stdin）を開く
+		file = open_file(-1)	# ファイル名によるopenに成功すればパラメータ最後尾は削除される
+		if len(sys.argv) < 2:	error("フィールドの指定がありません。")	# パラメータが残っていない
 
-	#フィールド指定がないときは usage を出す。
-	if op.getOptionNum() == 0:
-		printUsage()
-
-	###########################################
-	#ファイルを開く
-	###########################################
-
-	if len(filenames) == 0:
-		file = sys.stdin
-	elif len(filenames) == 1 and filename_pos[0] == argc-1:
-		if direct:
-			line=filenames[0]	# -dオプションならファイル名相当部を入力文字列とする
-		elif filenames[0] == "-": 
-			file = sys.stdin
-		else:
-			file = open(filenames[0], 'r')
-	else:
-		print("ファイル指定が不正です。", file=sys.stderr)
-		sys.exit(1)
-
-	###########################################
-	#出力
-	###########################################
-
-	# Pythonのversion
-	if sys.version_info >= (3, 0): Python3=True
-	else: Python3=False
+	# フィールド指定パラメータからNF相対欄位置リストを作成する
+	base_keylist = getTargetFields(sys.argv[1:])	# sys.argvに残っているのはコマンド名とフィールド指定のみ
 
 	if direct:	# -dオプションによる直接処理
-		if not Python3:
-			#utf_8からユニコードに変換して改行を取る
-			line = unicode(line, "utf_8").rstrip()
-		else:
-			line = line.rstrip()
-		tokens = [ x for x in line.split(' ') if x ]
-		op.output(tokens)
+		if Python3():
+			line = utf2ucs(line)	# Python3では直接指定の文字列に対して前処理をする
+		fields = line.split()
+		NF=len(fields)
+		key=make_keylist(base_keylist)	# 行の欄数NFを見てNF相対欄位置リストから(絶対)欄位置リストを決定する
+		fields = [ fields[i] for i in range(0,NF) if i not in key ]
+		print(" ".join(fields))
 		exit(0)
 
+	# 先頭行処理用flagの初期化
+	firstline=True
+
 	for line in file:
-		if not Python3:
-			#utf_8からユニコードに変換して改行を取る
-			line = unicode(line, "utf_8").rstrip()
-		else:
-			line = line.rstrip()
-		tokens = [ x for x in line.split(' ') if x ]
-		op.output(tokens)
+		line=preproc_line(line)
+		fields = line.split()
+		NF=len(fields)
+		key=make_keylist(base_keylist)	# 行の欄数NFを見てNF相対欄位置リストから(絶対)欄位置リストを決定する
+		fields = [ fields[i] for i in range(0,NF) if i not in key ]
+		print(" ".join(fields))

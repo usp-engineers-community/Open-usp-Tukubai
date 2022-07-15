@@ -1,0 +1,276 @@
+#!/usr/bin/env python
+#coding: utf-8
+#
+# itouch ファイルの初期化を行う（Open usp Tukubai版）
+# 
+# designed by Nobuaki Tounaka
+# written  by Masatomo Togashi
+#
+# The MIT License
+#
+# Copyright (C) 2015 Universal Shell Programming Laboratory
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+from __future__ import print_function
+import os.path
+import sys
+
+_usage = 'itouch [-<n>] "<string>" <file1> <file2>...'
+_usage2 = 'itouch [-<n>] -f <file> <file1> <file2>... '
+_version = "Thu Aug 20 20:30:32 JST 2015"
+_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
+
+def error(msg, *arg):
+	print('Error[itouch] :', msg % arg, file=sys.stderr)
+	sys.exit(1)
+
+def usage():
+	print("Usage   :", _usage, file=sys.stderr)
+	print("        :", _usage2, file=sys.stderr)
+	print("Version :", _version, file=sys.stderr)
+	print("         ", _code, file=sys.stderr)
+	sys.exit(1)
+
+#
+# ファイルオープン
+#
+def open_file(filename, mode = 'r'):
+	if mode=='r':
+		if filename == '-':	filename = '/dev/fd/0'	# sys.stdinをファイルディスクリプターで表記する
+		if not Python3():	mode='rU'	# Python2ではmodeがrUのときPython3と同様に読み込み時に各種改行記号がLF（\n）に統一される
+	elif mode=='w':
+		if filename == '-':	filename = '/dev/fd/1'	# sys.stdinをファイルディスクリプターで表記する
+	else:
+		error("内部エラー: file_open()でmode指定エラー")
+	try:
+		file = open(filename, mode)
+	except:
+		if filename=='/dev/fd/0':
+			error("標準入力ファイルをオープンできません。")
+		elif filename=='/dev/fd/1':
+			error("標準出力ファイルをオープンできません。")
+		else:
+			error("ファイル '%s' をオープンできません。", filename)
+	return file
+
+# 改行符号（\r\n）の削除関数
+def rm_eol(line):
+	return line.rstrip("\r\n")	# 改行記号としてCRLF('\r\n')/CR('\r')/LF('\n')のすべてに対応する
+
+# BOMの取得関数
+def get_BOM():
+	if Python3():	return chr(int("FEFF",16))	# U+FEFFはBOMのUnicode符号位置
+	else:			return "\xEF\xBB\xBF"	# BOMは「EF BB BF」の3バイト
+
+# BOMの削除関数
+def rm_BOM(line):
+	global firstline
+	if not firstline: return line
+	firstline=False
+	if line.startswith(get_BOM()):	line=line[len(get_BOM()):]	# 行頭にBOMがあったらBOMを削除する
+	return line
+
+# ファイル入力行の前処理
+def preproc_line(line):
+	line=rm_eol(line)	# 行末の改行記号を削除する
+	line=rm_BOM(line)	# ファイル先頭行の行頭にBOMがあったらこれを削除する
+	return line
+
+# Python3か判定する
+def Python3():
+	if sys.version_info >= (3, 0):
+		return True
+	else:
+		return False
+
+#
+# ファイルへの1行出力
+def putline(file,line):
+	sublines=[]
+	if line.find('\\n')>0:	# 文字中に\nがあったらそこで分割する
+		sublines=line.split('\\n')
+	else:
+		sublines.append(line)
+	for subline in sublines:
+		file.write(subline+'\n')	# 各sublineで改行
+
+#
+# ファイルへの多行出力
+def putlines(file,lines):
+	for line in lines:
+		putline(file,line)	# 1行出力
+
+#
+# stdinのサイズ判定
+def sizeofstdin():
+	global firstline
+	global stdin_lines
+	# 空ファイルの確認をする
+	stdin=open_file('-','r')
+	stdin_lines=stdin.readlines()
+	numlines=len(stdin_lines)
+	if numlines==1 and stdin_lines[0]==get_BOM():	# 1行のファイルでBOMのみの実質空ファイルなら
+		numlines=0	# 行数を0とする
+	# stdinの行数を返す
+	return numlines
+
+def getfilesize(filename):
+	filesize=os.path.getsize(filename)
+	if filesize==3:	# BOMのみの実質空ファイルの可能性があるのでfileの先頭3バイトを確認する
+		touchfile=open_file(filename,'r')
+		if rm_eol(touchfile.readline())==get_BOM():	# BOMを確認した
+			filesize=0	# 実質上の空ファイルとする
+		touchfile.close()
+	return filesize
+
+# touch対象となりうるファイル名か調べる
+def istouchable(filename):
+	if filename=='-':	# '-'に対しては標準入力（stdin→/dev/fd/0）を調べる
+		if sizeofstdin()==0:	# 読み込んでサイズ（行数）が0なら
+			return True	# touch対象（初期値はこのあと標準出力（stdout）へ送られる）
+		else:
+			return False	# touch非対象（標準入力（stdin）の内容はsizeofstdin()において標準出力（stdout）へコピーされている）
+	elif os.path.exists(filename):	# ファイル名またはディレクトリー名として存在する
+		if os.path.isfile(filename):	# ファイル名のとき
+			# サイズの検査をする
+			filesize=getfilesize(filename)
+			if filesize==0:	# サイズが0か？（BOMのみの実質空ファイルのときも0にしてある）
+				return True	# touch対象（初期値はこのあと標準出力（stdout）へ送られる）
+		elif os.path.isdir(filename):	# ディレクトリーである
+			return False	# touch非対象
+	else:	# 標準入力でなくファイル名としてもディレクトリー名としても存在しない
+		return True	# touch対象（初期値はこのあと標準出力（stdout）へ送られる）
+	return False	# touch非対象
+
+#
+# 直接入力文字列の前処理
+#
+#  Python3においてコマンドラインからの直接入力文字列中にUnicode符号位置がU+FFFFを超えるコードがあると
+#  Unicode文字に正しく変換されない場合があることへの対処をする
+def utf2ucs(instr):
+	outstr=""	# 出力文字列
+	intlist=[]	# 作業用整数リスト
+	for char in instr:
+		if ord(char)>=0xdc00 and ord(char)<=0xdcff:	# 文字の符号位置がU+DCxxの範囲にあったら「UTF8もどき」
+			intlist.append(ord(char)-0xdc00)	# 0xdc00のげたをはずして整数リストに入れる
+		else:	# 通常文字がきたら
+			if len(intlist)>0:	# ここまでに「UTF8もどき」列を変換した整数リストがあったら
+				# bytesに変換してutf8からUCSへの変換をして出力文字列に追加
+				outstr+= bytes(intlist).decode("utf_8")
+				intlist=[]	# 整数リストを再初期化
+			outstr+=char	# 新しくきた通常文字を出力文字列に追加
+	# 「UTF8もどき」列を変換した整数リストが残っていたら
+	# bytesに変換してutf8からUCSへの変換をして出力文字列に追加
+	if len(intlist)>0:	outstr+= bytes(intlist).decode("utf_8")
+	return outstr
+
+#
+# main
+
+if __name__ == '__main__':
+
+	# 構文表示
+	if len(sys.argv) < 2	or \
+		len(sys.argv) == 2	and \
+		(sys.argv[1] == '--help' or \
+		sys.argv[1] == '--version'):	usage()
+
+	# パラメータ解析
+	n, f, initstring, initfilename = 1, False, '', ''	# default値
+	files=[]	# ファイルリスト
+	sys.argv.pop(0)
+	pos=0	# ファイルリストのカウンター
+	for param in sys.argv:
+		if param[0] == '-':	# オプション指定または標準入力指定
+			if len(param)>1 and param[1:].isdigit():	# -nオプション
+				n=int(param[1:])	# -nオプションの値を取得
+			elif param=='-f':	# fオプション
+				f=True
+				fpos=pos	# 次に来るファイル名の（ファイルリスト中の）位置
+			elif len(param)==1:	# 標準入力の指定
+				files.append(param)
+				pos+=1
+			else:
+				error("無効なオプション指定です: %s",param)
+		else:	# 初期化文字列または初期化データファイルまたはtouch対象ファイルのならび
+			files.append(param)
+			pos+=1
+
+	# パラメータ検査
+	if f:	# -f指定のとき
+		if len(files)>fpos:	# -fオプションの次に（ファイル）パラメータがある
+			# filesリスト中の（-fの次に来たファイル）を初期化データファイルとして取り出す
+			initfilename=files.pop(fpos) 
+		else:	# -fの直後に初期化データファイル指定がない
+			error("-fオプションに対するファイル指定がありません")
+	else:
+		# filesリストの先頭を初期化文字列として取り出す
+		if len(files)>0:
+			initstring=files.pop(0)
+			if Python3():
+				initstring=utf2ucs(initstring)	# Python3では直接指定の文字列に対して前処理をする
+
+	# touch対象ファイルがない（またはpop()後に残っていない）とき
+	if len(files)==0: 
+		files.append('-')	# defaultとしてstdinを仮定する
+
+	# touch対象ファイルリスト中に初期化データファイルと同名のファイルがあるとき
+	if f and files.count(initfilename)>0:
+		error("初期化データファイルと対象ファイルが同じです: %s",initfilename)
+
+	# touch対象ファイルリストに標準入力が複数個あるときはひとつにする
+	while files.count('-')>1:
+		files.remove('-')
+
+	# 初期値ファイルを開く
+	if f:
+		initfile=open_file(initfilename)
+		lines=[]
+		firstline=True
+		for line in initfile:
+			lines.append(preproc_line(line))
+		if len(lines)==0:	# 初期値ファイルが空のとき
+			sys.exit(0)	# なにもしないで終了
+
+	# 全対象ファイルに対して
+	for filename in files:
+		if istouchable(filename):	# touch対象となりうるとき
+			touchfile=open_file(filename,'w')	# 対象ファイルを開く
+			# 対象ファイルに初期値を書き込む
+			i=0
+			while i<n:	# nは-nオプションの値
+				if not f:
+					putline(touchfile,initstring)
+				else:
+					putlines(touchfile,lines)
+				i+=1
+			touchfile.close()
+		elif filename=="-":	# touch対象とならないファイルが標準入力であったときは
+			# 標準入力の内容（sizeofstdin()で入力済み）を標準出力へ送る
+			firstline=True
+			for line in stdin_lines:
+				print(preproc_line(line))
+
+	# 初期値ファイルを閉じる
+	if f:
+		initfile.close()
+
+	# 終了
+	sys.exit(0)

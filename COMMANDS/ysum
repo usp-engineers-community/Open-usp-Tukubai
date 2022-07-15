@@ -4,11 +4,11 @@
 # ysum 横サム（Open usp Tukubai版）
 # 
 # designed by Nobuaki Tounaka
-# written by Yoshio Katayama
+# written  by Masatomo Togashi
 #
 # The MIT License
 #
-# Copyright (C) 2011 Universal Shell Programming Laboratory
+# Copyright (C) 2020 Universal Shell Programming Laboratory
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -30,10 +30,10 @@
 
 from __future__ import print_function
 
-_usage = "ysum [+h] num=<n> <file>"
-_usage1 = "ysum [+h] <file>"
-_version = "Fri Oct 21 11:26:06 JST 2011"
+_usage = "ysum [+h] [num=<n>] <file>"
+_version = "Sat Jun 20 21:57:23 JST 2020"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
+_keypat = r'(\d+|NF(-\d+)?)$'
 
 import re
 import os
@@ -46,7 +46,6 @@ def error(msg, *arg):
 
 def usage():
 	print("Usage   :", _usage, file=sys.stderr)
-	print("        :", _usage1, file=sys.stderr)
 	print("Version :", _version, file=sys.stderr)
 	print("         ", _code, file=sys.stderr)
 	sys.exit(1)
@@ -54,7 +53,6 @@ def usage():
 class FieldLine:
 	def __init__(self, line, allow_z = False):
 		self.__allow_zero = allow_z
-		line = line.rstrip('\n')
 		self.__fields = [ line ]
 		self.__fields += [ x for x in line.split(' ') if x ]
 
@@ -80,31 +78,58 @@ class FieldLine:
 			error("フィールド番号が大きすぎます。")
 		return key
 
-	def getField(self, s, e = None):
-		s = self.getFieldNum(s)
-		if e == None:
-			e = s
-		else:
-			e = self.getFieldNum(e)
-		if s <= e:
-			return ' '.join(self.__fields[s : e + 1])
-		else:
-			t = self.__fields[e : s + 1]
-			t.reverse()
-			return ' '.join(t)
+	def getField(self, f):
+		return self.__fields[f]
 
 #
 # 入力ファイルオープン
 #
-def open_file(n, mode = 'r'):
-	if n >= len(sys.argv) or sys.argv[n] == '-':
-		file = sys.stdin
+def open_file(n):
+	if n >= len(sys.argv):	filename = '-'
 	else:
-		try:
-			file = open(sys.argv[n], mode)
-		except:
-			error("ファイル %s をオープンできません。", sys.argv[n])
+		filename = sys.argv[n]
+		del sys.argv[n]
+	if filename == '-':	filename = '/dev/fd/0'	# sys.stdinをファイルディスクリプターで表記する
+	if Python3():	mode='r'
+	else:	mode='rU'	# Python2ではmodeがrUのときPython3と同様に読み込み時に各種改行記号がLF（\n）に統一される
+	try:
+		file = open(filename, mode)
+	except:
+		if filename=='/dev/fd/0':
+			error("標準入力ファイルをオープンできません。")
+		else:
+			error("ファイル '%s' をオープンできません。", filename)
 	return file
+
+# 改行符号（\r\n）の削除関数
+def rm_eol(line):
+	return line.rstrip("\r\n")	# 改行記号としてCRLF('\r\n')/CR('\r')/LF('\n')のすべてに対応する
+
+# BOMの取得関数
+def get_BOM():
+	if Python3():	return chr(int("FEFF",16))	# U+FEFFはBOMのUnicode符号位置
+	else:			return "\xEF\xBB\xBF"	# BOMは「EF BB BF」の3バイト
+
+# BOMの削除関数
+def rm_BOM(line):
+	global firstline
+	if not firstline: return line
+	firstline=False
+	if line.startswith(get_BOM()):	line=line[len(get_BOM()):]	# 行頭にBOMがあったらBOMを削除する
+	return line
+
+# ファイル入力行の前処理
+def preproc_line(line):
+	line=rm_eol(line)	# 行末の改行記号を削除する
+	line=rm_BOM(line)	# ファイル先頭行の行頭にBOMがあったらこれを削除する
+	return line
+
+# Python3か判定する
+def Python3():
+	if sys.version_info >= (3, 0):
+		return True
+	else:
+		return False
 
 #
 # フィールド値の取得
@@ -116,13 +141,15 @@ def getval(line, n):
 		error("数値変換できません。")
 
 #
-#メイン関数
+# メイン関数
 #
 if __name__ == '__main__':
 
-	if len(sys.argv) > 1 \
-	 and (sys.argv[1] == '--help' or sys.argv[1] == '--version'):
-		usage()
+	# 構文表示
+	if len(sys.argv) < 2: usage()
+	elif len(sys.argv) == 2:
+		if sys.argv[1] == '--help' or \
+		   sys.argv[1] == '--version':	usage()
 
 	#
 	# +h
@@ -137,31 +164,39 @@ if __name__ == '__main__':
 	# num=<n>
 	#
 	if len(sys.argv) > 1 and sys.argv[1][0:4] == 'num=':
-		try:
-			n = int(sys.argv[1][4:])
-			del sys.argv[1]
-		except:
-			error("num=<n> の値が取得できません。")
+		n=sys.argv[1][4:]
+		if not re.match(_keypat, n):
+			error("フィールドの指定が不正です。")
+		del sys.argv[1]
 	else:
-		n = 0
+		n = "0"
 
 	file = open_file(1)
 
 	#
 	# ヘッダー行
 	#
+	firstline=True
 	if header:
 		line = file.readline()
 		if not line:
 			sys.exit(0)
-		print(line.rstrip('\n'), '@')
+		print(preproc_line(line), '@')
 
 	#
 	# メインループ
 	#
+	head=True
 	for line in file:
-		line = FieldLine(line)
+		line = FieldLine(preproc_line(line))
 		sum = 0
+		if head:
+			# NFとNF-x形式があるときために先頭行でnを確定する
+			if n=="0":
+				n=0
+			else:
+				n=line.getFieldNum(n)
+			head=False
 		for i in range(n + 1, line.size() + 1):
 			try:
 				sum += Decimal(line.getField(i))

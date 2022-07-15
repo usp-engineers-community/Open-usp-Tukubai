@@ -4,11 +4,11 @@
 # gyo（Open usp Tukubai版）
 #
 # designed by Nobuaki Tounaka
-# written by Ryuichi Ueda
+# written  by Masatomo Togashi
 #
 # The MIT License
 #
-# Copyright (C) 2011 Universal Shell Programming Laboratory
+# Copyright (C) 2020 Universal Shell Programming Laboratory
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -30,17 +30,18 @@
 
 from __future__ import print_function
 
-_usage = "gyo [-f] <file>"
-_version = "Fri Oct 21 11:26:06 JST 2011"
+_usage = "gyo [-f] <file> ..."
+_version = "Wed May 20 04:47:48 JST 2020"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
 
 import os
 import sys
+import codecs
 
 def printUsage():
-	print("Usage    :", _usage, file=sys.stderr)
-	print("Version  :", _version, file=sys.stderr)
-	print("          ", _code, file=sys.stderr)
+	print("Usage   :", _usage, file=sys.stderr)
+	print("Version :", _version, file=sys.stderr)
+	print("         ", _code, file=sys.stderr)
 	sys.exit(1)
 
 def prefixEqual(prefix,token):
@@ -58,17 +59,17 @@ def die(message):
 def count(filename):
 	file = None
 	if filename == "-":
-		file = sys.stdin
-	elif os.path.isfile(filename):
-		try:
-			file = open(filename,'r')
-		except IOError:
-			die(filename + ":ファイルが開けません。")
-	elif os.path.isdir(filename):
-		pass
-	else:
+		filename = '/dev/fd/0'	# sys.stdinをファイルディスクリプターで表記する
+	elif not os.path.isfile(filename):
 		die(filename + ":ファイルがありません。")
-
+	elif os.path.isdir(filename):
+		return 0
+	if Python3():	mode='r'
+	else:	mode='rU'	# Python2ではmodeがrUのときPython3と同様に読み込み時に各種改行記号がLF（\n）に統一される
+	try:
+		file = open(filename,mode)
+	except IOError:
+		die(filename + ":ファイルが開けません。")
 	if file == None: return 0
 
 	n = 0
@@ -77,30 +78,42 @@ def count(filename):
 	file.close()
 	return n
 
+# Python3か判定する
+def Python3():
+	if sys.version_info >= (3, 0):
+		return True
+	else:
+		return False
+
 ###########################################
-#メイン関数
+# メイン関数
 ###########################################
 if __name__ == '__main__':
 
 	###########################################
-	#オプションの処理
+	# オプションの処理
 	###########################################
 	mode = "normal"
 	files = []
 	argc = len(sys.argv)
 
+	# 構文表示
+	if len(sys.argv) < 2: printUsage()
+	elif len(sys.argv) == 2:
+		if sys.argv[1] == '--help' or \
+		   sys.argv[1] == '--version':	printUsage()
+
 	for i in range(1, argc):
 		arg = sys.argv[i]
 		if arg == "-f":		mode = "file"
 		elif arg == "-":	files.append(arg)
-		elif arg[0] == "-":	printUsage()
 		else:			files.append(arg)
 
 	if len(files) == 0:
 		files.append("-")
 
 	###########################################
-	#出力
+	# 出力
 	###########################################
 	for f in files:
 		n = count(f)

@@ -4,11 +4,11 @@
 # loopj loop of join3（Open usp Tukubai版）
 # 
 # designed by Nobuaki Tounaka
-# written by Yoshio Katayama
+# written  by Masatomo Togashi
 #
 # The MIT License
 #
-# Copyright (C) 2011 Universal Shell Programming Laboratory
+# Copyright (C) 2020 Universal Shell Programming Laboratory
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,7 @@
 from __future__ import print_function
 
 _usage = "loopj [-d<string>] num=<num> <file1> <file2> .."
-_version = "Fri Oct 21 11:26:06 JST 2011"
+_version = "Sat Jun 20 21:57:20 JST 2020"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
 _keypat = r'(\d+)(([/@](\d+))*)$'
 		# 1: 1st field
@@ -55,7 +55,6 @@ def usage():
 class FieldLine:
 	def __init__(self, line, allow_z = False):
 		self.__allow_zero = allow_z
-		line = line.rstrip('\n')
 		self.__fields = [ line ]
 		self.__fields += [ x for x in line.split(' ') if x ]
 
@@ -118,6 +117,53 @@ def open_file(fname):
 	return file
 
 #
+# 入力ファイルオープン
+#
+def open_file(n):
+	if type(n) == type(0):
+		if n >= len(sys.argv):	n = '-'
+		else:	n = sys.argv[n]
+	if n == '-':	n = '/dev/fd/0'	# sys.stdinをファイルディスクリプターで表記する
+	if Python3():	mode='r'
+	else:	mode='rU'	# Python2ではmodeがrUのときPython3と同様に読み込み時に各種改行記号がLF（\n）に統一される
+	try:
+		file = open(n, mode)
+	except:
+		if n=='/dev/fd/0': n="-"
+		error("ファイル '%s' をオープンできません。", n)
+	return file
+
+# 改行符号（\r\n）の削除関数
+def rm_eol(line):
+	return line.rstrip("\r\n")	# 改行記号としてCRLF('\r\n')/CR('\r')/LF('\n')のすべてに対応する
+
+# BOMの取得関数
+def get_BOM():
+	if Python3():	return chr(int("FEFF",16))	# U+FEFFはBOMのUnicode符号位置
+	else:			return "\xEF\xBB\xBF"	# BOMは「EF BB BF」の3バイト
+
+# BOMの削除関数
+def rm_BOM(line):
+	global firstline
+	if not firstline: return line
+	firstline=False
+	if line.startswith(get_BOM()):	line=line[len(get_BOM()):]	# 行頭にBOMがあったらBOMを削除する
+	return line
+
+# ファイル入力行の前処理
+def preproc_line(line):
+	line=rm_eol(line)	# 行末の改行記号を削除する
+	line=rm_BOM(line)	# ファイル先頭行の行頭にBOMがあったらこれを削除する
+	return line
+
+# Python3か判定する
+def Python3():
+	if sys.version_info >= (3, 0):
+		return True
+	else:
+		return False
+
+#
 # num= の解析
 #
 def getnum(arg):
@@ -177,7 +223,7 @@ def utf2ucs(instr):
 	return outstr
 
 #
-#メイン関数
+# メイン関数
 #
 if __name__ == '__main__':
 
@@ -200,7 +246,7 @@ if __name__ == '__main__':
 	except:
 		usage()
 
-	if dstr != '0' and sys.version_info >= (3, 0):
+	if dstr != '0' and Python3():
 		dstr=utf2ucs(dstr)	# Python3のときは直接入力文字列の前処理をする
 
 	#
@@ -219,6 +265,8 @@ if __name__ == '__main__':
 		l = file[-1].readline()
 		if not l:
 			error("ファイル '%s' が空です。", arg)
+		firstline = True
+		l=preproc_line(l)	# 入力行の前処理
 		line += [ FieldLine(l) ]
 		if line[-1].size() == 0:
 			error("ファイル '%s' にフィールドがありません。")
@@ -245,6 +293,7 @@ if __name__ == '__main__':
 					print(' '+tail, end=endchar)	# 区切り空白を先行させる
 				l = file[i].readline()
 				if l:
+					l=preproc_line(l)	# 入力行の前処理
 					line[i] = FieldLine(l)
 					kstr[i] = keystr(line[i], key)
 				else:	# i番目のfileはEOFに達した

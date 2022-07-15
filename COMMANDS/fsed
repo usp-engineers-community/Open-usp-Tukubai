@@ -4,10 +4,11 @@
 # fsed フィールドの文字列の置換（Open usp Tukubai版）
 # 
 # designed by Nobuaki Tounaka
+# written  by Masatomo Togashi
 #
 # The MIT License
 #
-# Copyright (C) 2011 Universal Shell Programming Laboratory
+# Copyright (C) 2021 Universal Shell Programming Laboratory
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -30,10 +31,14 @@
 from __future__ import print_function
 import re
 import sys
+import unicodedata
 
 _usage = "fsed [-e|-i] 's/<org>/<new>/<n>'... <file>"
-_version = "Fri Oct 21 11:26:06 JST 2011"
+_version = "Sun Feb 21 04:35:05 JST 2021"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
+
+# 濁音と半濁音のNFD表記でNFC表記もできるもの→NFDtoNFC変換でNFCに統一する
+_comb_pat=r"(((う|か|き|く|け|こ|さ|し|す|せ|そ|た|ち|つ|て|と|は|ひ|ふ|へ|ほ|ウ|カ|キ|ク|ケ|コ|サ|シ|ス|セ|ソ|タ|チ|ツ|テ|ト|ハ|ヒ|フ|ヘ|ホ|ワ|ヰ|ヱ|ヲ)゙)|((は|ひ|ふ|へ|ほ|ハ|ヒ|フ|ヘ|ホ)゚))+"
 
 def error(msg, *arg):
 	print('Error[fsed] :', msg % arg, file=sys.stderr)
@@ -47,22 +52,49 @@ def usage():
 
 #
 # 入力ファイルオープン
-def open_file(filename, mode = 'r'):
-
-	if filename=='-' or filename == None: # ファイル名が'-'または省略なら標準入力とする
-		file = sys.stdin
-	else:
-		try:
-			file = open(filename, mode)
-		except:
+#
+def open_file(filename):
+	if filename == '-':	filename = '/dev/fd/0'	# sys.stdinをファイルディスクリプターで表記する
+	if Python3():	mode='r'
+	else:	mode='rU'	# Python2ではmodeがrUのときPython3と同様に読み込み時に各種改行記号がLF（\n）に統一される
+	try:
+		file = open(filename, mode)
+	except:
+		if filename=='/dev/fd/0':
+			error("標準入力ファイルをオープンできません。")
+		else:
 			error("ファイル '%s' をオープンできません。", filename)
 	return file
 
-#
 # 改行符号（\r\n）の削除関数
 def rm_eol(line):
+	return line.rstrip("\r\n")	# 改行記号としてCRLF('\r\n')/CR('\r')/LF('\n')のすべてに対応する
 
-	return line.rstrip('\n').rstrip('\r')
+# BOMの取得関数
+def get_BOM():
+	if Python3():	return chr(int("FEFF",16))	# U+FEFFはBOMのUnicode符号位置
+	else:			return "\xEF\xBB\xBF"	# BOMは「EF BB BF」の3バイト
+
+# BOMの削除関数
+def rm_BOM(line):
+	global firstline
+	if not firstline: return line
+	firstline=False
+	if line.startswith(get_BOM()):	line=line[len(get_BOM()):]	# 行頭にBOMがあったらBOMを削除する
+	return line
+
+# ファイル入力行の前処理
+def preproc_line(line):
+	line=rm_eol(line)	# 行末の改行記号を削除する
+	line=rm_BOM(line)	# ファイル先頭行の行頭にBOMがあったらこれを削除する
+	return line
+
+# Python3か判定する
+def Python3():
+	if sys.version_info >= (3, 0):
+		return True
+	else:
+		return False
 
 #
 # 文字列置換関数
@@ -74,7 +106,7 @@ def replace(field,org,dst):
 # 文字列置換関数2（置換リストによる）
 def replacebylist(fields,replist):
 
-	for reppair in replist: # 置換リストの上から順に置換を実行
+	for reppair in replist:	# 置換リストの上から順に置換を実行
 		reoption=reppair[0]
 		reptuple=reppair[1]
 		# 置換フィールドの範囲を決める
@@ -87,15 +119,74 @@ def replacebylist(fields,replist):
 			end_fieldnum=fieldnum
 		# 指定されたフィールドに対して置換を実行する
 		for fieldnum in range(start_fieldnum,end_fieldnum):
-			if reoption!="": # 正規表現を使う
-				if reoption=="i": reptuple[0]="(?i)"+reptuple[0] # -iオプション（大文字/小文字の区別をしない）
+			if reoption!="":	# 正規表現を使う
+				if reoption=="i": reptuple[0]="(?i)"+reptuple[0]	# -iオプション（大文字/小文字の区別をしない）
+				# 置換対象フィールドをNFC化してからre.sub()を実行する
 				fields[fieldnum]= \
-					re.sub(reptuple[0],reptuple[1],fields[fieldnum])
+					re.sub(reptuple[0],reptuple[1],NFDtoNFC(fields[fieldnum]))
 			else:
+				# 置換対象フィールドはNFC化してからreplace()を実行する
 				fields[fieldnum]= \
-					replace(fields[fieldnum], \
+					replace(NFDtoNFC(fields[fieldnum]), \
 					reptuple[0],reptuple[1])
 	return fields
+
+#
+# 直接入力文字列の前処理
+#
+#  Python3においてコマンドラインからの直接入力文字列中にUnicode符号位置がU+FFFFを超えるコードがあると
+#  Unicode文字に正しく変換されない場合があることへの対処をする
+def utf2ucs(instr):
+	outstr=""	# 出力文字列
+	intlist=[]	# 作業用整数リスト
+	for char in instr:
+		if ord(char)>=0xdc00 and ord(char)<=0xdcff:	# 文字の符号位置がU+DCxxの範囲にあったら「UTF8もどき」
+			intlist.append(ord(char)-0xdc00)	# 0xdc00のげたをはずして整数リストに入れる
+		else:	# 通常文字がきたら
+			if len(intlist)>0:	# ここまでに「UTF8もどき」列を変換した整数リストがあったら
+				# bytesに変換してutf8からUCSへの変換をして出力文字列に追加
+				outstr+= bytes(intlist).decode("utf_8")
+				intlist=[]	# 整数リストを再初期化
+			outstr+=char	# 新しくきた通常文字を出力文字列に追加
+	# 「UTF8もどき」列を変換した整数リストが残っていたら
+	# bytesに変換してutf8からUCSへの変換をして出力文字列に追加
+	if len(intlist)>0:	outstr+= bytes(intlist).decode("utf_8")
+	return outstr
+
+#
+# utf8 変換
+#
+def to_utf8(s):
+	try:
+		return s.encode('utf-8')
+	except:
+		die("内部エラー UTF8への変換に失敗しました。")
+
+#
+# unicode 変換
+#
+def to_unicode(s):
+	if Python3(): return s
+	try:
+		return unicode(s, 'utf_8')
+	except:
+		die("不当なマルチバイト文字が含まれています。")
+
+#
+# NFDtoNFC()のre.sub()から指定patternがみつかるごとに呼ばれるのでNFD/NFC変換をして返す
+# 置換対象パターンはNFD文字:全角ひらがな/全角カタカナの清音に結合用濁点/結合用半濁点を連接したもの
+# 置換先文字はNFC文字:全角ひらがな/全角カタカナの濁音/半濁音
+#
+def replaceNFD(matchobj):
+	if Python3():	return unicodedata.normalize('NFC',matchobj.group(0))
+	else:	return to_utf8(unicodedata.normalize('NFC',to_unicode(matchobj.group(0))))	# Python2ではutf8→unicdoe→utf8の変換をする
+
+#
+# 全角ひらがな/全角カタカナの濁音/半濁音のNFC化
+#
+def NFDtoNFC(str):
+	# 全角ひらがな/全角カタカナの濁音/半濁音をNFCで統一して返す
+	return re.sub(pattern,replaceNFD,str)
 
 #
 # main
@@ -108,28 +199,36 @@ if __name__ == '__main__':
 	 or sys.argv[1] == '--version':
 		usage()
 
+	#
+	# NFD文字（清音+結合用濁点/結合用半濁点）検出のための正規表現パターンを準備
+	#
+	pattern=re.compile(_comb_pat)
+
 	# パラメータ解析
-	org, dst, filename= None, None, '-' # default値
+	org, dst, filename= None, None, '-'	# default値
 	numparam=0
 	count=0
 	reppairs=[]
 	while len(sys.argv) > 1:
-		if sys.argv[1].startswith("-") and len(sys.argv[1])>1: # オプション
+		if sys.argv[1].startswith("-") and len(sys.argv[1])>1:	# オプション
 			if sys.argv[1][1:] in ["e","i"]:
 				reoption=sys.argv[1][1:]
 			else:
 				error("オプションの値(%s)が不正です",sys.argv[1])
-			del(sys.argv[1]) # popup
-			reppairs.append([reoption,sys.argv[1]])
+			del(sys.argv[1])	# popup
+			reppairs.append([reoption,NFDtoNFC(sys.argv[1])])	# 置換指定文字列はNFC正規化する
 		else:
-			reppairs.append(["",sys.argv[1]])
-		del(sys.argv[1]) # popup
+			if Python3():
+				reppairs.append(["",NFDtoNFC(utf2ucs(sys.argv[1]))])	# Python3では直接指定の文字列に対して前処理をする 置換指定文字列はNFC正規化する
+			else:
+				reppairs.append(["",NFDtoNFC(sys.argv[1])])	# 置換指定文字列はNFC正規化する
+		del(sys.argv[1])	# popup
 
 	# パラメータ検査
 	if len(reppairs)>1:
-		if reppairs[-1][0]=="": # 最後の組に[-e|-i]オプションがない
-			filename=reppairs[-1][1] # 最後の組の第2要素をfile名とする
-			reppairs.pop() # 置換指定リストからはずす
+		if reppairs[-1][0]=="":	# 最後の組に[-e|-i]オプションがない
+			filename=reppairs[-1][1]	# 最後の組の第2要素をfile名とする
+			reppairs.pop()	# 置換指定リストからはずす
 		# 最後の組に[-e|-i]オプションがあるときはファイル指定が省略されていると解釈する
 	elif len(reppairs)<1:
 		error("パラメータの数が足りません")
@@ -138,22 +237,23 @@ if __name__ == '__main__':
 	replist=[]
 	for reppair in reppairs:
 		repstring=reppair[1]
-		delm=repstring[1] # 置換指定の区切り文字を第2文字からとる
-		reptuple=repstring.split(delm,3) # 区切り文字で4分割する
+		delm=repstring[1]	# 置換指定の区切り文字を第2文字からとる
+		reptuple=repstring.split(delm,3)	# 区切り文字で4分割する
 		if reptuple[0]!='s':
 			error("置換指定の先頭要素('%s')が's'以外です",reptuple[0])
 		if reptuple[3]!="g":
 			if not reptuple[3].isdigit():
 				error("置換指定の最終要素('%s')が'g'でも数字でもありません",reptuple[0])
-		reptuple.pop(0) # 置換指定の先頭要素（'s'）を除去
+		reptuple.pop(0)	# 置換指定の先頭要素（'s'）を除去
 		replist.append([reppair[0],reptuple])
 
 	# 置換対象ファイルを開く
 	file=open_file(filename)
 
 	# 置換対象ファイルを読む
+	firstline=True
 	for line in file:
-		line=rm_eol(line)
+		line=preproc_line(line)
 		# 置換リストを渡して置換を実行する
 		fields=line.split()
 		fields=replacebylist(fields,replist)
