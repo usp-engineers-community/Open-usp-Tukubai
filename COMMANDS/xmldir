@@ -36,7 +36,7 @@ import xml.sax
 import xml.sax.handler
 
 _usage = "xmldir [-c<n>] /<DirTag1>/<DirTag2>/.../<DirTagN> <xmlfile>"
-_version = "Tue Mar 29 12:32:28 JST 2022"
+_version = "Mon Jul 25 08:45:58 JST 2022"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.7/UTF-8)"
 
 def usage():
@@ -70,8 +70,8 @@ class SAXHandler:
 		self.element_index = 1
 
 	def startElement(self, name, attributes):
-		if self.content !=  '':
-			self.endElement(name)
+		if self.content != '':
+			self.printSection()
 
 		if len(self.path) == 1:
 			self.documentIndex = 1 + self.documentIndex
@@ -86,20 +86,23 @@ class SAXHandler:
 
 	def endElement(self, name):
 		if self.content != '':
-			if indices_padding == None:
-				prefix = ''
-			else:
-				prefix = str(self.documentIndex).rjust(indices_padding, '0') + " " + \
-					 str(self.element_index).rjust(indices_padding, '0') + " "
-
-			if target_path != '/' + '/'.join(self.path[1:]):
-				return
-
-			print((prefix + ' '.join(self.path[1:])), self.content.replace(' ', space_alternative))
-			self.path.pop()
+			self.printSection()
 			self.element_index = 1 + self.element_index
 
+		self.path.pop()
 		self.content = ''
+
+	def printSection(self):
+		if target_path != '/' + '/'.join(self.path[1:]):
+			return
+
+		if indices_padding == None:
+			prefix = ''
+		else:
+			prefix = str(self.documentIndex).rjust(indices_padding, '0') + " " + \
+					 str(self.element_index).rjust(indices_padding, '0') + " "
+		print((prefix + ' '.join(self.path[1:])), self.content.replace(' ', space_alternative))
+
 
 	def characters(self, fragment):
 		if len(self.path) == 1 or fragment.isspace(): return
@@ -145,3 +148,4 @@ if __name__ == '__main__':
 
 	# Exit
 	sys.exit(0)
+
