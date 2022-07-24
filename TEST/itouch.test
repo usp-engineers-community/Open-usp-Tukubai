@@ -32,7 +32,7 @@ if test "$1" = ""; # <command-path>($1)がなければ
 	else commandpath="$1" # <command-path>($1)があればtest対象コマンドは指定のディレクトリーにある
 fi
 com="${pythonversion} ${commandpath}/${name}" # python処理系によるtest対象コマンド実行の先頭部
-tmp=/tmp/$$
+tmp=$(mktemp)
 
 ERROR_CHECK(){
 	[ "$(echo ${PIPESTATUS[@]} | tr -d ' 0')" = "" ] && return
@@ -55,7 +55,7 @@ BOMandEOLvariation(){	# BOM無しLF改行ファイル（$1）からBOM付きCRLF
 cat $tmp-file 2>$tmp-errout
 
 
-awk '/^cat: .+$/ {exit 0} {exit 1}' $tmp-errout
+egrep 'そのようなファイルやディレクトリはありません|No such' $tmp-errout
 [ $? -eq 0 ] ; ERROR_CHECK "TEST1-1 error"
 
 cat << FIN > $tmp-ans
@@ -323,6 +323,6 @@ diff $tmp-init $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST7-18 error"
 
 ###########################################
-rm -f $tmp-*
+rm -f $tmp $tmp-*
 echo "${pythonversion} ${name}" OK
 exit 0
