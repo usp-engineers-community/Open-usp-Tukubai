@@ -32,7 +32,7 @@ if test "$1" = ""; # <command-path>($1)がなければ
 	else commandpath="$1" # <command-path>($1)があればtest対象コマンドは指定のディレクトリーにある
 fi
 com="${pythonversion} ${commandpath}/${name}" # python処理系によるtest対象コマンド実行の先頭部
-tmp=/tmp/$$
+tmp=$(mktemp)
 
 ERROR_CHECK(){
 	[ "$(echo ${PIPESTATUS[@]} | tr -d ' 0')" = "" ] && return
@@ -53,7 +53,7 @@ readlock(){
 	sleep $DELAY
 
 	echo 読み込みロック開始
-	if ${com}  -r lockfile counterfile "echo 読み込み処理開始; sleep $EXECTIME; echo 読み込み処理終了" --timeout=$TIMEOUT; then
+	if ${com}  -r $tmp-lockfile $tmp-counterfile "echo 読み込み処理開始; sleep $EXECTIME; echo 読み込み処理終了" --timeout=$TIMEOUT; then
 		# 読み込み処理
 		echo 読み込みロック成功
 	else
@@ -71,7 +71,7 @@ writelock(){
 	sleep $DELAY
 
 	echo 書き込みロック開始（counter-fileあり）
-	if ${com}  -w lockfile counterfile --timeout=$TIMEOUT --invalid=60; then
+	if ${com}  -w $tmp-lockfile $tmp-counterfile --timeout=$TIMEOUT --invalid=60; then
 		# 書き込み処理
 		echo 書き込みロック成功
 		echo 書き込み処理中
@@ -80,7 +80,7 @@ writelock(){
 	else
 		echo 書き込みロック失敗
 	fi
-	rm -f lockfile # lockfileをはずす
+	rm -f $tmp-lockfile # lockfileをはずす
 }
 
 writelock_nc(){
@@ -93,7 +93,7 @@ writelock_nc(){
 	sleep $DELAY
 
 	echo 書き込みロック開始（counter-fileなし）
-	if ${com}  -w lockfile --timeout=$TIMEOUT --invalid=60; then
+	if ${com}  -w $tmp-lockfile --timeout=$TIMEOUT --invalid=60; then
 		# 書き込み処理
 		echo 書き込みロック成功
 		echo 書き込み処理中
@@ -102,7 +102,7 @@ writelock_nc(){
 	else
 		echo 書き込みロック失敗
 	fi
-	rm -f lockfile # lockfileをはずす
+	rm -f $tmp-lockfile # lockfileをはずす
 }
 
 writelock_full(){
@@ -115,7 +115,7 @@ writelock_full(){
 	sleep $DELAY
 
 	echo 問答無用ロック開始
-	if ${com}  lockfile --timeout=$TIMEOUT --invalid=60; then
+	if ${com} $tmp-lockfile --timeout=$TIMEOUT --invalid=60; then
 		# 書き込み処理
 		echo 問答無用ロック成功
 		echo 問答無用処理中
@@ -124,14 +124,14 @@ writelock_full(){
 	else
 		echo 問答無用ロック失敗
 	fi
-	rm -f lockfile # lockfileをはずす
+	rm -f $tmp-lockfile # lockfileをはずす
 }
 
 remake(){
 # lockfileとcounterfileを削除する
-rm -f lockfile
-rm -f counterfile
-echo a >counterfile
+rm -f $tmp-lockfile
+rm -f $tmp-counterfile
+echo a > $tmp-counterfile
 }
 
 ###########################################
@@ -376,9 +376,9 @@ diff $tmp-ans3 $tmp-out3
 [ $? -eq 0 ] ; ERROR_CHECK "TEST3-3 error"
 
 ###########################################
-rm -f lockfile
-rm -f counterfile
-rm -f $tmp-*
+rm -f $tmp-lockfile
+rm -f $tmp-counterfile
+rm -f $tmp $tmp-*
 echo "${pythonversion} ${name}" OK
 
 exit 0

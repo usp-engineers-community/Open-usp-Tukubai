@@ -44,8 +44,8 @@ ERROR_CHECK(){
 
 BOMandEOLvariation(){	# BOM無しLF改行ファイル（$1）からBOM付きCRLF改行ファイル（$2）とBOM付きCR改行ファイル（$3）を生成する
 	 [ $# -eq 3 ]; ERROR_CHECK "TESTスクリプト内のBOMandEOLvariation()でファイル指定が不正"
-	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r\n/g' -e 's/$/\r/' $1 >$2	# $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
-	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r/g' $1 | tr '\n' '\r' >$3	# $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
+	awk '{print '\xEF\xBB\xBF' $0}' $1 > $2 # $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
+	awk 'BEGIN {ORS = "\r"}  {print '\xEF\xBB\xBF' $0}' $1 > $3 # $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
 }
 
 ###########################################
@@ -103,12 +103,12 @@ cat << FIN > $tmp-name
 PAGE @@
 FIN
 
-echo TEST3-1はエラーで終了するように設定されている
+# TEST3-1はエラーで終了するように設定されている
 
-${com} $tmp-check $tmp-name --blank > $tmp-out
+${com} $tmp-check $tmp-name --blank > $tmp-out 2> /dev/null
 [ $? -eq 1 ] ; ERROR_CHECK "TEST3-1 error"
 
-${com} --blank @@ $tmp-check $tmp-name > $tmp-out 
+${com} --blank @@ $tmp-check $tmp-name > $tmp-out 2> /dev/null
 [ $? -eq 1 ] ; ERROR_CHECK "TEST3-2-1 error"
 
 diff $tmp-out $tmp-check ; ERROR_CHECK "TEST3-2-2 error"
@@ -119,9 +119,9 @@ ${com} --blank @ $tmp-check $tmp-name > $tmp-out
 : |
 diff - $tmp-out ; ERROR_CHECK "TEST3-3-2 error"
 
-echo TEST3-4-1はエラーで終了するように設定されている
+# TEST3-4-1はエラーで終了するように設定されている
 
-${com} $tmp-check --blank @@ $tmp-name > $tmp-out 
+${com} $tmp-check --blank @@ $tmp-name > $tmp-out 2> /dev/null
 [ $? -eq 1 ] ; ERROR_CHECK "TEST3-4-1 error"
 
 : |
@@ -204,7 +204,7 @@ FIN
 
 # 「𠆢」は𠆢(U+201A2)代用対では𠆢(U+D840-U+DDA2)
 
-${com} --blank 𠆢 $tmp-check $tmp-name > $tmp-out 
+${com} --blank 𠆢 $tmp-check $tmp-name > $tmp-out  2> /dev/null
 [ $? -eq 1 ] ; ERROR_CHECK "TEST7-1 error"
 
 diff $tmp-out $tmp-check ; ERROR_CHECK "TEST7-2 error"
@@ -318,9 +318,9 @@ ${com} $tmp-check $tmp-name > $tmp-out ; ERROR_CHECK "TEST9-1 error"
 diff $tmp-res $tmp-out ; ERROR_CHECK "TEST9-2 error"
 
 # --blankオプション
-echo TEST9-3はエラーで終了するように設定されている
+# TEST9-3はエラーで終了するように設定されている
 # --blankオプションで「ヷヸヴヹヺは濁音NFD」（NFC）を与えると$tmp-name中の第2欄「ヷヸヴヹヺは濁音NFD」（NFD）をnullとみなすのでエラーとなる
-${com} --blank ヷヸヴヹヺは濁音NFD $tmp-check $tmp-name > $tmp-out
+${com} --blank ヷヸヴヹヺは濁音NFD $tmp-check $tmp-name > $tmp-out 2> /dev/null
 [ $? -eq 1 ] ; ERROR_CHECK "TEST9-3 error"	# エラーとならないときに"TEST9-3 error"となる
 
 # $tmp-outには残ったkeyの「ヷヸヴヹヺ」（NFC）が出力されているので照合する
