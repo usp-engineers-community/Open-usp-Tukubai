@@ -3,16 +3,19 @@ Tukubaiオンラインコマンドマニュアル
 xmldir(1)
 
 【名前】
+
 xmldir : ディレクトリタグの絶対パスを指定して、XMLデータをフィールド
          形式に変換する。
 
 【書式】
+
 Usage   : xmldir /<DirTag1>/<DirTag2>/.../<DirTagN> <xmlfile>
 Option  : -c<n>
 Version : Mon Dec 30 18:04:45 JST 2019
 Edition : 1
 
 【説明】
+
 ディレクトリタグの絶対パスを指定して、絶対パスとすべてのサブツリーの
 項目、属性、値を出力します。出力は末端のファイルパスに対して１行出力
 されます。
@@ -30,6 +33,7 @@ N 階層のパスの場合、インデックスは N 個となり、タグが繰
 す。
 
 【例１】 単純な例
+
 $ cat xml
 <dir1>
     <dir2>
@@ -55,6 +59,7 @@ $ xmldir -c3 /dir1/dir2 xml
 001 002 dir1 dir2 day 26/Jul.2022
 
 【例２】 テキストに空白を含む例
+
 $ cat xml
 <dir1>
     <dir2>
@@ -74,6 +79,7 @@ dir1 dir2 day 25=Jul=2022
 dir1 dir2 day 26=Jul=2022
 
 【例３】 実用的な例
+
 $ cat xml
 <dir1>
 	<dir2>
@@ -118,6 +124,6 @@ $ xmldir -c3 /dir1/dir2/attributes xml
 
 rjson(1)
 
-last modified: Fri Jul 15 15:42:38 JST 2022
+last modified: Tue Jul 26 08:02:15 JST 2022
 Contact us: uecinfo@usp-lab.com
 Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights
