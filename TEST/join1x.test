@@ -44,45 +44,49 @@ ERROR_CHECK(){
 
 BOMandEOLvariation(){	# BOM無しLF改行ファイル（$1）からBOM付きCRLF改行ファイル（$2）とBOM付きCR改行ファイル（$3）を生成する
 	 [ $# -eq 3 ]; ERROR_CHECK "TESTスクリプト内のBOMandEOLvariation()でファイル指定が不正"
-	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r\n/g' -e 's/$/\r/' $1 >$2	# $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
-	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r/g' $1 | tr '\n' '\r' >$3	# $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
+	awk '{print '\xEF\xBB\xBF' $0}' $1 > $2 # $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
+	awk 'BEGIN {ORS = "\r"}  {print '\xEF\xBB\xBF' $0}' $1 > $3 # $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
 }
+
 
 ###########################################
 # TEST1
 # 通常の連結
 
 cat << FIN > $tmp-master
-1 東京1
-1 東京2
-2 大阪1
-2 大阪2
+1 すすきの
+1 月寒
+2 青葉町
+2 広瀬町
+3 上野
+3 新宿
+4 金山
+4 栄
+4 熱田
+5 烏丸
+5 伏見
+6 梅田
+6 難波
+7 博多
+7 天神
 FIN
 
 cat << FIN > $tmp-tran
-1 新宿
-1 上野
-2 梅田
-2 難波
-2 京橋
-3 金山
-3 栄
-3 熱田
-4 博多
-4 天神
+1 札幌
+3 東京
+5 京都
+7 福岡
 FIN
 
 cat << FIN > $tmp-ans
-1 東京1 新宿
-1 東京2 新宿
-1 東京1 上野
-1 東京2 上野
-2 大阪1 梅田
-2 大阪2 梅田
-2 大阪1 難波
-2 大阪2 難波
-2 大阪1 京橋
-2 大阪2 京橋
+1 すすきの 札幌
+1 月寒 札幌
+3 上野 東京
+3 新宿 東京
+5 烏丸 京都
+5 伏見 京都
+7 博多 福岡
+7 天神 福岡
 FIN
 
 ${com} key=1 $tmp-master $tmp-tran >$tmp-out
@@ -93,12 +97,42 @@ diff $tmp-ans $tmp-out
 # TEST2
 # +ng オプションの使い方
 
+cat << FIN > $tmp-master
+1 すすきの
+1 月寒
+3 上野
+3 新宿
+5 烏丸
+5 伏見
+7 博多
+7 天神
+FIN
+
+cat << FIN > $tmp-tran
+1 札幌
+2 仙台
+3 東京
+4 名古屋
+5 京都
+6 大阪
+7 福岡
+FIN
+
+cat << FIN > $tmp-ans
+1 すすきの 札幌
+1 月寒 札幌
+3 上野 東京
+3 新宿 東京
+5 烏丸 京都
+5 伏見 京都
+7 博多 福岡
+7 天神 福岡
+FIN
+
 cat << FIN > $tmp-ng-ans
-3 金山
-3 栄
-3 熱田
-4 博多
-4 天神
+2 仙台
+4 名古屋
+6 大阪
 FIN
 
 ${com} +ng3 key=1 $tmp-master $tmp-tran > $tmp-out 3> $tmp-ng-out
@@ -202,6 +236,8 @@ diff $tmp-ans $tmp-out
 ###########################################
 # TEST8
 # キーフィールドの列挙指定と範囲指定の連続混用および重複指定解消の試験
+# キーフィールドの指定に絶対位置指定とNF相対位置指定を混在させた場合は
+# tranのフィールド数は固定でなければならない
 
 cat << FIN > $tmp-master
 A A nameA1
@@ -232,36 +268,39 @@ diff $tmp-ans $tmp-out
 # 通常の連結
 
 cat << FIN > $tmp-master
-1 東京1
-1 東京2
-2 大阪1
-2 大阪2
+1 すすきの
+1 月寒
+2 青葉町
+2 広瀬町
+3 上野
+3 新宿
+4 金山
+4 栄
+4 熱田
+5 烏丸
+5 伏見
+6 梅田
+6 難波
+7 博多
+7 天神
 FIN
 
 cat << FIN > $tmp-tran
-1 新宿
-1 上野
-2 梅田
-2 難波
-2 京橋
-3 金山
-3 栄
-3 熱田
-4 博多
-4 天神
+1 札幌
+3 東京
+5 京都
+7 福岡
 FIN
 
 cat << FIN > $tmp-ans
-1 東京1 新宿
-1 東京2 新宿
-1 東京1 上野
-1 東京2 上野
-2 大阪1 梅田
-2 大阪2 梅田
-2 大阪1 難波
-2 大阪2 難波
-2 大阪1 京橋
-2 大阪2 京橋
+1 すすきの 札幌
+1 月寒 札幌
+3 上野 東京
+3 新宿 東京
+5 烏丸 京都
+5 伏見 京都
+7 博多 福岡
+7 天神 福岡
 FIN
 
 # 入力用tmpファイルからBOM付きCRLFとBOM付きCRの各ファイルを作る
@@ -315,6 +354,89 @@ diff $tmp-ans $tmp-out
 cat $tmp-tranBOMCR | ${com} key=1 $tmp-master -  > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST9-8 error"
+
+###########################################
+# TEST10
+# tranの後尾の欄をkeyとする試験
+
+# key指定に絶対位置指定とNF相対位置指定を混在させない場合
+# tranのフィールド数は変化してもよい
+
+cat << FIN > $tmp-master
+10 東京1
+10 東京2
+20 大阪1
+20 大阪2
+40 福岡1
+40 福岡2
+FIN
+
+cat << FIN > $tmp-tran
+新宿 a 10
+上野 b x 11
+京橋 e y z 20
+梅田 c 21
+難波 d 22
+金山 f 30
+栄 g 31
+熱田 h 32
+博多 i 40
+天神 j 41
+FIN
+
+cat << FIN > $tmp-ans
+新宿 a 10 東京1
+新宿 a 10 東京2
+京橋 e y z 20 大阪1
+京橋 e y z 20 大阪2
+博多 i 40 福岡1
+博多 i 40 福岡2
+FIN
+
+${com} key=NF $tmp-master $tmp-tran >$tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST10-1 error"
+
+# key指定に絶対位置指定とNF相対位置指定を混在させた場合
+# tranのフィールド数は固定でなければならない
+
+cat << FIN > $tmp-master
+1 東京1 A 10 ab
+1 東京2 B 20 cd
+1 東京3 D 20 ef
+1 東京4 G H gh
+2 大阪1 J 20 ij
+2 大阪2 O 20 kl
+2 大阪3 K 21 mn
+2 大阪4 M 30 op
+FIN
+
+cat << FIN > $tmp-tran
+1 上野 d 10
+1 新宿 e 20
+2 京橋 b 20
+2 難波 g 21
+2 梅田 i 30
+3 金山 c 30
+3 栄 a 30
+3 熱田 h 30
+4 天神 f 40
+4 博多 j 40
+FIN
+
+cat << FIN > $tmp-ans
+1 上野 d 10 東京1 A ab
+1 新宿 e 20 東京2 B cd
+1 新宿 e 20 東京3 D ef
+2 京橋 b 20 大阪1 J ij
+2 京橋 b 20 大阪2 O kl
+2 難波 g 21 大阪3 K mn
+2 梅田 i 30 大阪4 M op
+FIN
+
+${com} key=1@NF $tmp-master $tmp-tran >$tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST10-2 error"
 
 ###########################################
 rm -f $tmp-*

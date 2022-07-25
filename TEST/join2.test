@@ -44,8 +44,8 @@ ERROR_CHECK(){
 
 BOMandEOLvariation(){	# BOM無しLF改行ファイル（$1）からBOM付きCRLF改行ファイル（$2）とBOM付きCR改行ファイル（$3）を生成する
 	 [ $# -eq 3 ]; ERROR_CHECK "TESTスクリプト内のBOMandEOLvariation()でファイル指定が不正"
-	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r\n/g' -e 's/$/\r/' $1 >$2	# $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
-	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r/g' $1 | tr '\n' '\r' >$3	# $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
+	awk '{print '\xEF\xBB\xBF' $0}' $1 > $2 # $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
+	awk 'BEGIN {ORS = "\r"}  {print '\xEF\xBB\xBF' $0}' $1 > $3 # $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
 }
 
 ###########################################
@@ -119,9 +119,9 @@ cat << FIN > $tmp-master
 0000004 C
 FIN
 
-echo TEST1で「masterのキーフィールドが「重複のない昇順」になっていない例」を実行しエラーメッセージが出るように設定されている
+# TEST1で「masterのキーフィールドが「重複のない昇順」になっていない例」を実行しエラーメッセージが出るように設定されている
 
-${com} key=1 $tmp-master $tmp-tran > $tmp-out
+${com} key=1 $tmp-master $tmp-tran > $tmp-out 2> /dev/null
 
 # tranのキーフィールドが「昇順」になっていない例
 
@@ -138,9 +138,9 @@ cat << FIN > $tmp-master
 0000004 B
 FIN
 
-echo TEST1で「tranのキーフィールドが「昇順」になっていない例」を実行しエラーメッセージが出るように設定されている
+# TEST1で「tranのキーフィールドが「昇順」になっていない例」を実行しエラーメッセージが出るように設定されている
 
-${com} key=1 $tmp-master $tmp-tran > $tmp-out
+${com} key=1 $tmp-master $tmp-tran > $tmp-out 2> /dev/null
 
 ###########################################
 #TEST2

@@ -44,8 +44,8 @@ ERROR_CHECK(){
 
 BOMandEOLvariation(){	# BOM無しLF改行ファイル（$1）からBOM付きCRLF改行ファイル（$2）とBOM付きCR改行ファイル（$3）を生成する
 	 [ $# -eq 3 ]; ERROR_CHECK "TESTスクリプト内のBOMandEOLvariation()でファイル指定が不正"
-	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r\n/g' -e 's/$/\r/' $1 >$2	# $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
-	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r/g' $1 | tr '\n' '\r' >$3	# $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
+	awk '{print '\xEF\xBB\xBF' $0}' $1 > $2 # $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
+	awk 'BEGIN {ORS = "\r"}  {print '\xEF\xBB\xBF' $0}' $1 > $3 # $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
 }
 
 ###########################################
@@ -229,36 +229,36 @@ diff $tmp-ans $tmp-out
 #TEST11
 # 「Error[self] : 部分文字列の開始位置が全角文字の内部になります。」でerrorとなる
 
-echo TEST11はエラーで終了するように設定されている
+# TEST11はエラーで終了するように設定されている
 
-echo ＵＳＰ研究所 | ${com} 1.2.4 > $tmp-out
+echo ＵＳＰ研究所 | ${com} 1.2.4 > $tmp-out 2> /dev/null
 [ $? -eq 1 ] ; ERROR_CHECK "TEST11 error"
 
 ###########################################
 #TEST12
 # 「Error[self] : 部分文字列の開始位置が後ろすぎます。」でerrorとなる
 
-echo TEST12はエラーで終了するように設定されている
+# TEST12はエラーで終了するように設定されている
 
-echo ＵＳＰ研究所 | ${com} 1.20 > $tmp-out
+echo ＵＳＰ研究所 | ${com} 1.20 > $tmp-out 2> /dev/null
 [ $? -eq 1 ] ; ERROR_CHECK "TEST12 error"
 
 ###########################################
 #TEST13
 # 「Error[self] : 部分文字列の開始位置が全角文字の内部になります。」でerrorとなる
 
-echo TEST13はエラーで終了するように設定されている
+# TEST13はエラーで終了するように設定されている
 
-echo ＵＳＰ研究所 | ${com} 1.2 > $tmp-out
+echo ＵＳＰ研究所 | ${com} 1.2 > $tmp-out 2> /dev/null
 [ $? -eq 1 ] ; ERROR_CHECK "TEST13 error"
 
 ###########################################
 #TEST14
 # 「Error[self] : 部分文字列の開始位置が後ろすぎます。」でerrorとなる
 
-echo TEST14はエラーで終了するように設定されている
+# TEST14はエラーで終了するように設定されている
 
-echo 123 | ${com} 1.4 > $tmp-out
+echo 123 | ${com} 1.4 > $tmp-out 2> /dev/null
 [ $? -eq 1 ] ; ERROR_CHECK "TEST14 error"
 
 ###########################################
