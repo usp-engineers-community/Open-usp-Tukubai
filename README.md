@@ -1,6 +1,6 @@
 ﻿               Universal Shell Programming Laboratory
                           info@usp-lab.com
-                             2022/03/16
+                             2022/07/25
  
 Open usp Tukubaiとは
 ====================
@@ -26,7 +26,7 @@ GitHub
 
 - [https://github.com/usp-engineers-community/Open-usp-Tukubai](https://github.com/usp-engineers-community/Open-usp-Tukubai)
 
-Github Read-Only
+GitHub Read-Only
 
 - git://github.com/usp-engineers-community/Open-usp-Tukubai.git
 
