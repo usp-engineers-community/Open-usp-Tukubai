@@ -181,6 +181,7 @@ diff $tmp-ans -
 [ $? -eq 0 ] ; ERROR_CHECK "TEST6 error"
 
 ###########################################
+<<<<<<< HEAD
 #TEST7
 # フィールドの降順指定
 
@@ -294,6 +295,18 @@ diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST8 error"
 
 ###########################################
+=======
+#TEST7 sums up every value in an input.
+
+
+seq 1 10 > $tmp-in
+
+echo 55 > $tmp-out
+
+cat $tmp-in |
+${com}      |
+[ $? -eq 0 ] ; ERROR_CHECK "TEST7 error"
+
 rm -f $tmp-*
 echo "${pythonversion} ${name}" OK
 exit 0
