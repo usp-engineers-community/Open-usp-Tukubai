@@ -7,21 +7,25 @@ rjson(1)
 rjson : JSON 形式のファイルをフィールド形式に変換する
 
 【書式】
+
 Usage   : rjson [-p<c>][-m<c>][-s<c>][-n<string>] <json-file>
 Version : Sat Mar 26 13:13:04 JST 2022
 Edition : 1
 
 【説明】
+
 JSON 形式(RFC8259) のファイル <json-file> をフィールド形式にします。
 オブジェクト名とリスト位置がネストの順に出力され、最後に値が出力されます。
 
 【オプション】
+
 -p : オブジェクト名やリスト位置の区切りを変更します。デフォルトは半角空白です。
 -m : オブジェクト名に含まれる半角空白を変更します。デフォルトは "_" です。
 -s : 値に含まれる半角空白を変更します。デフォルトは "_" です。
 -n : ヌル値（空文字列）を変更します。デフォルトは "_" です。
 
 【例１】
+
 $ cat jsondata
 {
   "data1" : "null",
@@ -40,6 +44,7 @@ data5 false
 data6 6.62607e-34
 
 【例２】
+
 $ cat jsondata
 [
 { "name"   : "Alice Brown",
@@ -130,6 +135,7 @@ $ rjson -p. < jsondata
 
 
 【例３】
+
 $ cat jsondata2
 [
 ["a","b"],
@@ -146,6 +152,6 @@ $ rjson jsondata2
 
 xmldir(1)
 
-last modified: Fri Jul 15 16:21:01 JST 2022
+last modified: Tue Jul 26 08:02:14 JST 2022
 Contact us: uecinfo@usp-lab.com
 Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights

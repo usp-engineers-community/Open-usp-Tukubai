@@ -3,9 +3,11 @@ Tukubaiオンラインコマンドマニュアル
 calsed(1)
 
 【名前】
+
 calsed : 軽いsed
 
 【書式】
+
 Usage   : calsed <org> <dst> <file>
           calsed -f <script> <file>
 Option  : -n<string>
@@ -14,6 +16,7 @@ Version : Tue Oct 19 23:46:03 JST 2021
 Edition : 1
 
 【説明】
+
 calsed は sed の文字列置換機能の簡易版です。指定した元文字列を指定
 した文字列に置換します。sed のように、元文字列に正規表現を使うこと
 はできません。ファイル名を指定しないか、"-" の時は、標準入力を期待
@@ -24,6 +27,7 @@ calsed は sed の文字列置換機能の簡易版です。指定した元文�
 す。
 
 【例１】
+
 直接置換文字列を指定する。
 $ cat data
 <td>NAME</td>
@@ -37,6 +41,7 @@ $ cat result
 <td>25</td>
 
 【例２】
+
 置換後文字列に空白がある場合
 $ calsed NAME "usp lab" data > result
 $ cat result
@@ -44,6 +49,7 @@ $ cat result
 <td>AGE</td>
 
 【例３】
+
 置換後文字列にヌル文字列
 $ calsed NAME @ data > result
 $ cat result
@@ -51,6 +57,7 @@ $ cat result
 <td>AGE</td>
 
 【例４】
+
 ヌル文字列への変換を行わない
 $ calsed -n "" NAME @ data > result
 $ cat result
@@ -58,12 +65,14 @@ $ cat result
 <td>AGE</td>
 
 【例５】
+
 空白に変換する文字を指定する
 $ calsed -s_ NAME usp_lab data
 <td>usp lab</td>
 <td>AGE</td>
 
 【例６】
+
 変換元文字列と変換後文字列をセットにしたファイルを指定して、置換を
 行うことができます。このファイルは name 形式であることが必要です。
 
@@ -88,6 +97,7 @@ $ cat result
 <td>25</td>
 
 【例７】
+
 $ cat script2
 NAME @
 AGE
@@ -97,6 +107,7 @@ $ cat result
 <td></td>
 
 【例８】
+
 空白をそのまま置換する
 $ cat script3 <- [空白]usp[空白]lab[空白] を指定
 NAME  usp lab
@@ -107,6 +118,7 @@ $ cat result
 <td>25</td>
 
 【例９】
+
 空白文字に置換する文字を指定
 $ cat script4
 NAME usp_lab
@@ -117,11 +129,12 @@ $ cat result
 <td>25</td>
 
 【備考】
+
 旧 -d オプション（現 -s オプション）は保証されません。
 旧 -i オプション（現 -n オプション）は保証されません。
 
 # 20160726 ヌル文字列への変換を行わない方法を記述 青木
 
-last modified: Fri Jul 15 16:32:14 JST 2022
+last modified: Tue Jul 26 08:02:14 JST 2022
 Contact us: uecinfo@usp-lab.com
 Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights
