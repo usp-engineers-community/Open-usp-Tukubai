@@ -4,7 +4,7 @@
 # sm2 サムアップツール（Open usp Tukubai版）
 # 
 # designed by Nobuaki Tounaka
-# written  by Hinata Yanagi
+# written  by Masatomo Togashi
 #
 # The MIT License
 #
@@ -30,15 +30,20 @@
 
 from __future__ import print_function
 
-_usage = "sm2 [+count] [<k1> <k2> <s1> <s2>] <file>"
-_version = "Wed May  4 08:43:34 JST 2022"
+_usage = "sm2 [+count] <k1> <k2> <s1> <s2> <file>"
+_version = "Wed Apr  2 19:22:38 JST 2014"
+_version = "Wed Oct 20 15:17:47 JST 2020"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
 _keypat = r'\d+|NF(-\d+)?$'
 
 import re
 import os
 import sys
+import unicodedata
 from decimal import Decimal
+
+# 濁音と半濁音のNFD表記でNFC表記もできるもの→NFDtoNFC変換でNFCに統一する
+_comb_pat=r"(((う|か|き|く|け|こ|さ|し|す|せ|そ|た|ち|つ|て|と|は|ひ|ふ|へ|ほ|ウ|カ|キ|ク|ケ|コ|サ|シ|ス|セ|ソ|タ|チ|ツ|テ|ト|ハ|ヒ|フ|ヘ|ホ|ワ|ヰ|ヱ|ヲ)゙)|((は|ひ|ふ|へ|ほ|ハ|ヒ|フ|ヘ|ホ)゚))+"
 
 def error(msg, *arg):
 	print('Error[sm2] :', msg % arg, file=sys.stderr)
@@ -53,7 +58,6 @@ def usage():
 class FieldLine:
 	def __init__(self, line, allow_z = False):
 		self.__allow_zero = allow_z
-		line = line.rstrip('\n')
 		self.__fields = [ line ]
 		self.__fields += [ x for x in line.split(' ') if x ]
 
@@ -95,15 +99,86 @@ class FieldLine:
 #
 # 入力ファイルオープン
 #
-def open_file(n, mode = 'r'):
-	if n >= len(sys.argv) or sys.argv[n] == '-':
-		file = sys.stdin
+def open_file(n):
+	if n >= len(sys.argv):	filename = '-'
 	else:
-		try:
-			file = open(sys.argv[n], mode)
-		except:
-			error("ファイル %s をオープンできません。", sys.argv[n])
+		filename = sys.argv[n]
+	if filename == '-':	filename = '/dev/fd/0'	# sys.stdinをファイルディスクリプターで表記する
+	if Python3():	mode='r'
+	else:	mode='rU'	# Python2ではmodeがrUのときPython3と同様に読み込み時に各種改行記号がLF（\n）に統一される
+	try:
+		file = open(filename, mode)
+	except:
+		if filename=='/dev/fd/0':
+			error("標準入力ファイルをオープンできません。")
+		else:
+			error("ファイル '%s' をオープンできません。", filename)
 	return file
+
+# 改行符号（\r\n）の削除関数
+def rm_eol(line):
+	return line.rstrip("\r\n")	# 改行記号としてCRLF('\r\n')/CR('\r')/LF('\n')のすべてに対応する
+
+# BOMの取得関数
+def get_BOM():
+	if Python3():	return chr(int("FEFF",16))	# U+FEFFはBOMのUnicode符号位置
+	else:			return "\xEF\xBB\xBF"	# BOMは「EF BB BF」の3バイト
+
+# BOMの削除関数
+def rm_BOM(line):
+	global firstline
+	if not firstline: return line
+	firstline=False
+	if line.startswith(get_BOM()):	line=line[len(get_BOM()):]	# 行頭にBOMがあったらBOMを削除する
+	return line
+
+# ファイル入力行の前処理
+def preproc_line(line):
+	line=rm_eol(line)	# 行末の改行記号を削除する
+	line=rm_BOM(line)	# ファイル先頭行の行頭にBOMがあったらこれを削除する
+	return line
+
+# Python3か判定する
+def Python3():
+	if sys.version_info >= (3, 0):
+		return True
+	else:
+		return False
+
+#
+# unicode 変換
+#
+def to_unicode(s):
+	if type(s)==type(U""): return s	# 入力文字列がUnicode文字列のとき
+	try:
+		return unicode(s, 'utf_8')
+	except:
+		error("不当なマルチバイト文字が含まれています。")
+
+#
+# utf8 変換
+#
+def to_utf8(s):
+	try:
+		return s.encode('utf-8')
+	except:
+		error("内部エラー UTF8への変換に失敗しました。")
+
+#
+# NFDtoNFC()のre.sub()から指定patternがみつかるごとに呼ばれるのでNFD/NFC変換をして返す
+# 置換対象パターンはNFD文字:全角ひらがな/全角カタカナの清音に結合用濁点/結合用半濁点を連接したもの
+# 置換先文字はNFC文字:全角ひらがな/全角カタカナの濁音/半濁音
+#
+def replace(matchobj):
+	if Python3():	return unicodedata.normalize('NFC',matchobj.group(0))
+	else:	return to_utf8(unicodedata.normalize('NFC',to_unicode(matchobj.group(0))))	# Python2ではutf8→unicdoe→utf8の変換をする
+
+#
+# 全角ひらがな/全角カタカナの濁音/半濁音のNFC化
+#
+def NFDtoNFC(str):
+	# 全角ひらがな/全角カタカナの濁音/半濁音をNFCで統一して返す
+	return re.sub(pattern,replace,str)
 
 #
 # フィールド値の取得
@@ -115,14 +190,19 @@ def getval(line, n):
 		error("数値変換できません。")
 
 #
-#メイン関数
+# メイン関数
 #
 if __name__ == '__main__':
-	if len(sys.argv) > 2 and len(sys.argv) < 5:
-		usage()
-
 	if len(sys.argv) <= 2:
 		sys.argv = [sys.argv[0]] + ["0", "0", "1", "1"] + sys.argv[1:]
+
+	if len(sys.argv) < 5:
+		usage()
+
+	#
+	# NFD文字（清音+結合用濁点/結合用半濁点）検出のための正規表現パターンを準備
+	#
+	pattern=re.compile(_comb_pat)
 
 	#
 	# +count
@@ -154,13 +234,17 @@ if __name__ == '__main__':
 	line = file.readline()
 	if not line:
 		sys.exit(0)
+	firstline=True
+	line=preproc_line(line)	# 入力行の前処理
 	line = FieldLine(line, True)
 	k1 = line.getFieldNum(k1)
 	k2 = line.getFieldNum(k2)
 	s1 = line.getFieldNum(s1)
 	s2 = line.getFieldNum(s2)
-	if k1 > k2 or s1 > s2 or k2 > s1 \
-	  or s1 * s2 == 0 or k1 * k2 == 0 and k1 + k2 != 0:
+	# 降順を昇順化
+	if k1 > k2:	k1,k2=k2,k1
+	if s1 > s2:	s1,s2=s2,s1
+	if k2 > s1 or s1 * s2 == 0 or k1 * k2 == 0 and k1 + k2 != 0:
 		usage()
 
 	#
@@ -171,14 +255,16 @@ if __name__ == '__main__':
 		sum[i] = getval(line, i)
 	cnt = 1
 	if (k1):
-		key = line.getField(k1, k2)
+		key = NFDtoNFC(line.getField(k1, k2))	# キーフィールド値はNFC正規化する
 
 	#
 	# メインループ
 	#
+	firstline=True
 	for line in file:
+		line=preproc_line(line)	# 入力行の前処理
 		line = FieldLine(line)
-		if k1 == 0 or line.getField(k1, k2) == key:
+		if k1 == 0 or NFDtoNFC(line.getField(k1, k2)) == key:	# キーフィールド値はNFC正規化する
 			for i in range(s1, s2 + 1):
 				sum[i] += getval(line, i)
 			cnt += 1
@@ -191,7 +277,7 @@ if __name__ == '__main__':
 		for i in range(s1, s2 + 1):
 			sum[i] = getval(line, i)
 		cnt = 1
-		key = line.getField(k1, k2)
+		key = NFDtoNFC(line.getField(k1, k2))	# キーフィールド値はNFC正規化する
 
 	#
 	# 残り合計の出力
@@ -203,3 +289,4 @@ if __name__ == '__main__':
 	print(sum[s2])
 
 	sys.exit(0)
+
