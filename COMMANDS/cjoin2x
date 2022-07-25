@@ -8,7 +8,7 @@
 #
 # The MIT License
 #
-# Copyright (C) 2019 Universal Shell Programming Laboratory
+# Copyright (C) 2022 Universal Shell Programming Laboratory
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -33,9 +33,10 @@ import re
 import sys
 
 _usage = "cjoin2x [+<string>] key=<n> <master> [<tran>]"
-_version = "Thu Jun 20 18:01:27 JST 2019"
+_version = "Fri Jul 22 01:09:14 JST 2022"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
 _keypat = r'((\d+|NF(-\d+)?)(/(\d+|NF(-\d+)?))?)(@((\d+|NF(-\d+)?)(/(\d+|NF(-\d+)?))?))*$'
+_keypatNF=r'(?P<m0>(?P<m01>\d+)|(?P<m02>NF(?P<m03>-\d+)?))(/(?P<m1>(?P<m11>\d+)|(?P<m12>NF(?P<m13>-\d+)?)))?$'
 
 def error(msg, *arg):
 	print('Error[cjoin2x] :', msg % arg, file=sys.stderr)
@@ -62,6 +63,156 @@ def open_file(filename):
 		else:
 			error("ファイル '%s' をオープンできません。", filename)
 	return file
+
+# NF相対欄位置からNF（欄数）に応じた0発進の欄位置に変換する
+def getpos(base_pos):
+	# NF相対欄位置からの変換:
+	#  nのときはそのまま
+	#  0のときはNF（欄数）に
+	#  -nのときはNF-nに
+	# 0発進とするために-1を加える
+	if base_pos > 0:
+		pos=base_pos-1
+		if pos > NF-1:	error("フィールド番号が大きすぎます。%s",str(base_pos))
+	else:
+		pos=NF+base_pos-1
+		if pos < 0:	error("フィールド指定で NF-x の x が大きすぎます。 %s","NF-"+str(-base_pos))
+	return pos
+
+# NF相対欄位置リスト（rel_keylist）からNF（欄数）に応じた実際の欄位置リスト（keylist）を作成する
+def make_keylist(rel_keylist):
+	# rel_keylistの要素には区間をあらわす整数tupleの(start,end)と、単一欄をあらわす整数がある
+	if rel_keylist==[None]:	# 全欄指定
+		return list(range(0,NF))
+	keylist=[]
+	for fieldpos in rel_keylist:
+		if type(fieldpos)==int:	keylist.append(getpos(fieldpos))	# 単一欄
+		else:	# (a/b)の区間
+			start=getpos(fieldpos[0])
+			end=getpos(fieldpos[1])
+			if start <= end:	# 正順
+				keylist+=range(start,end+1)
+			else:	# 逆順
+				keylist+=range(start,end-1,-1)
+	for key in keylist:
+		if key < 0 or key >= NF:
+			error("キーの位置が行のフィールド範囲を逸脱しています。")
+	return list(set(keylist))	# 欄位置は0発進
+
+# 欄番号文字列をNF相対形式で整数化する
+def getFieldNum(str,str1,str2):
+	# n または NF または NF-x の形式の欄番号をNF相対形式の整数で確定する
+	# 正規表現で「\d+|NF(-\d+)?」にmatchする全体をstrが、「\d+」でmatchする部分をstr1が、「(-\d+)?」でmatchする部分をstr2が保持している
+	# NF相対形式の整数化:
+	#  単独のnが0のときはNone
+	#  単独のnが0以外のときは整数のn
+	#  単独のNFのときは整数の0
+	#  NF-nのときは整数の-n
+	# 実際の欄番号にする際には行ごとに得たNF（欄数）を使用して計算する
+
+	if str1:	# n
+		fieldnum=int(str1)
+		if fieldnum==0:	# 欄番号0は全欄指定を意味する
+			fieldnum=None
+	else:	# NF-n または NF
+		if str2:	# NF-n
+			fieldnum=int(str2)
+		else:	# NF
+			fieldnum=0
+	return fieldnum
+
+#
+# ひとつの欄指定パラメータから欄番号リストを得る（区間指定にも対応する）
+#
+def getFieldList(field_param):
+	mobj = re.match(_keypat,field_param)	# 構文検査のために実行する
+	if not mobj:	# フィールド指定の形式が不正
+		error("フィールド指定の形式が不正です。 %s",field_param)
+	fieldlist=[]
+	concatlist=field_param.split("@")	# @で分割する
+	for fieldnum in concatlist:
+		mobj = re.match(_keypatNF,fieldnum)
+		start=getFieldNum(fieldnum,mobj.group('m01'),mobj.group('m03'))	# 前端部を得る
+		if mobj.group('m1'):	# a/bの形式で区間指定をしている
+			end=getFieldNum(fieldnum,mobj.group('m11'),mobj.group('m13'))	# 後端部を得る
+			fieldlist.append((start,end))	# 区間で確定
+		else:
+			fieldlist.append(start)	# 前端部単独で確定
+	if None in fieldlist:
+		return [None]	# 欄位置にひとつでも0を指定するものがあるときは全欄指定とする
+
+	# key指定の分別をする
+	abs_rel_mixed=False
+	if fieldlist==[None]:	# 全欄指定
+		abs_rel_mixed=True	# 絶対指定/NF相対指定の混用に準ずる tranの欄数が変化するとmasterのkey位置が変化してしまう
+	else:
+		num_absolute=0
+		num_NFrelative=0
+		for fieldpos in fieldlist:
+			if type(fieldpos)==int:	# 単一欄
+				if fieldpos>0:	num_absolute+=1	# この欄指定は絶対指定
+				else:	num_NFrelative+=1	# この欄指定はNF相対指定
+			else:	# (a/b)の区間指定
+				if fieldpos[0]>0:	num_absolute+=1	# この欄指定は絶対指定
+				else:	num_NFrelative+=1	# この欄指定はNF相対指定
+		# 絶対指定/NF相対指定の混用か？
+		if num_absolute*num_NFrelative>0:	abs_rel_mixed=True	# 混用するとtranの欄数変化でmasterのkey位置が変化してしまう
+	return fieldlist,abs_rel_mixed
+
+#
+# tranファイルにおけるキーの欄番号リストからmasterファイルにおける対応欄番号リストを得る
+#
+def GetMasterKeylist(keylist):
+	masterkeylist=[]
+	min_field=min(keylist)
+	for fn in keylist:
+		masterkeylist.append(fn-min_field)	# keylistの最小値が0に対応するようにshiftする
+	return masterkeylist
+
+#
+#	キーフィールド番号リストをもとにレコードからキーフィールド値リスト（連結文字列）をとりだす
+#
+def GetKeyFieldValues(line,keylist,Separator):
+	keyvalues=""
+	for i in keylist:
+		keyvalues+=line[i]+Separator	# フィールド区切りを付ける
+	return keyvalues.rstrip()
+
+#
+# 非キーフィールド値のリスト（連結文字列）を作成
+#
+def GetNonKeyFieldValues(keylist,fieldvalues,maxkeyfieldpos,Separator):
+	nonkeyvalues=""
+	for i in range(0,maxmasterkeypos+1):
+		if not i in keylist:
+			nonkeyvalues+=fieldvalues[i]+Separator
+	return nonkeyvalues.rstrip()
+
+# masterファイルをすべて読み込む
+def GetMaster(masterfile):
+	global firstline
+	masterfilelines=[]
+	maxmasterfieldnum=0
+	firstline_backup=firstline	# main()でtranのためにfirstlineを使用しているため
+	firstline=True
+	for line in masterfile:
+		line=preproc_line(line)
+		fields=line.split()
+		masterfilelines.append(fields)	# 全フィールドを記憶する
+		if len(fields) > maxmasterfieldnum:
+			maxmasterfieldnum=len(fields)	# masterの最大欄数を記憶する
+	if len(masterfilelines)==0:
+		error("masterファイルが空です")
+	firstline=firstline_backup	# backupから回複する
+	return masterfilelines,maxmasterfieldnum
+
+#
+# masterファイルの最大キー位置の前の非キー欄数と後の欄数を求める
+#
+def GetMasterPreAndAfterFieldNums(masterkeylist,maxmasterkeypos,maxmasterfieldnum):
+	MasterPreFieldNum=maxmasterkeypos+1-len(masterkeylist)	# masterファイルの最大キー位置の前の非キー欄数
+	MasterAfterFieldNum=maxmasterfieldnum-(maxmasterkeypos+1)	# masterファイルの最大キー位置の後の欄数
+	return MasterPreFieldNum,MasterAfterFieldNum
 
 # 改行符号（\r\n）の削除関数
 def rm_eol(line):
@@ -93,193 +244,138 @@ def Python3():
 	else:
 		return False
 
-# （NFを含むかもしれない）フィールド要素を整数に変換する
-def intwithNF(str,NF):
-	# フィールド要素にNFを含むとき
-	if str=="NF":
-		return NF
-	elif str.startswith("NF-"):
-		str=str[3:]
-		fieldnum=NF-int(str)
-	# NFを含まないとき
-	else:
-		fieldnum=int(str)
-	if fieldnum<=0:
-		error("キー指定が0または負数です")
-	if fieldnum>NF:
-		error("フィールド指定がレコードのフィールド数を超えています")
-	return fieldnum
-
-# フィールド指定文字列からフィールドリストを作る（NFは確定している）
-def GetKeyList(key,NF):
-	k = re.match(_keypat,key)	# 構文検査のために実行する
-	if not k:
-		error("フィールド指定が不正です,")
-	AtMarkList=key.split("@")	# @で分割
-	keylist=[]
-	for field in AtMarkList:
-		if "/" in field:	# 範囲
-			startend=field.split("/")
-			start=intwithNF(startend[0],NF)
-			end=intwithNF(startend[1],NF)
-			if start <= end:	# 昇順のとき
-				keylist+=range(start,end+1)
-			else:	# 降順のとき
-				keylist+=range(start,end-1,-1)
-		else:	# 列挙
-			keylist+=[intwithNF(field,NF)]
-	# キーリストの重複解消
-	keylist=sorted(set(keylist),key=keylist.index)	# 集合化によってリストの重複を解消し元のリストにおける出現位置をキーとしてsort
-	return keylist
-
-# tranのキーリストからmasterのキーリストを得る
-def GetMasterKeyList(keylist):
-	masterkeylist=[]
-	delta=min(keylist)-1
-	for i in range(len(keylist)):
-		masterkeylist.append(keylist[i]-delta)
-	return masterkeylist
-
-# キーフィールド番号リストをもとにレコードからキーフィールド値リスト（連結文字列）をとりだす
-def GetKeyFieldValues(line,keylist,Separator):
-	keyvalues=""
-	for i in keylist:
-		keyvalues+=line[i-1]+Separator	# フィールド区切りを付ける
-	return keyvalues.rstrip()
-
-# 非キーフィールドのリストを作成
-def GetNonKeyFields(keyfieldlist,keyfieldvalues,maxkeyfieldpos):
-	list=[]
-	for i in range(1,maxmasterkeypos+1):
-		if not i in keyfieldlist:
-			list.append(keyfieldvalues[i-1])
-	return list
-
-# 非キーフィールドのdummyリストを作成
-def GetDummyNonKeyFields(keyfieldlist,dummy,maxkeyfieldpos):
-	list=[]
-	for i in range(1,maxmasterkeypos+1):
-		if not i in keyfieldlist:
-			list.append(dummy)
-	return list
+#
+# 直接入力文字列の前処理
+#
+#  Python3においてコマンドラインからの直接入力文字列中にUnicode符号位置がU+FFFFを超えるコードがあると
+#  Unicode文字に正しく変換されない場合があることへの対処をする
+def utf2ucs(instr):
+	outstr=""	# 出力文字列
+	intlist=[]	# 作業用整数リスト
+	for char in instr:
+		if ord(char)>=0xdc00 and ord(char)<=0xdcff:	# 文字の符号位置がU+DCxxの範囲にあったら「UTF8もどき」
+			intlist.append(ord(char)-0xdc00)	# 0xdc00のげたをはずして整数リストに入れる
+		else:	# 通常文字がきたら
+			if len(intlist)>0:	# ここまでに「UTF8もどき」列を変換した整数リストがあったら
+				# bytesに変換してutf8からUCSへの変換をして出力文字列に追加
+				outstr+= bytes(intlist).decode("utf_8")
+				intlist=[]	# 整数リストを再初期化
+			outstr+=char	# 新しくきた通常文字を出力文字列に追加
+	# 「UTF8もどき」列を変換した整数リストが残っていたら
+	# bytesに変換してutf8からUCSへの変換をして出力文字列に追加
+	if len(intlist)>0:	outstr+= bytes(intlist).decode("utf_8")
+	return outstr
 
 # main
 
 if __name__ == '__main__':
 
-	master,tran,plus,dummy,key,nf = "", "-", False,"_",None, False	# default値
+	dummy="_"
 
 	# コマンドの説明表示
-	if len(sys.argv) <= 1 \
-	 or sys.argv[1] == '--help' \
-	 or sys.argv[1] == '--version':
-		usage()
+	if len(sys.argv) < 3 :		usage()	# 最小パラメータ構成は「cjoin2x key=<n> <master>」
+	if sys.argv[1] == '--help' :	usage()
+	if sys.argv[1] == '--version':	usage()
 
-	# パラメータ解析
-	numparam=0
-	minparam=1
-	maxparam=3
-	while len(sys.argv) > 1:
-		if sys.argv[1].startswith("+"):	# +パラメータ
-			if plus:
-				error("+パラメータが重複しています")
-			plus=True
-			dummy=sys.argv[1]
-			dummy=dummy[1:]
-		elif sys.argv[1].startswith("key="):	# keyパラメータ
-			if key:
-				error("keyパラメータが重複しています")
-			key=sys.argv[1][4:]
-		else:
-			numparam+=1
-			if numparam==1:	# master
-				master=sys.argv[1]
-			elif numparam==2:	# tran
-				tran=sys.argv[1]
-		del(sys.argv[1])	# popup
+	# +オプションのフラグ処理
+	plus_option = False
+	if sys.argv[1].startswith("+"):	# +パラメータ
+		dummy=sys.argv[1][1:]
+		if Python3():
+			dummy=utf2ucs(dummy)	# Python3では直接指定の文字列に対して前処理をする
+		plus_option=True
+		del sys.argv[1]
 
-	# パラメータ検査
-	if numparam<minparam:
-		error("パラメータの数が足りません")
-	if numparam>maxparam:
-		error("パラメータの数が多すぎます")
-	if plus and dummy=="":
-		error("ダミー文字列が空です")
+	# keyオプションを解析
+	if sys.argv[1][0:4] == 'key=':
+		key_str = sys.argv[1][4:]
+		if len(key_str)==0:
+			error("key指定に値がありません。")
+		del sys.argv[1]
+	else:
+		error("key指定がありません。")
 
-	# <master>と<tran>の名前検査
+	# masterとtranを確定する
+	num_arg=len(sys.argv)	# ここまでで残ったargvの長さ2または3でなければならない
+	if num_arg<2:	error("実行パラメータが少なすぎます。")
+	if num_arg>3:	error("実行パラメータが多すぎます。")
+	master=sys.argv[1]
+	if num_arg==2:	tran="-"	# tranが省略されたらtranとして標準入力を仮定する
+	else:	tran=sys.argv[2]	# tranが省略されていなければパラメータからとる
 	if master==tran:
-		error("<master>と<tran>が同じです")
+		error("masterファイルとtranファイルが同じファイルです。")
+
+	if plus_option and dummy=="":
+		error("ダミー文字列が空です")
 
 	# masterファイルを開く
 	masterfile=open_file(master)
 	# tranファイルを開く
 	tranfile=open_file(tran)
 
-	Separator=" "
-	masterfilelines=[]
-	# masterファイルをすべて読み込む
-	numfields=-1
-	firstline=True
-	for line in masterfile:
-		line=preproc_line(line)
-		fields=line.split()
-		if not len(fields)==numfields and not numfields<0:
-			error("masterファイルのフィールド数が一定ではありません")
-		numfields=len(fields)
-		masterfilelines.append(fields)	# 全フィールドを記憶する
-	if len(masterfilelines)==0:
-		error("masterファイルが空です")
+	rel_keylist,abs_rel_mixed = getFieldList(key_str)	# keyパラメータ文字列からNF相対欄位置リストを作成する
+	# abs_rel_mixedは「絶対欄位置指定/相対欄位置指定混用」のflag
 
+	Separator=" "
+	NF=-1
 	linecount=0
 	firstline=True
+	# tranのloop
 	for line in tranfile:	# tranファイルを読む
+		if linecount==0:	# 先頭行ならmasterファイルの内容をとりこむ
+			masterfilelines,maxmasterfieldnum=GetMaster(masterfile)	# masterの最大欄数（maxmasterfieldnum）も求めておく
 		line=preproc_line(line)
 		tranfields=line.split()
-		# tranの最初のレコードでtranの最終フィールド位置を確認しキーリストを確定する
-		if linecount==0:
-			NF=len(tranfields)
-			# key指定の文字列からtranのキーリストへ変換
-			keylist=GetKeyList(key,NF)
-			# masterのキーリストを作成
-			masterkeylist=GetMasterKeyList(keylist)
-			# masterとtranの最大キー位置を求める
-			maxmasterkeypos=max(masterkeylist)
+		nf=len(tranfields)
+		if nf != NF:	# 欄数が変化したかまたは先頭行なら
+			NF=nf
+			keylist=make_keylist(rel_keylist)	# NF相対欄リストからNF値を使って実際の欄位置リストへ変換する
 			maxtrankeypos=max(keylist)
-			# キーが一致しなかったときのmaster側のdummy文字列を作成する
-			# master用dummyリストを作成
-			masterdummyfields=[]
-			for i in range(len(masterfilelines[0])):
-				masterdummyfields.append(dummy)
-			dummyfieldvalues=""
-			# masterの最大キー位置の前の非キーフィールドについてdummy文字列を作成
-			# （出力しない場合は次の4行を抑止する）
-			masterdummynonkeyfieldvalues=GetNonKeyFields(masterkeylist,masterdummyfields,maxmasterkeypos)
-			if len(masterdummynonkeyfieldvalues)>0:
-				dummyfieldvalues+= \
-				Separator.join(masterdummynonkeyfieldvalues[0:len(masterdummynonkeyfieldvalues)])+Separator
-			# masterの最大キー位置の後のフィールドについてdummy文字列を追加
-			dummyfieldvalues+=Separator.join(masterdummyfields[maxmasterkeypos:len(masterdummyfields)])+Separator
-		if not len(tranfields)==NF and linecount>1:
-			error("tranファイルのフィールド数が一定ではありません")
+			if linecount==0 or not abs_rel_mixed:	# 先頭行またはabs_rel_mixedがFalse（絶対欄位置指定かNF相対欄位置指定のみのいずれか）なら
+				masterkeylist=GetMasterKeylist(keylist)	# tranファイルにおけるキーの欄番号リストからmasterファイルにおける対応欄番号リストを得る
+				max_master_linecount=0	# masterの整列を確認した最終の行位置をresetする
+				# masterとtranの最大キー位置を求める
+				maxmasterkeypos=max(masterkeylist)
+				# masterの最大キー位置の前の非キー欄数と後の欄数をmaster最大欄数を用いて求める
+				MasterPreFieldNum,MasterAfterFieldNum=GetMasterPreAndAfterFieldNums(masterkeylist,maxmasterkeypos,maxmasterfieldnum)
+			else:	# 先頭行以外でabs_rel_mixedがTrue(（絶対欄位置指定かNF相対欄位置指定の混用）なら
+				# tranの欄数変化は受容しない
+				error("tranのフィールド数が一定ではありません。")
+
+		# tranのキーを得る
 		trankeyfieldvalues=GetKeyFieldValues(tranfields,keylist,Separator)
+		prev_masterkeyfieldvalues=""
+		master_linecount=0
+		# ここでtranのkey欄の値が昇順になっていることを確認する予定→まだ（2022年07月17日(日)15時37分26秒）→tranは整列を期待しないのでいらない（）
 		hitcount=0
+		# masterのloop
 		for masterfields in masterfilelines:	# masterの行（フィールドリスト）を見る
+			master_linecount+=1
+			# masterのキーを得る
 			masterkeyfieldvalues=GetKeyFieldValues(masterfields,masterkeylist,Separator)
+			# masterが非uniqueな昇順で整列していることを確認する
+			if master_linecount > max_master_linecount:	# まだ整列確認をしていない行位置のとき
+				if masterkeyfieldvalues < prev_masterkeyfieldvalues:
+					error("masterファイルのキーフィールドが「同値もある昇順」になっていません。")
+				max_master_linecount=master_linecount	# masterの整列を確認した最終の行位置
+			prev_masterkeyfieldvalues=masterkeyfieldvalues	# 次回の整列確認のためにmasterのキーを記憶する
 			# tranのキーとmasterのキーが一致したら
 			if trankeyfieldvalues==masterkeyfieldvalues:
 				hitcount+=1
 				# tranの最大キー位置まで出力
-				outputline=Separator.join(tranfields[0:maxtrankeypos])+Separator	# フィールドを空白区切りで出力する
+				outputfields=tranfields[0:maxtrankeypos+1]
 				# masterの最大キー位置の前の非キーフィールドを出力
 				# （出力しない場合は次の3行を抑止する）
-				masternonkeyfieldvalues=GetNonKeyFields(masterkeylist,masterfields,maxmasterkeypos)
+				masternonkeyfieldvalues=GetNonKeyFieldValues(masterkeylist,masterfields,maxmasterkeypos,Separator)
 				if len(masternonkeyfieldvalues)>0:
-					outputline+=Separator.join(masternonkeyfieldvalues[0:len(masternonkeyfieldvalues)])+Separator
+					outputfields+=[masternonkeyfieldvalues]
 				# masterの最大キー位置の後のフィールドを出力
-				outputline+=Separator.join(masterfields[maxmasterkeypos:len(masterfields)])+Separator
+				if maxmasterkeypos+1<len(masterfields):	# masterの最大キー位置の後にフィールドがあれば出力
+					outputfields+=masterfields[maxmasterkeypos+1:]
 				# tranの最大キー位置の後のフィールドを出力
-				outputline+=Separator.join(tranfields[maxtrankeypos:len(tranfields)])
-				print(outputline)
+				if maxtrankeypos+1<len(tranfields):	# tranの最大キー位置の後にフィールドがあれば出力
+					outputfields+=tranfields[maxtrankeypos+1:]
+				print(Separator.join(outputfields))	# 出力用の全フィールドを空白区切りで出力する
 			# 一致しなかったら
 			else:
 				if masterkeyfieldvalues>trankeyfieldvalues:
@@ -287,16 +383,17 @@ if __name__ == '__main__':
 		# tranのこの行がmasterのどの行ともキーが一致しなかったらmaster側からはdummyを出力する
 		if hitcount==0:
 			# tranの最大キー位置まで出力
-			outputline=Separator.join(tranfields[0:maxtrankeypos])+Separator	# フィールドを空白区切りで出力する
+			outputfields=tranfields[0:maxtrankeypos+1]
 			# dummy文字列を出力
-			# dummy文字列は
-				# masterの最大キー位置の前の非キーフィールドについてdummy文字列を出力
-				# masterの最大キー位置の後のフィールドについてdummy文字列を出力
-			# で作成されている
-			outputline+=dummyfieldvalues
+			# masterの最大キー位置の前の非キーフィールドについてdummy文字列を出力
+			# （出力しない場合は下の1行を抑止する）
+			outputfields+=[dummy]*MasterPreFieldNum
+			# masterの最大キー位置の後のフィールドについてdummy文字列を出力
+			outputfields+=[dummy]*MasterAfterFieldNum
 			# tranの最大キー位置の後のフィールドを出力
-			outputline+=Separator.join(tranfields[maxtrankeypos:len(tranfields)])
-			print(outputline.rstrip())
+			if maxtrankeypos+1<len(tranfields):	# tranの最大キー位置の後にフィールドがあれば出力
+				outputfields+=tranfields[maxtrankeypos+1:]
+			print(Separator.join(outputfields).rstrip())
 		linecount+=1
 
 	# masterファイルを閉じる
