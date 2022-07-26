@@ -5,9 +5,9 @@
 #|Usage   : overlay basefile overfile
 #|        : overlay -r basefile overfile
 #|        : overlay -f [-m<meta-str>] basefile overfile
-#|Version : Mon Mar 18 16:57:50 JST 2013
+#|Version : Tue Jul 26 14:00:30 JST 2022
 #|          UTF-8
-# Auther  : Nakamura Kazztaka(kaznak@gmail.com)
+#|Author  : Hinata Yanagi (h-yanagi@usp-lab.com)
 #
 
 set -Cu
@@ -82,7 +82,7 @@ for n in $(seq 1 "$#") ; do
     ERROR_CHECK	|| ERROR_EXIT "ERROR fatal $LINENO"
 
     [ "-" = "$1" ]	||
-	[ -f "$1" ]	||
+	[ -r "$1" ]	||
 	ERROR_EXIT "ERROR file $1 does not exist"
 
     mkfifo "$tmp-inf.fifo.$n"
