@@ -40,7 +40,7 @@ from decimal import Decimal
 def printUsage():
 	print("Usage    :", _usage, file=sys.stderr)
 	print("Version  :", _version, file=sys.stderr)
-	print("           ", _code, file=sys.stderr)
+	print("          ", _code, file=sys.stderr)
 	sys.exit(1)
 
 def die(message):

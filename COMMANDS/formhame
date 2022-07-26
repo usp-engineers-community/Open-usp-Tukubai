@@ -45,10 +45,10 @@ def die(msg):
 	sys.exit(1)
 
 def usage():
-	sys.stderr.write( "Usage     :%s\n" % _usage );
+	sys.stderr.write( "Usage     : %s\n" % _usage );
 	sys.stderr.write( "Option    %s\n" % _option );
-	sys.stderr.write( "Version   :%s\n" % _version );
-	sys.stderr.write( "	   %s\n" % _code );
+	sys.stderr.write( "Version   : %s\n" % _version );
+	sys.stderr.write( "            %s\n" % _code );
 	sys.exit(1)
 
 

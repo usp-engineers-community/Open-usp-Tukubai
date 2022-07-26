@@ -50,9 +50,9 @@ def error(msg, *arg):
 	sys.exit(1)
 
 def usage():
-	print( "Usage     :%s" % _usage, file=sys.stderr);
-	print( "Version   :%s" % _version, file=sys.stderr);
-	print( "	   %s" % _code, file=sys.stderr);
+	print( "Usage     : %s" % _usage, file=sys.stderr);
+	print( "Version   : %s" % _version, file=sys.stderr);
+	print( "            %s" % _code, file=sys.stderr);
 	sys.exit(1)
 
 #
