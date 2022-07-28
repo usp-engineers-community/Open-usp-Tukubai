@@ -12,7 +12,7 @@ Usage   : keycut [options] <filename> <file>
 Options : -d : キーの削除
         : -a : ファイル追記
         : -z : 圧縮
-Version : Thu Dec 15 13:46:38 JST 2011
+Version : Thu Jul 28 14:56:55 JST 2022
           (Version: zlib-1.2.3 )
 Edition : 1
 
@@ -160,6 +160,6 @@ $ cckeycut.c -lz -o /home/TOOLkeycut
 
 sorter(1)、マスタファイル(5)、トランザクションファイル(5)
 
-last modified: Fri Jul 15 15:42:38 JST 2022
+last modified: Thu Jul 28 14:57:44 JST 2022
 Contact us: uecinfo@usp-lab.com
 Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights
