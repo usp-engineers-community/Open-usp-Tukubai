@@ -4,7 +4,7 @@
 # sm2 サムアップツール（Open usp Tukubai版）
 # 
 # designed by Nobuaki Tounaka
-# written  by Masatomo Togashi
+# written  by Hinata Yanagi
 #
 # The MIT License
 #
@@ -30,9 +30,8 @@
 
 from __future__ import print_function
 
-_usage = "sm2 [+count] <k1> <k2> <s1> <s2> <file>"
-_version = "Wed Apr  2 19:22:38 JST 2014"
-_version = "Wed Oct 20 15:17:47 JST 2020"
+_usage = "sm2 [+count] <k1> <k2> <s1> <s2> [<file>]"
+_version = "Fri Jul 29 15:32:20 JST 2022"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
 _keypat = r'\d+|NF(-\d+)?$'
 

@@ -8,8 +8,8 @@ sm2 : キー単位での値の集計
 
 【書式】
 
-Usage   : sm2 [+count] <k1> <k2> <s1> <s2> <file>
-Version : Wed Apr  2 19:22:38 JST 2014
+Usage   : sm2 [+count] <k1> <k2> <s1> <s2> [<file>]
+Version : Fri Jul 29 15:32:20 JST 2022
 
 【説明】
 
@@ -111,6 +111,6 @@ $ ls -l directory | sm2 0 0 5 5
 
 kasan(1)、plus(1)、ratio(1)、sm4(1)、sm5(1)、ysum(1)
 
-last modified: 2014-01-13 16:01:13
+last modified: Fri Jul 29 15:44:45 JST 2022
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012-2014 Universal Shell Programming Laboratory All Rights
+Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights
