@@ -4,7 +4,7 @@
 # yarr 横アレー: レコードをフィールドへ変換（Open usp Tukubai版）
 #
 # designed by Nobuaki Tounaka
-# written  by Masatomo Togashi
+# written  by Hinata Yanagi
 #
 # The MIT License
 #
@@ -30,8 +30,8 @@
 
 from __future__ import print_function
 
-_usage = "yarr [num=<n>] [-<m>] <file>"
-_version = "Fri Nov 20 17:00:13 JST 2020"
+_usage = "yarr [num=<n>] [-<m>] [<file>]"
+_version = "Wed Aug  3 07:01:40 JST 2022"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4+, 3.1, 3.2/UTF-8)"
 
 import re
@@ -238,8 +238,7 @@ if __name__ == '__main__':
 	
 	###########################################
 	# 構文表示
-	if len(sys.argv) < 2: printUsage()
-	elif len(sys.argv) == 2:
+	if len(sys.argv) == 2:
 		if sys.argv[1] == '--help' or \
 		   sys.argv[1] == '--version':	printUsage()
 
@@ -266,7 +265,7 @@ if __name__ == '__main__':
 		else:				in_file_name = arg
 
 	if not in_file_name:
-		die("入力ファイルの指定がありません。")
+		in_file_name = "conIN$" if os.name == "nt" else "/dev/stdin"
 
 	in_file = getInFile(in_file_name)
 	sys.stdout = resetStdout()

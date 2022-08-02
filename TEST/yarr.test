@@ -295,6 +295,27 @@ diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST7 error"
 
 ###########################################
+#TEST8
+# オプションなしの場合は標準入力にデータを期待する。
+
+cat <<FIN  >$tmp-in
+あ
+い
+う
+E
+お
+FIN
+
+cat <<FIN >$tmp-ans
+あ い う E お
+FIN
+
+${com} <$tmp-in >$tmp-out
+
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST8 error"
+
+###########################################
 rm -f $tmp-*
 echo "${pythonversion} ${name}" OK
 exit 0
