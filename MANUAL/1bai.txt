@@ -18,8 +18,8 @@ Edition : 1
 
 指定したファイルの指定フィールドや指定した文字列の先頭の０を取り除きます。
 (小数点以下の後０も削除します)
-rオプションをつけると-1倍します。
-dオプションをつけると引数で指定した文字列に対する処理をします。
+-r オプションをつけると-1倍します。
+-d オプションをつけると引数で指定した文字列に対する処理をします。
 
 【例１】
 
@@ -118,6 +118,6 @@ b 98.45 100
 命名の由来
 対象の数字の文字列に１倍を掛けることにより０を取り除くため、1bai と命名されています。
 
-last modified: Fri Jul 15 16:30:41 JST 2022
+last modified: Tue Aug  2 18:14:27 JST 2022 
 Contact us: uecinfo@usp-lab.com
 Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights
