@@ -80,7 +80,7 @@ $
 
 -rオプションを使用すると、指定したフィールドの値(1970年1月1日0時0分0秒からの秒
 数)を通常の年月日時分秒の14桁の表記に変換する。年月日のみのフォーマットにする場
-合は、出力後awk(1)のsubstr()やself(1)で上8桁を切り出す。
+合は、出力後awk(1)のsubstr(-,-)やself(1)で上8桁を切り出す。
 
 $ cat data
 0001 0000007 20060201 117 8335 -145
@@ -134,6 +134,6 @@ $
 
 dayslash(1)、mdate(1)、yobi(1)
 
-last modified: Fri Jul 29 10:20:59 JST 2022
+last modified: Mon Aug  1 15:39:19 JST 2022
 Contact us: uecinfo@usp-lab.com
 Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights
