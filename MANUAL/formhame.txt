@@ -16,7 +16,7 @@ Edition : 1
 
 【説明】
 
-<html_template>ファイルの各種inputタグ(text、radio、checkbox、hidden)とtextarea
+<html_template>ファイルの各種inputタグ(text, radio,checkbox, hidden)とtextarea
 タグ、selectタグの部分に<data>ファイル(第1フィールド:タグ名、第2フィールド以降:
 値)で指定される値を挿入する。
 
@@ -105,6 +105,6 @@ name_pulldown pd2
 
 filehame(1)、mojihame(1)
 
-last modified: Fri Jul 15 16:43:33 JST 2022
+last modified: Mon Aug  1 16:43:39 JST 2022
 Contact us: uecinfo@usp-lab.com
 Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights
