@@ -2,16 +2,19 @@ Tukubaiオンラインコマンドマニュアル
 
 check_inlist_name
 
-＜名前＞
+【名前】
+
 check_inlist_name : name 形式データのリスト内存在チェックをする
 
-＜書式＞
+【書式】
+
 Usage   : check_inlist_name <check_file> <name_file>
 Option  : --through <string>
-Version : Tue May  7 16:12:54 JST 2013
+Version : Tue Nov 21 17:29:32 JST 2021
 Edition : 1
 
-＜説明＞
+【説明】
+
 <check_file> に記述されているタグ名とリスト名にしたがい、
 <name_file>の値がリストに存在しているかのチェックをします。
 <check_file> で複数のタグ名を「.」で区切って連接しタグ組として指定したときは
@@ -28,7 +31,8 @@ Edition : 1
 このオプションは繰り返し使って複数の<string>を指定することが
 できます。
 
-＜例１＞
+【例１】
+
 [usp1 usp@ ~]$ cat check
 A /tmp/OS_FILE      <-- タグ名とリストファイル名(絶対パスであること)
 B /tmp/ABC_FILE
@@ -54,7 +58,8 @@ B_003 /tmp/ABC_FILE
 [usp1 usp@ ~]$ echo $?
 1
 
-＜例２＞
+【例２】
+
 複数チェック
 [usp1 usp@ ~]$ cat check
 A.B list1   <-- dataファイル中の（連番が同じ）「A_nの値とB_nの値」の組がlist1ファイルにあるか
@@ -83,6 +88,6 @@ C list2
 [usp1 usp@ ~]$ echo $?
 1
 
-last modified: Fri Jul 15 16:36:13 JST 2022
+last modified: Thu Aug  4 17:27:11 JST 2022
 Contact us: uecinfo@usp-lab.com
 Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights
