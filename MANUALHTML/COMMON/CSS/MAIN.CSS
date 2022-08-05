@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012,2013 Universal Shell Programming Laboratoryratory
+ * Copyright (c) 2012-2022 Universal Shell Programming Laboratoryratory
  *
  * Permission is hereby granted, free of charge, to any person 
  * obtaining a copy of this software and associated documentation 
@@ -163,6 +163,11 @@ body {
   padding-bottom: 0.2em;
 }
 
+#main h4 {
+  margin: 0;
+  font-size: 80%;
+}
+
 #main blockquote {
   text-indent: 1.0em;
   line-height: 180%;
@@ -174,6 +179,11 @@ body {
 #main p {
   text-indent: 1.0em;
   line-height: 150%;
+  white-space: pre-line;
+}
+
+#main p > a:link {
+  margin: 0 0.5ex;
 }
 
 #main p.center {
@@ -257,6 +267,21 @@ body {
   font-size: 60%;
 }
 
+#main code {
+  margin: 0 1ex;
+  padding: 0 0.5ex;
+  font-family: "Consolas", "Courier New", monospace;
+  font-size: 90%;
+  background-color: #eee;
+}
+
+#main code.multiline {
+  margin-top: 1ex
+  display: inline-block;
+  vertical-align: top;
+  white-space: pre-wrap;
+}
+
 #main pre {
   font-family: "Consolas", "Courier New", monospace;
   font-size: 90%;
@@ -304,13 +329,13 @@ li.L0, li.L1, li.L2, li.L3, li.L5, li.L6, li.L7, li.L8 {
   text-overflow: ellipsis;
 }
 
-#main pre.cmd a 		{ color: #FFFFFF; text-decoration: none; }
-#main pre.cmd a:link 		{ color: #FFFFFF; }
-#main pre.cmd a:visited 	{ color: #FFFFFF; }
+#main pre.cmd a            { color: #FFFFFF; text-decoration: none; }
+#main pre.cmd a:link       { color: #FFFFFF; }
+#main pre.cmd a:visited    { color: #FFFFFF; }
 
-#main pre.source a		{ color: #FFFFFF; text-decoration: none; }
-#main pre.source a:link 	{ color: #FFFFFF; }
-#main pre.source a:visited 	{ color: #FFFFFF; }
+#main pre.source a         { color: #FFFFFF; text-decoration: none; }
+#main pre.source a:link    { color: #FFFFFF; }
+#main pre.source a:visited { color: #FFFFFF; }
 
 #main dl dt {
   margin-left: 2.0em;
@@ -341,6 +366,35 @@ li.L0, li.L1, li.L2, li.L3, li.L5, li.L6, li.L7, li.L8 {
   margin-right: 2.0em;
   margin-top: 0px;
   margin-bottom: 10px;
+}
+
+#main dl.layout {
+  margin: 0 0 1.5em 2em;
+  display: flex;
+}
+
+#main dl.layout > * {
+  margin: 0;
+  padding: 0 1ex;
+  display: block;
+  font-weight: normal;
+  line-height: 1.5em;
+}
+
+#main dl.layout > dt {
+  color: white;
+  background-color: #666;
+  border-top-left-radius: 3px;
+  border-bottom-left-radius: 3px;
+  box-shadow: 1px -1px 0 #666, 1px 1px 0 #666;
+}
+
+#main dl.layout > dd {
+  margin: 0 1ex 0 0;
+  border-top-right-radius: 3px;
+  border-bottom-right-radius: 3px;
+  background-color: white;
+  box-shadow: 1px -1px 0 #888, 1px 1px 0 #888;
 }
 
 #main dd ul {
@@ -758,7 +812,6 @@ float: left;
 }
 
 #main ul li {
-  list-style: none;
   font-size: 90%;
   line-height: 1.3em;
 }
