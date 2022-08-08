@@ -64,7 +64,7 @@ $
 
 -0を指定した場合にはファイルの隙間は追加されない。
 
-ycat -0 file1 file2
+$ ycat -0 file1 file2
 0000000 浜地______ 50 F0000000 91 59 20 76 54
 0000001 鈴田______ 50 F0000001 46 39 8  5  21
 0000003 杉山______ 26 F0000003 30 50 71 36 30
@@ -93,6 +93,6 @@ $ paste -d" " file1 file2 file3
 
 ctail(1)、getfirst(1)、getlast(1)、tcat(1)
 
-last modified: Fri Jul 15 16:28:40 JST 2022
+last modified: Fri Aug  5 17:22:54 JST 2022
 Contact us: uecinfo@usp-lab.com
 Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights
