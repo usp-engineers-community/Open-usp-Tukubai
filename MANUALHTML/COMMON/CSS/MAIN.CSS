@@ -276,13 +276,13 @@ body {
 }
 
 #main code.multiline {
-  margin-top: 1ex
   display: inline-block;
   vertical-align: top;
-  white-space: pre-wrap;
+  white-space: pre;
 }
 
 #main pre {
+  margin-left: 2em;
   font-family: "Consolas", "Courier New", monospace;
   font-size: 90%;
   overflow: auto;
@@ -825,6 +825,7 @@ float: left;
 #main ol li {
   font-size: 90%;
   line-height: 1.3em;
+  white-space: break-spaces;
 }
 
 #main ul.tableofcontents {
@@ -840,7 +841,7 @@ float: left;
 }
 
 #main ul.tableofcontents > li > ol {
-  margin-top: 0px;
+  margin: 0px;
   padding-left: 40px;
   font-weight: normal;
 }
@@ -924,10 +925,14 @@ float: left;
   text-align: right;
 }
 
-#main	a 		{ text-decoration: none; }
-#footer a		{ text-decoration: none; }
-#footer a:link		{ color: #000000; }
-#footer a:visited 	{ color: #000000; }
+#main a         { text-decoration: none; }
+#main a.command {
+	font-family: Courier;
+	text-decoration: underline;
+}
+#footer a           { text-decoration: none; }
+#footer a:link	    { color: #000000; }
+#footer a:visited   { color: #000000; }
 
 div#pagenavigator {
   text-align: center;
