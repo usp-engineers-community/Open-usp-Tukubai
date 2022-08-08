@@ -26,14 +26,18 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+# trick MAKEMANUAL into lettinng MAKEMANUAL see this file as as Python command.
+_version() {
+	:
+}
+
+_version = "Mon Aug  8 12:15:22 JST 2022"
+
 case $# in
 1)
 	;;
 *)
-	cat<<-EOF
-	usage:
-		man2 tukubai_cmd
-	EOF
+	echo "usage: man2 tukubai_cmd" >&2
 	exit 1
 	;;
 esac
