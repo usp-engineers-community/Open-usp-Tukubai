@@ -38,7 +38,7 @@ file>のリンクカウントを１増やすことを試み、成功したら、
 
 $ cat lock.sh
 #!/bin/bash
-
+ 
 if ulock lock; then
   #
   # 読み書きなどの処理
@@ -50,44 +50,44 @@ fi
 
 $ cat writelock.sh
 #!/bin/bash
-
+ 
 if ulock -w lock counter; then
-
+ 
   # 書き込み処理(例)
   up3 key=1 master tran > master.new
   mv master.new master
-
+ 
   rm -f lock
 fi
 
 $ cat readlock.sh
 #!/bin/bash
-
+ 
 ulock -r lock counter cat master
 
 
 【備考】 リードライトロックのアルゴリズム
 
--- ライトロック
-X-- 書き込みロックを取る。(アトミック)
-X-- カウンタ1まで待つ。
---- 書き込み処理
---- 書き込みロックをはずす。
+<ライトロック>
+  X-- 書き込みロックを取る。(アトミック)
+  X-- カウンタ1まで待つ。
+  --- 書き込み処理
+  --- 書き込みロックをはずす。
 
--- リードロック
-X-- カウンタを1足す。(アトミック)
-X-- 書き込みロックがないことを確認。ロックされていれば 1 減らして戻る。
-X-- 読むだけの処理
-X-- カウンタを1減らす (アトミック)
+<リードロック>
+  X-- カウンタを1足す。(アトミック)
+  X-- 書き込みロックがないことを確認。ロックされていれば 1 減らして戻る。
+  X-- 読むだけの処理
+  X-- カウンタを1減らす (アトミック)
 
 ulock では書き込みロックはハードリンクファイル生成の一意性を利用し、
 カウンタオペレーションは、ハードリンクファイルのリンク（一意）数を利
 用しています。ulock は上記アルゴリズムのうち、X の部分を実装していま
 す。
 
-lock-file counter-file とも NFS 上に作成すれば、各サーバーからのリー
+lock-file、counter-file とも NFS 上に作成すれば、各サーバーからのリー
 ドライトロックが実現します。
 
-last modified: Fri Jul 15 16:49:03 JST 2022
+last modified: Tue Aug  9 17:26:35 JST 2022
 Contact us: uecinfo@usp-lab.com
 Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights
