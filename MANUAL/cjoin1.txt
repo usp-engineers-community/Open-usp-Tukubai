@@ -29,9 +29,10 @@ masterの第1フィールドとtranの第<n>フィールドは整列されてい
 tranの第3、第4、第5フィールドを意味するようになる。
 またこの場合、masterのキーは第1、第2、第3フィールドとなる。
 key=3@5とすると第3、第5フィールドを意味する。
-行のフィールド数を意味するNFを使用してNFまたはNF-xの形でフィールド位置を指定することができる
+行のフィールド数を意味するNFを使用してNFまたはNF-xの形でフィールド位置を指定す
+ることができる。
 
-キー指定にひとつでも0があると全フィールドを指定したことになる
+キー指定にひとつでも0があると全フィールドを指定したことになる。
 
 +ng<fd>オプションを使うことで、一致した行を標準出力ファイルへ、一致しなかった行
 をファイルデスクリプタ<fd>のファイルへ出力することが可能。<fd>を省略した場合は
@@ -86,6 +87,6 @@ $ cat master | cjoin1 +ng key=1 - tran > ok 2> ng
 cjoin0(1)、cjoin1(1)、cjoin2(1)、join0(1)、join2(1)、loopj(1)、loopx(1)、up3(1)
 、マスタファイル(5)、トランザクションファイル(5)
 
-last modified: Fri Jul 15 16:37:49 JST 2022
+last modified: Thu Aug 11 05:37:48 JST 2022
 Contact us: uecinfo@usp-lab.com
 Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights
