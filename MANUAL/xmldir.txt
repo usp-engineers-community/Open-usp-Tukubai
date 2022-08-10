@@ -29,9 +29,6 @@ N 階層のパスの場合、インデックスは N 個となり、タグが繰
 
 -c<n> の場合、インデックスは前０埋め <n> 桁の数字になります。
 
-入力ファイルは xb コマンドで整形された XML ファイルを前提としていま
-す。
-
 【例１】 単純な例
 
 $ cat xml
@@ -124,6 +121,6 @@ $ xmldir -c3 /dir1/dir2/attributes xml
 
 rjson(1)
 
-last modified: Tue Jul 26 08:02:15 JST 2022
+last modified: Wed Aug 10 10:46:52 JST 2022
 Contact us: uecinfo@usp-lab.com
 Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights
