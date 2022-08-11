@@ -71,8 +71,21 @@ test: # シェル・スクリプトのみテストを実行する。
 			exit 1; \
 		fi; \
 	done; \
-	echo Tests are finished successfully. 
+	echo Tests are finished successfully.
 
+pdf: $(wildcard COMMANDS/*)
+	@type wkhtmltopdf 2>&1 > /dev/null || (echo wkhtmltopdf must be installed. >&2; exit 1)
+	@echo Let us make MANUALPDF from $$(awk '{print NF}' <<< "$+") documents.
+	 backcover=$$(mktemp).html;                                                                    \
+	 echo "$$PDF_BACKCOVER" | sed -e "s/<!--YEAR-->/$$(date +%Y)/" > "$${backcover}";              \
+	 last_updated=$$(git log --date=format-local:"%Y年%m月%d日" -1 --pretty=%cd COMMANDS);         \
+	 sed -e "s/<!--DATE-->/"$${last_updated}"/" <<< "$$PDF_COVER" |                                \
+	 wkhtmltopdf --enable-local-file-access --print-media-type --footer-center [page]              \
+	 	- $(addsuffix .html,$(addprefix MANUALHTML/,$(patsubst COMMANDS/%,%,$+)))                  \
+	 	"MANUALHTML/"{{tag,name,field}-format,{master,name,transaction}-file}.html "$${backcover}" \
+	 	MANUALPDF/all.pdf;                                                                         \
+	 rm "$${backcover}"
+	@echo completed!
 
 install:
 	${MKDIR} ${DESTDIR}${BINDIR}
@@ -167,5 +180,66 @@ package: clean
 
 clean:
 	rm -rf ${NAME}-${TODAY}*
+
+define PDF_COVER
+<meta charset="utf-8">
+<style>
+html {
+	text-align:  center;
+}
+
+body {
+	position: absolute;
+	top: 50%;
+	margin-top: -240px;
+	width: 100%;
+	height: 340px;
+}
+
+h1 {
+	font: 36px serif;
+	margin-bottom: 270px;
+}
+
+h2 {
+	font-weight: normal;
+	font-size: 20px;
+}
+
+h1 + h2 {
+	margin-bottom: 72px;
+}
+</style>
+<body>
+	<h1>Open usp Tukubaiコマンドマニュアル</h1>
+	<h2><!--DATE--></h2>
+	<h2>ユニバーサル・シェル・プログラミング研究所</h2>
+</body>
+endef
+
+define PDF_BACKCOVER
+<meta charset="utf-8">
+<style>
+html {
+	text-align:  center;
+}
+
+body {
+	position: absolute;
+	margin-top: -1.5em;
+	top: 50%;
+	width: 100%;
+	font-size: 14px;
+	line-height: 2em;
+}
+</style>
+<body>
+	Contact us: uecinfo@usp-lab.com<br>
+	Copyright &copy; 2012-<!--YEAR--> Universal Shell Programming Laboratory All Rights Reserved.
+</body>
+endef
+
+export PDF_COVER
+export PDF_BACKCOVER
 
 .PHONY: install test
