@@ -4,7 +4,7 @@ cap(1)
 
 【名前】
 
-cap 半角英数の小文字を大文字に変換する
+cap : 半角英数の小文字を大文字に変換する
 
 【書式】
 
@@ -45,6 +45,6 @@ $ cap -d japan
 JAPAN
 
 
-last modified: Tue Jul 26 08:05:21 JST 2022
+last modified: Thu Aug 11 10:19:55 JST 2022
 Contact us: uecinfo@usp-lab.com
 Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights

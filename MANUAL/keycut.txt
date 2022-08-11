@@ -13,7 +13,6 @@ Options : -d : キーの削除
         : -a : ファイル追記
         : -z : 圧縮
 Version : Thu Jul 28 14:56:55 JST 2022
-          (Version: zlib-1.2.3 )
 Edition : 1
 
 【説明】
@@ -143,14 +142,7 @@ $ gunzip < data.01.gz
 01 埼玉県 01 さいたま市 91 59 20 76 54
 $
 
-【備考1】
-
-keycut.cはzlibライブラリを使用している。コンパイル時は次のようにオプションが必
-要。
-
-$ cckeycut.c -lz -o /home/TOOLkeycut
-
-【備考2】
+【備考】
 
 -aオプションと-zオプションを併用したときは、すでに存在する圧縮ファイルに圧縮フ
 ァイルが追記される。生成されるファイルはgunzip(1)コマンドで展開できるが、仕様的
@@ -160,6 +152,6 @@ $ cckeycut.c -lz -o /home/TOOLkeycut
 
 sorter(1)、マスタファイル(5)、トランザクションファイル(5)
 
-last modified: Thu Jul 28 14:57:44 JST 2022
+last modified: Thu Aug 11 13:19:05 JST 2022
 Contact us: uecinfo@usp-lab.com
 Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights

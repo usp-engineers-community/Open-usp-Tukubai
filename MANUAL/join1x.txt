@@ -1,3 +1,5 @@
+Tukubaiオンラインコマンドマニュアル
+
 join1x(USP)
 
 【名前】
@@ -73,6 +75,6 @@ $ cat data
 2 大阪1 京橋
 2 大阪2 京橋
 
-last modified: Thu Jul 28 08:45:00 JST 2022
+last modified: Thu Aug 11 10:32:40 JST 2022
 Contact us: uecinfo@usp-lab.com
 Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights

@@ -114,7 +114,7 @@ $
 て最後に大計を出す、という処理が頻出する。こういった場合はsm2(1)、sm4(1)、sm5
 (1)を次のように多段に組み合わせて使用することが多い。
 
-cat data                |
+$ cat data              |
 sm2 1 6 7 NF            |       ←同一キーで集計
 sm4 1 4 5 6 7 NF        |       ←小計
 sm4 1 2 3 6 7 NF        |       ←中計
@@ -124,6 +124,6 @@ sm5 1 6 7 NF > result           ←大計を出力
 
 kasan(1)、plus(1)、ratio(1)、sm2(1)、sm4(1)、ysum(1)
 
-last modified: Fri Jul 15 15:42:38 JST 2022
+last modified: Mon Aug  8 12:27:37 JST 2022
 Contact us: uecinfo@usp-lab.com
 Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights
