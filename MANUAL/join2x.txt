@@ -1,3 +1,5 @@
+Tukubaiオンラインコマンドマニュアル
+
 join2x(USP)
 
 【名前】
@@ -76,6 +78,6 @@ $ cat data
 4 _ 博多
 4 _ 天神
 
-last modified: Thu Jul 28 08:45:00 JST 2022
+last modified: Thu Aug 11 10:32:43 JST 2022
 Contact us: uecinfo@usp-lab.com
 Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights
