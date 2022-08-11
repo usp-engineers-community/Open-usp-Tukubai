@@ -1,6 +1,6 @@
 ﻿               Universal Shell Programming Laboratory
                           info@usp-lab.com
-                             2022/07/25
+                             2022/08/11
  
 Open usp Tukubaiとは
 ====================
@@ -59,7 +59,6 @@ Open usp Tukubaiはスクリプト言語Pythonで開発されている。Python�
 - [UEC - usp engineers' community site](https://uec.usp-lab.com/)
 - USP MAGAZINE
 - 技術評論社 Software Design
-- 日経LINUX3月号
 
 
 ライセンスについて
