@@ -1,0 +1,412 @@
+#!/usr/bin/env bash -u
+#
+# MAKEMANUAL: MANUAL/*.txt から MANUALHTML を作成する
+#
+# : written by 柳 日向 (h-yanagi@usp-lab.com; 2022-08-11)
+#
+
+####################################################################
+#実行用環境変数の設定
+LANG=ja_JP.UTF-8
+
+####################################################################
+#ベースとなる一時ファイルの指定
+tmp=$(mktemp)
+exec 2> >(cat > /dev/stderr; rm "${tmp}"*)
+
+####################################################################
+#作業ディレクトリとコンテンツ区分の指定
+commands=COMMANDS
+dir=$(realpath .)
+
+if hash gawk; then
+	alias awk=gawk
+elif [ "$(uname)" = Darwin ]; then
+	echo "GNU awk is required." >&2
+	exit 1
+fi
+
+if ! hash tidy; then
+	echo '`tidy` command is required to tidy MANUALHTML up.' >&2
+	tidy() { cat "$1"; }
+fi
+
+ERROR_CHECK() {
+	if awk '{sum = 0; for (i = 1; i <= NF; i++) if ($(i) > 0) sum = 1} END {exit !sum}' <<< "${PIPESATUS[@]}"; then
+		echo  "An error occured." >&2
+		exit 1
+	fi
+}
+
+html2man() {
+	TARGET=${1}
+	OUT=MANUALHTML/${TARGET}.html
+	OUTDIR=${2}
+	
+	####################################################################
+	#テンプレートから基本コンテンツを生成
+	{
+		awk < ${dir}/MANUALHTML/COMMON/HTML/TEMPLATE.HTML '/^<!--CONTENTS_CONTENTS-->$/ {exit} 1' |
+		sed 's/<!--CONTENTS_TITLE-->/'"${TARGET} - "'/'
+
+		version=`
+			egrep 2> /dev/null "^_version = " "${dir}/COMMANDS/${TARGET}" |
+			cut -d" " -f 3-9                                              |
+			sed -e 's/^.\(.*\)./\1/'                                      `
+
+		commands_pattern=$(
+			find "${dir}/COMMANDS" -type f   |
+			xargs basename                   |
+			awk '
+			NR == 1 {printf $0; next}
+			{printf "|" $0}'
+		)
+
+		awk -vtmp="${tmp}" '
+			NR <= 2 {next}
+			/^last modified:/ {
+				sub(/^last modified: /, "");
+					# MANUAL/* の最終更新日時を $tmp-last-modified に書き込む。
+					print > (tmp "-lastmodified")
+					exit
+				} 1' "MANUAL/${TARGET}.txt"  |
+		awk  -vcommands_pattern="(${commands_pattern}|sorter)[(]1[)]" -vcommand="${TARGET}" '
+			function hyperlink_category5(content) {
+				content = gensub(/フィールド形式\(5\)/, "<a href=\"field-format.html\" class=\"command\">\\0</a>", "g", content)
+				content = gensub(/マスタファイル\(5\)/, "<a href=\"master-file.html\" class=\"command\">\\0</a>", "g", content)
+				content = gensub(/ネームファイル\(5\)/, "<a href=\"name-file.html\" class=\"command\">\\0</a>", "g", content)
+				content = gensub(/ネーム形式\(5\)/, "<a href=\"name-format.html\" class=\"command\">\\0</a>", "g", content)
+				content = gensub(/タグ形式\(5\)/, "<a href=\"tag-format.html\" class=\"command\">\\0</a>", "g", content)
+				content = gensub(/num=&lt;n&gt;/, "<code>\\0</code>", "g", content)
+				return gensub(/トランザクションファイル\(5\)/, "<a href=\"transaction-file.html\" class=\"command\">\\0</a>", "g", content)
+			}
+
+			function prettyprint(content) {
+				# `&lt;\/?タグ[^&lt;]*&gt;` は formhame のため。
+
+				if (match(content, /&lt;タグ \/&gt;|&lt;タグ&gt;|&lt;\/タグ&gt;|input type="checkbox"/)) {
+					return gensub(/&lt;タグ \/&gt;|&lt;タグ&gt;|&quot;.&quot;|&lt;\/タグ&gt;|(\w+ )?\w+=&quot;\w+&quot;/, "<code>\\0</code>", "g", content);
+				}
+
+				# スクリプト以外の複数行にわたるコード断片は multiline クラスを付加する。
+
+				if (match(content, /\n\n/)) {
+					return gensub(/\n*([-&;A-Za-z\\-][ -&*-~\n]*[!-&*-~])\n*/, "<code class=\"multiline\">\\1</code>", "g", content)
+				}
+
+				# コード断片に準じる用語。
+
+				content = gensub(/（/, "(",  "g", content)
+				content = gensub(/）/, ")",  "g", content)
+				content = gensub(/\s*(keycut\.c|'"${commands_pattern}"'|(lock|mime|counter)-file|&lt;(file|filename|(json|lock)-file|counter-file)&gt;|%0D%0A|NFS|NF(-[0-9x]+)?|-&lt;.&gt;|\\_|+(age|ng|yarr|[a-z])|\x27.{1,2}\x27|\\n|+&lt;n&gt;h|--|--?[a-z]+( &lt;[-a-z_]+&gt;)*|(&lt;\w+&gt;)+( +&lt;\w+&gt;)*|([0-9][\/@][0-9] ?)+|&quot;(.|NF)&quot;|(&quot;)?[a-z]+=([/0-9a-z;=@.]|&quot;|&lt;|&gt;|&amp;)*)|&lt;\w{5,}&gt;|awk[(]1\)|\x27..?\x27)\s*/, "<code>\\1</code>", "g", content)
+				content = hyperlink_category5(content)
+				content = gensub(/touch [(]1[)]/, "<a href=\"https://linuxjm.osdn.jp/html/gnumaniak/man1/touch.1.html\">\\0</a>", "g", content)
+				content = gensub(/([^0-9])([0-9]{6,})([^0-9])/, "\\1<code>\\2</code>\\3", "g", content)
+				content = gensub(/(\w)オプション/, "<code>\\1</code>オプション", "g", content)
+				content = gensub(/(^|[^-A-Za-z0-9])([-])([^-A-Za-z0-9&])/, "\\1<code>\\2</code>\\3", "g", content)
+
+				content = gensub(/<\x2Fcode><code>/, " ", "g", content)
+				content = gensub(/<\x2Fcode> /, "</code>", "g", content)
+				return content
+			}
+
+			FNR == 1 { sub(/\xef\xbb\xbf/, "") }
+
+			/^Version :/ {
+			  content = content "Version : '"${version}"'\n"
+			  next
+			}
+
+			function print_content() {
+				if (content == "") {
+					return
+				}
+
+				gsub(/&/, "\\&amp;", content);
+				gsub(/</, "\\&lt;", content);
+				gsub(/>/, "\\&gt;", content);
+				gsub(/"/, "\\&quot;", content);
+				gsub(/[ \t]+$/, "", content);
+
+				if (mode == "list" || mode == "prettyprint") {
+					printf "<pre class=\"%s\">%s</pre>\n", mode, content
+				} else if (mode == "unordered_list" || mode == "ordered_list") {
+					tag = mode =="unordered_list" ? "ul" : "ol"
+					print "	  <" tag ">"
+					split(content, items, /\s*\n\s*/)
+					label = ""
+
+					for (position = 0; position < length(items); position++) {
+						if (items[position] ~ /^\s+$/) {
+							continue
+						}
+
+						if (match(items[position], /^\s*([0-9]+)\.\s*(.*)\s*$/, matches)) {
+							if (label !~ /^\s*$/) {
+								printf "<li>%s</li>\n", prettyprint(label)
+							}
+							label = matches[2]
+						} else {
+							label = label items[position] "\n"
+						}
+					}
+
+					if (label !~ /^\s*$/) {
+						printf " <li>%s</li>\n", prettyprint(label)
+					}
+
+					print "</" tag ">"
+				} else {
+					content = gensub(/[ \t]+/, " ", "g", content)
+					content = gensub(/\n+/, "", "g", content)
+					content = gensub(/[(（] +([^)）]+) +[)）]/, "(\\1)", "g", content)
+					content = gensub(/ {2,}/, " ", "g", content)
+
+					if (content == "") {
+						next
+					}
+
+					if (name_has_occured) {
+						content = gensub(commands_pattern, "<a href=\"\\1.html\" class=\"command\">\\0</a>", "g", content)
+
+						if (match(content, /([-a-z0-9_]+)\(1\)|[ぁ-ん亜-熙]+\(5\)/)) {
+							content = hyperlink_category5(content)
+							content = gensub(/-?&lt;数値&gt;/, "<code>\\0</code>","g", content)
+							content = gensub(/gunzip *[(]1[)]/, "<a href=\"https://linuxjm.osdn.jp/html/GNU_gzip/man1/zcat.1.html\">\\0</a>", "g", content)
+							content = gensub(/paste *[(]1[)]/, "<a href=\"https://linuxjm.osdn.jp/html/gnumaniak/man1/paste.1.html\">\\0</a>", "g", content)
+							content = gensub(/(^|\n+)([-&;A-Za-z][ !#-&*-;=?-~(]*[!#-&*-;=?-~])\n*/, "<code>\\2</code>", "g", content)
+							content = gensub(/<\x2Fcode> /, "</code>", "g", content)
+						} else {
+							content = gensub(/\n+/, "", "g", content)
+							content = prettyprint(content);
+						}
+					} else {
+						content = gensub(/\s*\n+\s*/, "", "g", content)
+						content = gensub(/\n*([-&;0-9A-Za-z][!-&*-~]*) :/, "<code>\\1</code> : ", "g", content)
+					}
+	
+					name_has_occured = 1
+					printf "<p>%s</p>\n", gensub(/\n+/, "", "g", content)
+				}
+	
+				content = ""
+				mode = ""
+			}
+
+			NR == 1 {print_content(); printf "<h2>%s</h2>\n", $0; next}
+			$0 ~ /^Usage +:/ {mode = "list"}
+
+			command == "check_cmp_name" && $0 ~ /^    / {
+				if (mode != "check_cmp_name") {
+					print "<pre>"
+				}
+
+				mode = "check_cmp_name"
+				print $0
+				next
+			}
+			
+			command == "formhame" && $0 ~ /^【備考】$/ {
+				inside_note = 1
+			}
+
+			command == "formhame" && inside_note && $0 ~ /^name_(radio|checkbox|pulldown) [a-z0-9]+$/ {
+				if (mode != "formhame") {
+					print "<pre style=\"margin-left: 3.5em;\">"
+				}
+
+				mode = "formhame"
+				print $0
+				next
+			}
+
+			command == "getfirst" && $0 ~ /^【注意】/ {
+				inside_note = 1
+			}
+
+			command == "getfirst" && inside_note && $0 ~ /^0000007/{
+				if (mode != "getfirst") {
+					print "<pre style=\"margin-left: 3.5em;\">"
+				}
+
+				mode = "getfirst"
+				print $0
+				next
+			}
+
+			command == "msort" && $0 ~ /^  msort/ { 
+				if (mode != "msort") {
+					print "<pre style=\"margin-left: 3.5em;\">"
+				}
+
+				mode  = "msort"
+				print $0
+				next
+			}
+
+			command == "ulock" && match($0, /^  (.--) (.+)$/, matches) {
+				print "<p><em style=\"margin-right: 0.5em; letter-spacing: 0.5em; font-family: monospace;\">" matches[1] "</em>" matches[2]"</p>"
+				next
+			}
+
+			/^([a-z]+) コマンド ＝ (.+)$/ {
+				print "<p><code>" $1 "</code> コマンド: " $4 "</p>"
+				next
+			}
+
+			/^-([a-z]{4}) +[-A-Za-z0-9]+ *から *[-A-Za-z0-9]+$/ {
+				if (mode != "uconv") {
+					mode = "uconv"
+					print "<ul>"
+				}
+
+				print "<li><code>" $1 "</code>: <code>" $2 "</code> から <code>" $4 "</code></li>"
+				next
+			}
+
+			substr($0, 0, 1) == "$"        ||
+			$0 ~ /^   [^ ]/                ||
+			substr($0, 0, 4) == "[usp"     ||
+			substr($0, 0, 7) =="before1"   ||
+			substr($0, 0, 8) == "yyyymmdd" {
+				if (mode == "" || mode == "unordered_list" || mode == "ordered_list") {
+					print_content()
+				}
+
+				mode = "prettyprint"
+			}
+
+			/^【.+】.*$/ {
+				print_content()
+				gsub(/&/, "\\&amp;");
+				gsub(/</, "\\&lt;");
+				gsub(/</, "\\&gt;");
+				printf "<h3>%s</h3>\n", $0
+				mode = ""
+				next
+			}
+
+			match($0, /^<([亜-熙ぁ-んァ-ヶ].+)>$/, title) {
+				print_content()
+				printf "<h4>%s</h4>\n", title[1]
+				mode = ""
+				next
+			}
+	
+			/^[ \t]*1:.+$/ {
+				print_content()
+
+				print "<dl class=\"layout\">"
+
+				for (position = 1; position <= NF; position++) {
+					split($(position), label, ":")
+					printf "<dt>%s</dt>\n",  label[1]
+					printf "<dd>%s</dd>\n",  label[2]
+				}
+
+				print "</dl>"
+
+				next
+			}
+
+			/^[ \t]+1\..+$/ {
+				mode = "ordered_list"
+			}
+
+			NF == 0 && (                 \
+				mode == ""               ||
+				mode == "prettyprint"    ||
+				mode == "unordered_list" ||
+				mode == "ordered_list"   ||
+				mode == "formhame"       ||
+				mode == "getfirst"       ||
+				mode == "msort"          ||
+				mode == "uconv"          ) {
+
+				print_content()
+
+				if (mode == "ordered_list") {
+					print "</ol>"
+				}
+
+				if (mode == "unordered_list" || mode =="uconv") {
+					print "</ul>"
+				}
+
+				if (mode == "formhame" ||
+				    mode == "getfirst" ||
+				    mode == "msort") {
+					print "</pre>"
+				}
+
+				mode = ""
+				next
+			}
+
+			mode != "" {
+				content = content $0 "\n"
+				next
+			}
+
+			mode == "" || mode == "unordered_list" || mode == "ordered_list" {
+				content = content $0 "\n"
+			}
+
+			END {print_content()}'
+
+		sed -n '/CONTENTS_CONTENTS/,$p' ${dir}/MANUALHTML/COMMON/HTML/TEMPLATE.HTML |
+		tail -n+2                                                                   |
+		sed 's/<!--YEAR-->/'"$(date +%Y)"'/'                      |
+		sed 's/<!--LASTMODIFIED-->/'"$(
+			egrep '^last modified:' "${dir}/MANUAL/${TARGET}.txt" |
+			cut -d " " -f3-                                       )"'/'
+
+		ERROR_CHECK
+	}                                                                               |
+
+	# マニュアル・メニューを作成する。
+	awk -vcommands_string="$(find ${dir}/COMMANDS -type f | xargs basename | sort -u)" '
+		 /^<!-- CONTENTS_MENU -->/ {
+			template = ""
+	
+			for (position = 4; position <= NF; position++) {
+				template = template $(position) (position < NF ? " " : "")
+			}
+
+			split(commands_string, commands, "\n")
+
+			printf("              ")
+
+			for (position = 1; position <= length(commands); position++) {
+				printf(template "\n              ", commands[position], commands[position])
+			}
+
+			for (position = 0; position <= NF % 3 - 2; position++) {
+				print "<li></li>\n"
+			}
+
+			next
+		 }
+
+	1' > "${OUTDIR}/${OUT}"
+}
+
+ERROR_CHECK
+
+####################################################################
+#コンテンツ出力
+
+mkdir -p "${dir}"
+
+if [ "$#" -eq 1 ]; then
+	# 単一コマンドのマニュアルを作成する
+
+	html2man "$1" "${dir}"
+else
+	# アルファベット順にコマンド一覧を列挙する
+
+	for command in $(find -s ${commands} -type f | xargs basename); do
+		echo building a MANUALHTML of ${command} >&2
+		html2man "${command}" "${dir}"
+	done
+fi
