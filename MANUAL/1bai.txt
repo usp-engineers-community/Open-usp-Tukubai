@@ -1,6 +1,6 @@
 Tukubaiオンラインコマンドマニュアル
 
-1bai
+1bai(1)
 
 【名前】
 
@@ -118,6 +118,6 @@ b 98.45 100
 命名の由来
 対象の数字の文字列に１倍を掛けることにより０を取り除くため、1bai と命名されています。
 
-last modified: Tue Aug  2 18:14:27 JST 2022 
+last modified: Fri Aug 12 12:56:05 JST 2022 
 Contact us: uecinfo@usp-lab.com
 Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights

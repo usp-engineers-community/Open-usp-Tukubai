@@ -128,29 +128,30 @@
     <div id="main">
       <h1>Tukubaiオンラインコマンドマニュアル</h1>
 
-<h2>【名前】</h2>
-<p><code>cjoin2x</code> :  キーの値が同じレコードが複数存在するファイル同士を連結。</p>
+<h2>cjoin1x(1)</h2>
+<h3>【名前】</h3>
+<p><code>cjoin1x</code> :  キーの値が同じレコードが複数存在するファイル同士を連結。</p>
 <h3>【書式】</h3>
-<pre class="list">Usage   : cjoin2x [+&lt;string&gt;] key=&lt;n&gt; &lt;master&gt; [&lt;tran&gt;]
+<pre class="list">Usage   : cjoin1x [+ng[&lt;fd&gt;]] key=&lt;n&gt; &lt;master&gt; [&lt;tran&gt;]
 Version : Fri Jul 22 01:09:14 JST 2022
 
 </pre>
 <h3>【説明】</h3>
-<p>テキストファイル<code>&lt;tran&gt;</code>の<code>&quot;key=&lt;n&gt;&quot;</code>で指定したキーフィールドがマスターファイル<code>&lt;master&gt;</code>の第１フィールド(キーフィールド)とマッチした行を<code>&lt;tran&gt;</code>から抽出して、<code>&lt;master&gt;</code>の情報を連結して出力します。マッしない行は、ダミーデータ<code>&quot;_&quot;</code>をフィールド数分だけ結合して出力します。ダミーデータは指定することもできます。</p>
+<p>テキストファイル<code>&lt;tran&gt;</code>の<code>&quot;key=&lt;n&gt;&quot;</code>で指定したキーフィールドがマスターファイル<code>&lt;master&gt;</code>の第１フィールド(キーフィールド)とマッチした行のみを<code>&lt;tran&gt;</code>から抽出して、<code>&lt;master&gt;</code>の情報を連結して出力します。連結は<code>&lt;tran&gt;</code>のキーフィールドの直後に<code>&lt;master&gt;</code>の内容のうちキーフィールド以外を挿入する形で行われます。</p>
 <p>複数のキーフィールドがある場合、<code>&lt;master&gt;</code>のキーフィールドは、<code>&lt;tran&gt;</code>のキーフィールドと同じ並びで、最小フィールドが１となるようスライドさせたキーフィールドとなります。例えば、<code>key=3/5</code>のときは、並び＝３フィールド連続したキー、なので、<code>&lt;master&gt;</code>は１から３連続したフィールド、つまり、第１から第３フィールドがキーとなります。</p>
 <p>masterまたはtranに<code>-</code>を指定すると標準入力を使用する。tranが無指定の場合には標準入力を使用する。</p>
 <p><code>&lt;master&gt;</code>の第１フィールドについては必ず昇順でソートされていることが条件になります。</p>
-<p><code>&lt;master&gt;</code>が空ファイル(0バイト)の場合はエラーになります。</p>
-<p><code>cjoin2</code>との違いは、マスターファイルのキーフィールドの値が同一のレコードが複数存在できる点です。マスターとトランザクションファイルのキーフィールド値が同一のレコード同士を総掛けで連結して出力します。</p>
+<p><code>+ng</code>オプションをつけると、一致した行を標準出力ファイルへ、一致しなかった行をファイルディスクリプタ<code>&lt;fd&gt;</code>のファイルへ出力する。<code>&lt;fd&gt;</code>を省略した場合は標準エラー出力ファイルへ出力する。</p>
+<p><code>cjoin1</code>との違いは、マスターファイルのキーフィールドの値が同一のレコードが複数存在できる点です。マスターとトランザクションファイルのキーフィールド値が同一のレコード同士を総掛けで連結して出力します。</p>
 <h3>【例１】</h3>
-<p>(マスターファイル：master)</p>
+<p>(マスター：master)</p>
 <pre class="prettyprint">$ cat master
 1 東京1
 1 東京2
 2 大阪1
 2 大阪2
 </pre>
-<p>(トランザクションファイル：tran)</p>
+<p>(トランザクション：tran)</p>
 <pre class="prettyprint">$ cat tran
 3 栄
 2 京橋
@@ -163,27 +164,22 @@ Version : Fri Jul 22 01:09:14 JST 2022
 2 梅田
 4 博多
 </pre>
-<pre class="prettyprint">$ cjoin2x key=1 master tran &gt;data
+<pre class="prettyprint">$ cjoin1x key=1 master tran &gt; data
 $ cat data
-3 _ 栄
 2 大阪1 京橋
 2 大阪2 京橋
-3 _ 金山
 1 東京1 上野
 1 東京2 上野
 1 東京1 新宿
 1 東京2 新宿
-4 _ 天神
 2 大阪1 難波
 2 大阪2 難波
-3 _ 熱田
 2 大阪1 梅田
 2 大阪2 梅田
-4 _ 博多
 </pre>
     </div>
 
-    <div id="lastmodified">Last modified: Thu Jul 28 08:45:00 JST 2022</div>
+    <div id="lastmodified">Last modified: Fri Aug 12 19:24:01 JST 2022</div>
 
     <div id="footer">Contact us: uecinfo@usp-lab.com<br>Copyright &copy; 2012-2022 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
   </div>
