@@ -1,6 +1,6 @@
 Tukubaiオンラインコマンドマニュアル
 
-block_getlast
+block_getlast(1)
 
 【名前】
 
@@ -46,6 +46,6 @@ $ cat result
 0001 3 F 25 20081205
 0002 1 H 80 20081208
 
-last modified: Wed Aug  3 07:10:40 JST 2022
+last modified: Fri Aug 12 12:56:05 JST 2022
 Contact us: uecinfo@usp-lab.com
 Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights

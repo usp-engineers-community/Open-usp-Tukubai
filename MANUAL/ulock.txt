@@ -1,6 +1,6 @@
 Tukubaiオンラインコマンドマニュアル
 
-ulock
+ulock(1)
 
 【名前】
 
@@ -88,6 +88,6 @@ ulock では書き込みロックはハードリンクファイル生成の一�
 lock-file、counter-file とも NFS 上に作成すれば、各サーバーからのリー
 ドライトロックが実現します。
 
-last modified: Tue Aug  9 17:26:35 JST 2022
+last modified: Fri Aug 12 12:56:05 JST 2022
 Contact us: uecinfo@usp-lab.com
 Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights

@@ -1,6 +1,6 @@
 Tukubaiオンラインコマンドマニュアル
 
-isdate
+isdate(1)
 
 【名前】
 
@@ -41,6 +41,6 @@ $ echo $?
 ユリウス歴からグレゴリオ歴に移行した月で差分を合わせるために
 日付がとんでいる。($ cal 9 1752 で確認できる)
 
-last modified: Thu Aug 11 10:29:11 JST 2022
+last modified: Fri Aug 12 12:56:05 JST 2022
 Contact us: uecinfo@usp-lab.com
 Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights

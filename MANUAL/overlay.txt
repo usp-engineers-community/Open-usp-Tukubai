@@ -1,6 +1,6 @@
 Tukubaiオンラインコマンドマニュアル
 
-overlay
+overlay(1)
 
 【名前】
 
@@ -78,6 +78,6 @@ $ overlay -f base over
 1 x 3 y
 a b w z
 
-last modified: Fri Jul 15 16:46:15 JST 2022
+last modified: Fri Aug 12 12:56:05 JST 2022
 Contact us: uecinfo@usp-lab.com
 Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights

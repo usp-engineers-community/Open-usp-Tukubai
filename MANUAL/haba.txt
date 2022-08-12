@@ -1,6 +1,6 @@
 Tukubaiオンラインコマンドマニュアル
 
-haba
+haba(1)
 
 【名前】 
 
@@ -76,6 +76,6 @@ $ LANG=C awk '{print length($0)}' data <-- バイト数がでる。
 6
 12
 
-last modified: Fri Jul 15 15:42:38 JST 2022
+last modified: Fri Aug 12 12:56:05 JST 2022
 Contact us: uecinfo@usp-lab.com
 Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights
