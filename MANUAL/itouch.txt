@@ -3,15 +3,18 @@ Tukubaiオンラインコマンドマニュアル
 itouch(1)
 
 【名前】
+
 itouch : ファイルの初期化を行う
 
 【書式】
+
 Usage   : itouch [-<n>] "<string>" <file1> <file2>...
         : itouch [-<n>] -f <file> <file1> <file2>...
 Version : Thu Aug 20 20:30:32 JST 2015 
 Edition : 1
 
 【説明】
+
 指定ファイルが存在しない、あるいは０バイトならば、<string>
 あるいは <file> でファイルの中身を初期化します。
 -<n> で数字を指定すると<n>行分の<string>あるいは<n>回分の
@@ -21,6 +24,7 @@ Edition : 1
 します。
 
 【例１】
+
 $ cat file
 cat: file: No such file or directory  <-- ファイルが存在しないか０バ
                                           イトの場合
@@ -34,6 +38,7 @@ $ cat file
 000 000 0
 
 【例２】
+
 $ : > file
 $ itouch -3 '000 000 0' file          <-- ３行初期化
 $ cat file
@@ -42,6 +47,7 @@ $ cat file
 000 000 0
 
 【例３】
+
 $ : > file
 $ itouch 'a\nb\nc' file               <-- '\n' は改行に置換される
 $ cat file
@@ -50,6 +56,7 @@ b
 c
 
 【例４】
+
 $ cat file1
 $ cat file1 | itouch '000 0' - > result  <-- 標準入力から０バイト
 $ cat result                                 ファイルを読む
@@ -61,6 +68,7 @@ $ cat result                                 ファイルを読む
 ABC D
 
 【例５】
+
 $ : > file
 $ echo abc > init       <-- 初期化用のファイルを準備する
 $ itouch -f init file   <-- 初期化ファイル init で file を初期化する
@@ -71,6 +79,6 @@ abc
 
 touch (1)
 
-last modified: Fri Jul 15 15:42:38 JST 2022
+last modified: Sat Aug 13 12:25:02 JST 2022
 Contact us: uecinfo@usp-lab.com
 Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights
