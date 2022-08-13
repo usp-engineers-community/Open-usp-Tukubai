@@ -134,32 +134,27 @@
 <h3>【書式】</h3>
 <pre class="list">Usage   : exist [-v] &lt;file1&gt; &lt;file2&gt; ...
 Version : Fri Oct 21 11:26:06 JST 2011
-Edition : 1
-
-</pre>
+Edition : 1</pre>
 <h3>【説明】</h3>
 <p><code>&lt;file1&gt; &lt;file2&gt;</code>... すべてのファイルが存在すれば正常終了、それ以外はエラー終了します。</p>
 <h3>【例１】</h3>
 <pre class="prettyprint">$ touch file.{1..5}
 $ exist file.{1..5} &amp;&amp; echo ok &gt; result
 $ cat result
-ok
-</pre>
+ok</pre>
 <h3>【例２】</h3>
 <pre class="prettyprint">$ touch file.{1..5}
 $ exist file.{1..6} || echo ng &gt; result  &lt;-- file.6 は無いのでエラー
 $ cat result
-ng
-</pre>
+ng</pre>
 <h3>【例３】</h3>
 <p>ワイルドカードの展開に成功したら正常終了します。</p>
 <pre class="prettyprint">$ touch a{1..5}
 $ exist a* &amp;&amp; echo ok &gt; result  &lt;-- &quot;a&quot; から始まるファイル名があれば成功
-$ cat result
-</pre>
+$ cat result</pre>
     </div>
 
-    <div id="lastmodified">Last modified: Fri Jul 15 16:42:11 JST 2022</div>
+    <div id="lastmodified">Last modified: Sat Aug 13 12:25:02 JST 2022</div>
 
     <div id="footer">Contact us: uecinfo@usp-lab.com<br>Copyright &copy; 2012-2022 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
   </div>

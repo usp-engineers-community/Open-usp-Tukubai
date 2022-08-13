@@ -136,9 +136,7 @@
         : ctail n &lt;file&gt;
         : ctail -&lt;n&gt;c &lt;file&gt;
 Version : Wed May 20 04:47:48 JST 2020
-Edition : 1
-
-</pre>
+Edition : 1</pre>
 <h3>【説明】</h3>
 <p>引数のファイルまたは標準入力のテキストデータから、引数<code>-n</code>(またはn)で指定した行数の末尾行を除いて標準出力に出力する。</p>
 <h3>【例】ファイルの末尾3行を削って表示する。</h3>
@@ -152,8 +150,7 @@ Edition : 1
 007 四国
 008 九州
 009 沖縄
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ ctail -3 data &gt; data2
 $ cat data2
 001 北海道
@@ -162,17 +159,14 @@ $ cat data2
 004 中部
 005 近畿
 006 中部
-$
-</pre>
+$</pre>
 <h3>【例2】ファイルの末尾nバイトを削る</h3>
 <pre class="prettyprint">$ echo -n abcde | ctail -1c
 abcd
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ echo -n abcde | ctail -2c
 abc
-$
-</pre>
+$</pre>
 <h3>【関連項目】</h3>
 <p><a href="getfirst.html" class="command">getfirst(1)</a>、<a href="getlast.html" class="command">getlast(1)</a>、<a href="tcat.html" class="command">tcat(1)</a>、<a href="ycat.html" class="command">ycat(1)</a></p>
     </div>

@@ -134,20 +134,16 @@
 <h3>【書式】</h3>
 <pre class="list">Usage   : isdate &lt;date&gt;
 Version : Wed May 20 04:47:48 JST 2020
-Edition : 1
-
-</pre>
+Edition : 1</pre>
 <h3>【説明】</h3>
 <p>引数の８桁日付が存在する日付であれば正常終了し、そうでなければ、異常終了(ステータス１)する。</p>
 <h3>【例】</h3>
 <pre class="prettyprint">$ isdate 20090101
 $ echo $?
-0
-</pre>
+0</pre>
 <pre class="prettyprint">$ isdate 20090199
 $ echo $?
-1
-</pre>
+1</pre>
 <h3>【備考】</h3>
 <p>閏年について ４で割れる年は閏年。(２月は２９日まで) ただし１００で割れる年は、閏年でない。(２月は２８日まで) さらに、ただし４００で割れる年は閏年。(２月は２９日まで)</p>
 <h3>【バグ】</h3>

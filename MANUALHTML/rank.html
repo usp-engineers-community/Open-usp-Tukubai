@@ -134,9 +134,7 @@
 <h3>【書式】</h3>
 <pre class="list">Usage   : rank ref=&lt;ref&gt; key=&lt;key&gt; &lt;file&gt;
 Version : Fri Jul 15 16:18:04 JST 2022
-Edition : 1
-
-</pre>
+Edition : 1</pre>
 <h3>【説明】</h3>
 <p>fileの各行に階数を追加する。<code>ref=&lt;ref&gt;</code>で参照キーフィールドを指定した場合、参照キーフィールドが変化した段階で階数を1に初期化する。<code>key=&lt;key&gt;</code>で値フィールドを指定した場合、値が同じ間は同じ階数を追加する。<code>&lt;file&gt;</code>として<code>-</code>を指定すると標準入力を使用する。<code>ref=</code>指定または<code>key=</code>指定があるときは<code>&lt;file&gt;</code>を省略して標準入力を使用する。</p>
 <h3>【例1】基本パターン</h3>
@@ -150,8 +148,7 @@ USA BOB_______ 25
 USA GEROGE____ 29
 USA SAM_______ 29
 USA TOM_______ 35
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ rank data
 1 JPN 杉山______ 26
 2 JPN 崎村______ 27
@@ -161,8 +158,7 @@ $
 6 USA GEROGE____ 29
 7 USA SAM_______ 29
 8 USA TOM_______ 35
-$
-</pre>
+$</pre>
 <h3>【例2】ref=指定</h3>
 <p><code>ref=&lt;ref&gt;</code>で参照フィールドを指定したときは、参照フィールドが変化した行で、階数を1に初期化する。<code>ref=1/2 ref=3@2/5</code>などの連続・不連続のフィールドを指定することも可能。</p>
 <pre class="prettyprint">$ rank ref=1 data
@@ -174,8 +170,7 @@ $
 2 USA GEROGE____ 29
 3 USA SAM_______ 29
 4 USA TOM_______ 35
-$
-</pre>
+$</pre>
 <h3>【例3】key指定</h3>
 <p><code>key=&lt;key&gt;</code>で値フィールドを1つだけ指定できる。この場合、値が同じフィールドを持つ行には同じ階数が追加される。次の行には、はじめから数えた階数が追加される。</p>
 <pre class="prettyprint">$ rank key=3 data
@@ -187,8 +182,7 @@ $
 6 USA GEROGE____ 29
 6 USA SAM_______ 29
 8 USA TOM_______ 35
-$
-</pre>
+$</pre>
 <h3>【例4】refとkey指定</h3>
 <p>参照キーが変化するところで、行番号が初期化され、かつ同じ値フィールドを持つ行には同じ階数が追加される。</p>
 <pre class="prettyprint">$ rank ref=1 key=3 data
@@ -200,8 +194,7 @@ $
 2 USA GEROGE____ 29
 2 USA SAM_______ 29
 4 USA TOM_______ 35
-$
-</pre>
+$</pre>
 <h3>【注意】</h3>
 <p>入力ファイルが<code>-</code>あるいは指定がない場合には、標準入力のデータが使用される。</p>
 <p>同じ階数を追加するかどうかは、値が文字列として同じかどうかで判断しており、数字としては判定していない。</p>

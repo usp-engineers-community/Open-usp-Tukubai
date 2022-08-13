@@ -134,9 +134,7 @@
 <h3>【書式】</h3>
 <pre class="list">Usage   : gyo [-f] &lt;file&gt; ...
 Version : Wed May 20 04:47:48 JST 2020
-Edition : 1
-
-</pre>
+Edition : 1</pre>
 <h3>【説明】</h3>
 <p>引数のファイルまたは標準入力のテキストデータの行数(行数)をカウントして出力する。<code>&lt;file&gt;</code>として<code>-</code>を指定すると標準入力を使用する。</p>
 <h3>【例1】</h3>
@@ -147,54 +145,46 @@ Edition : 1
 0000004 白土______ 40 M 58 71 20 10 6
 0000005 崎村______ 50 F 82 79 16 21 80
 0000007 梶川______ 42 F 50 2  33 15 62
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ gyo data
 6
-$
-</pre>
+$</pre>
 <h3>【例2】</h3>
 <p>複数のファイルの行数を一度にカウントできる。</p>
 <pre class="prettyprint">$ cat data1
 1 file1
 2 file1
 3 file1
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ cat data2
 1 file2
 2 file2
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ cat data3
 1 file3
 2 file3
 3 file3
 4 file3
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ gyo data1 data2 data3
 3
 2
 4
-$
-</pre>
+$</pre>
 <h3>【例3】</h3>
 <p>&quot;<code>-f</code>&quot;オプションを使用するとファイル名と行数をそれぞれ表示する。</p>
 <pre class="prettyprint">$ gyo -f data1 data2 data3
 data1 3
 data2 2
 data3 4
-$
-</pre>
+$</pre>
 <h3>【備考】</h3>
 <p>ファイル名に <code>-</code>を指定すると標準入力ファイルを期待する。</p>
 <pre class="prettyprint">$ cat data2 |  gyo -f data1 - data3
 data1 3
 data2 2
 data3 4
-$
-</pre>
+$</pre>
 <h3>【関連項目】</h3>
 <p><a href="count.html" class="command">count(1)</a>、<a href="juni.html" class="command">juni(1)</a>、<a href="rank.html" class="command">rank(1)</a>、<a href="retu.html" class="command">retu(1)</a></p>
     </div>

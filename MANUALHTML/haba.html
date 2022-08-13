@@ -134,9 +134,7 @@
 <h3>【書式】</h3>
 <pre class="list">Usage   : haba [-vf] &lt;file1&gt; &lt;file2&gt;...
 Version : Wed May 20 04:47:48 JST 2020
-Edition : 1
-
-</pre>
+Edition : 1</pre>
 <h3>【説明】</h3>
 <p>半角文字の表示幅を１として、引数のファイルの表示幅を出します。ファイルは複数指定できます。(註) 半角オーバ－ライン「‾」(U+203e)は表示幅は１(半角幅)と判定され、 テキストエディター等でも半角幅で表示されるが、 コマンド実行をするウィンドウによっては表字幅２(全角幅)で表示されることがある。</p>
 <h3>【例１】</h3>
@@ -145,20 +143,17 @@ Edition : 1
 1234
 東京
 ｵｵｻｶ
-オオサカ
-</pre>
+オオサカ</pre>
 <pre class="prettyprint">$ haba data
 4
 4
 4
-8
-</pre>
+8</pre>
 <h3>【例２】</h3>
 <p><code>-v</code>オプションで表示幅に変化のあった行番号と表示幅を出力します。</p>
 <pre class="prettyprint">$ hava -v data
 1 4                   &lt;--- １行目からは表示幅４
-4 8                   &lt;--- ４行目からは表示幅８
-</pre>
+4 8                   &lt;--- ４行目からは表示幅８</pre>
 <h3>【例３】</h3>
 <p><code>-f</code>オプションでファイル名もあわせて出力します。標準入力の場合は、ファイル名は STDIN となります。<code>-v</code>オプションと併用すると、ファイル名、行番号、表示幅の順になります。</p>
 <pre class="prettyprint">$ cat file1
@@ -173,8 +168,7 @@ file1 1 4
 file2 1 6
 $ cat file1 | haba -f - file2
 STDIN 4
-file2 6
-</pre>
+file2 6</pre>
 <h3>【参考】</h3>
 <pre class="prettyprint">$ cat data
 1234
@@ -187,8 +181,7 @@ $ awk '{print length($0)}' data   &lt;-- 半角・全角問わず文字数がで
 $ LANG=C awk '{print length($0)}' data &lt;-- バイト数がでる。
 4
 6
-12
-</pre>
+12</pre>
     </div>
 
     <div id="lastmodified">Last modified: Fri Aug 12 12:56:05 JST 2022</div>

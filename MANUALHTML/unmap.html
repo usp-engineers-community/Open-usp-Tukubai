@@ -136,26 +136,22 @@
         : map +yarr [-&lt;l&gt;] num=&lt;n&gt;x&lt;m&gt; &lt;file&gt;
         : map +arr  [-&lt;l&gt;] num=&lt;n&gt;x&lt;m&gt; &lt;file&gt;
 Version : Fri Nov 20 17:00:13 JST 2020
-Edition : 1
-
-</pre>
+Edition : 1</pre>
 <h3>【説明】</h3>
 <p><a href="map.html" class="command">map(1)</a>と逆の動作をする。</p>
 <h3>【例1】</h3>
-<p>表データを縦型ファイルに変換する。<code>num=&lt;n&gt;</code>の値は縦キーのフィールド数を表す。</p>
+<p>表データを縦型ファイルに変換する。<code><code>num=&lt;n&gt;</code></code>の値は縦キーのフィールド数を表す。</p>
 <pre class="prettyprint">$ cat data
 *   * 01/01 01/02
 001 a店   103   157
 002 b店   210   237
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ unmap num=2 data |  keta
 001 a店 01/01 103
 001 a店 01/02 157
 002 b店 01/01 210
 002 b店 01/02 237
-$
-</pre>
+$</pre>
 <h3>【例2】</h3>
 <p>データ部が複数種ある場合は、複数列にマッピングする。</p>
 <pre class="prettyprint">$ cat data
@@ -168,8 +164,7 @@ c店 A    81    76    38    81    98   109   136
 c店 B    52    49    21    48    61    91   110
 d店 A    75    72    34    74    91    98   101
 d店 B    48    42    19    43    51    69    90
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ unmap num=1 data |  keta
 a店 1日目 103 62
 a店 2日目 157 94
@@ -179,8 +174,7 @@ a店 4日目 131 84
 ・
 d店 6日目 98 69
 d店 7日目 101 90
-$
-</pre>
+$</pre>
 <h3>【関連項目】</h3>
 <p><a href="map.html" class="command">map(1)</a>、<a href="tateyoko.html" class="command">tateyoko(1)</a></p>
     </div>

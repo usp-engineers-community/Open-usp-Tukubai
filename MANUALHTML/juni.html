@@ -135,9 +135,7 @@
 <pre class="list">Usage   : juni [&lt;k1&gt; &lt;k2&gt;] &lt;file&gt;
         : juni -h [&lt;k1&gt; &lt;k2&gt;] &lt;file&gt;
 Version : Sat Sep 19 23:49:25 JST 2020
-Edition : 2
-
-</pre>
+Edition : 2</pre>
 <h3>【説明】</h3>
 <p>第<code>&lt;k1&gt;</code>フィールドから第<code>&lt;k2&gt;</code>フィールドまでをキーフィールドとして、同一キーの行どうしにおける順位を行の先頭に挿入する。<code>&lt;k1&gt; &lt;k2&gt;</code>を指定しないときは、すべての行が同一キーとみなすものとする。この場合は単純に行の先頭に行番号を挿入するのと同じになる。</p>
 <p><code>-h</code>オプションを指定した場合、各キーフィールドの順位を階層的に出力する。<code>&lt;file&gt;</code>として<code>-</code>を指定すると標準入力を使用する。</p>
@@ -149,16 +147,14 @@ Edition : 2
 0000021 温州みかん 80
 0000025 プリンスメロン 70
 0000030 じゃが芋 30
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ juni data
 1 0000007 セロリ 100
 2 0000017 練馬大根 95
 3 0000021 温州みかん 80
 4 0000025 プリンスメロン 70
 5 0000030 じゃが芋 30
-$
-</pre>
+$</pre>
 <h3>【例2】</h3>
 <p>キーが関係する場合、キーの開始フィールドと終了フィールドを指定して、同一キーを持つ行どうしにおける順位を行頭に付与する。</p>
 <pre class="prettyprint">$ cat data
@@ -168,8 +164,7 @@ $
 九州 おにぎり 150
 九州 パン 140
 九州 パスタ 100
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ juni 1 1 data
 1 関東 パスタ 100
 2 関東 おにぎり 90
@@ -177,8 +172,7 @@ $
 1 九州 おにぎり 150
 2 九州 パン 140
 3 九州 パスタ 100
-$
-</pre>
+$</pre>
 <h3>【例3】</h3>
 <p><code>-h</code>オプションを指定した場合、各キーフィールドの順位を階層的に出力する。</p>
 <pre class="prettyprint">$ cat data
@@ -198,8 +192,7 @@ B B2 B21 B211
 B B2 B21 B212
 B B2 B22 B221
 B B2 B22 B222
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ juni -h 1 3 data
 1 1 1 A A1 A11 A111
 1 1 1 A A1 A11 A112
@@ -217,8 +210,7 @@ $
 2 2 1 B B2 B21 B212
 2 2 2 B B2 B22 B221
 2 2 2 B B2 B22 B222
-$
-</pre>
+$</pre>
 <h3>【例4】</h3>
 <p><code>-h</code>オプションでキーを指定しない場合には、第1フィールドから最終フィールドまでをキーフィールドとみなす。</p>
 <pre class="prettyprint">$ juni -h data
@@ -237,8 +229,7 @@ $
 2 2 1 1 B B2 B21 B211
 2 2 1 2 B B2 B21 B212
 2 2 2 1 B B2 B22 B221
-2 2 2 2 B B2 B22 B222
-</pre>
+2 2 2 2 B B2 B22 B222</pre>
 <h3>【関連項目】</h3>
 <p><a href="count.html" class="command">count(1)</a>、<a href="gyo.html" class="command">gyo(1)</a>、<a href="rank.html" class="command">rank(1)</a>、<a href="retu.html" class="command">retu(1)</a></p>
     </div>

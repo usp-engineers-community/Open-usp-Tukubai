@@ -135,15 +135,12 @@
 <pre class="list">Usage   : mime-read &lt;name&gt; &lt;MIME-file&gt;
         : mime-read -v &lt;MIME-file&gt;
 Version : Sun Apr 19 23:32:18 JST 2020
-Edition : 1
-
-</pre>
+Edition : 1</pre>
 <h3>【説明】</h3>
 <p>MIME形式のファイル&lt;MIME<code>-file</code>&gt;ファイルの各セクションの中から、<code>name=&quot;&lt;name&gt;&quot;</code>または<code>filename=&quot;&lt;name&gt;&quot;</code>の記述があるパートを見つけだし、その部分のデータを出力する。<code>-v</code>を指定した場合はすべての<code>name=&quot;...&quot;</code>または<code>filename=&quot;...&quot;</code>を対象として名前の一覧を出力する。</p>
 <h3>【例】</h3>
 <p><code>mime-file</code>の中からabc.xlsで指定される名前のセクションを取り出す。</p>
-<pre class="prettyprint">$ mime-read abc.xls mime-file &gt; abc.xls
-</pre>
+<pre class="prettyprint">$ mime-read abc.xls mime-file &gt; abc.xls</pre>
 <h3>【関連項目】</h3>
 <p><a href="cgi-name.html" class="command">cgi-name(1)</a>、<a href="nameread.html" class="command">nameread(1)</a></p>
     </div>

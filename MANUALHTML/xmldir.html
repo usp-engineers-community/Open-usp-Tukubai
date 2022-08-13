@@ -135,9 +135,7 @@
 <pre class="list">Usage   : xmldir /&lt;DirTag1&gt;/&lt;DirTag2&gt;/.../&lt;DirTagN&gt; &lt;xmlfile&gt;
 Option  : -c&lt;n&gt;
 Version : Mon Jul 25 08:45:58 JST 2022
-Edition : 1
-
-</pre>
+Edition : 1</pre>
 <h3>【説明】</h3>
 <p>ディレクトリタグの絶対パスを指定して、絶対パスとすべてのサブツリーの項目、属性、値を出力します。出力は末端のファイルパスに対して１行出力されます。</p>
 <p><code>-c</code>オプションで、指定パスのインデックスが出力されます。<code>-s</code>オプションで設定した文字が空白の代わりに出力されます。</p>
@@ -154,20 +152,17 @@ Edition : 1
       &lt;day&gt;25/Jul.2022&lt;/day&gt;
       &lt;day&gt;26/Jul.2022&lt;/day&gt;
     &lt;/dir2&gt;
-&lt;/dir1&gt;
-</pre>
+&lt;/dir1&gt;</pre>
 <pre class="prettyprint">$ xmldir /dir1/dir2 xml
 dir1 dir2 day 23/Jul.2022
 dir1 dir2 day 24/Jul.2022
 dir1 dir2 day 25/Jul.2022
-dir1 dir2 day 26/Jul.2022
-</pre>
+dir1 dir2 day 26/Jul.2022</pre>
 <pre class="prettyprint">$ xmldir -c3 /dir1/dir2 xml
 001 001 dir1 dir2 day 23/Jul.2022
 001 001 dir1 dir2 day 24/Jul.2022
 001 002 dir1 dir2 day 25/Jul.2022
-001 002 dir1 dir2 day 26/Jul.2022
-</pre>
+001 002 dir1 dir2 day 26/Jul.2022</pre>
 <h3>【例２】 テキストに空白を含む例</h3>
 <pre class="prettyprint">$ cat xml
 &lt;dir1&gt;
@@ -179,14 +174,12 @@ dir1 dir2 day 26/Jul.2022
       &lt;day&gt;25 Jul 2022&lt;/day&gt;
       &lt;day&gt;26 Jul 2022&lt;/day&gt;
     &lt;/dir2&gt;
-&lt;/dir1&gt;
-</pre>
+&lt;/dir1&gt;</pre>
 <pre class="prettyprint">$ xmldir -s= /dir1/dir2 xml
 dir1 dir2 day 23=Jul=2022
 dir1 dir2 day 24=Jul=2022
 dir1 dir2 day 25=Jul=2022
-dir1 dir2 day 26=Jul=2022
-</pre>
+dir1 dir2 day 26=Jul=2022</pre>
 <h3>【例３】 実用的な例</h3>
 <pre class="prettyprint">$ cat xml
 &lt;dir1&gt;
@@ -217,8 +210,7 @@ dir1 dir2 day 26=Jul=2022
 			&lt;data&gt;g&lt;/data&gt;
 		&lt;/attributes&gt;
 	&lt;/dir2&gt;
-&lt;/dir1&gt;
-</pre>
+&lt;/dir1&gt;</pre>
 <pre class="prettyprint">$ xmldir -c3 /dir1/dir2/attributes xml
 001 001 dir1 dir2 attributes data a
 001 002 dir1 dir2 attributes data b
@@ -226,8 +218,7 @@ dir1 dir2 day 26=Jul=2022
 001 004 dir1 dir2 attributes data d
 002 005 dir1 dir2 attributes data e
 002 006 dir1 dir2 attributes data f
-002 007 dir1 dir2 attributes data g
-</pre>
+002 007 dir1 dir2 attributes data g</pre>
 <h3>【関連項目】</h3>
 <p><a href="rjson.html" class="command">rjson(1)</a></p>
     </div>

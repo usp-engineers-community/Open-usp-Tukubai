@@ -135,9 +135,7 @@
 <pre class="list">Usage   : check_date_name &lt;check_file&gt; &lt;name_file&gt;
 Option  : --through &lt;string&gt;
 Version : Tue Oct 19 23:46:03 JST 2021
-Edition : 1
-
-</pre>
+Edition : 1</pre>
 <h3>【説明】</h3>
 <p><code>&lt;check_file&gt;</code>に記述されているタグ名、記号(D/W/M)に従って<code>&lt;name_file&gt;</code>の日/週/月の記述が正しいかどうかチェックします。エラーがあった場合は、コマンドはエラー終了し、標準出力にタグ名と、記号をを出力します。</p>
 <h4>オプション</h4>
@@ -147,8 +145,7 @@ Edition : 1
 A D    &lt;-- 日付
 B W    &lt;-- 週
 C M    &lt;-- 月
-D _    &lt;-- チェック無し
-</pre>
+D _    &lt;-- チェック無し</pre>
 <pre class="prettyprint">[usp1 usp@ ~]$ cat data
 A 20081010
 B 200852
@@ -159,8 +156,7 @@ D 9999
 [usp1 usp@ ~]$ check_date_name check data
 C_001 M
 $ echo $?
-1 
-</pre>
+1</pre>
     </div>
 
     <div id="lastmodified">Last modified: Fri Aug 12 12:56:05 JST 2022</div>

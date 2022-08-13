@@ -135,9 +135,7 @@
 <pre class="list">Usage   : zen  [-k] [&lt;f1&gt; &lt;f2&gt; ..] &lt;file&gt;
         : zen -d &lt;string&gt;
 Version : Mon Feb 21 00:32:55 JST 2022
-Edition : 1
-
-</pre>
+Edition : 1</pre>
 <h3>【説明】</h3>
 <p>引数のファイルまたは標準入力におけるテキストデータの半角英数記号およびカタカナをすべて全角に変換して出力する。</p>
 <h3>【例1】</h3>
@@ -146,36 +144,31 @@ Edition : 1
 これは ﾃﾞｰﾀ です。
 This is data
 123 456 7890
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ zen 1 2 3 data
 これは データ です。
 Ｔｈｉｓ ｉｓ ｄａｔａ
 １２３ ４５６ ７８９０
-$
-</pre>
+$</pre>
 <h3>【例2】</h3>
 <p>フィールドを指定しない場合は行全体を全角にする。半角空白も全角空白に変換する。</p>
 <pre class="prettyprint">$ cat data
 1 2 3
 $ cat data | zen
 １　２　３
-$
-</pre>
+$</pre>
 <h3>【例3】</h3>
 <p><code>zen -k &lt;file&gt;</code>の場合、<code>&lt;file&gt;</code>の半角カタカナだけ全角にする。メールの表題や本文には半角カナは使えないため、このフィルタを使用して前処理を実施する。</p>
 <pre class="prettyprint">$ cat data2
 123ｱｲｳｴｵ
 $ cat data2 | zen -k
 123アイウエオ
-$
-</pre>
+$</pre>
 <h3>【例4】</h3>
 <p><code>-d</code>オプションは引数で指定された文字列の半角の部分を全角に変えて出力する。</p>
 <pre class="prettyprint">$ zen -d ｶﾀｶﾅABC123             ←半角文字を引数で渡す。
 カタカナＡＢＣ１２３            ←すべて全角にして出力
-$
-</pre>
+$</pre>
 <h3>【関連項目】</h3>
 <p><a href="han.html" class="command">han(1)</a></p>
     </div>

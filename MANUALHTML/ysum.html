@@ -134,11 +134,9 @@
 <h3>【書式】</h3>
 <pre class="list">Usage   : ysum [+h] [num=&lt;n&gt;] &lt;file&gt;
 Version : Sat Jun 20 21:57:23 JST 2020
-Edition : 1
-
-</pre>
+Edition : 1</pre>
 <h3>【説明】</h3>
-<p><code>&lt;file&gt;</code>ファイルの、同一行内の各フィールドの合計を行末に追加する。<code>num=&lt;n&gt;</code>で指定したフィールドの次以降の全フィールドを集計して最終フィールドの後に追加する。<code>num=&lt;n&gt;</code>を省略した場合、<code>num=0</code>と同じ動作をする。<code>&lt;file&gt;</code>として<code>-</code>を指定すると標準入力を使用する。</p>
+<p><code>&lt;file&gt;</code>ファイルの、同一行内の各フィールドの合計を行末に追加する。<code><code>num=&lt;n&gt;</code></code>で指定したフィールドの次以降の全フィールドを集計して最終フィールドの後に追加する。<code><code>num=&lt;n&gt;</code></code>を省略した場合、<code>num=0</code>と同じ動作をする。<code>&lt;file&gt;</code>として<code>-</code>を指定すると標準入力を使用する。</p>
 <h3>【例1】</h3>
 <pre class="prettyprint">$ cat data
 0000000 浜地______ 50 F 91 59 20 76 54  ←番号 氏名 年齢 性別 教科別点数A B C D E
@@ -147,8 +145,7 @@ Edition : 1
 0000004 白土______ 40 M 58 71 20 10 6
 0000005 崎村______ 50 F 82 79 16 21 80
 0000007 梶川______ 42 F 50 2  33 15 62
-$
-</pre>
+$</pre>
 <p>教科別の点数(5フィールド目以降)を集計して最終フィールドの次に追加する。</p>
 <pre class="prettyprint">$ ysum num=4 data
 0000000 浜地______ 50 F 91 59 20 76 54 300
@@ -157,8 +154,7 @@ $
 0000004 白土______ 40 M 58 71 20 10 6 165
 0000005 崎村______ 50 F 82 79 16 21 80 278
 0000007 梶川______ 42 F 50 2  33 15 62 162
-$
-</pre>
+$</pre>
 <h3>【例2】</h3>
 <p><code>+h</code>オプションを指定すると先頭行以外の行を集計する。先頭行が項目名などのヘッダーのデータなどに使用する。このとき先頭行の集計値フィールドには@が追加される。</p>
 <p>先頭行を飛ばして教科別の点数(5フィールド目以降)を集計して最終フィールドの次に追加するには次のようにコマンドを実行する。</p>
@@ -170,8 +166,7 @@ No 氏名 年齢 性別 A B C D E                      ←番号 氏名 年齢 �
 0000004 白土______ 40 M 58 71 20 10 6
 0000005 崎村______ 50 F 82 79 16 21 80
 0000007 梶川______ 42 F 50 2  33 15 62
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ ysum +h num=4 data |  keta -
      No       氏名 年齢 性別  A  B  C  D  E   @  ←先頭行の集計欄には@がつく
 0000000 浜地______   50    F 91 59 20 76 54 300
@@ -180,8 +175,7 @@ $
 0000004 白土______   40    M 58 71 20 10  6 165
 0000005 崎村______   50    F 82 79 16 21 80 278
 0000007 梶川______   42    F 50  2 33 15 62 162
-$
-</pre>
+$</pre>
 <h3>【関連項目】</h3>
 <p><a href="kasan.html" class="command">kasan(1)</a>、<a href="plus.html" class="command">plus(1)</a>、<a href="ratio.html" class="command">ratio(1)</a>、<a href="sm2.html" class="command">sm2(1)</a>、<a href="sm4.html" class="command">sm4(1)</a>、<a href="sm5.html" class="command">sm5(1)</a></p>
     </div>

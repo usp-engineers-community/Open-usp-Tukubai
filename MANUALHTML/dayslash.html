@@ -134,9 +134,7 @@
 <h3>【書式】</h3>
 <pre class="list">Usage   : dayslash [-r] &lt;format&gt; &lt;field&gt; &lt;file&gt;
 Version : Wed May 20 04:47:48 JST 2020
-Edition : 1
-
-</pre>
+Edition : 1</pre>
 <h3>【説明】</h3>
 <p>標準入力または入力ファイル<code>&lt;file&gt;</code>の指定フィールド<code>&lt;field&gt;</code>のデータのフォーマットが次の3パターンのいずれかである場合、<code>&lt;format&gt;</code>で指定した形式に変換して出力する。次の3パターンのいずれでもない場合、入力データをそのまま出力する。フォーマットは桁数のみを検証し、年月日時分秒の正当性は評価しない。</p>
 <pre class="prettyprint">yyyymmdd
@@ -144,8 +142,7 @@ Edition : 1
 HHMMSS
     時分秒(6桁)
 yyyymmddHHMMSS
-    年月日時分秒(14桁)
-</pre>
+    年月日時分秒(14桁)</pre>
 <p><code>&lt;format&gt;</code>でm, d, H, M, Sを単独で指定した場合、前0は削除される。</p>
 <p>オプション<code>-r</code>を指定すると逆変換を実施する。標準入力または入力ファイル<code>&lt;file&gt;</code>の指定フィールド<code>&lt;field&gt;</code>のデータが、<code>&lt;format&gt;</code>で指定されたフォーマットに一致する場合、次のいずれかの形式へ変換する。一致しない場合、入力データをそのまま出力する。</p>
 <pre class="prettyprint">yyyymmdd
@@ -153,8 +150,7 @@ yyyymmddHHMMSS
 HHMMSS
     時分秒(6桁)
 yyyymmddHHMMSS
-    年月日時分秒(14桁)
-</pre>
+    年月日時分秒(14桁)</pre>
 <p>フォーマットのみを検証し、年月日時分秒の正当性は評価しない。</p>
 <h3>【例1】</h3>
 <pre class="prettyprint">$ echo 20120304 | dayslash yyyy/mm/dd 1
@@ -165,8 +161,7 @@ $ echo 20111201235958 | dayslash m/d 1
 12/1
 $ echo - | dayslash yyyy/mm/dd 1
 -
-$
-</pre>
+$</pre>
 <h3>【例2】</h3>
 <pre class="prettyprint">$ echo 2012/03/04 | dayslash -r yyyy/mm/dd 1
 20120304
@@ -174,8 +169,7 @@ $ echo 5時6分7秒 | dayslash -r H時M分S秒 1
 050607
 $ echo 2011年12月1日_23:59:10 | dayslash -r yyyy年m月d日_HH:MM:SS 1
 20111201235910
-$
-</pre>
+$</pre>
 <h3>【関連項目】</h3>
 <p><a href="calclock.html" class="command">calclock(1)</a>、<a href="mdate.html" class="command">mdate(1)</a>、<a href="yobi.html" class="command">yobi(1)</a></p>
     </div>

@@ -134,9 +134,7 @@
 <h3>【書式】</h3>
 <pre class="list">Usage   : calclock [-r] [&lt;f1&gt; &lt;f2&gt; &lt;f3&gt; ...] &lt;file&gt;
 Version : Thu Apr 21 00:58:46 JST 2022
-Edition : 1
-
-</pre>
+Edition : 1</pre>
 <h3>【説明】</h3>
 <p>標準入力または入力ファイル<code>&lt;file&gt;</code>の指定フィールド<code>&lt;f1&gt; &lt;f2&gt; &lt;f3&gt;</code>...の年月日や時間を1970年1月1日0時0分0秒からの秒数に変換して出力する。オプション<code>-r</code>を指定すると逆の変換を実施する。年月日データや時刻データを10進数に置き換えて計算するなどの用途に使用する。<code>&lt;file&gt;</code>として<code>-</code>を指定すると標準入力を使用する。</p>
 <p>日付や時刻は次のフォーマットである必要がある。</p>
@@ -145,8 +143,7 @@ Edition : 1
 HHMMSS
     時分秒(6桁)
 yyyymmddHHMMSS
-    年月日時分秒(14桁)
-</pre>
+    年月日時分秒(14桁)</pre>
 <p>変換後の値を分に直す場合は60、時は3600、日は86400で除算する。</p>
 <h3>【注意】</h3>
 <p> 入力ファイル<code>&lt;file&gt;</code>は省略できない フィールド指定<code>&lt;f1&gt; &lt;f2&gt; &lt;f3&gt;</code>... を省略すると全フィールド指定となる。 フィールド指定<code>&lt;f1&gt; &lt;f2&gt; &lt;f3&gt;</code>... に0があると全フィールド指定となる。 このとき同時に0以外のフィールド指定があってもそれらは無視される。</p>
@@ -160,8 +157,7 @@ yyyymmddHHMMSS
 0002 0000007 20060208 20060206 150 11768 -1268
 0002 0000007 20060209 20060206 588 41160 0
 0002 0000007 20060210 20060206 444 31080 0
-$
-</pre>
+$</pre>
 <p>4フィールド目と3フィールド目を変換し、その間の差分の日数を求めるには次のようにコマンドを実行する。</p>
 <pre class="prettyprint">$ calclock 3 4 - &lt; data         |
 tee data2                       |
@@ -184,8 +180,7 @@ $ cat data3
 -2
 -3
 -4
-$
-</pre>
+$</pre>
 <h3>【例2】</h3>
 <p><code>-r</code>オプションを使用すると、指定したフィールドの値(1970年1月1日0時0分0秒からの秒数)を通常の年月日時分秒の14桁の表記に変換する。年月日のみのフォーマットにする場合は、出力後awk(1)のsubstr(-,-)や<a href="self.html" class="command">self(1)</a>で上8桁を切り出す。</p>
 <pre class="prettyprint">$ cat data
@@ -197,8 +192,7 @@ $
 0002 0000007 20060208 150 11768 -1268
 0002 0000007 20060209 588 41160 0
 0002 0000007 20060210 444 31080 0
-$
-</pre>
+$</pre>
 <p>3フィールド目の各日の3日後の日付を求めるには、次のようにコマンドを実行する。</p>
 <pre class="prettyprint">$ calclock 3 data               |
 awk '{print $4+86400*3}'        |
@@ -233,8 +227,7 @@ $ cat data4
 20060211
 20060212
 20060213
-$
-</pre>
+$</pre>
 <h3>【関連項目】</h3>
 <p><a href="dayslash.html" class="command">dayslash(1)</a>、<a href="mdate.html" class="command">mdate(1)</a>、<a href="yobi.html" class="command">yobi(1)</a></p>
     </div>

@@ -134,26 +134,20 @@
 <h3>【書式】</h3>
 <pre class="list">Usage   : plus v1 v2 ...
 Version : Sat Jun 20 21:57:21 JST 2020
-Edition : 1
-
-</pre>
+Edition : 1</pre>
 <h3>【説明】</h3>
 <p>v1 + v2 + v3 ...の値を出力する。</p>
 <h3>【例】</h3>
 <pre class="prettyprint">$ plus 1 2 3 4
 10
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ plus 1.21 2.345 -2.524
 1.031
-$
-</pre>
+$</pre>
 <h3>【例】</h3>
 <p>パイプ処理の直後、パイプ各行のコマンドの結果ステータスを足し算して、0ならばすべて正常終了、異なればエラー終了である、といった判定処理に利用される。この使い方は${PIPESTATUS[@]}が提供されているbashなどに限定される。</p>
-<pre class="prettyprint">$ comman1 |  command2 | command3 | ... &gt; result
-</pre>
-<pre class="prettyprint">$ [ $plus ${PIPESTATUS[@]}) -ne 0 ] &amp;&amp; exit
-</pre>
+<pre class="prettyprint">$ comman1 |  command2 | command3 | ... &gt; result</pre>
+<pre class="prettyprint">$ [ $plus ${PIPESTATUS[@]}) -ne 0 ] &amp;&amp; exit</pre>
 <h3>【関連項目】</h3>
 <p><a href="kasan.html" class="command">kasan(1)</a>、<a href="ratio.html" class="command">ratio(1)</a>、<a href="sm2.html" class="command">sm2(1)</a>、<a href="sm4.html" class="command">sm4(1)</a>、<a href="sm5.html" class="command">sm5(1)</a>、<a href="ysum.html" class="command">ysum(1)</a></p>
     </div>

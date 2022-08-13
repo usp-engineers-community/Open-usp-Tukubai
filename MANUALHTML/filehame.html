@@ -134,9 +134,7 @@
 <h3>【書式】</h3>
 <pre class="list">Usage   : filehame -l&lt;string&gt; &lt;template&gt; &lt;data&gt;
 Version : Fri Jan 21 15:38:06 JST 2022
-Edition : 1
-
-</pre>
+Edition : 1</pre>
 <h3>【説明】</h3>
 <p><code>&lt;template&gt;</code>ファイル中で文字列<code>&lt;string&gt;</code>が含まれる行を<code>&lt;data&gt;</code>ファイルの中身に置き換える。</p>
 <h3>【例1】</h3>
@@ -149,20 +147,17 @@ Edition : 1
 &lt;!-- label2 --&gt;
 &lt;/body&gt;
 &lt;/html&gt;
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ cat data1
 &lt;script type=&quot;javascript/text&quot;&gt;
         function sb(i) {
                 submit(getElementById(i))
         }
 &lt;/script&gt;
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ cat data2
 &lt;input id=&quot;123&quot; type=&quot;button&quot; onclick=sb('123') value=&quot;push&quot; /&gt;
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ filehame -llabel1 template data1 | filehame -llabel2 - data2
 &lt;html&gt;
 &lt;meta&gt;
@@ -176,8 +171,7 @@ $
 &lt;input id=&quot;123&quot; type=&quot;button&quot; onclick=sb('123') value=&quot;push&quot; /&gt;
 &lt;/body&gt;
 &lt;/html&gt;
-$
-</pre>
+$</pre>
 <h3>【関連項目】</h3>
 <p><a href="formhame.html" class="command">formhame(1)</a>、<a href="mojihame.html" class="command">mojihame(1)</a></p>
     </div>

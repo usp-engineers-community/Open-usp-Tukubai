@@ -136,9 +136,7 @@
 Option  : -d&lt;c&gt;       空白を置換
         : -i&lt;string&gt;  ヌルデータの初期化
 Version : Mon Sep 20 09:31:28 JST 2021
-Edition : 1
-
-</pre>
+Edition : 1</pre>
 <h3>【説明】</h3>
 <p><a href="name-file.html" class="command">ネームファイル(5)</a>からnameを指定して値を読みる。<code>&lt;namefile&gt;</code>が<code>-</code>あるいは指定がないときは標準入力よりデータを受け取る。</p>
 <p><code>-l</code>オプションでnameも合わせて出力する。<code>-e</code>オプションで正規表現を指定でき、<code>-d</code>オプションで空白データを置換する文字を指定する(指定がない場合は空白データを削除する)。<code>-i</code>オプションでヌルデータの初期化を実施する。</p>
@@ -147,67 +145,54 @@ Edition : 1
 A usp
 B usp laboratory
 C
-$
-</pre>
+$</pre>
 <p>通常の出力</p>
 <pre class="prettyprint">$ nameread A namefile
 usp
-$
-</pre>
+$</pre>
 <p><a href="name-format.html" class="command">ネーム形式(5)</a>のデータは空白を含む</p>
 <pre class="prettyprint">$ nameread B namefile
 usp laboratory
-$
-</pre>
+$</pre>
 <p>空白を変換したいときは<code>-d</code>オプションを使用</p>
 <pre class="prettyprint">$ nameread -d_ B namefile
 usp_laboratory
-$
-</pre>
+$</pre>
 <p>空白を削除したいときは<code>-d</code>オプションを引数なしで指定</p>
 <pre class="prettyprint">$ nameread -d B namefile
 usplaboratory
-$
-</pre>
+$</pre>
 <p>名前のみ存在している場合には空行を出力</p>
-<pre class="prettyprint">$ nameread C namefile
-</pre>
-<pre class="prettyprint">$
-</pre>
+<pre class="prettyprint">$ nameread C namefile</pre>
+<pre class="prettyprint">$</pre>
 <p>ヌルデータを初期化する場合は<code>-i</code>オプションを使用</p>
 <pre class="prettyprint">$ namread -i@@@ C namefile
 @@@
-$
-</pre>
+$</pre>
 <p>名前が存在しない場合には何も出力しない</p>
 <pre class="prettyprint">$ nameread D namefile
-$
-</pre>
+$</pre>
 <p>名前も一緒に出力するには<code>-l</code>オプションを使用</p>
 <pre class="prettyprint">$ nameread -l A namefile
 A usp
-$
-</pre>
+$</pre>
 <p><code>-e</code>オプションを指定することで正規表現を利用可能</p>
 <pre class="prettyprint">$ cat namefile2
 A01 1
 A02 2
 A03 3
 A10 5
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ nameread -e '^A0[0-9]$' namefile2
 1
 2
 3
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ nameread -el '^A0[0-9]$' namefile2
 A01 1
 A02 2
 A03 3
-$
-</pre>
+$</pre>
 <h3>【関連項目】</h3>
 <p><a href="cgi-name.html" class="command">cgi-name(1)</a>、<a href="mime-read.html" class="command">mime-read(1)</a>、<a href="name-format.html" class="command">ネーム形式(5)</a></p>
     </div>

@@ -135,9 +135,7 @@
 <pre class="list">Usage   : yobi [-e|-j] &lt;field&gt; &lt;filename&gt;
           yobi -d [-e|-j] &lt;string&gt;
 Version : Sat Jun 20 21:57:23 JST 2020
-Edition : 1
-
-</pre>
+Edition : 1</pre>
 <h3>【説明】</h3>
 <p>引数や標準入力から読み込んだファイルの指定したフィールドの年月日の曜日のコードを指定したフィールドの次のフィールドに挿入して出力する。元ファイルの日付のフォーマットはYYYYMMDDの8桁である必要があり、曜日のコードは(日=0、月=1、火=2、水=3、木=4、金=5、土=6)で出力する。</p>
 <h3>【例1】</h3>
@@ -150,8 +148,7 @@ Edition : 1
 0002 0000007 20060208 150 11768 -1268
 0002 0000007 20060209 588 41160 0
 0002 0000007 20060210 444 31080 0
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ yobi 3 data
 0001 0000007 20060201 3 117 8335 -145
 0001 0000007 20060203 5 221 15470 0
@@ -161,8 +158,7 @@ $
 0002 0000007 20060208 3 150 11768 -1268
 0002 0000007 20060209 4 588 41160 0
 0002 0000007 20060210 5 444 31080 0
-$
-</pre>
+$</pre>
 <h3>【例2】</h3>
 <p><code>-e</code>オプションを指定すると英語表記の曜日を挿入して出力する。</p>
 <pre class="prettyprint">$ yobi -e 3 data
@@ -174,8 +170,7 @@ $
 0002 0000007 20060208 Wed 150 11768 -1268
 0002 0000007 20060209 Thu 588 41160 0
 0002 0000007 20060210 Fri 444 31080 0
-$
-</pre>
+$</pre>
 <h3>【例3】</h3>
 <p><code>-j</code>オプションで日本語表記の曜日を挿入して出力する。</p>
 <pre class="prettyprint">$ yobi -j 3 data
@@ -187,22 +182,18 @@ $
 0002 0000007 20060208 水 150 11768 -1268
 0002 0000007 20060209 木 588 41160 0
 0002 0000007 20060210 金 444 31080 0
-$
-</pre>
+$</pre>
 <h3>【例4】</h3>
 <p><code>-d</code>オプションで引数に指定した日付に対して曜日を算出する。</p>
 <pre class="prettyprint">$ yobi -d 20080112
 6
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ yobi -de 20080112
 Sat
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ yobi -dj 20080112
 土
-$
-</pre>
+$</pre>
 <h3>【関連項目】</h3>
 <p><a href="calclock.html" class="command">calclock(1)</a>、<a href="dayslash.html" class="command">dayslash(1)</a>、<a href="mdate.html" class="command">mdate(1)</a></p>
     </div>

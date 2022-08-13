@@ -135,9 +135,7 @@
 <pre class="list">Usage   : cgi-name [-d&lt;c&gt;][-i&lt;string&gt;] &lt;param_file&gt;
 Option  :          [--template &lt;html&gt;]
 Version : Wed May 20 04:47:47 JST 2020
-Edition : 1
-
-</pre>
+Edition : 1</pre>
 <h3>【説明】</h3>
 <p><code>cgi-name</code>はWEBサーバのCGI POSTメソッドで受け渡されるデータをネーム形式へ変換する。<code>&lt;param_file&gt;</code>として<code>-</code>を指定すると標準入力を使用する。</p>
 <h3>【例1】</h3>
@@ -145,44 +143,37 @@ Edition : 1
 <pre class="prettyprint">$ dd bs=$CONTENT_LENGTH | cgi-name -
 place tokyo
 country japan
-$
-</pre>
+$</pre>
 <h3>【例2】</h3>
 <p>改行(<code>%0D%0A</code>)は文字列<code>'\n'</code>に変換される。また、記号<code>'+'</code>は半角空白に変換される。</p>
 <pre class="prettyprint">$ echo 'place=%E6%9D%B1%E4%BA%AC%0D%0A%E5%A4%A7%E9%98%AA&amp;country=ja+pan' | cgi-name
 place 東京\n大阪
 country ja pan
-$
-</pre>
+$</pre>
 <h3>【例3】</h3>
 <p><code>-d</code>オプションを指定すると半角空白は削除あるいは指定文字に変換される。</p>
 <pre class="prettyprint">$ echo 'place=tokyo osaka&amp;country=japan' | cgi-name -
 place tokyo osaka
 country japan
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ echo 'place=tokyo osaka&amp;country=japan' | cgi-name -d_ -
 place tokyo_osaka
 country japan
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ echo 'place=tokyo osaka&amp;country=japan' | cgi-name -d -
 place tokyoosaka
 country japan
-$
-</pre>
+$</pre>
 <h3>【例4】</h3>
 <p><code>-i</code>オプションを指定することで、返される文字列がヌルの場合の初期値を指定できる。</p>
 <pre class="prettyprint">$ echo 'place=&amp;country=japan' | cgi-name -
 place
 country japan
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ echo 'place=&amp;country=japan' | cgi-name -isomewhere -
 place somewhere
 country japan
-$
-</pre>
+$</pre>
 <h3>【例5】</h3>
 <p><code>--template</code>オプションを指定することで、指定したHTMLテンプレートより、radioboxとcheckboxの名称を取り出し、その名称でデータが出力されなければ、出力をその名称で補完する。radioboxやcheckboxは選択しないでsubmitすると値そのものが出力されない。何も選択しなかったというデータを生成するためにこのオプションを使用する。</p>
 <pre class="prettyprint">$ cat html
@@ -194,15 +185,13 @@ $
 &lt;input type=&quot;checkbox&quot; name=&quot;YYYY&quot; value=&quot;b&quot; /&gt;
 &lt;input type=&quot;checkbox&quot; name=&quot;YYYY&quot; value=&quot;c&quot; /&gt;
 -----省略
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ dd bs=$CONTENT_LENGTH | cgi-name -i_ --template html -
 -----省略
 XXXX _
 YYYY _
 -----省略
-$
-</pre>
+$</pre>
 <h3>【例6】</h3>
 <p>radiobox checkboxがhtmlテンプレートの<code>mojihame -l</code>コマンド対象部分にある場合においても、タグ名_%数字を認識して選択値がなくてもタグ名を出力する。</p>
 <pre class="prettyprint">$ cat html
@@ -211,14 +200,12 @@ $
 &lt;input type=&quot;radiobox&quot; name=&quot;X_%1&quot; value=&quot;%2&quot; /&gt;
 &lt;!-- MOJIHAME --&gt;
 -----省略
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ dd bs=$CONTENT_LENGTH | cgi-name -i_ --template html -
 -----省略
 X _
 -----省略
-$
-</pre>
+$</pre>
 <h3>【備考】</h3>
 <p>CGI POSTメソッドで受け渡されるデータには改行がない。通常のファイルとして使用するには、ファイル末に改行コードを付加しておくほうが扱いやすい。<code>cgi-name</code>コマンドはファイル末の改行があってもなくても正しく値を取り出す。</p>
 <h3>【関連項目】</h3>

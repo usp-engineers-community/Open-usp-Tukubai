@@ -137,9 +137,7 @@ Usage   : ulock -w &lt;lock-file&gt; [&lt;counter-file&gt;]
           ulock -r &lt;lock-file&gt; &lt;counter-file&gt; &lt;command&gt;
 Option  : --timeout=&lt;sec&gt;/--invalid=&lt;sec&gt;
 Version : Fri Oct 21 11:26:06 JST 2011
-Edition : 1
-
-</pre>
+Edition : 1</pre>
 <h3>【説明】</h3>
 <p>書式１(<code>ulock &lt;lock-file&gt;</code>)は、完全排他区間を実現します。この場合、<code>ulock</code>は排他的に<code>&lt;lock-file&gt;</code>を生成します。</p>
 <p>書式２は、リード・ライトロックを実現します。<code>-w</code>(ライトロック)の場合、<code>ulock</code>は排他的に<code>&lt;lock-file&gt;</code>を生成した上に、<code>&lt;counter-file&gt;</code>のリンクカウントが１になるまで待ちます。<code>-r</code>(リードロック)の場合、<code>&lt;lock-file&gt;</code>が存在しなくなるまで、<code>&lt;counter-file&gt;</code>のリンクカウントを１増やすことを試み、成功したら、<code>&lt;command&gt;</code>を実行し、そのあと、<code>&lt;counter-file&gt;</code>のリンクカウントを１減らします。</p>
@@ -154,8 +152,7 @@ if ulock lock; then
   # 読み書きなどの処理
   #
   rm -f lock
-fi
-</pre>
+fi</pre>
 <h3>【例２】 リードライトロックの実現</h3>
 <pre class="prettyprint">$ cat writelock.sh
 #!/bin/bash
@@ -167,13 +164,11 @@ if ulock -w lock counter; then
   mv master.new master
  
   rm -f lock
-fi
-</pre>
+fi</pre>
 <pre class="prettyprint">$ cat readlock.sh
 #!/bin/bash
  
-ulock -r lock counter cat master
-</pre>
+ulock -r lock counter cat master</pre>
 <h3>【備考】 リードライトロックのアルゴリズム</h3>
 <h4>ライトロック</h4>
 <p><em style="margin-right: 0.5em; letter-spacing: 0.5em; font-family: monospace;">X--</em>書き込みロックを取る。(アトミック)</p>

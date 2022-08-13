@@ -134,9 +134,7 @@
 <h3>【書式】</h3>
 <pre class="list">Usage   : block_getlast key=&lt;key&gt; ref=&lt;ref&gt; &lt;file&gt;
 Version : Sun Feb 21 04:35:04 JST 2021
-Edition : 1
-
-</pre>
+Edition : 1</pre>
 <h3>【説明】</h3>
 <p><code>key=</code>で指定したフィールドの各レコードのうち、<code>ref=</code>で指定した参照フィールドが同じ値を持つ最終ブロックをすべて出力します。入力データは、<code>key=</code>で指定したフィールドについてソートされていることを前提とします。</p>
 <p><code>key=</code>や<code>ref=</code>には、範囲指定(例<code>1/3 2@5</code>)及び<code>&quot;NF&quot;</code>の使用が可能です。</p>
@@ -162,14 +160,12 @@ Edition : 1
 0001 1 A 15 20081205
 0001 3 F 25 20081205
 0002 2 X 30 20081201
-0002 1 H 80 20081208
-</pre>
+0002 1 H 80 20081208</pre>
 <pre class="prettyprint">$ block_getlast key=1 ref=NF data &gt; result
 $ cat result
 0001 1 A 15 20081205
 0001 3 F 25 20081205
-0002 1 H 80 20081208
-</pre>
+0002 1 H 80 20081208</pre>
     </div>
 
     <div id="lastmodified">Last modified: Fri Aug 12 12:56:05 JST 2022</div>

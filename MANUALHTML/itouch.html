@@ -135,9 +135,7 @@
 <pre class="list">Usage   : itouch [-&lt;n&gt;] &quot;&lt;string&gt;&quot; &lt;file1&gt; &lt;file2&gt;...
         : itouch [-&lt;n&gt;] -f &lt;file&gt; &lt;file1&gt; &lt;file2&gt;...
 Version : Thu Aug 20 20:30:32 JST 2015
-Edition : 1
-
-</pre>
+Edition : 1</pre>
 <h3>【説明】</h3>
 <p>指定ファイルが存在しない、あるいは０バイトならば、<code>&lt;string&gt;</code>あるいは<code>&lt;file&gt;</code>でファイルの中身を初期化します。<code>-&lt;n&gt;</code>で数字を指定すると<code>&lt;n&gt;</code>行分の<code>&lt;string&gt;</code>あるいは<code>&lt;n&gt;</code>回分の<code>&lt;file&gt;</code>で初期化します。初期化するファイルは複数指定できます。ファイルが存在して０バイトで無い場合は何もしません。指定ファイルが<code>&quot;-&quot;</code>のときは、標準入力を期待し、結果を標準出力に出力します。</p>
 <h3>【例１】</h3>
@@ -146,29 +144,25 @@ cat: file: No such file or directory  &lt;-- ファイルが存在しないか�
                                           イトの場合
 $ itouch '000 000 0' file
 $ cat file
-000 000 0                             &lt;-- 指定文字列で初期化される
-</pre>
+000 000 0                             &lt;-- 指定文字列で初期化される</pre>
 <pre class="prettyprint">$ itouch 'abc abc 0' file             &lt;-- ファイルが存在して０バイト
                                           でない場合
 $ cat file
-000 000 0
-</pre>
+000 000 0</pre>
 <h3>【例２】</h3>
 <pre class="prettyprint">$ : &gt; file
 $ itouch -3 '000 000 0' file          &lt;-- ３行初期化
 $ cat file
 000 000 0
 000 000 0
-000 000 0
-</pre>
+000 000 0</pre>
 <h3>【例３】</h3>
 <pre class="prettyprint">$ : &gt; file
 $ itouch 'a\nb\nc' file               &lt;-- '\n' は改行に置換される
 $ cat file
 a
 b
-c
-</pre>
+c</pre>
 <h3>【例４】</h3>
 <pre class="prettyprint">$ cat file1
 $ cat file1 | itouch '000 0' - &gt; result  &lt;-- 標準入力から０バイト
@@ -178,20 +172,18 @@ $ cat file2
 ABC D
 $ cat file2 | itouch '000 0' - &gt; result  &lt;-- 標準入力から中身のある
 $ cat result                                 ファイルを読む
-ABC D
-</pre>
+ABC D</pre>
 <h3>【例５】</h3>
 <pre class="prettyprint">$ : &gt; file
 $ echo abc &gt; init       &lt;-- 初期化用のファイルを準備する
 $ itouch -f init file   &lt;-- 初期化ファイル init で file を初期化する
 $ cat file
-abc
-</pre>
+abc</pre>
 <h3>【関連項目】</h3>
 <p><a href="https://linuxjm.osdn.jp/html/gnumaniak/man1/touch.1.html">touch (1)</a></p>
     </div>
 
-    <div id="lastmodified">Last modified: Fri Jul 15 15:42:38 JST 2022</div>
+    <div id="lastmodified">Last modified: Sat Aug 13 12:25:02 JST 2022</div>
 
     <div id="footer">Contact us: uecinfo@usp-lab.com<br>Copyright &copy; 2012-2022 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
   </div>

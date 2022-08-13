@@ -134,9 +134,7 @@
 <h3>【書式】</h3>
 <pre class="list">Usage   : cjoin2x [+&lt;string&gt;] key=&lt;n&gt; &lt;master&gt; &lt;tran&gt;
 Version : Fri Jul 22 01:09:14 JST 2022
-Edition : 1
-
-</pre>
+Edition : 1</pre>
 <h3>【説明】</h3>
 <p>テキストファイル<code>&lt;tran&gt;</code>の<code>&quot;key=&lt;n&gt;&quot;</code>で指定したキーフィールドがマスターファイル<code>&lt;master&gt;</code>の第１フィールド(キーフィールド)とマッチした行を<code>&lt;tran&gt;</code>から抽出して、<code>&lt;master&gt;</code>の情報を連結して出力します。マッしない行は、ダミーデータ<code>&quot;_&quot;</code>をフィールド数分だけ結合して出力します。ダミーデータは指定することもできます。</p>
 <p><code>&lt;master&gt;</code>の第１フィールドについては必ず昇順でソートされていることが条件になります。</p>
@@ -148,8 +146,7 @@ Edition : 1
 1 東京1
 1 東京2
 2 大阪1
-2 大阪2
-</pre>
+2 大阪2</pre>
 <p>(トランザクションファイル：tran)</p>
 <pre class="prettyprint">$ cat tran
 3 栄
@@ -161,8 +158,7 @@ Edition : 1
 2 難波
 3 熱田
 2 梅田
-4 博多
-</pre>
+4 博多</pre>
 <pre class="prettyprint">$ cjoin2x key=1 master tran &gt;data
 $ cat data
 3 _ 栄
@@ -179,8 +175,7 @@ $ cat data
 3 _ 熱田
 2 大阪1 梅田
 2 大阪2 梅田
-4 _ 博多
-</pre>
+4 _ 博多</pre>
     </div>
 
     <div id="lastmodified">Last modified: Fri Jul 15 16:38:58 JST 2022</div>

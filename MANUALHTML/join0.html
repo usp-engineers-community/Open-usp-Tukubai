@@ -134,9 +134,7 @@
 <h3>【書式】</h3>
 <pre class="list">Usage   : join0 [+ng[&lt;fd&gt;]] key=&lt;n&gt; &lt;master&gt; [&lt;tran&gt;]
 Version : Sun Jun 19 23:55:51 JST 2022
-Edition : 1
-
-</pre>
+Edition : 1</pre>
 <h3>【説明】</h3>
 <p>tranの<code>key=&lt;n&gt;</code>で指定したキーフィールドがmasterの第1フィールド(キーフィールド)と一致した行のみtranから抽出して出力する。</p>
 <p>masterに<code>-</code>を指定すると標準入力をマスタファイルとする。tranが無指定かまたは<code>-</code>が指定されている場合には、標準入力がトランザクションファイルとなる。</p>
@@ -152,8 +150,7 @@ Edition : 1
 0000005 崎村______ 50 F
 0000007 梶川______ 42 F
 0000010 柳本______ 50 F
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ cat kekka
 0000000 91 59 20 76 54
 0000001 46 39 8  5  21
@@ -165,16 +162,14 @@ $
 0000009 60 89 33 18 6
 0000010 95 60 35 93 76
 0000011 92 56 83 96 75
-$
-</pre>
+$</pre>
 <p>kekkaの第1フィールドがmasterファイルに存在する行のみ抽出する。</p>
 <pre class="prettyprint">$ join0 key=1 master kekka
 0000003 30 50 71 36 30
 0000005 82 79 16 21 80
 0000007 50 2  33 15 62
 0000010 95 60 35 93 76
-$
-</pre>
+$</pre>
 <h3>【例2】</h3>
 <p>左から順に複数のフィールドに連続するキーを指定できる。例えばmasterファイルに第2フィールドと第3フィールドの順にフィールドキーが存在する行のみ抽出する場合、次のようになる。</p>
 <pre class="prettyprint">$ cat master
@@ -182,8 +177,7 @@ A 0000003 杉山______ 26 F
 A 0000005 崎村______ 50 F
 B 0000007 梶川______ 42 F
 C 0000010 柳本______ 50 F
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ cat kekka
 1 A 0000000 91 59 20 76 54
 2 A 0000001 46 39 8  5  21
@@ -195,18 +189,15 @@ $
 8 C 0000009 60 89 33 18 6
 9 C 0000010 95 60 35 93 76
 10 C 0000011 92 56 83 96 75
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ join0 key=2/3 master kekka &gt; data
 3 A 0000003 30 50 71 36 30
 5 A 0000005 82 79 16 21 80
 6 B 0000007 50 2  33 15 62
 9 C 0000010 95 60 35 93 76
-$
-</pre>
+$</pre>
 <p>左から順に連続していない複数のフィールドをキーに指定することも可能。この場合は複数のキーフィールドを@でつなげて指定する。</p>
-<pre class="prettyprint">$ join0 key=3@1 master tran
-</pre>
+<pre class="prettyprint">$ join0 key=3@1 master tran</pre>
 <h3>【例3】+ngオプション</h3>
 <p>masterとキーが一致しない&quot;tran&quot;の行を抽出することも可能。キーに一致する行は標準出力に、一致しない行は標準エラー出力に出力される。</p>
 <pre class="prettyprint">$ cat master
@@ -214,8 +205,7 @@ $
 0000005 崎村______ 50 F
 0000007 梶川______ 42 F
 0000010 柳本______ 50 F
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ cat kekka
 0000000 91 59 20 76 54
 0000001 46 39 8  5  21
@@ -227,8 +217,7 @@ $
 0000009 60 89 33 18 6
 0000010 95 60 35 93 76
 0000011 92 56 83 96 75
-$
-</pre>
+$</pre>
 <p>成績ファイルkekkaからmasterに存在する4人のデータと、その他のデータとをそれぞれ抽出する。</p>
 <pre class="prettyprint">$ join0 +ng key=1 master kekka &gt; ok-data 2&gt; ng-data
 $ cat ok-data           ←一致したデータ
@@ -243,27 +232,20 @@ $ cat ng-data           ←一致しなかったデータ
 0000008 52 91 44 9  0
 0000009 60 89 33 18 6
 0000011 92 56 83 96 75
-$
-</pre>
+$</pre>
 <h3>【例4】</h3>
 <p>ファイル名を-にすることにより標準入力からmasterやtranを読むことができる。<a href="join1.html" class="command">join1(1)</a>や<a href="join2.html" class="command">join2(1)</a>も同様。tranの-を省略した場合も標準入力からtranを読み込む。</p>
-<pre class="prettyprint">$ cat master | join0 key=1 - tran
-</pre>
-<pre class="prettyprint">$ cat tran | join0 key=1 master -
-</pre>
-<pre class="prettyprint">$ cat tran | join0 key=1 master         ←-を省略可能
-</pre>
+<pre class="prettyprint">$ cat master | join0 key=1 - tran</pre>
+<pre class="prettyprint">$ cat tran | join0 key=1 master -</pre>
+<pre class="prettyprint">$ cat tran | join0 key=1 master         ←-を省略可能</pre>
 <h3>【コラム1】+ngオプションのコメント - join1(1)も同様</h3>
 <p>不一致のデータをパイプで次のコマンドへつなぐ場合は次のように記述する。</p>
-<pre class="prettyprint">$ join0 +ng key=1 master tran 2&gt;&amp;1 1&gt; ok-data |  次のコマンド
-</pre>
+<pre class="prettyprint">$ join0 +ng key=1 master tran 2&gt;&amp;1 1&gt; ok-data |  次のコマンド</pre>
 <p>不一致のデータのみ出力したい場合には、一致データを/dev/nullへ出力させれば良い。</p>
-<pre class="prettyprint">$ join0 +ng key=1 master tran &gt; /dev/null 2&gt; ng-data
-</pre>
+<pre class="prettyprint">$ join0 +ng key=1 master tran &gt; /dev/null 2&gt; ng-data</pre>
 <h3>【コラム2】</h3>
 <p><a href="join0.html" class="command">join0(1)</a>および<a href="join1.html" class="command">join1(1)</a>はmasterと同じキーフィールドを持つtranの行を出力するが、パイプの目詰まりを起こさないようにmasterを読み終わったあと読み残したtranについても最後まで読むように動作する。</p>
-<pre class="prettyprint">$ cat bigfile | join0 key=1 master &gt; ok-data
-</pre>
+<pre class="prettyprint">$ cat bigfile | join0 key=1 master &gt; ok-data</pre>
 <h3>【備考】</h3>
 <p>keyのフィールドは合わせて128フィールドが最大で、1キーフィールドあたり最大256[byte]まで指定できる。</p>
 <h3>【関連項目】</h3>

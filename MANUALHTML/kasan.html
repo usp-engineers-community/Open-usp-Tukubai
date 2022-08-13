@@ -134,9 +134,7 @@
 <h3>【書式】</h3>
 <pre class="list">Usage   : kasan [+r] [ref=&lt;ref&gt;] key=&lt;n&gt; &lt;file&gt;
 Version : Sat Sep 19 23:49:25 JST 2020
-Edition : 1
-
-</pre>
+Edition : 1</pre>
 <h3>【説明】</h3>
 <p>引数のファイルまたは標準入力のテキストデータの指定したフィールドの値を、各行ごとに加算して指定したフィールドの次のフィールドに挿入する。累計値を求める場合などに使用する。</p>
 <h3>【例1】</h3>
@@ -149,8 +147,7 @@ a店 4日目 131 84
 a店 5日目 189 111
 a店 6日目 350 20
 a店 7日目 412 301
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ kasan key=4 data
 a店 1日目 103 62 62
 a店 2日目 157 94 156
@@ -159,8 +156,7 @@ a店 4日目 131 84 270
 a店 5日目 189 111 381
 a店 6日目 350 20 401
 a店 7日目 412 301 702
-$
-</pre>
+$</pre>
 <h3>【例2】</h3>
 <p>あるフィールドの値が変わった場所で加算をリセットする場合は、そのリセットのキーとなるフィールドを<code>ref=</code>で指定する。たとえば店別の累計仕入数を算出する場合には、次のように1フィールド目が変更されるごとに加算をリセットする。</p>
 <p><code>ref=&lt;ref&gt;</code>で指定できるのは数値、範囲(/)、<code>NF NF -&lt;n&gt;</code>である。</p>
@@ -177,8 +173,7 @@ c店 1日目 81 52
 c店 2日目 76 49
 c店 3日目 38 21
 c店 4日目 81 48
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ kasan ref=1 key=4 data
 a店 1日目 103 62 62
 a店 2日目 157 94 156
@@ -192,8 +187,7 @@ c店 1日目 81 52 52              ←累計加算をリセット
 c店 2日目 76 49 101
 c店 3日目 38 21 122
 c店 4日目 81 48 17
-$
-</pre>
+$</pre>
 <h3>【例3】</h3>
 <p>元データのフィールドをその加算値と置き換えて出力する場合は<code>+r</code>オプションを使用する。たとえば仕入れ数を累計仕入れ数に置き換えるのであれば、この場合であれば4フィールド目の加算値を4フィールド目に出力するようにすれば良い。</p>
 <pre class="prettyprint">$ cat data              ←店名 日付 売れ数 仕入数
@@ -204,8 +198,7 @@ a店 4日目 131 84
 a店 5日目 189 111
 a店 6日目 350 20
 a店 7日目 412 301
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ kasan +r key=4 data
 a店 1日目 103 62
 a店 2日目 157 156
@@ -214,8 +207,7 @@ a店 4日目 131 270
 a店 5日目 189 381
 a店 6日目 350 401
 a店 7日目 412 702
-$
-</pre>
+$</pre>
 <h3>【例4】</h3>
 <p>小数点のあるデータを加算する場合、それまでの行にある最大小数桁数に合わせて出力するようになる。</p>
 <pre class="prettyprint">$ cat data
@@ -225,8 +217,7 @@ A 1.23
 B 2
 B 2.34
 B 3
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ kasan ref=1 key=2 data
 A 1 1
 A 1.2 2.2
@@ -234,33 +225,26 @@ A 1.23 3.43
 B 2 2
 B 2.34 4.34
 B 3 7.34
-$
-</pre>
+$</pre>
 <h3>【例5】</h3>
 <p><code>key=&lt;pos&gt;</code>で指定できるのは数値、範囲(/)、列挙(@)、<code>NF NF -&lt;n&gt;</code>である。</p>
-<pre class="prettyprint">$ kasan key=1 data
-</pre>
+<pre class="prettyprint">$ kasan key=1 data</pre>
 <p>第2から第3フィールドの各フィールドを加算し、加算値をそれぞれのフィールドの直後に挿入するには次のようにコマンドを実行する。</p>
 <pre class="prettyprint">$ cat data
 A 1 2
 A 3 4
 A 5 6
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ kasan key=2/3 data
 A 1 1 2 2
 A 3 4 4 6
 A 5 9 6 12
-$
-</pre>
+$</pre>
 <p>第2フィールドと第4フィールドの各フィールドを加算し、加算値をそれぞれのフィールドの直後に挿入するには次のようにコマンドを実行する。</p>
-<pre class="prettyprint">$ kasan key=2@4 data
-</pre>
+<pre class="prettyprint">$ kasan key=2@4 data</pre>
 <p>次のように<code>NF</code>も指定できる。</p>
-<pre class="prettyprint">$ kasan key=NF data
-</pre>
-<pre class="prettyprint">$ kasan key=NF-2 data
-</pre>
+<pre class="prettyprint">$ kasan key=NF data</pre>
+<pre class="prettyprint">$ kasan key=NF-2 data</pre>
 <h3>【関連項目】</h3>
 <p><a href="plus.html" class="command">plus(1)</a>、<a href="ratio.html" class="command">ratio(1)</a>、<a href="sm2.html" class="command">sm2(1)</a>、<a href="sm4.html" class="command">sm4(1)</a>、<a href="sm5.html" class="command">sm5(1)</a>、<a href="ysum.html" class="command">ysum(1)</a></p>
     </div>

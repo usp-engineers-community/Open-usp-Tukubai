@@ -135,17 +135,14 @@
 <pre class="list">Usage   : check_dble_name &lt;check_file&gt; &lt;name_file&gt;
 Option  : --through &lt;string&gt;
 Version : Sun Nov 21 17:29:32 JST 2021
-Edition : 1
-
-</pre>
+Edition : 1</pre>
 <h3>【説明】</h3>
 <p><code>&lt;check_file&gt;</code>に記述されているタグ名について、<code>&lt;name_file&gt;</code>の値の重複チェックをします。重複があった場合は、そのつど標準出力に重複のあったタグ名を出力し、コマンド終了時には「エラー終了」とします。最初のエラーで終了するのではなく、複数の重複があっても対応します。</p>
 <h3>【オプション】</h3>
 <p><code>--through &lt;string&gt; &lt;name_file&gt;</code>のデータが<code>&lt;string&gt;</code>と等しい場合は、チェックを実施しません。<code>&lt;string&gt;</code>のデフォルトは、<code>&quot;_&quot;</code>となります。このオプションは繰り返し使って複数の<code>&lt;string&gt;</code>を指定することができます。</p>
 <h3>【例１】</h3>
 <pre class="prettyprint">[usp1 usp@ ~]$ cat check
-A
-</pre>
+A</pre>
 <pre class="prettyprint">[usp1 usp@ ~]$ cat data
 A_001 5
 A_002 5
@@ -155,8 +152,7 @@ A_004 7
 A_001
 A_002
 $ echo $?
-1 
-</pre>
+1</pre>
 <h3>【例２】</h3>
 <pre class="prettyprint">[usp1 usp@ ~]$ cat data
 A_001 5
@@ -168,8 +164,7 @@ A_005 @
 A_001
 A_002
 $ echo $?
-1 
-</pre>
+1</pre>
     </div>
 
     <div id="lastmodified">Last modified: Fri Jul 15 16:35:40 JST 2022</div>

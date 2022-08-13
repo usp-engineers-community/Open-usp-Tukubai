@@ -134,9 +134,7 @@
 <h3>【書式】</h3>
 <pre class="list">Usage   : tateyoko &lt;file&gt;
 Version : Sat Jun 20 21:57:22 JST 2020
-Edition : 1
-
-</pre>
+Edition : 1</pre>
 <h3>【説明】</h3>
 <p><code>&lt;file&gt;</code>の行を列に縦横変換する。ファイル名が<code>-</code>の時は、標準入力ファイルを取り込む。<code>&lt;file&gt;</code>として<code>-</code>を指定すると標準入力を使用する。</p>
 <h3>【例1】</h3>
@@ -144,14 +142,12 @@ Edition : 1
 1 2 3
 A B C
 4 5 6
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ tateyoko data
 1 A 4
 2 B 5
 3 C 6
-$
-</pre>
+$</pre>
 <h3>【例2】</h3>
 <p><a href="map.html" class="command">map(1)</a>の出力を縦横変換する。</p>
 <pre class="prettyprint">$ cat data
@@ -161,21 +157,18 @@ A 10/03 3
 B 10/01 4
 B 10/02 5
 B 10/03 6
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ map num=1 data |  keta -
 * 10/01 10/02 10/03
 A     1     2     3
 B     4     5     6
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ map num=1 data | tateyoko - | keta -
 *     A B
 10/01 1 4
 10/02 2 5
 10/03 3 6
-$
-</pre>
+$</pre>
 <h3>【備考】</h3>
 <p><a href="tateyoko.html" class="command">tateyoko(1)</a>は指定ファイルを一旦すべてメモリへ展開する。</p>
 <h3>【関連項目】</h3>

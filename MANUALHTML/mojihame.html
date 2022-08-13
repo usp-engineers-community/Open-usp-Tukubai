@@ -136,9 +136,7 @@
         : mojihame -l &lt;label&gt; &lt;template&gt; &lt;data&gt;         (行単位)
         : mojihame -h &lt;label&gt; &lt;template&gt; &lt;data&gt;         (階層データ)
 Version : Tue Oct 20 15:17:47 JST 2020
-Edition : 1
-
-</pre>
+Edition : 1</pre>
 <h3>【説明】</h3>
 <p>引数に指定するtemplateファイルに、dataあるいは環境変数からデータを読んで値をはめ込む。次の3つの使い方がある。</p>
 	  <ol>
@@ -152,111 +150,94 @@ Edition : 1
 <pre class="prettyprint">$ cat data
 a b
 c d
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ cat template
 1st=%1
 2nd=%2
 3rd=%3 4th=%4
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ mojihame template data
 1st=a
 2nd=b
 3rd=c 4th=d
-$
-</pre>
+$</pre>
 <h3>【例2】通常その2</h3>
 <p>デフォルトでは@というデータはヌル文字列として置換される。このデフォルトを変更するには<code>-d</code>オプションを使用する。<code>-d</code>オプションを単独で使用した場合には、ヌル文字列に置換する機能は無効になる。</p>
 <pre class="prettyprint">$ cat data
 a @
 @ d
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ cat template
 1st=%1
 2nd=%2
 3rd=%3 4th=%4
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ mojihame template data
 1st=a
 2nd=
 3rd= 4th=d
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ mojihame -da template data
 1st=
 2nd=@
 3rd=@ 4th=d
-$
-</pre>
+$</pre>
 <h3>【例3】行単位</h3>
 <p>dataは1行単位に読み込まれ、行の各フィールドが%1 %2 ...に対応する。次の行が読み込まれるときは再びtemplateが使用され、データがはめ込まれ出力される。この使い方は旧<code>mojihame</code>の<code>-r</code>と互換性がある。<code>mojihame -r</code>は将来廃止される。</p>
 <pre class="prettyprint">$ cat data
 a b c d
 w x y z
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ cat template
 1st=%1 2nd=%2
 3rd=%3 4th=%4
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ mojihame -l template data
 1st=a 2nd=b
 3rd=c 4th=d
 1st=w 2nd=x
 3rd=y 4th=z
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ mojihame -r template data
 1st=a 2nd=b
 3rd=c 4th=d
 1st=w 2nd=x
 3rd=y 4th=z
-$
-</pre>
+$</pre>
 <h3>【例4】行単位その2</h3>
 <p><code>-l</code>オプションで引数(ラベル)を指定した場合、templateのラベルで囲まれた行のみにデータが繰り返しはめ込まれる。このときラベルを含む行は出力されない。また、ラベルにはさまれていない前後の部分は何も変換されず、そのまま出力される。ラベルはtemplate内部に2回だけ記述可能で、それぞれはめ込み対象の開始行と終了行とみなされる。指定ラベルは部分一致でラベル行と判断するので注意が必要。</p>
 <pre class="prettyprint">$ cat data
 a b
 y z
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ cat template
 header %1
 LABEL
 1st=%1 2nd=%2
 LABEL
 footer %2
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ mojihame -lLABEL template data
 header %1
 1st=a 2nd=b
 1st=y 2nd=z
 footer %2
-$
-</pre>
+$</pre>
 <h3>【例5】行単位その3</h3>
 <p><code>-l</code>オプションを繰り返し使用することにより、プルダウンなどのHTMLを簡易に生成することができる。指定ラベルはtemplateに1組しか認められていないので、次の例のように内側のラベルから順番に値をはめていくという手順でコマンドを実行する。</p>
 <pre class="prettyprint">$ cat member
 佐藤
 鈴木
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ cat kbn1
 東京
 大阪
 横浜
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ cat kbn2
 男
 女
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ cat template
 MEMBER
 氏名＝%1
@@ -267,8 +248,7 @@ K2
 性別＝%1
 K2
 MEMBER
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ mojihame -lK1 template kbn1 |   mojihame -lK2 - kbn2 | mojihame -lMEMBER - member
 氏名＝佐藤
 地名＝東京
@@ -282,12 +262,10 @@ $
 地名＝横浜
 性別＝男
 性別＝女
-$
-</pre>
+$</pre>
 <h3>【例6】行単位その4</h3>
 <p>デフォルトでは@というデータはヌル文字列として置換される。このデフォルトを変更するには<code>-d</code>オプションを使用する。<code>-d</code>オプションは<code>-l</code>オプションの後に指定する必要がある。</p>
-<pre class="prettyprint">$ mojihame -lLABEL -dx template data
-</pre>
+<pre class="prettyprint">$ mojihame -lLABEL -dx template data</pre>
 <h3>【例7】階層データ</h3>
 <p><code>-h</code>オプションは階層的にデータのはめ込みを実施する。templateにおいて階層的ラベルに囲まれた部分に現れる%数字がdataの階層的キーフィールドに対応する。</p>
 <pre class="prettyprint">$ cat data
@@ -296,8 +274,7 @@ $
 山田 横浜 09:30
 鈴木 東京 16:45
 鈴木 神戸 15:30
-$
-</pre>
+$</pre>
 <p>次のtemplateの場合、LABEL-1に囲まれているのは%1、LABEL-1に囲まれている部分にさらにLABEL-2があり、LABEL-2で囲まれている部分に%2と%3がある。このとき、第1フィールドが変化する回数だけ、LABEL-1で囲まれている部分が繰り返し値がはめられ、LABEL-2で囲まれている部分は、同じ第1フィールドの値を持つ第2、第3フィールドの行の数だけ繰り返し値がはめられる。</p>
 <pre class="prettyprint">$ mojihame -hLABEL template dat
 表題 %1
@@ -308,8 +285,7 @@ $
 氏名＝鈴木
 地名＝東京 時刻＝16:45
 地名＝神戸 時刻＝15:30
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ cat template
 表題 %1
 LABEL-1
@@ -318,37 +294,30 @@ LABEL-2
 地名＝%2 時刻＝%3
 LABEL-2
 LABEL-1
-$
-</pre>
+$</pre>
 <p>階層の深さに制約はない。ラベルは部分一致でラベル行と判定される。コマンドライン上は<code>-h</code>LABELとし、templateでは階層にあわせてLABEL-1、LABEL-2とするのが有効。このような階層ラベルはtemplateの中でそれぞれ1組ずつのみ認められている。</p>
 <h3>【注意1】</h3>
 <p>デフォルトでは@はヌル文字列として置換される。文字を変更するには<code>-d</code>オプションを使う。<code>-d</code>オプションは<code>-h</code>や<code>-l</code>オプションの後に指定しなくてはならない。</p>
-<pre class="prettyprint">$ mojihame -dx template data
-</pre>
-<pre class="prettyprint">$ mojihame -lLABEL -dx template data
-</pre>
-<pre class="prettyprint">$ mojihame -hLABEL -dx template data
-</pre>
+<pre class="prettyprint">$ mojihame -dx template data</pre>
+<pre class="prettyprint">$ mojihame -lLABEL -dx template data</pre>
+<pre class="prettyprint">$ mojihame -hLABEL -dx template data</pre>
 <h3>【注意2】アンダースコアデータの扱い</h3>
 <p>データの中の<code>\_</code>は<code>mojihame</code>実行後には_に置換される。エスケープのない_は半角スペースに置換される。</p>
 <pre class="prettyprint">$ cat template
 &lt;input type=&quot;text&quot; value=&quot;%1&quot; /&gt;
 &lt;input type=&quot;text&quot; value=&quot;%2&quot; /&gt;
 &lt;input type=&quot;text&quot; value=&quot;%3&quot; /&gt;
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ cat data
 usp_lab
 usp\_lab
 ______\_\_
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ mojihame template data
 &lt;input type=&quot;text&quot; value=&quot;usp lab&quot; /&gt;
 &lt;input type=&quot;text&quot; value=&quot;usp_lab&quot; /&gt;
 &lt;input type=&quot;text&quot; value=&quot;      __&quot; /&gt;
-$
-</pre>
+$</pre>
 <h3>【備考】</h3>
 	  <ol>
 <li>ファイル名に<code>-</code>を指定したときは標準入力からのデータを期待する。templateもdataのいずれかを指定できる。
