@@ -2,7 +2,7 @@
 #
 # MAKEMANUAL: MANUAL/*.txt から MANUALHTML を作成する
 #
-# : written by 柳 日向 (h-yanagi@usp-lab.com; 2022-08-11)
+# : written by 柳 日向 (h-yanagi@usp-lab.com; 2022-08-13)
 #
 
 ####################################################################
@@ -40,13 +40,27 @@ ERROR_CHECK() {
 
 html2man() {
 	TARGET=${1}
-	OUT=MANUALHTML/${TARGET}.html
+
+	if [ -z "${uec:-}" ]; then
+		mkdir -p MANUALHTML
+		OUT=MANUALHTML/${TARGET}.html
+	else
+		mkdir -p MANUALUEC
+		SECTION=$(sed -n 3p "MANUAL/${TARGET}.txt" |
+		          sed -n -e 's|^.*(\([15]\))$|\1|p');
+		OUT=MANUALUEC/MAN${SECTION}_${TARGET}
+	fi
+
 	OUTDIR=${2}
 	
 	####################################################################
 	#テンプレートから基本コンテンツを生成
 	{
-		awk < ${dir}/MANUALHTML/COMMON/HTML/TEMPLATE.HTML '/^<!--CONTENTS_CONTENTS-->$/ {exit} 1' |
+		if [ -z "${uec:-}" ]; then
+			awk < ${dir}/MANUALHTML/COMMON/HTML/TEMPLATE.HTML '/^<!--CONTENTS_CONTENTS-->$/ {exit} 1'
+		else
+			echo  -n
+		fi                                                                |
 		sed 's/<!--CONTENTS_TITLE-->/'"${TARGET} - "'/'
 
 		version=`
@@ -70,15 +84,23 @@ html2man() {
 					print > (tmp "-lastmodified")
 					exit
 				} 1' "MANUAL/${TARGET}.txt"  |
-		awk  -vcommands_pattern="(${commands_pattern}|sorter)[(]1[)]" -vcommand="${TARGET}" '
+		awk  -vuec="${uec:-}"                                         \
+		     -vcommands_pattern="(${commands_pattern}|sorter)[(]1[)]" \
+			 -vcommand="${TARGET}" '
 			function hyperlink_category5(content) {
-				content = gensub(/フィールド形式\(5\)/, "<a href=\"field-format.html\" class=\"command\">\\0</a>", "g", content)
-				content = gensub(/マスタファイル\(5\)/, "<a href=\"master-file.html\" class=\"command\">\\0</a>", "g", content)
-				content = gensub(/ネームファイル\(5\)/, "<a href=\"name-file.html\" class=\"command\">\\0</a>", "g", content)
-				content = gensub(/ネーム形式\(5\)/, "<a href=\"name-format.html\" class=\"command\">\\0</a>", "g", content)
-				content = gensub(/タグ形式\(5\)/, "<a href=\"tag-format.html\" class=\"command\">\\0</a>", "g", content)
+				if (uec) {
+					format = "?POMPA=MAN5_%s"
+				} else {
+					format = "%s.html"
+				}
+
+				content = gensub(/フィールド形式\(5\)/, "<a href=\"" sprintf(format, "field-format") "\" class=\"command\">\\0</a>", "g", content)
+				content = gensub(/マスタファイル\(5\)/, "<a href=\"" sprintf(format, "master-file") "\" class=\"command\">\\0</a>", "g", content)
+				content = gensub(/ネームファイル\(5\)/, "<a href=\"" sprintf(format, "name-file") "\" class=\"command\">\\0</a>", "g", content)
+				content = gensub(/ネーム形式\(5\)/, "<a href=\"" sprintf(format, "name-format") "\" class=\"command\">\\0</a>", "g", content)
+				content = gensub(/タグ形式\(5\)/, "<a href=\"" sprintf(format, "tag-format") "\" class=\"command\">\\0</a>", "g", content)
 				content = gensub(/num=&lt;n&gt;/, "<code>\\0</code>", "g", content)
-				return gensub(/トランザクションファイル\(5\)/, "<a href=\"transaction-file.html\" class=\"command\">\\0</a>", "g", content)
+				return gensub(/トランザクションファイル\(5\)/, "<a href=\"" sprintf(format, "transaction-file") "\" class=\"command\">\\0</a>", "g", content)
 			}
 
 			function prettyprint(content) {
@@ -129,6 +151,7 @@ html2man() {
 				gsub(/[ \t]+$/, "", content);
 
 				if (mode == "list" || mode == "prettyprint") {
+					gsub(/\s+$/, "", content)
 					printf "<pre class=\"%s\">%s</pre>\n", mode, content
 				} else if (mode == "unordered_list" || mode == "ordered_list") {
 					tag = mode =="unordered_list" ? "ul" : "ol"
@@ -167,7 +190,11 @@ html2man() {
 					}
 
 					if (name_has_occured) {
-						content = gensub(commands_pattern, "<a href=\"\\1.html\" class=\"command\">\\0</a>", "g", content)
+						if (uec) {
+							content = gensub(commands_pattern, "<a href=\"?POMPA=MAN1_\\1\" class=\"command\">\\0</a>", "g", content)
+						} else {
+							content = gensub(commands_pattern, "<a href=\"\\1.html\" class=\"command\">\\0</a>", "g", content)
+						}
 
 						if (match(content, /([-a-z0-9_]+)\(1\)|[ぁ-ん亜-熙]+\(5\)/)) {
 							content = hyperlink_category5(content)
@@ -193,7 +220,12 @@ html2man() {
 				mode = ""
 			}
 
-			NR == 1 {print_content(); printf "<h2>%s</h2>\n", $0; next}
+			NR == 1 {
+				print_content()
+				level = uec ? 1 : 2
+				printf "<h%d>%s</h%d>\n", level, $0, level
+				next
+			}
 			$0 ~ /^Usage +:/ {mode = "list"}
 
 			command == "check_cmp_name" && $0 ~ /^    / {
@@ -281,14 +313,16 @@ html2man() {
 				gsub(/&/, "\\&amp;");
 				gsub(/</, "\\&lt;");
 				gsub(/</, "\\&gt;");
-				printf "<h3>%s</h3>\n", $0
+				level = uec ? 2 : 3
+				printf "<h%d>%s</h%d>\n", level, $0, level
 				mode = ""
 				next
 			}
 
 			match($0, /^<([亜-熙ぁ-んァ-ヶ].+)>$/, title) {
 				print_content()
-				printf "<h4>%s</h4>\n", title[1]
+				level = uec ? 3 : 4
+				printf "<h%d>%s</h%d>\n", level, title[1], level
 				mode = ""
 				next
 			}
@@ -354,8 +388,12 @@ html2man() {
 
 			END {print_content()}'
 
-		sed -n '/CONTENTS_CONTENTS/,$p' ${dir}/MANUALHTML/COMMON/HTML/TEMPLATE.HTML |
-		tail -n+2                                                                   |
+		if [ -z "${uec:-}" ]; then
+			sed -n '/CONTENTS_CONTENTS/,$p' ${dir}/MANUALHTML/COMMON/HTML/TEMPLATE.HTML
+		else
+			echo -n
+		fi                                                        |
+		tail -n+2                                                 |
 		sed 's/<!--YEAR-->/'"$(date +%Y)"'/'                      |
 		sed 's/<!--LASTMODIFIED-->/'"$(
 			egrep '^last modified:' "${dir}/MANUAL/${TARGET}.txt" |
@@ -398,6 +436,8 @@ ERROR_CHECK
 
 mkdir -p "${dir}"
 
+export uec
+
 if [ "$#" -eq 1 ]; then
 	# 単一コマンドのマニュアルを作成する
 
@@ -406,7 +446,7 @@ else
 	# アルファベット順にコマンド一覧を列挙する
 
 	for command in $(find -s ${commands} -type f | xargs basename); do
-		echo building a MANUALHTML of ${command} >&2
+		echo building a MANUAL"$([ ! -s "${uec:-}" ] && echo -n UEC || echo -n HTML)" of ${command} >&2
 		html2man "${command}" "${dir}"
 	done
 fi
