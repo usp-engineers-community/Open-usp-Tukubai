@@ -134,11 +134,9 @@
 <h3>【書式】</h3>
 <pre class="list">Usage   : loopj [-d&lt;string&gt;] num=&lt;num&gt; &lt;file1&gt; &lt;file2&gt; ..
 Version : Sat Jun 20 21:57:20 JST 2020
-Edition : 1
-
-</pre>
+Edition : 1</pre>
 <h3>【説明】</h3>
-<p>引数で指定した複数のテキストファイルを、第1フィールドから<code>num=&lt;n&gt;</code>で指定したフィールドまでをキーにしてすべて連結する(<code>loopj=loop</code>of join)。各ファイルの中でキーフィールドが一致しない行についてはそれぞれ0でフィールドを補完する。</p>
+<p>引数で指定した複数のテキストファイルを、第1フィールドから<code><code>num=&lt;n&gt;</code></code>で指定したフィールドまでをキーにしてすべて連結する(<code>loopj=loop</code>of join)。各ファイルの中でキーフィールドが一致しない行についてはそれぞれ0でフィールドを補完する。</p>
 <p>連結する各ファイルは0バイトより大きく、キーとなるフィールドは必ずユニークかつ昇順で整列されていることが条件となる。フィールド数がキーフィールド数に満たない場合エラーとなる。また、<code>&lt;file&gt;</code>が0バイトファイルの場合にもエラーとなる。</p>
 <h3>【例1】基本的な使い方</h3>
 <pre class="prettyprint">$ cat file1
@@ -146,22 +144,19 @@ Edition : 1
 0000005 崎村______ B
 0000007 梶川______ C
 0000010 柳本______ D
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ cat file2
 0000000 50
 0000003 26
 0000004 40
 0000009 68
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ cat file3
 0000000 F
 0000003 F
 0000004 M
 0000005 F
-$
-</pre>
+$</pre>
 <p>3つのファイルを連結するには次のようにコマンドを実行する。</p>
 <pre class="prettyprint">$ loopj num=1 file1 file2 file3
 0000000 0 0 50 F
@@ -171,11 +166,9 @@ $
 0000007 梶川______ C 0 0
 0000009 0 0 68 0
 0000010 柳本______ D 0 0
-$
-</pre>
+$</pre>
 <p>ファイル名を<code>-</code>にすることで、標準入力ファイルを連結することができる。</p>
-<pre class="prettyprint">$ cat file2 | loopj num=1 file1 - file3
-</pre>
+<pre class="prettyprint">$ cat file2 | loopj num=1 file1 - file3</pre>
 <h3>【例2】-d オプション</h3>
 <p><code>-d</code>オプションを使用することで補完する文字列を指定することができる。</p>
 <pre class="prettyprint">$ loopj -d@@@ num=1 file1 file2 file3
@@ -186,36 +179,31 @@ $
 0000007 梶川______ C @@@ @@@
 0000009 @@@ @@@ 68 @@@
 0000010 柳本______ D @@@ @@@
-$
-</pre>
+$</pre>
 <h3>【例3】キーのみを持つファイルの連結</h3>
 <p>キーのみを持つファイルを連結した場合には値のみ補完が実施される。</p>
 <pre class="prettyprint">$ cat file1
 0001 1
 0002 2
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ cat file2
 0001
 0002
 0003
 0004
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ loopj num=1 file1 file2
 0001 1
 0002 2
 0003 0
 0004 0
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ loopj num=1 file2 file2
 0001
 0002
 0003
 0004
-$
-</pre>
+$</pre>
 <h3>【注意】</h3>
 <p>連結するファイルが0バイトの時はエラーになる。</p>
 <pre class="prettyprint">$ : &gt; data1
@@ -223,20 +211,17 @@ $ cat data2
 a 1
 b 2
 c 3
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ loopj num=1 data1 data2
 Error[loopj] : 0バイトファイル[1]は連結できません。
-$
-</pre>
+$</pre>
 <p>上記の例でdata1が、例えば3フィールドあることを保証するには、次のようにコマンドを実行すれば良い。</p>
 <pre class="prettyprint">$ [ ! -s data1 ] &amp;&amp; echo x 0 0 &gt; data1
 $ loopj num=1 data1 data2 |  awk '$1!~/x/
 a 0 0 1
 b 0 0 2
 c 0 0 3
-$
-</pre>
+$</pre>
 <h3>【関連項目】</h3>
 <p><a href="join0.html" class="command">join0(1)</a>、<a href="join1.html" class="command">join1(1)</a>、<a href="join2.html" class="command">join2(1)</a>、<a href="loopx.html" class="command">loopx(1)</a>、<a href="up3.html" class="command">up3(1)</a>、<a href="master-file.html" class="command">マスタファイル(5)</a>、<a href="transaction-file.html" class="command">トランザクションファイル(5)</a></p>
     </div>

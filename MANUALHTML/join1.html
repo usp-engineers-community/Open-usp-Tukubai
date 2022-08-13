@@ -134,9 +134,7 @@
 <h3>【書式】</h3>
 <pre class="list">Usage   : join1 [+ng[&lt;fd&gt;]] key=&lt;n&gt; &lt;master&gt; [&lt;tran&gt;]
 Version : Sun Jun 19 23:55:51 JST 2022
-Edition : 1
-
-</pre>
+Edition : 1</pre>
 <h3>【説明】</h3>
 <p>tranの<code>key=&lt;n&gt;</code>で指定したキーフィールドがmasterの第1フィールド(キーフィールド)と一致した行のみtranから抽出して、masterの情報を連結して出力する。連結はtranのキーフィールドの直後にmasterの内容を挿入連結する形で実施される。</p>
 <p>masterに<code>-</code>を指定すると標準入力をマスタファイルとする。tranが無指定かまたは<code>-</code>が指定されている場合には、標準入力がトランザクションファイルとなる。</p>
@@ -151,8 +149,7 @@ Edition : 1
 0000005 崎村______ 50 F
 0000007 梶川______ 42 F
 0000010 柳本______ 50 F
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ cat keihi
 20070401 0000001 300
 20070403 0000001 500
@@ -165,8 +162,7 @@ $
 20070402 0000007 210
 20070404 0000007 410
 20070406 0000007 610
-$
-</pre>
+$</pre>
 <p>keihiの第2フィールドをキーにしてmasterを結合する。masterに存在するキーをもつ行にしか連結を行わない。存在しない行は捨てられる。keihiは同じキーを持つ行が複数行あっても構わない。</p>
 <pre class="prettyprint">$ join1 key=2 master keihi
 20070401 0000003 杉山______ 26 F 200
@@ -177,8 +173,7 @@ $
 20070402 0000007 梶川______ 42 F 210
 20070404 0000007 梶川______ 42 F 410
 20070406 0000007 梶川______ 42 F 610
-$
-</pre>
+$</pre>
 <h3>【例2】</h3>
 <p>左から順に連続した複数のフィールドをキーに指定する場合は次のように実行する。kekkaファイルの第2フィールド、第2フィールドをキーにして(第2、第3フィールド順に整列されている)masterファイル(第1、第2フィールドの順に整列されている)に存在する行のみ抽出して、masterの内容を連結して出力している。</p>
 <pre class="prettyprint">$ cat master
@@ -186,8 +181,7 @@ A 0000003 杉山______ 26 F
 A 0000005 崎村______ 50 F
 B 0000007 梶川______ 42 F
 C 0000010 柳本______ 50 F
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ cat kekka
 1 A 0000000 91 59 20 76 54
 2 A 0000001 46 39 8  5  21
@@ -199,18 +193,15 @@ $
 8 C 0000009 60 89 33 18 6
 9 C 0000010 95 60 35 93 76
 10 C 0000011 92 56 83 96 75
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ join1 key=2/3 master kekka
 3 A 0000003 杉山______ 26 F 30 50 71 36 30
 5 A 0000005 崎村______ 50 F 82 79 16 21 80
 6 B 0000007 梶川______ 42 F 50 2  33 15 62
 9 C 0000010 柳本______ 50 F 95 60 35 93 76
-$
-</pre>
+$</pre>
 <p>左から順に連続していない複数のフィールドをキーに指定することも可能。この場合は複数のキーフィールドを@でつなげて指定する。なお次の例の場合には、tranは第4、第2フィールドの順に整列され、masterは第3、第1フィールドの順に整列されていることが必要となる。</p>
-<pre class="prettyprint">$ join1 key=4@2 master tran
-</pre>
+<pre class="prettyprint">$ join1 key=4@2 master tran</pre>
 <h3>【例3】"+ng" オプション</h3>
 <p>masterとキーに一致しない行を抽出することも可能。キーに一致する行は標準出力に、一致しない行は標準エラー出力に出力される。この場合、一致する行はマスタファイルと連結されるが、一致しない行はマスタファイルに存在しないため連結されずそのまま出力されることになる。</p>
 <pre class="prettyprint">$ cat master
@@ -218,8 +209,7 @@ $
 0000005 崎村______ 50 F
 0000007 梶川______ 42 F
 0000010 柳本______ 50 F
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ cat kekka
 0000000 91 59 20 76 54
 0000001 46 39 8  5  21
@@ -231,18 +221,15 @@ $
 0000009 60 89 33 18 6
 0000010 95 60 35 93 76
 0000011 92 56 83 96 75
-$
-</pre>
+$</pre>
 <p>成績ファイルkekkaからmasterに登録されている4名のデータとその他のデータはそれぞれ次のように抽出できる。</p>
-<pre class="prettyprint">$ join1 +ng key=1 master kekka &gt; ok-data 2&gt; ng-data
-</pre>
+<pre class="prettyprint">$ join1 +ng key=1 master kekka &gt; ok-data 2&gt; ng-data</pre>
 <pre class="prettyprint">$ cat ok-data           ←　一致したデータ
 0000003 杉山______ 26 F 30 50 71 36 30
 0000005 崎村______ 50 F 82 79 16 21 80
 0000007 梶川______ 42 F 50 2  33 15 62
 0000010 柳本______ 50 F 95 60 35 93 76
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ cat ng-data           ←　一致しなかったデータ
 0000000 91 59 20 76 54
 0000001 46 39 8  5  21
@@ -250,8 +237,7 @@ $
 0000008 52 91 44 9  0
 0000009 60 89 33 18 6
 0000011 92 56 83 96 75
-$
-</pre>
+$</pre>
 <h3>【関連項目】</h3>
 <p><a href="cjoin0.html" class="command">cjoin0(1)</a>、<a href="cjoin1.html" class="command">cjoin1(1)</a>、<a href="cjoin2.html" class="command">cjoin2(1)</a>、<a href="join0.html" class="command">join0(1)</a>、<a href="join2.html" class="command">join2(1)</a>、<a href="loopj.html" class="command">loopj(1)</a>、<a href="loopx.html" class="command">loopx(1)</a>、<a href="up3.html" class="command">up3(1)</a>、<a href="master-file.html" class="command">マスタファイル(5)</a>、<a href="transaction-file.html" class="command">トランザクションファイル(5)</a></p>
     </div>

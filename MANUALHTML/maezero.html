@@ -135,9 +135,7 @@
 <pre class="list">Usage   : maezero &lt;f1.w1&gt; &lt;f2.w2&gt; .. &lt;file&gt;
 Option  : --ngthrough &lt;str&gt;
 Version : Sat Jun 20 21:57:21 JST 2020
-Edition : 1
-
-</pre>
+Edition : 1</pre>
 <h3>【説明】</h3>
 <p>引数のファイルまたは標準入力ファイルの指定フィールドを指定した桁数にて前ゼロパディングを行う。</p>
 <h3>【例1】</h3>
@@ -145,26 +143,22 @@ Edition : 1
 12 345 6789
 $ maezero 1.5 2.6 data
 00012 000345 6789
-$
-</pre>
+$</pre>
 <h3>【例2】</h3>
 <p>指定フィールドの内容が<code>--ngthrough</code>オプションで指定した文字列の場合は前ゼロパディングを行わない。</p>
 <pre class="prettyprint">$ maezero --ngthrough 345 1.5 2.6 data
 00012 345 6789
-$
-</pre>
+$</pre>
 <h3>【例3】</h3>
 <p>連続したフィールドを指定することができる。</p>
 <pre class="prettyprint">$ maezero 1.6/3.6 data
 000012 000345 006789
-$
-</pre>
+$</pre>
 <h3>【例4】</h3>
 <p>フィールド指定に<code>NF</code>や<code>NF -&lt;n&gt;</code>を使うことがでる。</p>
 <pre class="prettyprint">$ maezero NF-1.6 data
 12 000345 6789
-$
-</pre>
+$</pre>
 <h3>【備考】</h3>
 <p><a href="maezero.html" class="command">maezero(1)</a>コマンドはフィールドの内容に関しては何もチェックしていない。またフィールドの長さがすでに指定桁数を越えている時はそのフィールドに関しては処理を行わない。なお、指定フィールドは昇順になっている必要がある。</p>
 <h3>【関連項目】</h3>

@@ -134,9 +134,7 @@
 <h3>【書式】</h3>
 <pre class="list">Usage   : fsed [-e|-i] 's/&lt;org&gt;/&lt;new&gt;/&lt;n&gt;'... &lt;file&gt;
 Version : Sun Feb 21 04:35:05 JST 2021
-Edition : 1
-
-</pre>
+Edition : 1</pre>
 <h3>【説明】</h3>
 <p>ファイル<code>&lt;file&gt;</code>のフィールド<code>&lt;n&gt;</code>の中で、文字列<code>&lt;org&gt;</code>を文字列<code>&lt;new&gt;</code>に置換します。<code>&lt;n&gt;</code>に<code>'g'</code>を指定すると、全フィールドの指定になります。</p>
 <p><code>-e</code>オプションを使うと<code>&lt;org&gt;</code>を正規表現と解釈します。<code>-i</code>オプションを使うと大文字／小文字を区別しない正規表現になります。</p>
@@ -145,57 +143,47 @@ Edition : 1
 <p>第１フィールドの tokyo を TOKYO に、第３フィールドの osaka をOSAKAに置換します。</p>
 <pre class="prettyprint">$ cat data1
 tokyo 1234 tokyo 5678
-osaka 1234 osaka 5678
-</pre>
+osaka 1234 osaka 5678</pre>
 <pre class="prettyprint">$ fsed 's/tokyo/TOKYO/1' 's/osaka/OSAKA/3' data1
 TOKYO 1234 tokyo 5678
-osaka 1234 OSAKA 5678
-</pre>
+osaka 1234 OSAKA 5678</pre>
 <h3>【例２】</h3>
 <p>全フィールドの tokyo を yokohama に置換します。</p>
 <pre class="prettyprint">$ fsed 's/tokyo/yokohama/g' data1
 yokohama 1234 yokohama 5678
-osaka 1234 osaka 5678
-</pre>
+osaka 1234 osaka 5678</pre>
 <h3>【例３】</h3>
 <p>正規表現を使います。</p>
 <pre class="prettyprint">$ cat data3
 Tokyo 1234
 tokyo 5678
-TOKYO 7777
-</pre>
+TOKYO 7777</pre>
 <pre class="prettyprint">$ fsed -e 's/^[Tt]okyo$/東京/1' data3
 東京 1234
 東京 5678
-TOKYO 7777
-</pre>
+TOKYO 7777</pre>
 <h3>【例４】</h3>
 <p>大文字／小文字を区別しない正規表現を使います。</p>
 <pre class="prettyprint">$ fsed -i 's/^tokyo$/東京/1' data3
 東京 1234
 東京 5678
-東京 7777
-</pre>
+東京 7777</pre>
 <h3>【例５】</h3>
 <p>複数の置換指定を使います。</p>
 <pre class="prettyprint">$ fsed 's/tokyo/横浜/1' -i 's/tokyo/川崎/1' data3
 川崎 1234
 横浜 5678
-川崎 7777
-</pre>
+川崎 7777</pre>
 <h3>【例６】</h3>
 <p>置換指定の区切り文字<code>'/'</code>を置換対象にする場合。</p>
 <pre class="prettyprint">$ cat data6
-001 /home/MANUAL/TOOL/fsed.txt
-</pre>
+001 /home/MANUAL/TOOL/fsed.txt</pre>
 <p>data6 の中で、<code>'/'</code>を<code>'<code>-</code>'</code>に置換する場合、置換指定の区切り文字を<code>'/'</code>以外の文字(本例では<code>','</code>)にします。この文字には、任意の ASCII 文字を指定できます。</p>
 <pre class="prettyprint">$ fsed 's,/,-,2' data6
-001 -home-MANUAL-TOOL-fsed.txt
-</pre>
+001 -home-MANUAL-TOOL-fsed.txt</pre>
 <p>区切り文字は<code>'/'</code>のままにしておいて、パターン中の<code>'/'</code>に<code>'\'</code>を前置してもよいです。</p>
 <pre class="prettyprint">$ fsed 's/\//-/2' data6
-001 -home-MANUAL-TOOL-fsed.txt
-</pre>
+001 -home-MANUAL-TOOL-fsed.txt</pre>
     </div>
 
     <div id="lastmodified">Last modified: Fri Jul 15 15:42:38 JST 2022</div>

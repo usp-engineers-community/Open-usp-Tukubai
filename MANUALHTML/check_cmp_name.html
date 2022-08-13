@@ -135,9 +135,7 @@
 <pre class="list">Usage   : check_cmp_name &lt;expression&gt; &lt;name_file&gt;
 Option  : --through &lt;string&gt;
 Version : Tue Oct 19 23:46:03 JST 2021
-Edition : 1
-
-</pre>
+Edition : 1</pre>
 <h3>【説明】</h3>
 <p><code>&lt;expression&gt;</code>の記述に従って、<code>&lt;name_file&gt;</code>のデータのタグ同士やタグと値の大小関係をチェックします。</p>
 <p>エラーがある場合，<code>&lt;expression&gt;</code>を満たさないタグ名をすべて標準出力に出力してから、エラー終了します。</p>
@@ -160,8 +158,7 @@ D_002 2
 D_003 1
 E_001 1
 E_002 2
-E_003 3
-</pre>
+E_003 3</pre>
 <p>(タグ名とタグ名の比較)</p>
 <pre class="prettyprint">$ check_cmp_name 'A -le B' data
 $ echo $?
@@ -170,26 +167,22 @@ $ check_cmp_name 'A -eq B' data
 A
 B
 $ echo $?
-1
-</pre>
+1</pre>
 <p>(タグ名と数値の比較)</p>
 <pre class="prettyprint">$ check_cmp_name 'A -gt 300' data
 A
 $ echo $?
-1
-</pre>
+1</pre>
 <p>(<code>'_'</code>の場合はチェックしない)</p>
 <pre class="prettyprint">$ check_cmp_name 'C -ne 0' data
 $ echo $?
-0
-</pre>
+0</pre>
 <p>(複数レコードも正しくチェックする)</p>
 <pre class="prettyprint">$ check_cmp_name 'D -le E' data
 D_001
 E_001
 $ echo $?
-1
-</pre>
+1</pre>
     </div>
 
     <div id="lastmodified">Last modified: Thu Aug  4 05:16:09 JST 2022</div>

@@ -134,9 +134,7 @@
 <h3>【書式】</h3>
 <pre class="list">Usage   : up3 key=&lt;key&gt; &lt;master&gt; [&lt;tran&gt;]
 Version : Fri Nov 20 17:00:13 JST 2020
-Edition : 1
-
-</pre>
+Edition : 1</pre>
 <h3>【説明】</h3>
 <p>masterとtranの各行を<code>key=</code>で指定されたフィールド値で比較し、同じキーフィールドを持つ行をmasterの該当行の下に挿入して出力する。masterもtranもキーとなるフィールドは整列されている必要がある。tran指定を省略すると標準入力(stdin)からの入力となる。</p>
 <h3>【例1】</h3>
@@ -150,8 +148,7 @@ b店 3日目 150 82
 c店 1日目 81 52
 c店 2日目 76 49
 c店 3日目 38 21
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ cat tran              ← 4日目から5日目までのデータ
 a店 4日目 131 84
 a店 5日目 189 111
@@ -159,8 +156,7 @@ b店 4日目 198 105
 b店 5日目 259 189
 c店 4日目 81 48
 c店 5日目 98 61
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ up3 key=1 master tran
 a店 1日目 103 62
 a店 2日目 157 94
@@ -177,8 +173,7 @@ c店 2日目 76 49
 c店 3日目 38 21
 c店 4日目 81 48
 c店 5日目 98 61
-$
-</pre>
+$</pre>
 <p>複数のキーフィールドを指定する場合は<code>key=2@1</code>のように@でつないで指定する。</p>
 <h3>【関連項目】</h3>
 <p><a href="join0.html" class="command">join0(1)</a>、<a href="join1.html" class="command">join1(1)</a>、<a href="join2.html" class="command">join2(1)</a>、<a href="loopj.html" class="command">loopj(1)</a>、<a href="loopx.html" class="command">loopx(1)</a>、<a href="master-file.html" class="command">マスタファイル(5)</a>、<a href="transaction-file.html" class="command">トランザクションファイル(5)</a></p>

@@ -134,9 +134,7 @@
 <h3>【書式】</h3>
 <pre class="list">Usage   : cjoin2 [-d&lt;string&gt;] [+&lt;string&gt;] key=&lt;key&gt; &lt;master&gt; [&lt;tran&gt;]
 Version : Fri May 20 21:16:07 JST 2022
-Edition : 1
-
-</pre>
+Edition : 1</pre>
 <h3>【説明】</h3>
 <p>tranの<code>key=&lt;n&gt;</code>で指定したキーフィールドがmasterの第1フィールド(キーフィールド)と一致した行をtranから抽出し、masterの情報を連結して出力する。一致しない行はダミーデータ*を連結して出力する。ダミーデータは<code>-d</code>オプションまたは+オプションにて指定できる。</p>
 <p>masterに<code>-</code>を指定すると標準入力をマスタファイルとする。tranが無指定かまたは<code>-</code>が指定されている場合には、標準入力がトランザクションファイルとなる。</p>
@@ -149,8 +147,7 @@ Edition : 1
 0000003 杉山______ 26 F
 0000005 崎村______ 50 F
 0000007 梶川______ 42 F
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ cat tran
 0000005 82 79 16 21 80
 0000001 46 39 8  5  21
@@ -158,8 +155,7 @@ $
 0000009 60 89 33 18 6
 0000003 30 50 71 36 30
 0000007 50 2  33 15 62
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ cjoin2 key=1 master tran &gt; ok
 $ cat ok
 0000005 崎村______ 50 F 82 79 16 21 80
@@ -168,8 +164,7 @@ $ cat ok
 0000009 ********** ** * 60 89 33 18 6
 0000003 杉山______ 26 F 30 50 71 36 30
 0000007 梶川______ 42 F 50 2  33 15 62
-$
-</pre>
+$</pre>
 <h3>【例2】-d&lt;文字列> +&lt;文字列> オプションの使い方</h3>
 <pre class="prettyprint">$ cjoin2 -d@@ key=1 master tran &gt; ok
 $ cat ok
@@ -179,8 +174,7 @@ $ cat ok
 0000009 @@ @@ @@ 60 89 33 18 6
 0000003 杉山______ 26 F 30 50 71 36 30
 0000007 梶川______ 42 F 50 2  33 15 62
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ cjoin2 +@@ key=1 master tran &gt; ok
 $ cat ok
 0000005 崎村______ 50 F 82 79 16 21 80
@@ -189,13 +183,11 @@ $ cat ok
 0000009 @@ @@ @@ 60 89 33 18 6
 0000003 杉山______ 26 F 30 50 71 36 30
 0000007 梶川______ 42 F 50 2  33 15 62
-$
-</pre>
+$</pre>
 <h3>【例3】標準入力の使い方</h3>
 <pre class="prettyprint">$ cat tran | cjoin2 +ng key=1 master
 $ cat tran | cjoin2 +ng key=1 master -
-$ cat master | cjoin2 +ng key=1 - tran
-</pre>
+$ cat master | cjoin2 +ng key=1 - tran</pre>
 <h3>【関連項目】</h3>
 <p><a href="cjoin0.html" class="command">cjoin0(1)</a>、<a href="cjoin1.html" class="command">cjoin1(1)</a>、<a href="cjoin2.html" class="command">cjoin2(1)</a>、<a href="join0.html" class="command">join0(1)</a>、<a href="join1.html" class="command">join1(1)</a>、<a href="loopj.html" class="command">loopj(1)</a>、<a href="loopx.html" class="command">loopx(1)</a>、<a href="up3.html" class="command">up3(1)</a>、<a href="master-file.html" class="command">マスタファイル(5)</a>、<a href="transaction-file.html" class="command">トランザクションファイル(5)</a></p>
     </div>

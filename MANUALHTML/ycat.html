@@ -134,9 +134,7 @@
 <h3>【書式】</h3>
 <pre class="list">Usage   : ycat [-n] file1 file2 ....
 Version : Sat Jun 20 21:57:22 JST 2020
-Edition : 1
-
-</pre>
+Edition : 1</pre>
 <h3>【説明】</h3>
 <p>引数で指定した複数のファイルを横に並べて連結して出力する。各ファイルの形は崩れることはなく、ファイルの見た目そのままに横連結する。</p>
 <h3>【例1】基本的な使い方</h3>
@@ -147,8 +145,7 @@ Edition : 1
 0000004 白土______ 40 M
 0000005 崎村______ 50 F
 0000007 梶川______ 42 F
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ cat file2
 0000000 91 59 20 76 54
 0000001 46 39 8  5  21
@@ -156,8 +153,7 @@ $
 0000004 58 71 20 10 6
 0000005 82 79 16 21 80
 0000007 50 2  33 15 62
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ ycat file1 file2
 0000000 浜地______ 50 F 0000000 91 59 20 76 54
 0000001 鈴田______ 50 F 0000001 46 39 8  5  21
@@ -165,8 +161,7 @@ $
 0000004 白土______ 40 M 0000004 58 71 20 10 6
 0000005 崎村______ 50 F 0000005 82 79 16 21 80
 0000007 梶川______ 42 F 0000007 50 2  33 15 62
-$
-</pre>
+$</pre>
 <h3>【例2】</h3>
 <p><code>-&lt;n&gt;</code>オプションを使用すると、ファイルを<code>&lt;n&gt;</code>で指定した空白の分だけ間を空けることができる。</p>
 <pre class="prettyprint">$ ycat -3 file1 file2
@@ -176,8 +171,7 @@ $
 0000004 白土______ 40 M   0000004 58 71 20 10 6
 0000005 崎村______ 50 F   0000005 82 79 16 21 80
 0000007 梶川______ 42 F   0000007 50 2  33 15 62
-$
-</pre>
+$</pre>
 <h3>【例3】</h3>
 <p>-0を指定した場合にはファイルの隙間は追加されない。</p>
 <pre class="prettyprint">$ ycat -0 file1 file2
@@ -187,18 +181,14 @@ $
 0000004 白土______ 40 M0000004 58 71 20 10 6
 0000005 崎村______ 50 F0000005 82 79 16 21 80
 0000007 梶川______ 42 F0000007 50 2  33 15 62
-$
-</pre>
+$</pre>
 <h3>【例4】</h3>
 <p>テキストを標準入力から読み込む場合には<code>-</code>を記述する。</p>
-<pre class="prettyprint">$ cat file1 | ycat - file2
-</pre>
-<pre class="prettyprint">$ cat file2 | ycat file1 -
-</pre>
+<pre class="prettyprint">$ cat file1 | ycat - file2</pre>
+<pre class="prettyprint">$ cat file2 | ycat file1 -</pre>
 <h3>【備考】</h3>
 <p><a href="ycat.html" class="command">ycat(1)</a>は連結後の各ファイルの形が崩れないように、はじめに各ファイルの最大幅を測っている。このため、単純に空白横連結したいだけなら次のように<a href="https://linuxjm.osdn.jp/html/gnumaniak/man1/paste.1.html">paste(1)</a>コマンドを使う方が高速となる。</p>
-<pre class="prettyprint">$ paste -d&quot; &quot; file1 file2 file3
-</pre>
+<pre class="prettyprint">$ paste -d&quot; &quot; file1 file2 file3</pre>
 <h3>【関連項目】</h3>
 <p><a href="ctail.html" class="command">ctail(1)</a>、<a href="getfirst.html" class="command">getfirst(1)</a>、<a href="getlast.html" class="command">getlast(1)</a>、<a href="tcat.html" class="command">tcat(1)</a></p>
     </div>

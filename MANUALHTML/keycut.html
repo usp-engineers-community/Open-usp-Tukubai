@@ -137,9 +137,7 @@ Options : -d : キーの削除
         : -a : ファイル追記
         : -z : 圧縮
 Version : Thu Jul 28 14:56:55 JST 2022
-Edition : 1
-
-</pre>
+Edition : 1</pre>
 <h3>【説明】</h3>
 <p><code>&lt;file&gt;</code>を読み込み、分割先ファイル名<code>&lt;filename&gt;</code>で指定したキーフィールドの値が同一の行でファイルを分割する。例えば、第2フィールドが同じ値を持つ行でファイルを分割したいときは、data.%2のように<code>&lt;filename&gt;</code>を指定する。この時、分割先ファイル名はdata.(第2フィールドの値)となる。</p>
 <p>なお、<code>keycut</code>を使用する場合にはキーフィールドの値は事前に整列されている必要がある(内部的にはキーフィールドが変化したところでファイルに出力している)。<code>&lt;filename&gt;</code>におけるキーフィールドは%(フィールド番号)と指定するが、%5.2 %5.1.3のようにサブストリング指定も可能である。</p>
@@ -153,99 +151,80 @@ Edition : 1
 03 千葉県 12 柏市 95 60 35 93 76
 04 神奈川県 13 横浜市 92 56 83 96 75
 04 神奈川県 16 小田原市 45 21 24 39 03
-$
-</pre>
-<pre class="prettyprint">$ keycut data.%1 data
-</pre>
+$</pre>
+<pre class="prettyprint">$ keycut data.%1 data</pre>
 <pre class="prettyprint">$ ls -l data.*
 -rw-r--r-- 1 usp usp 87 2009-02-19 11:14 data.01        ←4つのファイルに分割
 -rw-r--r-- 1 usp usp 82 2009-02-19 11:14 data.02
 -rw-r--r-- 1 usp usp 77 2009-02-19 11:14 data.03
 -rw-r--r-- 1 usp usp 91 2009-02-19 11:14 data.04
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ cat data.01
 01 埼玉県 03 熊谷市 82 0 23 84 10
 01 埼玉県 01 さいたま市 91 59 20 76 54
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ cat data.02
 02 東京都 04 新宿区 30 50 71 36 30
 02 東京都 05 中央区 78 13 44 28 51
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ cat data.03
 03 千葉県 10 千葉市 52 91 44 9 0
 03 千葉県 12 柏市 95 60 35 93 76
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ cat data.04
 04 神奈川県 13 横浜市 92 56 83 96 75
 04 神奈川県 16 小田原市 45 21 24 39 03
-$
-</pre>
+$</pre>
 <h3>【例2】サブストリング指定</h3>
-<pre class="prettyprint">$ keycut data.%1.2.1 data
-</pre>
+<pre class="prettyprint">$ keycut data.%1.2.1 data</pre>
 <pre class="prettyprint">$ ls -l data.*
 -rw-r--r-- 1 usp usp 87 2009-02-19 11:15 data.1
 -rw-r--r-- 1 usp usp 82 2009-02-19 11:15 data.2
 -rw-r--r-- 1 usp usp 77 2009-02-19 11:15 data.3
 -rw-r--r-- 1 usp usp 91 2009-02-19 11:15 data.4
-$
-</pre>
+$</pre>
 <h3>【例3】-aオプション使用例</h3>
 <p><code>-a</code>オプションを指定すると分割先ファイルは追記されるようになる。分割先ファイルがないときは新たに作成される。このオプションを指定しない場合にはファイルは上書きとなる。</p>
-<pre class="prettyprint">$ keycut data.%1 data
-</pre>
-<pre class="prettyprint">$ keycut -a data.%1 data
-</pre>
+<pre class="prettyprint">$ keycut data.%1 data</pre>
+<pre class="prettyprint">$ keycut -a data.%1 data</pre>
 <pre class="prettyprint">$ ls -l data.*
 -rw-r--r-- 1 usp usp 174 2009-02-19 11:16 data.01
 -rw-r--r-- 1 usp usp 164 2009-02-19 11:16 data.02
 -rw-r--r-- 1 usp usp 154 2009-02-19 11:16 data.03
 -rw-r--r-- 1 usp usp 182 2009-02-19 11:16 data.04
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ cat data.01
 01 埼玉県 03 熊谷市 82 0 23 84 10
 01 埼玉県 01 さいたま市 91 59 20 76 54
 01 埼玉県 03 熊谷市 82 0 23 84 10
 01 埼玉県 01 さいたま市 91 59 20 76 54
-$
-</pre>
+$</pre>
 <h3>【例4】-dオプション使用例</h3>
 <p><code>-d</code>オプションを指定すると、キーフィールドを除いた行を分割先ファイルに作成するようになる。キーフィールド指定が%1.2.1等のサブストリング指定であっても、キーフィールド全体(この例だと第1フィールド全体)が取り除かれる。</p>
-<pre class="prettyprint">$ keycut -d data.%1 data
-</pre>
+<pre class="prettyprint">$ keycut -d data.%1 data</pre>
 <pre class="prettyprint">$ ls -l data.*
 -rw-r--r-- 1 usp usp 81 2009-02-19 13:13 data.01
 -rw-r--r-- 1 usp usp 76 2009-02-19 13:13 data.02
 -rw-r--r-- 1 usp usp 71 2009-02-19 13:13 data.03
 -rw-r--r-- 1 usp usp 85 2009-02-19 13:13 data.04
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ cat data.01
 埼玉県 03 熊谷市 82 0 23 84 10
 埼玉県 01 さいたま市 91 59 20 76 54
-$
-</pre>
+$</pre>
 <h3>【例5】-zオプション使用例</h3>
 <p><code>-z</code>オプションを指定すると、出力ファイルがGzip圧縮形式になる。</p>
-<pre class="prettyprint">$ keycut -z data.%1.gz data
-</pre>
+<pre class="prettyprint">$ keycut -z data.%1.gz data</pre>
 <pre class="prettyprint">$ ls -l data.*
 -rw-r--r-- 1 usp usp  98 2009-02-19 13:17 data.01.gz
 -rw-r--r-- 1 usp usp  94 2009-02-19 13:17 data.02.gz
 -rw-r--r-- 1 usp usp  82 2009-02-19 13:17 data.03.gz
 -rw-r--r-- 1 usp usp 100 2009-02-19 13:17 data.04.gz
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ gunzip &lt; data.01.gz
 01 埼玉県 03 熊谷市 82 0 23 84 10
 01 埼玉県 01 さいたま市 91 59 20 76 54
-$
-</pre>
+$</pre>
 <h3>【備考】</h3>
 <p><code>-a</code>オプションと-zオプションを併用したときは、すでに存在する圧縮ファイルに圧縮ファイルが追記される。生成されるファイルは<a href="https://linuxjm.osdn.jp/html/GNU_gzip/man1/zcat.1.html">gunzip(1)</a>コマンドで展開できるが、仕様的に正しい動作はどうかは未調査。</p>
 <h3>【関連項目】</h3>

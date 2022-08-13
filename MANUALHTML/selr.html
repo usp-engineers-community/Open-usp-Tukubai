@@ -135,9 +135,7 @@
 <pre class="list">Usage   : selr &lt;field&gt; &lt;str&gt; &lt;file&gt;
 Option  : --through &lt;str&gt;
 Version : Sun Nov 21 17:29:33 JST 2021
-Edition : 1
-
-</pre>
+Edition : 1</pre>
 <h3>【説明】</h3>
 <p>引数のファイルのテキストデータより、指定したフィールドが指定した文字列と完全一致した行を出力します。ファイル名が省略された時及び<code>&quot;-&quot;</code>の時は標準入力から入力します。</p>
 <h3>【例１】 指定したフィールドが完全一致した行を出力する</h3>
@@ -145,26 +143,21 @@ Edition : 1
 0001 a
 0002 b
 0003 c
-0004 c
-</pre>
+0004 c</pre>
 <pre class="prettyprint">$ selr 1 &quot;0001&quot; data
-0001 a
-</pre>
+0001 a</pre>
 <pre class="prettyprint">$ selr 2 c data
 0003 c
-0004 c
-</pre>
+0004 c</pre>
 <h3>【例２】</h3>
 <p><code>--through</code>を指定したときは、<code>&lt;str&gt;</code>が同じものであれば、無条件に全レコードを出力し、異なるものであれば、<code>--through</code>を指定しなかったように動作します。</p>
 <pre class="prettyprint">$ selr --through _ 2 _ data
 0001 a
 0002 b
 0003 c
-0004 c
-</pre>
+0004 c</pre>
 <pre class="prettyprint">$ selr --through _ 2 a data
-0001 a
-</pre>
+0001 a</pre>
 <h3>【関連項目】</h3>
 <p><a href="delr.html" class="command">delr(1)</a></p>
     </div>

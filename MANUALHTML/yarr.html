@@ -135,11 +135,9 @@
 <pre class="list">Usage   : yarr [-&lt;n&gt;][-d&lt;str&gt;] [&lt;file&gt;]
         : yarr [-&lt;n&gt;][-d&lt;str&gt;] num=&lt;n&gt; [&lt;file&gt;]
 Version : Wed Aug  3 07:01:40 JST 2022
-Edition : 1
-
-</pre>
+Edition : 1</pre>
 <h3>【説明】</h3>
-<p>指定したファイルの第1フィールドから<code>num=&lt;n&gt;</code>で指定したフィールド数までのフィールドをキーとし、キーが同一の行のフィールドを横に展開して1行として出力する。<code>&lt;file&gt;</code>として<code>-</code>を指定すると標準入力を使用する。</p>
+<p>指定したファイルの第1フィールドから<code><code>num=&lt;n&gt;</code></code>で指定したフィールド数までのフィールドをキーとし、キーが同一の行のフィールドを横に展開して1行として出力する。<code>&lt;file&gt;</code>として<code>-</code>を指定すると標準入力を使用する。</p>
 <h3>【例1】基本的な使い方</h3>
 <pre class="prettyprint">$ cat data
 0000000 浜地______ 50 F 91
@@ -158,15 +156,13 @@ Edition : 1
 0000004 白土______ 40 M 71
 0000004 白土______ 40 M 20
 0000004 白土______ 40 M 10
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ yarr num=4 data
 0000000 浜地______ 50 F 91 59 20 76
 0000001 鈴田______ 50 F 46 39 8 5
 0000003 杉山______ 26 F 30 50 71 36
 0000004 白土______ 40 M 58 71 20 10
-$
-</pre>
+$</pre>
 <h3>【例2】</h3>
 <p><code>-&lt;n&gt;</code>オプションを使うことで<code>&lt;n&gt;</code>個ずつ横展開できる。</p>
 <pre class="prettyprint">$ yarr -2 num=4 data &gt; data3
@@ -179,21 +175,18 @@ $ cat data3
 0000003 杉山______ 26 F 71 36
 0000004 白土______ 40 M 58 71
 0000004 白土______ 40 M 20 10
-$
-</pre>
+$</pre>
 <h3>【例3】</h3>
-<p><code>num=&lt;n&gt;</code>を指定しない場合単純に横展開する。</p>
+<p><code><code>num=&lt;n&gt;</code></code>を指定しない場合単純に横展開する。</p>
 <pre class="prettyprint">$ cat data4
 1
 2
 3
 4
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ yarr data4
 1 2 3 4
-$
-</pre>
+$</pre>
 <h3>【例4】</h3>
 <p><code>-d &lt;str&gt;</code>オプションは横展開するときのフィールドセパレータを指定する。</p>
 <pre class="prettyprint">$ yarr -d@ num=4 data &gt; data2
@@ -202,15 +195,13 @@ $ cat data2
 0000001 鈴田______ 50 F 46@39@8@5
 0000003 杉山______ 26 F 30@50@71@36
 0000004 白土______ 40 M 58@71@20@10
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ yarr -d'n' num=4 data
 0000000 浜地______ 50 F 91n59n20n76
 0000001 鈴田______ 50 F 46n39n8n5
 0000003 杉山______ 26 F 30n50n71n36
 0000004 白土______ 40 M 58n71n20n10
-$
-</pre>
+$</pre>
 <h3>【関連項目】</h3>
 <p><a href="tarr.html" class="command">tarr(1)</a></p>
     </div>

@@ -135,9 +135,7 @@
 <pre class="list">Usage   : check_need_name &lt;check_file&gt; &lt;name_file&gt;
 Option  : --blank &lt;string&gt;
 Version : Mon Dec 20 21:02:03 JST 2021
-Edition : 1
-
-</pre>
+Edition : 1</pre>
 <h3>【説明】</h3>
 <p><code>&lt;check_file&gt;</code>に記述されているフィールド値に基づいて、<code>&lt;name_file&gt;</code>ネームファイルの整合性を判断する。<code>&lt;check_file&gt;</code>に記述されている第1フィールドの値が<code>&lt;name_file&gt;</code>の第1フィールドのどこにも存在しなかったり、<code>&lt;name_file&gt;</code>の第2フィールドの値がない、または_だった場合にコマンドはエラー終了し、標準出力にそのフィールド値を出力する。</p>
 <p><code>&lt;check_file&gt;</code>ファイルは2フィールドあっても動作する。詳しくは例1を参照のこと。<code>&lt;check_file&gt;</code>は、フィールド値+(_以外の文字列)でも正しく認識する。</p>
@@ -148,8 +146,7 @@ A
 B
 C
 D
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ cat check_file2               ←check_fileとcheck_file2は同等
 A need
 B need
@@ -157,37 +154,32 @@ C need
 D need
 E _
 F _
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ cat name_file
 A _
 B 12345
 C abcde
 D_001 _
 D_002 xxx
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ check_need_name check_file name_file
 A
 D_001
 $ echo $?
 1
-$
-</pre>
+$</pre>
 <h3>【例2】--blank オプションでヌルデータを指定する。</h3>
 <pre class="prettyprint">$ cat name_file2
 A @
 B 1
 C 2
 D 3
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ check_need_name --blank @ check_file name_file2
 A
 $ echo $?
 1
-$
-</pre>
+$</pre>
 <h3>【関連項目】</h3>
 <p><a href="name-format.html" class="command">ネーム形式(5)</a></p>
     </div>

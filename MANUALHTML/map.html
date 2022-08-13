@@ -137,9 +137,7 @@
         : map +arr  [-&lt;l&gt;] num=&lt;n&gt;x&lt;m&gt; &lt;file&gt;
 Option  : -m&lt;c&gt; -n
 Version : Sat Sep 19 23:49:25 JST 2020
-Edition : 1
-
-</pre>
+Edition : 1</pre>
 <h3>【説明】</h3>
 <p>引数のファイルまたは標準入力のテキストデータが縦キーフィールド<code>&lt;n&gt;</code>個、横キーフィールド<code>&lt;m&gt;</code>個(未指定時<code>m=1</code>)、残りがデータフィールドであると仮定し、データを表に並べて出力する。表に展開することでデータの欠落が発生する場合は0で補完する。補完する文字は<code>-m</code>オプションで変更できる。</p>
 <h3>【例1】</h3>
@@ -149,27 +147,23 @@ Edition : 1
 001 a店 01/02 157
 002 b店 01/01 210
 002 b店 01/02 237
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ map num=2 data |  keta
 *   * 01/01 01/02
 001 a店   103   157
 002 b店   210   237
-$
-</pre>
+$</pre>
 <h3>【例2】</h3>
 <p>データに欠落がある場合、データが存在しない場所に値0が補完される。</p>
 <pre class="prettyprint">$ cat data
 001 a店 01/01 103
 002 b店 01/02 237
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ map num=2 data |  keta
 *   * 01/01 01/02
 001 a店   103     0
 002 b店     0   237
-$
-</pre>
+$</pre>
 <h3>【例3】</h3>
 <p>データ部が複数列ある場合には複数行にマッピングが実施される。この時、各行にはA BC ...と順にインデックスが追加される。</p>
 <pre class="prettyprint">$ cat data
@@ -181,8 +175,7 @@ a店 4日目 131 84
 ・
 d店 6日目 98 69
 d店 7日目 101 90
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ map num=1 data |  keta
 * * 1日目 2日目 3日目 4日目 5日目 6日目 7日目
 a店 A   103   157    62   131   189   350   412
@@ -193,8 +186,7 @@ c店 A    81    76    38    81    98   109   136
 c店 B    52    49    21    48    61    91   110
 d店 A    75    72    34    74    91    98   101
 d店 B    48    42    19    43    51    69    90
-$
-</pre>
+$</pre>
 <h3>【例4】</h3>
 <p>例2の結果をさらにsed(1)コマンドでAを売数、Bを客数に置換すると次のような表になる。</p>
 <pre class="prettyprint">$ map num=1 data |  sed -e 's/A/売数/1' -e 's/B/客数/1' | keta
@@ -207,8 +199,7 @@ c店 売数    81    76    38    81    98   109   136
 c店 客数    52    49    21    48    61    91   110
 d店 売数    75    72    34    74    91    98   101
 d店 客数    48    42    19    43    51    69    90
-$
-</pre>
+$</pre>
 <h3>【例5】</h3>
 <p><code>+yarr</code>オプションを指定することでデータ部の複数列を横に展開することができる。</p>
 <pre class="prettyprint">$ map +yarr num=1 data |  keta
@@ -218,8 +209,7 @@ a店   103    62   157    94    62    30  --   412   301
 b店   210   113   237   121   150    82  --   589   493
 c店    81    52    76    49    38    21  --   136   110
 d店    75    48    72    42    34    19  --   101    90
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ map +yarr num=1 data |  sed -e '2s/a/売数/g' -e '2s/b/客数/g' | keta
 * 1日目 1日目 2日目 2日目 3日目 3日目  -- 7日目 7日目
 *  売数  客数  売数  客数  売数  客数  --  売数  客数
@@ -227,8 +217,7 @@ a店   103    62   157    94    62    30  --   412   301
 b店   210   113   237   121   150    82  --   589   493
 c店    81    52    76    49    38    21  --   136   110
 d店    75    48    72    42    34    19  --   101    90
-$
-</pre>
+$</pre>
 <p>横インデックスが不要な場合には<code>+a</code>r<code>r</code>オプションを使用する。</p>
 <pre class="prettyprint">$ map +arr num=1 data |  keta
 * 1日目 1日目 2日目 2日目 3日目 3日目  -- 7日目 7日目
@@ -236,22 +225,19 @@ a店   103    62   157    94    62    30  --   412   301
 b店   210   113   237   121   150    82  --   589   493
 c店    81    52    76    49    38    21  --   136   110
 d店    75    48    72    42    34    19  --   101    90
-$
-</pre>
+$</pre>
 <h3>【例6】</h3>
 <p><code>-m</code>オプションで補完文字を指定できる。デフォルトは0。</p>
 <pre class="prettyprint">$ cat data
 A a 1
 A b 2
 B a 4
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ map -m@ num=1 data
 * a b
 A 1 2
 B 4 @
-$
-</pre>
+$</pre>
 <h3>【例7】</h3>
 <p><code>-&lt;数値&gt;</code>オプションを妻うことで<code>&lt;数値&gt;</code>フィールド分ずつ<a href="map.html" class="command">map(1)</a>を実施することができる。<code>&lt;数値&gt;</code>はデータ部のフィールド数の約数である必要がある。</p>
 <pre class="prettyprint">$ cat data
@@ -259,8 +245,7 @@ X x 1 2 3 4 5 6         ←データ部を1 2 3と4 5 6というように3つず
 X y 1 2 3 4 5 6
 Y x 1 2 3 4 5 6
 Y y 1 2 3 4 5 6
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ map -3 num=1 data             ←3フィールド分ずmap(1)する
 * * x x y y
 * * a b a b
@@ -270,8 +255,7 @@ X C 3 6 3 6
 Y A 1 4 1 4
 Y B 2 5 2 5
 Y C 3 6 3 6
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ map +yarr -3 num=1 data               ←+yarrの場合、3フィールド分ずつ折り返し
 * * x x x y y y
 * * a b c a b c
@@ -279,8 +263,7 @@ X A 1 2 3 1 2 3
 X B 4 5 6 4 5 6
 Y A 1 2 3 1 2 3
 Y B 4 5 6 4 5 6
-$
-</pre>
+$</pre>
 <h3>【例8】</h3>
 <p><code><code>num=&lt;n&gt;</code>x&lt;m&gt;</code>で縦キー<code>&lt;n&gt;</code>個、横キー<code>&lt;m&gt;</code>個にすることができる。横キーはヘッダー<code>&lt;m&gt;</code>行に展開される。</p>
 <pre class="prettyprint">$ cat data
@@ -292,8 +275,7 @@ X2 Y1 Z1 5 4
 X2 Y1 Z2 6 3
 X2 Y2 Z1 7 2
 X2 Y2 Z2 8 1
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ map num=1x2 data
 *  * Y1 Y1 Y2 Y2                ←横ヘッダーが2行になる
 *  * Z1 Z2 Z1 Z2
@@ -301,16 +283,14 @@ X1 A  1  2  3  4
 X1 B  8  7  6  5
 X2 A  5  6  7  8
 X2 B  4  3  2  1
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ map +yarr num=1x2 data
 *  Y1 Y1 Y1 Y1 Y2 Y2 Y2 Y2              ←横ヘッダーが2行になる
 *  Z1 Z1 Z2 Z2 Z1 Z1 Z2 Z2
 *  a  b  a  b  a  b  a  b
 X1 1  8  2  7  3  6  4  5
 X2 5  4  6  3  7  2  8  1
-$
-</pre>
+$</pre>
 <h3>【例9】</h3>
 <p>-&lt;数字&gt;オプションと<code><code>num=&lt;n&gt;</code>x&lt;m&gt;</code>を組み合わせると次のように動作する。</p>
 <pre class="prettyprint">$ cat data3
@@ -322,8 +302,7 @@ X2 Y1 Z1 5 4 4 5 6 7
 X2 Y1 Z2 6 3 4 5 6 7
 X2 Y2 Z1 7 2 4 5 6 7
 X2 Y2 Z2 8 1 4 5 6 7
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ map -3 num=1x2 data3
 * * Y1 Y1 Y1 Y1 Y2 Y2 Y2 Y2
 * * Z1 Z1 Z2 Z2 Z1 Z1 Z2 Z2
@@ -334,8 +313,7 @@ X1 C  4  7  4  7  4  7  4  7
 X2 A  5  5  6  5  7  5  8  5
 X2 B  4  6  3  6  2  6  1  6
 X2 C  4  7  4  7  4  7  4  7
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ map +yarr -3 num=1x2 data3
 * * Y1 Y1 Y1 Y1 Y1 Y1 Y2 Y2 Y2 Y2 Y2 Y2
 * * Z1 Z1 Z1 Z2 Z2 Z2 Z1 Z1 Z1 Z2 Z2 Z2
@@ -344,16 +322,14 @@ X1 A  1  8  4  2  7  4  3  6  4  4  5  4
 X1 B  5  6  7  5  6  7  5  6  7  5  6  7
 X2 A  5  4  4  6  3  4  7  2  4  8  1  4
 X2 B  5  6  7  5  6  7  5  6  7  5  6  7
-$
-</pre>
+$</pre>
 <h3>【例10】</h3>
 <p><code>-n</code>オプションを指定すると、付加するインデックスが数値になる。<code>-n</code>を付けない場合にはアルファベットwが使われるのでインデックス数が26個までという制限があるが、<code>-n</code>を指定した場合にはインデックスが26個に制限されず、データ部が多い場合もマップすることができる。</p>
 <pre class="prettyprint">$ cat data4
 X1 Y1 A1 A2 A3 A4 -- A99 A100
 X1 Y2 B1 B2 B3 B4 -- B99 B100
 X1 Y3 C1 C2 C3 C4 -- C99 C100
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ map -n num=1 data4
 *  *   Y1   Y2   Y3
 X1  1   A1   B1   C1
@@ -362,8 +338,7 @@ X1  2   A2   B2   C2
 ・
 X1 29  A99  B99  C99
 X1 30 A100 B100 C100
-$
-</pre>
+$</pre>
 <h3>【関連項目】</h3>
 <p><a href="unmap.html" class="command">unmap(1)</a>、<a href="tateyoko.html" class="command">tateyoko(1)</a></p>
     </div>

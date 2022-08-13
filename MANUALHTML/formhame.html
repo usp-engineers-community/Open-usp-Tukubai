@@ -136,9 +136,7 @@
 Option  : -i&lt;c&gt;
         : -d&lt;c&gt;
 Version : Tue Jun 28 07:39:19 JST 2022
-Edition : 1
-
-</pre>
+Edition : 1</pre>
 <h3>【説明】</h3>
 <p><code>&lt;html_template&gt;</code>ファイルの各種inputタグ(text, radio,checkbox, hidden)とtextareaタグ、selectタグの部分に<code>&lt;data&gt;</code>ファイル(第1フィールド:タグ名、第2フィールド以降:値)で指定される値を挿入する。</p>
 <h3>【例】</h3>
@@ -161,8 +159,7 @@ Edition : 1
 &lt;input type=&quot;submit&quot; name=&quot;submit&quot; /&gt;
 &lt;/form&gt;
 &lt;/body&gt;&lt;/html&gt;
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ cat data
 name_text1 hello
 name_text2
@@ -170,8 +167,7 @@ name_radio b
 name_checkbox y
 name_textarea usp\nlaboratory
 name_pulldown pd3
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ formhame html data
 &lt;html&gt;&lt;body&gt;
 &lt;form name=&quot;name_form&quot;&gt;
@@ -193,8 +189,7 @@ laboratory
 &lt;input type=&quot;submit&quot; name=&quot;submit&quot; /&gt;
 &lt;/form&gt;
 &lt;/body&gt;&lt;/html&gt;
-$
-</pre>
+$</pre>
 <h3>【備考】</h3>
 	  <ol>
 <li>inputタグの場合、すでに<code>value=&quot;&quot;</code>とテンプレートに記述している場合は、値を置換する。同様にtextareaタグの場合も値を置換する。selectタグの場合は、すでに<code>selected=&quot;selected&quot;</code>とテンプレートに指定されている場合、指定場所を移動する。

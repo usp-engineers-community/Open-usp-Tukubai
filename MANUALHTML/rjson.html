@@ -134,9 +134,7 @@
 <h3>【書式】</h3>
 <pre class="list">Usage   : rjson [-p&lt;c&gt;][-m&lt;c&gt;][-s&lt;c&gt;][-n&lt;string&gt;] &lt;json-file&gt;
 Version : Sat Mar 26 13:13:04 JST 2022
-Edition : 1
-
-</pre>
+Edition : 1</pre>
 <h3>【説明】</h3>
 <p>JSON 形式(RFC8259) のファイル<code>&lt;json-file&gt;</code>をフィールド形式にします。オブジェクト名とリスト位置がネストの順に出力され、最後に値が出力されます。</p>
 <h3>【オプション】</h3>
@@ -157,8 +155,7 @@ data2 _
 data3 _
 data4 true
 data5 false
-data6 6.62607e-34
-</pre>
+data6 6.62607e-34</pre>
 <h3>【例２】</h3>
 <pre class="prettyprint">$ cat jsondata
 [
@@ -190,8 +187,7 @@ data6 6.62607e-34
                &quot;state&quot; : &quot;HI&quot;,
                &quot;zip&quot;   : &quot;98999&quot; }
 }
-]
-</pre>
+]</pre>
 <pre class="prettyprint">$ rjson &lt; jsondata
 1 name Alice_Brown
 1 sku 54321
@@ -218,8 +214,7 @@ data6 6.62607e-34
 2 billTo address 456_Oak_Lane
 2 billTo city Pretendville
 2 billTo state HI
-2 billTo zip 98999
-</pre>
+2 billTo zip 98999</pre>
 <pre class="prettyprint">$ rjson -p. &lt; jsondata
 1.name Alice_Brown
 1.sku 54321
@@ -246,21 +241,18 @@ data6 6.62607e-34
 2.billTo.address 456_Oak_Lane
 2.billTo.city Pretendville
 2.billTo.state HI
-2.billTo.zip 98999
-</pre>
+2.billTo.zip 98999</pre>
 <h3>【例３】</h3>
 <pre class="prettyprint">$ cat jsondata2
 [
 [&quot;a&quot;,&quot;b&quot;],
 [&quot;c&quot;,&quot;d&quot;]
-]
-</pre>
+]</pre>
 <pre class="prettyprint">$ rjson jsondata2
 1 1 a
 1 2 b
 2 1 c
-2 2 d
-</pre>
+2 2 d</pre>
 <h3>【関連項目】</h3>
 <p><a href="xmldir.html" class="command">xmldir(1)</a></p>
     </div>

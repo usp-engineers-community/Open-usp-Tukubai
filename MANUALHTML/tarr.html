@@ -134,19 +134,16 @@
 <h3>【書式】</h3>
 <pre class="list">Usage   : tarr [-&lt;n&gt;] [-d&lt;str&gt;] [num=&lt;m&gt;] &lt;file&gt;
 Version : Mon Jul 25 20:20:42 JST 2022
-Edition : 1
-
-</pre>
+Edition : 1</pre>
 <h3>【説明】</h3>
-<p>指定したファイルの第1フィールドから<code>num=&lt;n&gt;</code>で指定したフィールドまでのフィールドをキーとして、横に並んでいるフィールドデータを縦に展開して並べ直す。<code>&lt;file&gt;</code>として<code>-</code>を指定すると標準入力を使用する。</p>
+<p>指定したファイルの第1フィールドから<code><code>num=&lt;n&gt;</code></code>で指定したフィールドまでのフィールドをキーとして、横に並んでいるフィールドデータを縦に展開して並べ直す。<code>&lt;file&gt;</code>として<code>-</code>を指定すると標準入力を使用する。</p>
 <h3>【例1】基本的な使い方</h3>
 <pre class="prettyprint">$ cat data
 0000000 浜地______ 50 F 91 59 20 76
 0000001 鈴田______ 50 F 46 39 8 5
 0000003 杉山______ 26 F 30 50 71 36
 0000004 白土______ 40 M 58 71 20 10
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ tarr num=4 data               ←第4フィールドまでをキーに縦に展開
 0000000 浜地______ 50 F 91
 0000000 浜地______ 50 F 59
@@ -164,8 +161,7 @@ $
 0000004 白土______ 40 M 71
 0000004 白土______ 40 M 20
 0000004 白土______ 40 M 10
-$
-</pre>
+$</pre>
 <h3>【例2】</h3>
 <p><code>-&lt;n&gt;</code>オプションを使用すると<code>&lt;n&gt;</code>フィールドごとに縦展開する。</p>
 <pre class="prettyprint">$ tarr -2 num=4 data            ←2フィールド毎に縦展開する。
@@ -177,15 +173,13 @@ $
 0000003 杉山______ 26 F 71 36
 0000004 白土______ 40 M 58 71
 0000004 白土______ 40 M 20 10
-$
-</pre>
+$</pre>
 <h3>【例3】</h3>
-<p><code>num=&lt;n&gt;</code>を指定しないと単純に縦展開する。</p>
+<p><code><code>num=&lt;n&gt;</code></code>を指定しないと単純に縦展開する。</p>
 <pre class="prettyprint">$ cat data3
 1 2 3 4
 5 6
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ tarr data3
 1
 2
@@ -193,17 +187,15 @@ $
 4
 5
 6
-$
-</pre>
+$</pre>
 <h3>【例4】</h3>
-<p><code>-d &lt;str&gt;</code>オプションを使うことで縦展開するフィールドのフィールドセパレータを指定できる。<code>num=&lt;n&gt;</code>で指定されるキーフィールドは空白区切りである必要がある。</p>
+<p><code>-d &lt;str&gt;</code>オプションを使うことで縦展開するフィールドのフィールドセパレータを指定できる。<code><code>num=&lt;n&gt;</code></code>で指定されるキーフィールドは空白区切りである必要がある。</p>
 <pre class="prettyprint">$ cat data
 0000000 浜地______ 50 F 91@59@20@76@54
 0000001 鈴田______ 50 F 46@39@8@5@21
 0000003 杉山______ 26 F 30@50@71@36@30
 0000004 白土______ 40 M 58@71@20@10@6
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ tarr -d@ num=4 data
 0000000 浜地______ 50 F 91
 0000000 浜地______ 50 F 59
@@ -225,13 +217,11 @@ $
 0000004 白土______ 40 M 20
 0000004 白土______ 40 M 10
 0000004 白土______ 40 M 6
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ cat data2
 0001 1n2n3
 0002 4n5n6
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ tarr -d'n' num=1 data2
 0001 1
 0001 2
@@ -239,8 +229,7 @@ $
 0002 4
 0002 5
 0002 6
-$
-</pre>
+$</pre>
 <h3>【関連項目】</h3>
 <p><a href="yarr.html" class="command">yarr(1)</a></p>
     </div>

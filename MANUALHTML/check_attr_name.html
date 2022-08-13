@@ -149,9 +149,7 @@ Attribute       : n N (0以上整数)
                   o O (英大文字)
                   j J (住所=全角+半角英数)
 Version         : Mon Dec 20 21:02:03 JST 2021
-Edition         : 1
-
-</pre>
+Edition         : 1</pre>
 <h3>【説明】</h3>
 <p><code>&lt;check_file&gt;</code>に記述されているタグ名、属性+桁数の指定にしたがって<code>&lt;name_file&gt;</code>のデータを判定する。データが大文字なら桁数に等しい値を、小文字なら指定桁数未満の値を要求する。<code>&lt;name_file&gt;</code>のタグは、タグ名_数値であれば、_数値部分を取り除いたタグ名のみでチェックをする。エラーがあった場合は、コマンドはエラー終了し標準出力にタグ名と桁数+属性を出力する。</p>
 <p><code>--through &lt;string&gt;</code>オプションは、<code>&lt;name_file&gt;</code>のデータが<code>&lt;string&gt;</code>のうちいずれかに等しい場合はチェックを実施しない。<code>&lt;string&gt;</code>のデフォルトは_となる。このオプションは繰り返し使って複数の<code>&lt;string&gt;</code>を指定することができる。</p>
@@ -162,8 +160,7 @@ A N3            ←3桁整数
 B n4            ←4桁以下の整数
 C x3            ←5桁以下の文字
 D X6            ←6桁の文字
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ cat data
 A 200
 B 12345
@@ -171,8 +168,7 @@ C abcde
 D_001 xxxxxx    ←&quot;D 6X&quot; としてチェックされる
 D_002 xxxxx
 D_003 xxxx
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ check_attr_name check data
 B n4
 C x3
@@ -180,8 +176,7 @@ D_002 X6
 D_003 X6
 $ echo $?
 1
-$
-</pre>
+$</pre>
 <h3>【例2】--through オプションでチェックしない値を指定する</h3>
 <pre class="prettyprint">$ cat data2
 A 200
@@ -190,13 +185,11 @@ C _
 D_001 xxxxxx
 D_002 _
 D_003 _
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ check_attr_name --through _ check data2
 $ echo $?
 0
-$
-</pre>
+$</pre>
 <h3>【関連項目】</h3>
 <p><a href="name-format.html" class="command">ネーム形式(5)</a></p>
     </div>

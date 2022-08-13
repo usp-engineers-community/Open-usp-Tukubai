@@ -134,9 +134,7 @@
 <h3>【書式】</h3>
 <pre class="list">Usage   : getlast [+ng] &lt;n1&gt; &lt;n2&gt; &lt;file&gt;
 Version : Sat Sep 19 23:49:26 JST 2020
-Edition : 1
-
-</pre>
+Edition : 1</pre>
 <h3>【説明】</h3>
 <p>引数のファイルまたは標準入力のテキストデータに対し、指定されたキーフィールドの値が同一の行が複数ある場合に、キーフィールドごとに最後の行のみを抽出して出力する。<code>&lt;file&gt;</code>として<code>-</code>を指定すると標準入力を使用する。</p>
 <h3>【例1】</h3>
@@ -156,16 +154,14 @@ Edition : 1
 0000030             じゃが芋 20060201 575
 0000030             じゃが芋 20060202 541
 0000030             じゃが芋 20060203 184
-$
-</pre>
+$</pre>
 <pre class="prettyprint">$ getlast 1 2 data
 0000007               セロリ 20060203 221
 0000017             練馬大根 20060203 514
 0000021           温州みかん 20060203 573
 0000025       プリンスメロン 20060203 391
 0000030             じゃが芋 20060203 184
-$
-</pre>
+$</pre>
 <h3>【例2】</h3>
 <p>&quot;<code>+ng</code>&quot;オプションを指定すると、同じキーフィールドの値を持つ行の最後の行以外を標準エラー出力に出力する。</p>
 <pre class="prettyprint">$ getlast +ng 1 2 data &gt; /dev/null 2&gt; data2
@@ -180,8 +176,7 @@ $ cat data2
 0000025       プリンスメロン 20060202 493
 0000030             じゃが芋 20060201 575
 0000030             じゃが芋 20060202 541
-$
-</pre>
+$</pre>
 <h3>【関連項目】</h3>
 <p><a href="ctail.html" class="command">ctail(1)</a>、<a href="getfirst.html" class="command">getfirst(1)</a>、<a href="tcat.html" class="command">tcat(1)</a>、<a href="ycat.html" class="command">ycat(1)</a></p>
     </div>
