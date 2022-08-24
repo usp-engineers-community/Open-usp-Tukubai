@@ -8,17 +8,17 @@ self : 指定したフィールドのデータ取り出し
 
 【書式】
 
-Usage   : self <f1> <f2> ... <file>
+Usage   : self <f1> <f2> ... [<file>]
         : self -d <f1> <f2> ... <string>
-Version : Mon Feb 21 00:32:55 JST 2022
-Edition : 1
+Version : Sat Aug 20 22:29:15 JST 2022
 
 【説明】
 
 fileから指定したフィールドのデータだけを取り出して出力する(self=select field)。
-第0フィールドは行全体を意味する。
-fileの指定がないとき、あるいはファイル名が-の時は、標準入力よりデータを取り込む
-。-dオプションが指定された場合、引数の文字列に対して処理が適用される。
+<file>として-を指定するかまたは省略すると標準入力を使用する。
+フィールド指定において0は全フィールドを意味する。
+コマンド入力が「self」でパラメータがないときはコマンドの構文を表示して終了する。
+-dオプションが指定された場合、引数の文字列に対して処理が適用される。
 
 【例1】
 
@@ -153,21 +153,12 @@ $
 
 また、文字列切り出し指定において、切り取りや長さが文字の区切りに一致しないとき
 にはエラーとなる。
-
-$ echo ＵＳＰ研究所 | self 1.2.4
-Errorself] : Rec 1. エラー
-$
-
 フィールドの幅より大きい開始位置を指定してもエラーとなる。
-
-$ echo ＵＳＰ研究所 | self 1.20
-Errorself] : Rec 1. エラー
-$
 
 【関連項目】
 
 delf(1)
 
-last modified: Fri Jul 15 15:42:38 JST 2022
+last modified: Sat Aug 20 22:29:15 JST 2022
 Contact us: uecinfo@usp-lab.com
 Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights
