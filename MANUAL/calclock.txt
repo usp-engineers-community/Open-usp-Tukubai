@@ -9,7 +9,7 @@ calclock : 日付と時刻を秒数に変換
 【書式】
 
 Usage   : calclock [-r] [<f1> <f2> <f3> ...] <file>
-Version : Thu Apr 21 00:58:46 JST 2022
+Version : Sat Aug 20 22:29:15 JST 2022
 Edition : 1
 
 【説明】
@@ -134,6 +134,6 @@ $
 
 dayslash(1)、mdate(1)、yobi(1)
 
-last modified: Mon Aug  1 15:39:19 JST 2022
+last modified: Sat Aug 20 22:29:15 JST 2022
 Contact us: uecinfo@usp-lab.com
 Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights

@@ -128,17 +128,16 @@
     <div id="main">
       <h1>Tukubaiオンラインコマンドマニュアル</h1>
 
-<h2>1bai(1)</h2>
+<h2>1bai</h2>
 <h3>【名前】</h3>
 <p><code>1bai</code> :  前0をとる</p>
 <h3>【書式】</h3>
-<pre class="list">Usage   : 1bai [-r] f1 f2 .. [file]
-          1bai -d[r] string
-          1bai -[r]d string
-Version : Mon Mar 21 16:31:46 JST 2022
-Edition : 1</pre>
+<pre class="list">Usage   : 1bai [-r] [&lt;f1&gt; &lt;f2&gt; ...] [&lt;file&gt;]
+          1bai -d[r] &lt;string&gt;
+          1bai -[r]d &lt;string&gt;
+Version : Fri Aug 20 22:29:15 JST 2022</pre>
 <h3>【説明】</h3>
-<p>指定したファイルの指定フィールドや指定した文字列の先頭の０を取り除きます。(小数点以下の後０も削除します)<code>-r</code>オプションをつけると-1倍します。<code>-d</code>オプションをつけると引数で指定した文字列に対する処理をします。</p>
+<p>指定したファイルの指定フィールドや指定した文字列の先頭の０を取り除きます。(小数点以下の後０も削除します)<code>r</code>オプションをつけると-1倍します。<code>d</code>オプションをつけると引数で指定した文字列に対する処理をします。<code>&lt;file&gt;</code>として<code>-</code>を指定するかまたは省略すると標準入力を使用します。フィールド指定<code>&lt;f1&gt; &lt;f2&gt;</code>... を省略すると全フィールド指定となります。フィールド指定<code>&lt;f1&gt; &lt;f2&gt;</code>... にひとつでも0があると全フィールド指定となります。コマンド入力が「<code>1bai -r</code>」であったときは標準入力に対して全フィールドを-1倍します。コマンド入力が「<code>1bai</code>」であったときはコマンドの構文を表示して終了します</p>
 <h3>【例１】</h3>
 <pre class="prettyprint">$ cat data
 0000000 浜地______ 50 F 91 59 20 76 54
@@ -217,7 +216,7 @@ b 98.45 100</pre>
 <p>命名の由来対象の数字の文字列に１倍を掛けることにより０を取り除くため、<code>1bai</code>と命名されています。</p>
     </div>
 
-    <div id="lastmodified">Last modified: Fri Aug 12 12:56:05 JST 2022 </div>
+    <div id="lastmodified">Last modified: Sat Aug 20 22:29:15 JST 2022</div>
 
     <div id="footer">Contact us: uecinfo@usp-lab.com<br>Copyright &copy; 2012-2022 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
   </div>
