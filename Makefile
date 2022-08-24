@@ -63,15 +63,18 @@ all:
 	@echo "    DOCDIR=${DOCDIR}"
 
 test: # シェル・スクリプトのみテストを実行する。
-	@for test_script in $$(echo TEST/* | tarr | grep -e '\/[^.]*\.test$$'); \
-	do \
-		"$${test_script}" "$$(pwd)/COMMANDS"; \
+	@path=$$(mktemp -d); \
+	echo > /dev/null "gsed が存在する場合は sed の代わりに使用する。(macOS で実行している場合のみ)"; \
+	uname | awk '$$0 == "Darwin" {exit 1}' || ln -s $$(which gsed) $$path/sed; \
+	for test_script in $$(echo TEST/* | tarr | grep -e '\/[^.]*\.test$$'); do \
+		PATH=$$path:$$PATH "$${test_script}" "$$(pwd)/COMMANDS"; \
 		if [ "$$?" -ne 0 ]; then \
 			echo "test for $$(basename "$${test_script}" .sh)" failed.; \
 			exit 1; \
 		fi; \
 	done; \
-	echo Tests are finished successfully.
+	echo Tests are finished successfully.; \
+	rm -r "$$path";
 
 pdf: $(wildcard COMMANDS/*)
 	@type wkhtmltopdf 2>&1 > /dev/null || (echo wkhtmltopdf must be installed. >&2; exit 1)
@@ -124,8 +127,6 @@ install:
 	${INSTALL_DOCS} MANUALHTML/COMMON/IMG/BACKGROUND.JPG ${DESTDIR}${HTMDIR}/COMMON/IMG/
 	${INSTALL_DOCS} MANUALHTML/COMMON/IMG/TUKUBAI_LOGO.JPG ${DESTDIR}${HTMDIR}/COMMON/IMG/
 	${INSTALL_DOCS} MANUALHTML/COMMON/JS/MENU.JS ${DESTDIR}${HTMDIR}/COMMON/JS/
-	${MKDIR} ${DESTDIR}${PDFDIR}
-	${INSTALL_DOCS} MANUALPDF/all.pdf ${DESTDIR}${PDFDIR}
 
 uninstall:
 	@for i in ${COMMANDS}; \
