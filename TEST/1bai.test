@@ -42,11 +42,17 @@ ERROR_CHECK(){
 	exit 1
 }
 
+BOMandEOLvariation(){	# BOM無しLF改行ファイル（$1）からBOM付きCRLF改行ファイル（$2）とBOM付きCR改行ファイル（$3）を生成する
+	 [ $# -eq 3 ]; ERROR_CHECK "TESTスクリプト内のBOMandEOLvariation()でファイル指定が不正"
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r\n/g' -e 's/$/\r/' $1 >$2	# $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r/g' $1 | tr '\n' '\r' >$3	# $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
+}
+
 ###########################################
 # TEST1
 # 1フィールド目の頭 "0" を取り去ります。
 
-cat << FIN > $tmp-data
+cat << FIN > $tmp-in
 0000000 浜地______ 50 F 91 59 20 76 54
 0000001 鈴田______ 50 F 46 39 8  5  21
 0000003 杉山______ 26 F 30 50 71 36 30
@@ -55,7 +61,7 @@ cat << FIN > $tmp-data
 0000007 梶川______ 42 F 50 2  33 15 62
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 0 浜地______ 50 F 91 59 20 76 54
 1 鈴田______ 50 F 46 39 8 5 21
 3 杉山______ 26 F 30 50 71 36 30
@@ -64,7 +70,7 @@ cat << FIN > $tmp-out
 7 梶川______ 42 F 50 2 33 15 62
 FIN
 
-${com} 1 $tmp-data > $tmp-ans
+${com} 1 $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST1 error"
 
@@ -77,121 +83,149 @@ a 1 2 3 4 5
 b 1 2 3 4 5
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 a -1 2 3 4 5
 b -1 2 3 4 5
 FIN
-${com} -r 2 $tmp-file > $tmp-ans
+${com} -r 2 $tmp-file > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST2-1 error"
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 a -1 -2 -3 4 5
 b -1 -2 -3 4 5
 FIN
 
-${com} -r 2/4 $tmp-file >$tmp-ans
+${com} -r 2/4 $tmp-file >$tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST2-2 error"
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 a -1 2 3 -4 -5
 b -1 2 3 -4 -5
 FIN
 
-${com} -r 2 NF-1/NF $tmp-file >$tmp-ans
+${com} -r 2 NF-1/NF $tmp-file >$tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST2-3 error"
 
 ###########################################
 # TEST3
-# キー指定の重複解消
+# キーフィールドの列挙指定と範囲指定の連続混用および重複指定解消の試験
+# フィールド番号0による全フィールド指定の試験
+# フィールド番号省略による全フィールド指定の試験
 
 cat << FIN > $tmp-file
 a 1 2 3 4 5
 b 1 2 3 4 5
 FIN
 
-cat << FIN > $tmp-out
-a -1 2 3 4 5
-b -1 2 3 4 5
-FIN
-
-cat << FIN > $tmp-out
-a -1 -2 -3 4 5
-b -1 -2 -3 4 5
-FIN
-
-${com} -r 2/4 2@3@4 $tmp-file >$tmp-ans
-diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST3-1 error"
-
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 a -1 2 3 -4 -5
 b -1 2 3 -4 -5
 FIN
 
-${com} -r 2 NF-1/NF 2 5@6 $tmp-file >$tmp-ans
+${com} -r 2 NF-1/NF 2 5@6 $tmp-file >$tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-1 error"
+
+cat << FIN > $tmp-ans
+a -1 -2 -3 4 5
+b -1 -2 -3 4 5
+FIN
+
+${com} -r 2/4 2@3@4 $tmp-file >$tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST3-2 error"
+
+${com} -r 2/4@2@3@NF-2 2@3@4@NF-2/2 $tmp-file >$tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-3 error"
+
+# フィールド指定にひとつでも0があると全フィールドを指定したことになる
+
+cat << FIN > $tmp-file
+01 02 03 04 05
+001 002 003 004 005
+FIN
+
+cat << FIN > $tmp-ans
+-1 -2 -3 -4 -5
+-1 -2 -3 -4 -5
+FIN
+
+${com} -r 1 2 0 4 3 $tmp-file >$tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-4 error"
+
+# フィールド指定を省略すると全フィールドを指定したことになる
+
+cat << FIN > $tmp-ans
+1 2 3 4 5
+1 2 3 4 5
+FIN
+
+${com} $tmp-file >$tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-5 error"
 
 ###########################################
 # TEST4
 # -d オプションはダイレクトモードです。引数に直接編集したい文字列を指定します。
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 123
 FIN
 
-${com} -d 0123 >$tmp-ans
+${com} -d 0123 >$tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST4-1 error"
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 123.4
 FIN
 
-${com} -d 0123.400 >$tmp-ans
+${com} -d 0123.400 >$tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST4-2 error"
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 123
 FIN
 
-${com} -d 0123.000 >$tmp-ans
+${com} -d 0123.000 >$tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST4-3 error"
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 0
 FIN
 
-${com} -d 0 >$tmp-ans
+${com} -d 0 >$tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST4-4 error"
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 -123.4
 FIN
 
-${com} -d -000123.400 >$tmp-ans
+${com} -d -000123.400 >$tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST4-5 error"
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 123.4
 FIN
 
-${com} -d +000123.400 >$tmp-ans
+${com} -d +000123.400 >$tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST4-6 error"
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 -123
 FIN
 
-${com} -dr 0123 >$tmp-ans
+${com} -dr 0123 >$tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST4-7 error"
 
@@ -199,13 +233,13 @@ diff $tmp-ans $tmp-out
 # TEST5
 # 前０をとることにより、シェルや awk の printf 文における８進数への自動置換を無効にします。
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 0010
 FIN
 
 num=010   # <- ８進数と解釈されてしまう
 
-printf '%04d\n' $(${com} -d $num) >$tmp-ans
+printf '%04d\n' $(${com} -d $num) >$tmp-out
 
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST5 error"
@@ -219,35 +253,116 @@ a 000123.000 000345.000
 b 000098.450 000100.000
 FIN
 
-cat << FIN > $tmp-out
+cat << FIN > $tmp-ans
 a 123 345
 b 98.45 100
 FIN
 
-${com} 2 3 $tmp-file > $tmp-ans
+${com} 2 3 $tmp-file > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST6 error"
 
 ###########################################
-#追加TEST1
-# -d指定で4バイト文字（Unicode符号位置がU+20000以降の文字）を与える
+#TEST7
+# -d指定で4バイト文字（Unicode符号位置がU+FFFF超の文字）を与える
 # 数値を表わさない文字列を与えるのでエラーとなる
 
 cat << FIN > $tmp-errmsg
 Error[1bai] : 0𠆢123は数値ではありません
 FIN
 
-${com} -d 0𠆢123 >$tmp-ans 2>$tmp-err
+${com} -d 0𠆢123 >$tmp-out 2>$tmp-err
 
 # 「𠆢」は𠆢(U+201A2)代用対では𠆢(U+D840-U+DDA2)
 
 diff $tmp-err $tmp-errmsg
-[ $? -eq 0 ] ; ERROR_CHECK "追加TEST1 error"
-
+[ $? -eq 0 ] ; ERROR_CHECK "TEST7 error"
 
 ###########################################
+# TEST8
+# TEST1の拡大版
+# BOM付きCRLFとBOM付きCRの試験
+# 1フィールド目の頭 "0" を取り去ります。
 
+cat << FIN > $tmp-in
+0000000 浜地______ 50 F 91 59 20 76 54
+0000001 鈴田______ 50 F 46 39 8  5  21
+0000003 杉山______ 26 F 30 50 71 36 30
+0000004 白土______ 40 M 58 71 20 10 6
+0000005 崎村______ 20 M 82 79 16 21 80
+0000007 梶川______ 42 F 50 2  33 15 62
+FIN
+
+cat << FIN > $tmp-ans
+0 浜地______ 50 F 91 59 20 76 54
+1 鈴田______ 50 F 46 39 8 5 21
+3 杉山______ 26 F 30 50 71 36 30
+4 白土______ 40 M 58 71 20 10 6
+5 崎村______ 20 M 82 79 16 21 80
+7 梶川______ 42 F 50 2 33 15 62
+FIN
+
+# 入力用tmpファイルからBOM付きCRLFとBOM付きCRの各ファイルを作る
+BOMandEOLvariation $tmp-in $tmp-inBOMCRLF $tmp-inBOMCR
+
+# BOM付きCRLF
+${com} 1 $tmp-inBOMCRLF > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST8-1 error"
+
+# BOM付きCR
+${com} 1 $tmp-inBOMCR > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST8-2 error"
+
+# pipe接続
+
+# BOM付きCRLF
+cat $tmp-inBOMCRLF | ${com} 1 - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST8-3 error"
+
+# BOM付きCR
+cat $tmp-inBOMCR | ${com} 1 - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST8-4 error"
+
+############################################
+#TEST9
+# 不要な空白の除去
+cat << FIN > $tmp-in
+   a  01   02    03 04 05    
+ b   001   002    003  004 005   
+FIN
+
+cat << FIN > $tmp-ans
+a 1 2 3 4 5
+b 1 2 3 4 5
+FIN
+
+${com} 2 3 4 5 6 $tmp-in >$tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST9-1 error"
+
+# 全角空白は区切り文字とはしない
+# $tmp-in2の第1行は「 □a 01 □ 03 04 05 06 □」（□は全角空白を表わす）で8つのフィ-ルドからなる
+# $tmp-ans2の第1行は「□a 1 □ 2 3 4 5 □」（□は全角空白を表わす）
+
+cat << FIN > $tmp-in2
+ 　a 01 　 03 04 05 06 　
+ b 001 002 003 004 005 006 007
+FIN
+
+cat << FIN > $tmp-ans2
+　a 1 　 3 4 5 6 　
+b 1 002 3 4 5 6 007
+FIN
+
+${com} 2 4/7 $tmp-in2 >$tmp-out
+diff $tmp-ans2 $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST9-2 error"
+
+###########################################
 rm -f $tmp-*
 echo "${pythonversion} ${name}" OK
-
 exit 0

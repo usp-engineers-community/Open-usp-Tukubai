@@ -34,8 +34,8 @@ import sys
 import codecs
 import unicodedata	# unicode関連処理用
 
-_usage = [ "self f1 f2 ... file", "self -d f1 f2 ... string" ]
-_version = "Mon Feb 21 00:32:55 JST 2022"
+_usage = [ "self <f1> <f2> ... [<file>]", "self -d <f1> <f2> ... <string>" ]
+_version = "Fri Aug 20 22:29:15 JST 2022"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4+, 3.1, 3.2/UTF-8)"
 
 _keypat = r'(?P<ndot>(\d+|NF(-\d+)?)(/(\d+|NF(-\d+)?))?)|(?P<dot>(\d+|NF(-\d+)?)(\.\d+(\.\d+)?)?)$'	# a a/b または a a.b a.b.c
@@ -71,6 +71,14 @@ def resetStdout():
 
 	return codecs.getwriter('utf-8')(sys.stdout.detach())
 
+# 不要な空白の削除関数
+def rm_sp(line):
+	return re.sub(r' {2,}',' ',re.sub(r'^ +| +$','',line))	# 行頭と行末の空白を削除し連続空白を単空白にする
+
+# 改行符号（\r\n）の削除関数
+def rm_eol(line):
+	return line.rstrip("\r\n")	# 改行記号としてCRLF('\r\n')/CR('\r')/LF('\n')のすべてに対応する
+
 # BOMの取得関数
 def get_BOM():
 	if Python3():	return chr(int("FEFF",16))	# U+FEFFはBOMのUnicode符号位置
@@ -82,6 +90,13 @@ def rm_BOM(line):
 	if not firstline: return line
 	firstline=False
 	if line.startswith(get_BOM()):	line=line[len(get_BOM()):]	# 行頭にBOMがあったらBOMを削除する
+	return line
+
+# ファイル入力行の前処理
+def preproc_line(line):
+	line=rm_eol(line)	# 行末の改行記号を削除する
+	line=rm_BOM(line)	# ファイル先頭行の行頭にBOMがあったらこれを削除する
+	line=rm_sp(line)	# 行頭と行末の空白を削除し連続空白を単空白にする
 	return line
 
 # Python3か判定する
@@ -124,8 +139,6 @@ def isFile(opt):
 	return True
 
 class Params:
-
-
 	def __init__(self,field_param):
 		#
 		# ひとつの欄指定パラメータ（field_param）から欄番号リスト（self.fieldlist）を得る（区間指定にも対応する）
@@ -161,7 +174,7 @@ class Params:
 					self.fieldlist.append([field])	# 部分文字列指定はない
 
 	# 欄番号文字列をNF相対形式で整数化する
-	def getFieldNum(self,str,str1,str2):
+	def getFieldNumOld(self,str,str1,str2):
 		# n または NF または NF-x の形式の欄番号をNF相対形式の整数で確定する
 		# 正規表現で「\d+|NF(-\d+)?」にmatchする全体をstrが、「\d+」でmatchする部分をstr1が、「(-\d+)?」でmatchする部分をstr2が保持している
 		# NF相対形式の整数化:
@@ -179,28 +192,58 @@ class Params:
 				fieldnum=0
 		return fieldnum
 
+	def getFieldNum(self,str,str1,str2):
+		# n または NF または NF-x の形式の欄番号をNF相対形式の整数で確定する
+		# 正規表現で「\d+|NF(-\d+)?」にmatchする全体をstrが、「\d+」でmatchする部分をstr1が、「(-\d+)?」でmatchする部分をstr2が保持している
+		# NF相対形式の整数化:
+		#  単独のnが0のときはNone
+		#  単独のnが0以外のときは整数のn
+		#  単独のNFのときは整数の0
+		#  NF-nのときは整数の-n
+		# 実際の欄番号にする際には行ごとに得たNF（欄数）を使用して計算する
+		if str1:	# n
+			fieldnum=int(str1)
+			if fieldnum==0:	# 欄番号0は全欄指定を意味する
+				fieldnum=None	# NF相対なので「0」を指定されたらNoneとしgetpos()でNoneを0に変換する
+		else:	# NF-n または NF
+			if str2:	# NF-n
+				fieldnum=int(str2)
+			else:	# NF
+				fieldnum=0
+		return fieldnum
+
 class Operator:
 	def __init__(self):
 		self.out_sequence = []
-		#self.field_num = 0	# 使われていない（2022年02月16日(水)21時56分04秒）
 
 	def setOption(self,opt):
 		params = Params(opt)
 		self.out_sequence+=params.fieldlist	# listであるparams.fieldlistを連結する
 
 	def output(self,line):
-		global NF
-		tokens = [line] + [w for w in line.split(" ") if w != "" ]
-		NF=len(tokens)-1
-		keylist=self.make_keylist(self.out_sequence)	# NF相対欄位置からNFの値を使って実際の欄位置に変換する
+		global NF,keylist
+		tokens = [line] + [w for w in line.split(" ")]
+		nf=len(tokens)-1
+		if nf != NF:	# 欄数が変化したかまたは先頭行なら
+			NF=nf
+			keylist=self.make_keylist(self.out_sequence)	# NF相対欄位置からNFの値を使って実際の欄位置に変換する
 		# 0: 一行全体 1以降: 各フィールド
-		print(" ".join(
-			[ self.cutWord(tokens,f) for f in keylist ]
-		))
+		outlist=[]
+		for f in keylist:
+			if len(f)==1:	# 部分文字列指定なし
+				outlist+=[self.cutWord(tokens,f)]
+			else:	# 部分文字列指定あり
+				if f[0]==0:	# 全欄指定
+					f12=f[1:]
+					for i in range(1,NF+1):
+						outlist.append(self.cutWord(tokens,[i]+f12))
+				else:	# 各欄指定
+					outlist.append(self.cutWord(tokens,f))
+		print(" ".join(outlist))
 
 	def cutWord(self,tokens,param):
 		if len(param)==1:	# 部分文字列指定はない
-			return tokens[param[0]]	# 
+			return tokens[param[0]]
 
 		# 部分文字列指定がある
 		fieldnum=param[0]	# 欄番号は1発進で欄番号0は行全体を意味する
@@ -267,10 +310,10 @@ class Operator:
 		if isHalfWidth(xc[0]):	return 1	# 半角なら1
 		else:	return 2	# 全角なら2
 
-	# NF相対欄位置リスト（base_keylist）からNF（欄数）に応じた実際の欄位置リスト（keylist）を作成する
-	def make_keylist(self,base_keylist):
-		# base_keylistはNF相対襴位置でgetpos()で実際の欄位置に変換する
-		# base_keylistの要素は
+	# NF相対欄位置リスト（rel_keylist）からNF（欄数）に応じた実際の欄位置リスト（keylist）を作成する
+	def make_keylist(self,rel_keylist):
+		# rel_keylistはNF相対襴位置でgetpos()で実際の欄位置に変換する
+		# rel_keylistの要素は
 			# 単一欄指定で部分文字列指定なし [pos]
 			# 単一欄指定で部分文字列指定あり [pos,start,length]	（lengthはNoneの場合もある）
 			# 区間指定(部分文字列指定はない) [from,to]
@@ -278,7 +321,7 @@ class Operator:
 			# 部分文字列指定なし pos	返値とする段階では[pos]
 			# 部分文字列指定あり (pos,start,length)	（lengthはNoneの場合もある）	返値とする段階では[pos,start,length]
 		keylist=[]
-		for fieldpos in base_keylist:
+		for fieldpos in rel_keylist:
 			if len(fieldpos)==1:	# 部分文字列指定がない単一欄
 				pos=self.getpos(fieldpos[0])
 				keylist.append(pos)
@@ -297,11 +340,13 @@ class Operator:
 		keylist=sorted(set(keylist), key=keylist.index)	 # 集合化によってリストの重複を解消し元のリストにおける出現位置をキーとしてsort
 		# 返値を「listのlist」にする
 		for i,key in enumerate(keylist):
-			if type(key)==int:	keylist[i]=[key]	# 部分文字列指定がない欄はintから要素数1のlistに
-			else:	keylist[i]=list(key)	# 部分文字列指定がある欄はtupleから要素数3のlistに
+			if type(key)==int:
+				keylist[i]=[key]	# 部分文字列指定がない欄はintから要素数1のlistに
+			else:
+				keylist[i]=list(key)	# 部分文字列指定がある欄はtupleから要素数3のlistに
 		return keylist
 
-	# NF相対欄位置からNF（欄数）に応じた1発進の欄位置に変換する
+	# NF相対欄位置からNF（欄数）に応じた1発進の欄位置に変換する（0は行全体を指す）
 	def getpos(self,base_pos):
 		# NF相対欄位置からの変換:
 		#  Noneのときは0に
@@ -318,6 +363,7 @@ class Operator:
 		return pos
 
 def directMode(argv):
+	global NF
 	if len(argv)==0:
 		error("フィールド指定と文字列がありません。")
 	elif len(argv)==1:
@@ -325,6 +371,7 @@ def directMode(argv):
 	for opt in argv[:-1]:	# ここのargvには元のargvのargv[2:]が渡されている
 		operator.setOption(opt)
 	str=utf2ucs(argv[-1])	# 直接指定文字列の前処理
+	NF=-1
 	operator.output(str)
 
 ###########################################
@@ -562,9 +609,10 @@ if __name__ == '__main__':
 	# 実行
 	firstline=True
 	nf_set = False
+	NF=-1
 	for line in input_file:
-		line=rm_BOM(line)	# 先頭行に対してBOM削除をする
-		operator.output(line.rstrip())
+		line=preproc_line(line)	# ファイル入力行の前処理
+		operator.output(line)
 		nf_set = True
 
 	sys.exit(0)
