@@ -29,7 +29,7 @@
 # THE SOFTWARE.
 
 _usage = "calclock [-r] [<f1> <f2> <f3> ...] filename"
-_version = "Thu Apr 21 00:58:46 JST 2022"
+_version = "Fri Aug 20 22:29:15 JST 2022"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4+, 3.1, 3.2/UTF-8)"
 _keypat = r'((\d+|NF(-\d+)?)(/(\d+|NF(-\d+)?))?)(@((\d+|NF(-\d+)?)(/(\d+|NF(-\d+)?))?))*$'
 _keypatNF=r'(?P<m0>(?P<m01>\d+)|(?P<m02>NF(?P<m03>-\d+)?))(/(?P<m1>(?P<m11>\d+)|(?P<m12>NF(?P<m13>-\d+)?)))?$'
@@ -99,9 +99,11 @@ def normalMode(in_file):
 	global NF
 	for line in in_file:
 		line=preproc_line(line)
-		fs = line.split()
-		NF=len(fs)
-		targets=make_keylist(rel_keylist)	# 行の欄数に応じてrel_keylistからtargetsを決定する
+		fs = line.split(" ")
+		nf=len(fs)
+		if nf != NF:	# 欄数が変化したかまたは先頭行なら
+			NF=nf
+			targets=make_keylist(rel_keylist)	# 行の欄数に応じてrel_keylistからtargetsを決定する
 		for t in targets:
 			fs[t] = fs[t] + " " + conv(fs[t],len(fs[t]))
 
@@ -111,9 +113,11 @@ def revMode(in_file):
 	global NF
 	for line in in_file:
 		line=preproc_line(line)
-		fs = line.split()
-		NF=len(fs)
-		targets=make_keylist(rel_keylist)	# 行の欄数に応じてrel_keylistからtargetsを決定する
+		fs = line.split(" ")
+		nf=len(fs)
+		if nf != NF:	# 欄数が変化したかまたは先頭行なら
+			NF=nf
+			targets=make_keylist(rel_keylist)	# 行の欄数に応じてrel_keylistからtargetsを決定する
 		for t in targets:
 			fs[t] = fs[t] + " " + revConv(fs[t])
 
@@ -164,7 +168,6 @@ def getFieldNum(str,str1,str2):
 	if str1:	# n
 		fieldnum=int(str1)
 		if fieldnum==0:	# 欄番号0は全欄指定を意味する
-			#error("フィールド指定に0があります。")
 			fieldnum=None
 	else:	# NF-n または NF
 		if str2:	# NF-n
@@ -206,6 +209,10 @@ def getTargetFields(args):
 	ans=list(set(ans)) # 集合化によってリストの重複を解消する
 	return ans
 
+# 不要な空白の削除関数
+def rm_sp(line):
+	return re.sub(r' {2,}',' ',re.sub(r'^ +| +$','',line))	# 行頭と行末の空白を削除し連続空白を単空白にする
+
 # 改行符号（\r\n）の削除関数
 def rm_eol(line):
 	return line.rstrip("\r\n")	# 改行記号としてCRLF('\r\n')/CR('\r')/LF('\n')のすべてに対応する
@@ -227,6 +234,7 @@ def rm_BOM(line):
 def preproc_line(line):
 	line=rm_eol(line)	# 行末の改行記号を削除する
 	line=rm_BOM(line)	# ファイル先頭行の行頭にBOMがあったらこれを削除する
+	line=rm_sp(line)	# 行頭と行末の空白を削除し連続空白を単空白にする
 	return line
 
 # Python3か判定する
@@ -252,6 +260,7 @@ if __name__ == '__main__':
 
 	# 先頭行処理用flagの初期化
 	firstline=True
+	NF=-1
 
 	if sys.argv[1] == "-r":
 		rel_keylist = getTargetFields(sys.argv[2:-1])	# パラメータからNF相対欄位置リストを作成する
