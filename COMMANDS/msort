@@ -31,7 +31,7 @@
 from __future__ import print_function
 
 _usage = "msort key=<key> <file>"
-_version = "Sat Mar 12 17:37:17 JST 2022"
+_version = "Sun Aug 28 11:47:10 JST 2022"
 _code = "Open usp Tukubai (Linux+/PYTHON2.7/UTF-8)"
 _keypat = r'^key=([0-9/nr]+(@[0-9/nr]+)*)$'
 _keypat_factor = r'^([0-9]+[nr]*)(?:/([0-9]+[nr]*))?$'
@@ -139,7 +139,7 @@ if __name__ == '__main__':
 				elif 'r' in attributes[index]:
 					if type(item[index]) is str:
 						inverted_string = ''.join(
-							map(lambda c: bytes([0x10FFFF - ord(c)]),
+							map(lambda c: str([0x10FFFF - ord(c)]),
 								list(item[index])))
 						value += (inverted_string,)
 					elif type(item[index]) is int:
