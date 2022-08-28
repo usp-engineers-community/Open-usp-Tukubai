@@ -36,7 +36,7 @@ import xml.sax
 import xml.sax.handler
 
 _usage = "xmldir [-c<n>] /<DirTag1>/<DirTag2>/.../<DirTagN> <xmlfile>"
-_version = "Mon Jul 25 08:45:58 JST 2022"
+_version = "Sun Aug 28 11:35:26 JST 2022"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.7/UTF-8)"
 
 def usage():
@@ -80,7 +80,12 @@ class SAXHandler:
 
 		for name in attributes.getNames():
 			if target_path == '/' + '/'.join(self.path[1:]) + '/@' + name:
-				print(' '.join(self.path[1:]) + ' @' + name, attributes.getValue(name).replace(' ', space_alternative))
+				if sys.version_info >= (3, 0):
+					sys.stdout.buffer.write(
+						bytes(' '.join(self.path[1:]) + ' @' + name + " " +
+						attributes.getValue(name).replace(' ', space_alternative) + "\n", encoding="utf-8"))
+				else:
+					print(' '.join(self.path[1:]) + ' @' + name, attributes.getValue(name).replace(' ', space_alternative))
 
 		self.content = ''
 
@@ -93,7 +98,7 @@ class SAXHandler:
 		self.content = ''
 
 	def printSection(self):
-		if target_path != '/' + '/'.join(self.path[1:]):
+		if not (('/' + '/'.join(self.path[1:len(target_path)])) + '/').startswith(target_path + '/'):
 			return
 
 		if indices_padding == None:
@@ -101,7 +106,13 @@ class SAXHandler:
 		else:
 			prefix = str(self.documentIndex).rjust(indices_padding, '0') + " " + \
 					 str(self.element_index).rjust(indices_padding, '0') + " "
-		print((prefix + ' '.join(self.path[1:])), self.content.replace(' ', space_alternative))
+
+		if sys.version_info >= (3, 0):
+			sys.stdout.buffer.write(
+				bytes((prefix + ' '.join(self.path[1:])) + " " +
+				self.content.replace(' ', space_alternative) + "\n", encoding="utf-8"))
+		else:
+			print((prefix + ' '.join(self.path[1:])), self.content.replace(' ', space_alternative))
 
 
 	def characters(self, fragment):
@@ -143,7 +154,12 @@ if __name__ == '__main__':
 			break
 
 	target_path = sys.argv[1]
-	input_file = sys.stdin if sys.argv[2] == '-' else open(sys.argv[2])
+
+	if len(sys.argv) == 2 or sys.argv[2] == "-":
+		input_file = sys.stdin
+	else:
+		input_file = open(sys.argv[2])
+
 	xml.sax.parseString('<document>' + input_file.read() + '</document>', SAXHandler())
 
 	# Exit
