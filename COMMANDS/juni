@@ -4,11 +4,11 @@
 # juni 順位をつける（Open usp Tukubai版）
 # 
 # designed by Nobuaki Tounaka
-# written  by Masatomo Togashi
+# written  by Hinata Yanagi
 #
 # The MIT License
 #
-# Copyright (C) 2020 Universal Shell Programming Laboratory
+# Copyright (C) 2022 Universal Shell Programming Laboratory
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -30,9 +30,9 @@
 
 from __future__ import print_function
 
-_usage = "juni [<k1> <k2>] <file>"
-_usage1 = "juni -h [<k1> <k2>] <file>"
-_version = "Sat Sep 19 23:49:25 JST 2020"
+_usage = "juni [<k1> <k2>] [<file>]"
+_usage1 = "juni -h [<k1> <k2>] [<file>]"
+_version = "Mon Aug 29 07:54:58 JST 2022"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
 _keypat = r'\d+$'
 
@@ -161,6 +161,11 @@ def NFDtoNFC(str):
 # メイン関数
 #
 if __name__ == '__main__':
+	#
+	# 引数がない場合は標準入力を読み込むファイルとなる。
+	#
+	if  len(sys.argv) == 1:
+			sys.argv.append('-')
 
 	# 構文表示
 	if len(sys.argv) < 2: usage()

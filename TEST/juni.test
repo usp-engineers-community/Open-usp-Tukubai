@@ -63,7 +63,7 @@ cat << FIN > $tmp-ans
 3 田中
 FIN
 
-${com} $tmp-in > $tmp-out
+${com} < $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST1-1 error"
 

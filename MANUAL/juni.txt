@@ -8,9 +8,9 @@ juni : 同一キー内での順位を出力
 
 【書式】
 
-Usage   : juni [<k1> <k2>] <file>
-        : juni -h [<k1> <k2>] <file>
-Version : Sat Sep 19 23:49:25 JST 2020
+Usage   : juni [<k1> <k2> <file>]
+        : juni -h [<k1> <k2> <file>]
+Version : Mon Aug 29 07:54:58 JST 2022
 Edition : 2
 
 【説明】
@@ -135,6 +135,6 @@ $ juni -h data
 
 count(1)、gyo(1)、rank(1)、retu(1)
 
-last modified: Fri Jul 15 15:42:38 JST 2022
+last modified: Mon Aug 29 07:56:19 JST 2022
 Contact us: uecinfo@usp-lab.com
 Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights
