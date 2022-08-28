@@ -9,7 +9,7 @@ rjson : JSON 形式のファイルをフィールド形式に変換する
 【書式】
 
 Usage   : rjson [-p<c>][-m<c>][-s<c>][-n<string>] <json-file>
-Version : Sat Mar 26 13:13:04 JST 2022
+Version : Sun Aug 28 13:30:20 JST 2022
 Edition : 1
 
 【説明】
@@ -152,6 +152,6 @@ $ rjson jsondata2
 
 xmldir(1)
 
-last modified: Tue Jul 26 08:02:14 JST 2022
+last modified: Sun Aug 28 13:33:50 JST 2022
 Contact us: uecinfo@usp-lab.com
 Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights

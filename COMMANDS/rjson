@@ -35,9 +35,13 @@ import io
 import json
 from collections import OrderedDict
 
-_usage = "rjson  [-p<c>][-m<c>][-s<c>][-n<string>] <json-file>"
-_version = "Sat Mar 26 13:13:04 JST 2022"
-_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.7/UTF-8)"
+_usage = "rjson [-p<c>][-m<c>][-s<c>][-n<string>] <json-file>"
+_version = "Sun Aug 28 13:30:20 JST 2022"
+_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.7+/UTF-8)"
+
+# supplementary assignment for under 3.0
+if sys.version_info >= (3, 0):
+	unicode = str
 
 def usage():
 	print("Usage   :", _usage, file=sys.stderr)
