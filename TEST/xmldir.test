@@ -45,26 +45,49 @@ ERROR_CHECK(){
 ###########################################
 # Check for ordinal examples.
 
-${com} / - <<< '<empty/>' > $tmp-ans
+${com} / <<< '<empty/>' > $tmp-ans
 [ "$(wc -c $tmp-ans | self 1)" -eq 0 -a $? -eq 0 ]; ERROR_CHECK "An empty element must not be output and left vacant."
 
-${com} /paragraph - <<< '<paragraph>hello</paragraph>' > $tmp-ans
+${com} /paragraph <<< '<paragraph>hello</paragraph>' > $tmp-ans
 [ -z "$(echo paragraph hello | diff $tmp-ans -)" -a $? -eq 0 ]; ERROR_CHECK "<paragraph>hello</paragraph> must be converted to a single line \"paragraph hello\"."
 
-${com} /paragraph - <<< '<paragraph>コマンド</paragraph>' > $tmp-ans
+${com} /paragraph <<< '<paragraph>コマンド</paragraph>' > $tmp-ans
 [ -z "$(echo paragraph コマンド | diff $tmp-ans -)" -a $? -eq 0 ]; ERROR_CHECK "<paragraph>コマンド</paragraph> must be converted to a single line \"paragraph コマンド\"."
 
-${com} /p - <<< '<p>Hello,<strong>world.</strong></p>' > $tmp-ans
-[ -z "$(echo p Hello, | diff $tmp-ans -)" -a $? -eq 0 ]; ERROR_CHECK "<pHello, <strong>world.</strong></p> must be converted to \"\p Hello\", with /p selector."
+${com} /p <<< '<p>Hello,<strong>world.</strong></p>' > $tmp-ans
+[ -z "$((echo p Hello,; echo p strong world.) | diff $tmp-ans -)" -a $? -eq 0 ]; ERROR_CHECK "<pHello, <strong>world.</strong></p> must be converted to \"/p Hello\", with /p selector."
 
-${com} /p/strong - <<< '<p>Hello,<strong>world.</strong></p>' > $tmp-ans
+${com} /p/strong <<< '<p>Hello,<strong>world.</strong></p>' > $tmp-ans
 [ -z "$(echo p strong world. | diff $tmp-ans -)" -a $? -eq 0 ]; ERROR_CHECK "<pHello, <strong>world.</strong></p> must be converted to \"p strong world.\" with /p/strong selector."
 
-${com} -s= /p - <<< '<p>Hello, world.</p>' > $tmp-ans
+${com} -s= /p <<< '<p>Hello, world.</p>' > $tmp-ans
 [ -z "$(echo p Hello,=world. | diff $tmp-ans -)" -a $? -eq 0 ]; ERROR_CHECK 'p must choose Hello,=world. with -s= option.'
 
-${com} -s= /p/span/@title - <<< '<p>Hello, <span title="an attribute">world</span>.</p>' > $tmp-ans
+${com} -s= /p/span/@title <<< '<p>Hello, <span title="an attribute">world</span>.</p>' > $tmp-ans
 [ -z "$(echo p span @title an=attribute | diff $tmp-ans -)" -a $? -eq 0 ]; ERROR_CHECK 'p span @title must choose an=attribute with -s= option.'
+
+${com} /dir1/dir2 > $tmp-ans <<EOD
+<dir1>
+    <dir2>
+      <day>23/Jul.2022</day>
+      <day>24/Jul.2022</day>
+    </dir2>
+    <dir2>
+      <day>25/Jul.2022</day>
+      <day>26/Jul.2022</day>
+    </dir2>
+</dir1>
+EOD
+
+cat > $tmp-required <<EOF
+dir1 dir2 day 23/Jul.2022
+dir1 dir2 day 24/Jul.2022
+dir1 dir2 day 25/Jul.2022
+dir1 dir2 day 26/Jul.2022
+EOF
+
+[ -z "$(diff $tmp-ans $tmp-required > /tmp/debug)" -a $? -eq 0 ]; ERROR_CHECK 'Must interpret a complicated nest like /dir1/dir2/day.'
+
 
 rm -f $tmp-*
 echo "${pythonversion} ${name}" OK
