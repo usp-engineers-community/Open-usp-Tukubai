@@ -34,11 +34,11 @@ import sys
 import codecs
 
 _usage = [ "uconv {-stou,-utos,-etou,-utoe,-ltou,-utol} [<file>]" ]
-_version = "Sun Apr 17 16:06:00 JST 2022"
+_version = "Sun Aug 28 13:24:22 JST 2022"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4+/UTF-8)"
 
-def die(msg):
-	sys.stderr.write( 'Error[uconv] : ' + msg + "\n")
+def error(msg, *arg):
+	print('Error[uconv] :', msg % arg, file=sys.stderr)
 	sys.exit(1)
 
 def usage():
@@ -68,11 +68,22 @@ if __name__ == '__main__':
 		sys.stderr.write('Usage: uconv {-stou,-utos,-etou,-utoe,-ltou,-utol} [<file>]\n')
 
 	if len(sys.argv) < 3:
-		input = codecs.getreader(mapping[0])(sys.stdin)
+		if sys.version_info >= (3, 0):
+			stdin_decoded = codecs.getreader(mapping[0])(sys.stdin.buffer)
+		else:
+			stdin_decoded = codecs.getreader(mapping[0])(sys.stdin)
 	else:
-		input = codecs.open(sys.argv[2], 'r', mapping[0])
+		stdin_decoded = codecs.open(sys.argv[2], 'r', mapping[0])
 
-	sys.stdout.write(input.read().encode(mapping[1]))
-	input.close()
+	try:
+		if sys.version_info >= (3, 0):
+			sys.stdout.buffer.write(bytes(stdin_decoded.read(), encoding = mapping[1]))
+		else:
+			sys.stdout.write(stdin_decoded.read().encode(mapping[1]))
+	except UnicodeDecodeError:
+		error('不正なバイト列が存在します')
+
+
+	stdin_decoded.close()
 
 	sys.exit(0)
