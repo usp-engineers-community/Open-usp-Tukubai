@@ -84,6 +84,7 @@ pdf: $(wildcard COMMANDS/*)
 	 last_updated=$$(git log --date=format-local:"%Y年%m月%d日" -1 --pretty=%cd COMMANDS);         \
 	 sed -e "s/<!--DATE-->/"$${last_updated}"/" <<< "$$PDF_COVER" |                                \
 	 wkhtmltopdf --enable-local-file-access --print-media-type --footer-center [page]              \
+	 	--title "Open usp Tukubai コマンドマニュアル"                                              \
 	 	- $(addsuffix .html,$(addprefix MANUALHTML/,$(patsubst COMMANDS/%,%,$+)))                  \
 	 	"MANUALHTML/"{{tag,name,field}-format,{master,name,transaction}-file}.html "$${backcover}" \
 	 	MANUALPDF/all.pdf;                                                                         \
