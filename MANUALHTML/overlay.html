@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8">
-  <title>gyo - UEC - usp engineers' community - Tukubaiオンラインコマンドマニュアル</title>
+  <title>overlay - UEC - usp engineers' community - Tukubaiオンラインコマンドマニュアル</title>
   <link rel="stylesheet" href="COMMON/CSS/MAIN.CSS">
   <link rel="stylesheet" href="COMMON/CSS/MENU.CSS">
   <link rel="stylesheet" href="COMMON/CSS/PRINT.CSS">
@@ -128,68 +128,67 @@
     <div id="main">
       <h1>Tukubaiオンラインコマンドマニュアル</h1>
 
-<h2>gyo(1)</h2>
+<h2>overlay(1)</h2>
 <h3>【名前】</h3>
-<p><code>gyo</code> :  行をカウント</p>
+<p><code>overlay</code> :  二つのテキストファイルを重ねあわせる。</p>
 <h3>【書式】</h3>
-<pre class="list">Usage   : gyo [-f] [&lt;file&gt; ...]
-Version : Tue Sep  6 08:55:48 JST 2022
+<pre class="list">Usage   : overlay basefile overfile
+        : overlay -r basefile overfile
+        : overlay -f [-m&lt;meta-str&gt;] basefile overfile
+Version : 
 Edition : 1</pre>
 <h3>【説明】</h3>
-<p>引数のファイルまたは標準入力のテキストデータの行数(行数)をカウントして出力する。<code>&lt;file&gt;</code>として<code>-</code>を指定すると標準入力を使用する。</p>
-<h3>【例1】</h3>
-<pre class="prettyprint">$ cat data
-0000000 浜地______ 50 F 91 59 20 76 54
-0000001 鈴田______ 50 F 46 39 8  5  21
-0000003 杉山______ 26 F 30 50 71 36 30
-0000004 白土______ 40 M 58 71 20 10 6
-0000005 崎村______ 50 F 82 79 16 21 80
-0000007 梶川______ 42 F 50 2  33 15 62
-$</pre>
-<pre class="prettyprint">$ gyo data
-6
-$</pre>
-<h3>【例2】</h3>
-<p>複数のファイルの行数を一度にカウントできる。</p>
+<p>テキストファイル&quot;basefile&quot;の上にもう一つのテキストファイル&quot;overfile&quot;を重ねあわせ、一つのテキストファイルとして出力します。先に&quot;ido&quot;ツールで片方のテキストを移動させ重ねるスペースを空けてから&quot;overlay&quot;にて一つに重ねの帳票にするパターンに多く使われます。</p>
+<h3>【例１】</h3>
+<p>(元データ:ベースファイル)</p>
 <pre class="prettyprint">$ cat data1
-1 file1
-2 file1
-3 file1
-$</pre>
+                    ★教科別得点
+                    No  氏名  A  B  C  D  E
+                    =======================
+                    000 浜地 91 59 20 76 54
+                    001 鈴田 46 39  8  5 21
+                    003 杉山 30 50 71 36 30
+                    004 白土 58 71 20 10  6
+                    005 崎村 82 79 16 21 80
+                    007 梶川 50  2 33 15 62
+→ 20文字空白が空いている。</pre>
+<p>(元データ:オーバーファイル)</p>
 <pre class="prettyprint">$ cat data2
-1 file2
-2 file2
-$</pre>
-<pre class="prettyprint">$ cat data3
-1 file3
-2 file3
-3 file3
-4 file3
-$</pre>
-<pre class="prettyprint">$ gyo data1 data2 data3
-3
-2
-4
-$</pre>
-<h3>【例3】</h3>
-<p>&quot;<code>-f</code>&quot;オプションを使用するとファイル名と行数をそれぞれ表示する。</p>
-<pre class="prettyprint">$ gyo -f data1 data2 data3
-data1 3
-data2 2
-data3 4
-$</pre>
-<h3>【備考】</h3>
-<p>ファイル名に <code>-</code>を指定すると標準入力ファイルを期待する。</p>
-<pre class="prettyprint">$ cat data2 |  gyo -f data1 - data3
-data1 3
-data2 2
-data3 4
-$</pre>
-<h3>【関連項目】</h3>
-<p><a href="count.html" class="command">count(1)</a>、<a href="juni.html" class="command">juni(1)</a>、<a href="rank.html" class="command">rank(1)</a>、<a href="retu.html" class="command">retu(1)</a></p>
+★総合ランキング
+Rank 氏名 総合得点
+==================
+1    安武      402
+2    柳本      359
+3    浜地      300
+4    崎村      278
+5    杉山      217
+6    米原      206</pre>
+<p>&quot;data1<code>&quot;と&quot;</code>data2&quot;を重ねて一つの帳票にします。</p>
+<pre class="prettyprint">$ overlay data1 data2 &gt; data3
+$ cat data3
+★総合ランキング    ★教科別得点
+Rank 氏名 総合得点  No  氏名  A  B  C  D  E
+==================  =======================
+1    安武      402  000 浜地 91 59 20 76 54
+2    柳本      359  001 鈴田 46 39  8  5 21
+3    浜地      300  003 杉山 30 50 71 36 30
+4    崎村      278  004 白土 58 71 20 10  6
+5    杉山      217  005 崎村 82 79 16 21 80
+6    米原      206  007 梶川 50  2 33 15 62</pre>
+<h3>【例２】</h3>
+<p>フィールドオーバーレイデフォルトでは、over ファイルの<code>&quot;@&quot;</code>は「透明文字」として扱われる。<code>-m</code>オプションを使用して透明文字を指定できる。</p>
+<pre class="prettyprint">$ cat base
+1 2 3 4
+a b c d
+$ cat over
+@ x @ y
+@ @ w z
+$ overlay -f base over
+1 x 3 y
+a b w z</pre>
     </div>
 
-    <div id="lastmodified">Last modified: Tue Sep  6 09:02:05 JST 2022</div>
+    <div id="lastmodified">Last modified: Fri Aug 12 12:56:05 JST 2022</div>
 
     <div id="footer">Contact us: uecinfo@usp-lab.com<br>Copyright &copy; 2012-2022 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
   </div>
