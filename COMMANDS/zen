@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 #coding: utf-8
 #
-# han2zen 全角変換フィルタ（Open usp Tukubai版）
+# zen 全角変換フィルタ（Open usp Tukubai版）
 # 
 # designed by Nobuaki Tounaka
-# written  by Masatomo Togashi
+# written  by Hinata Yanagi
 #
 # The MIT License
 #
@@ -30,10 +30,10 @@
 
 from __future__ import print_function
 
-_usage = "zen [-k] [<f1> <f2> ..] <file>"
-_usage1 = "zen -d <string>"
-_version = "Mon Feb 21 00:32:55 JST 2022"
-_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
+_usage = "zen [-k] [<f1> <f2> ..] [<file>]"
+_usage1 = "zen -k [<string>]"
+_version = "Tue Sep  6 08:46:04 JST 2022"
+_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4+/UTF-8)"
 _keypat = r'((\d+|NF(-\d+)?)(/(\d+|NF(-\d+)?))?)(@((\d+|NF(-\d+)?)(/(\d+|NF(-\d+)?))?))*$'
 _keypatNF=r'(?P<m0>(?P<m01>\d+)|(?P<m02>NF(?P<m03>-\d+)?))(/(?P<m1>(?P<m11>\d+)|(?P<m12>NF(?P<m13>-\d+)?)))?$'
 
@@ -59,13 +59,13 @@ def open_file(n):
 	if n >= len(sys.argv):	filename = '/dev/fd/0'
 	else:
 		filename = sys.argv[n]
-		if filename=='-':	filename = '/dev/fd/0'
-		if os.path.isfile(filename) or filename == '/dev/fd/0':	# 指定されたものがファイル名だったらそれを使う
+		if filename=='-': filename = '/dev/fd/0'
+		if os.path.exists(filename) and not os.path.isdir(filename): # 指定されたものがファイル名だったらそれを使う
 			del sys.argv[n]
-		else:	# 指定されたものがファイル名ではなかったらファイルは返さない
+		else: # 指定されたものがファイル名ではなかったらファイルは返さない
 			return None
-	if Python3():	mode='r'
-	else:	mode='rU'	# Python2ではmodeがrUのときPython3と同様に読み込み時に各種改行記号がLF（\n）に統一される
+	if Python3(): mode='r'
+	else:	mode='rU' # Python2ではmodeがrUのときPython3と同様に読み込み時に各種改行記号がLF（\n）に統一される
 	try:
 		file = open(filename, mode)
 	except:
@@ -109,7 +109,7 @@ def Python3():
 # unicode 変換
 #
 def to_unicode(s):
-	if Python3(): return s	# Python3ではsには既にunicode文字列が入っている
+	if Python3(): return s # Python3ではsには既にunicode文字列が入っている
 	try:
 		return unicode(s, 'utf_8')
 	except:
@@ -126,10 +126,10 @@ def getpos(base_pos):
 	# 0発信とするために-1を加える
 	if base_pos > 0:
 		pos=base_pos-1
-		if pos > NF:	error("フィールド番号が大きすぎます。 %s",str(base_pos))
+		if pos > NF: error("フィールド番号が大きすぎます。 %s",str(base_pos))
 	else:
 		pos=NF+base_pos-1
-		if pos < 0:	error("フィールド指定でNF-x の x が大きすぎます。 %s","NF-"+str(-base_pos))
+		if pos < 0: error("フィールド指定でNF-x の x が大きすぎます。 %s","NF-"+str(-base_pos))
 	return pos
 
 # NF相対欄位置リスト（base_keylist）からNF（欄数）に応じた実際の欄位置リスト（keylist）を作成する
@@ -137,15 +137,15 @@ def make_keylist(base_keylist):
 	# base_keylistの要素には区間をあらわす整数tupleの(start,end)と、単一欄をあらわす整数がある
 	keylist=[]
 	for fieldpos in base_keylist:
-		if type(fieldpos)==int:	keylist.append(getpos(fieldpos))	# 単一欄
-		else:	# (a/b)の区間
+		if type(fieldpos)==int: keylist.append(getpos(fieldpos)) # 単一欄
+		else: # (a/b)の区間
 			start=getpos(fieldpos[0])
 			end=getpos(fieldpos[1])
-			if start <= end:	# 正順
+			if start <= end: # 正順
 				keylist+=range(start,end+1)
 			else:	# 逆順
 				keylist+=range(start,end-1,-1)
-	return list(set(keylist))	# 欄位置は0発進
+	return list(set(keylist)) # 欄位置は0発進
 
 # 欄番号文字列をNF相対形式で整数化する
 def getFieldNum(str,str1,str2):
@@ -156,14 +156,14 @@ def getFieldNum(str,str1,str2):
 	#  NFのときは整数の0に
 	#  NF-nのときは整数の-nに
 	# 実際の欄番号にする際には行ごとに得たNF（欄数）を使用して計算する
-	if str1:	# n
+	if str1: # n
 		fieldnum=int(str1)
 		if fieldnum==0:
 			error("フィールド指定に0があります。")
-	else:	# NF-n または NF
-		if str2:	# NF-n
+	else: # NF-n または NF
+		if str2: # NF-n
 			fieldnum=int(str2)
-		else:	# NF
+		else: # NF
 			fieldnum=0
 	return fieldnum
 
@@ -171,19 +171,19 @@ def getFieldNum(str,str1,str2):
 # ひとつの欄指定パラメータから欄番号リストを得る（区間指定にも対応する）
 #
 def getFieldList(field_param):
-	mobj = re.match(_keypat,field_param)	# 構文検査のために実行する
-	if not mobj:	# フィールド指定の形式が不正
+	mobj = re.match(_keypat,field_param) # 構文検査のために実行する
+	if not mobj: # フィールド指定の形式が不正
 		error("フィールド指定の形式が不正です。 %s",field_param)
 	fieldlist=[]
-	concatlist=field_param.split("@")	# @で分割する
+	concatlist=field_param.split("@") # @で分割する
 	for fieldnum in concatlist:
 		mobj = re.match(_keypatNF,fieldnum)
-		start=getFieldNum(fieldnum,mobj.group('m01'),mobj.group('m03'))	# 前端部を得る
-		if mobj.group('m1'):	# a/bの形式で区間指定をしている
-			end=getFieldNum(fieldnum,mobj.group('m11'),mobj.group('m13'))	# 後端部を得る
-			fieldlist.append((start,end))	# 区間で確定
+		start=getFieldNum(fieldnum,mobj.group('m01'),mobj.group('m03')) # 前端部を得る
+		if mobj.group('m1'): # a/bの形式で区間指定をしている
+			end=getFieldNum(fieldnum,mobj.group('m11'),mobj.group('m13')) # 後端部を得る
+			fieldlist.append((start,end)) # 区間で確定
 		else:
-			fieldlist.append(start)	# 前端部単独で確定
+			fieldlist.append(start) # 前端部単独で確定
 	return fieldlist
 
 #
@@ -225,10 +225,10 @@ def makehanzendic(k_flg):
 		"バ","ビ","ブ","ベ","ボ",
 		# 半濁音
 		"パ","ピ","プ","ペ","ポ",
-		# 鼻濁音	JISX0213-2004で定義されているがUnicodeでは合成用半濁点文字を使って合成する
+		# 鼻濁音 JISX0213-2004で定義されているがUnicodeでは合成用半濁点文字を使って合成する
 		"カ゚","キ゚","ク゚","ケ゚","コ゚",
 		"セ゚","ツ゚","ト゚",
-		# 濁音	JISX0213-2004で定義されている
+		# 濁音 JISX0213-2004で定義されている
 		"ヷ","ヺ"]
 	hangul_zen=[
 		"ㅤ","ㄱ","ㄲ","ㄳ","ㄴ","ㄵ","ㄶ","ㄷ","ㄸ","ㄹ","ㄺ","ㄻ","ㄼ","ㄽ","ㄾ","ㄿ",
@@ -237,7 +237,7 @@ def makehanzendic(k_flg):
 		"ㅠ","ㅡ","ㅢ","ㅣ"]
 	others_zen=[
 		"｟","｠",
-		"￠","￡","￢","￣","￣","￤","￥","￦",	# 「￣」（U+ffe3）はJISX0213-2004では全角マクロンと全角オーバーラインを包摂
+		"￠","￡","￢","￣","￣","￤","￥","￦", # 「￣」（U+ffe3）はJISX0213-2004では全角マクロンと全角オーバーラインを包摂
 		"│","←","↑","→","↓","■","○"]
 		# 全角部に「￣」がふたつあるが辞書化したときは半角部（han）の「‾」半角オーバーライン（U+203e）と「¯」半角マクロン（U+00af）との組がふたつとも有効になる
 	ascii_han=[
@@ -272,26 +272,26 @@ def makehanzendic(k_flg):
 		"ￗ","ￚ","ￛ","ￜ"]
 	others_han=[
 		"⦅","⦆",
-		"¢","£","¬","‾","¯","¦","¥","₩",	# 「‾」半角オーバーライン（U+203e）と「¯」半角マクロン（U+00af）は別字
+		"¢","£","¬","‾","¯","¦","¥","₩", # 「‾」半角オーバーライン（U+203e）と「¯」半角マクロン（U+00af）は別字
 		"￨","￩","￪","￫","￬","￭","￮",
 		]
-	if k_flg:	# -kオプションがあるときは半角カナ文字のみを変換対象とする
+	if k_flg: # -kオプションがあるときは半角カナ文字のみを変換対象とする
 		return dict(zip(map(to_unicode,kana_han),map(to_unicode,kana_zen)))
-	else:	# Unicodeの半角全角対応表による
-		return dict(zip(map(to_unicode,ascii_han+kana_han+hangul_han+others_han),map(to_unicode,ascii_zen+kana_zen+hangul_zen+others_zen)))	# Python2のときはutf8からunicodeへ変換してからzip()
+	else: # Unicodeの半角全角対応表による
+		return dict(zip(map(to_unicode,ascii_han+kana_han+hangul_han+others_han),map(to_unicode,ascii_zen+kana_zen+hangul_zen+others_zen))) # Python2のときはutf8からunicodeへ変換してからzip()
 
-def to_zen(str,dic):	# 文字列を辞書にしたがって変換する
+def to_zen(str,dic): # 文字列を辞書にしたがって変換する
 	s = ''
 	ustr=to_unicode(str)
 	ustrlen=len(ustr)
 	i=0
 	while i<ustrlen:
-		if i<ustrlen-1:	# 2文字組をとることができるときは連続する2文字で検査する←合成文字のとき
+		if i<ustrlen-1: # 2文字組をとることができるときは連続する2文字で検査する←合成文字のとき
 			cc=ustr[i:i+2]
 			if cc in dic:
 				# 合成用濁点/半濁点は単独のprintでは見えないので要注意
 				s=concatstr(s,dic[cc])
-				i+=2	# 変換できたら次の1文字をskipする
+				i+=2 # 変換できたら次の1文字をskipする
 				continue
 		# 2文字組をとることができないかまたは2文字組による辞書引きで失敗した
 		c=ustr[i]
@@ -301,8 +301,8 @@ def to_zen(str,dic):	# 文字列を辞書にしたがって変換する
 			s=concatstr(s,c)
 		i+=1
 
-	if not Python3():	return s.encode('utf_8')	# Python2ならUTF8へ変換する
-	else:	return s
+	if not Python3(): return s.encode('utf_8') # Python2ならUTF8へ変換する
+	else: return s
 
 #
 # 直接入力文字列の前処理
@@ -310,20 +310,20 @@ def to_zen(str,dic):	# 文字列を辞書にしたがって変換する
 #  Python3においてコマンドラインからの直接入力文字列中にUnicode符号位置がU+FFFFを超えるコードがあると
 #  Unicode文字に正しく変換されない場合があることへの対処をする
 def utf2ucs(instr):
-	outstr=""	# 出力文字列
-	intlist=[]	# 作業用整数リスト
+	outstr="" # 出力文字列
+	intlist=[] # 作業用整数リスト
 	for char in instr:
 		if ord(char)>=0xdc00 and ord(char)<=0xdcff:	# 文字の符号位置がU+DCxxの範囲にあったら「UTF8もどき」
-			intlist.append(ord(char)-0xdc00)	# 0xdc00のげたをはずして整数リストに入れる
-		else:	# 通常文字がきたら
-			if len(intlist)>0:	# ここまでに「UTF8もどき」列を変換した整数リストがあったら
+			intlist.append(ord(char)-0xdc00) # 0xdc00のげたをはずして整数リストに入れる
+		else: # 通常文字がきたら
+			if len(intlist)>0: # ここまでに「UTF8もどき」列を変換した整数リストがあったら
 				# bytesに変換してutf8からUCSへの変換をして出力文字列に追加
 				outstr+= bytes(intlist).decode("utf_8")
-				intlist=[]	# 整数リストを再初期化
-			outstr+=char	# 新しくきた通常文字を出力文字列に追加
+				intlist=[] # 整数リストを再初期化
+			outstr+=char # 新しくきた通常文字を出力文字列に追加
 	# 「UTF8もどき」列を変換した整数リストが残っていたら
 	# bytesに変換してutf8からUCSへの変換をして出力文字列に追加
-	if len(intlist)>0:	outstr+= bytes(intlist).decode("utf_8")
+	if len(intlist)>0: outstr+= bytes(intlist).decode("utf_8")
 	return outstr
 
 # Python3か判定する
@@ -355,14 +355,13 @@ if __name__ == '__main__':
 			# 半角全角変換辞書を作り、変換を実行し、終了する
 			dic=makehanzendic(k_flg)
 			if Python3():
-				print(to_zen(utf2ucs(sys.argv[2]),dic))	# Python3のときは-d指定の文字列（sys.argv[2]）に対して前処理をする
+				print(to_zen(utf2ucs(sys.argv[2]),dic)) # Python3のときは-d指定の文字列（sys.argv[2]）に対して前処理をする
 			else:
 				print(to_zen(sys.argv[2],dic))
 			sys.exit(0)
 		elif sys.argv[1] == '-k':
 			k_flg = True
 			del sys.argv[1]
-	else: usage()	# 実行パラメータ無し
 
 	# 半角全角変換辞書を作る
 	dic=makehanzendic(k_flg)
@@ -374,21 +373,21 @@ if __name__ == '__main__':
 	#
 	if len(sys.argv) <= 2:
 		file = open_file(1)
-		if file:	# 唯一の実行パラメータはファイル名であった
-			for line in file:	# 全フィールドを対象に全角変換する
+		if file: # 唯一の実行パラメータはファイル名であった
+			for line in file: # 全フィールドを対象に全角変換する
 				print(to_zen(preproc_line(line),dic))
 			sys.exit(0)
 		# 唯一の実行パラメータがファイル名ではなかったときそれはフィールド指定であると推定する
 
 	#
-	# 入力ファイルのオープン	# フィールド指定がある
+	# 入力ファイルのオープン # フィールド指定がある
 	#
-	file = open_file(len(sys.argv) - 1)	# 最後尾のパラメータを与える
-	if not file:	# それがファイルでなかったら
-		file = open_file(len(sys.argv))	# 標準入力ファイルを開く
+	file = open_file(len(sys.argv) - 1) # 最後尾のパラメータを与える
+	if not file: # それがファイルでなかったら
+		file = open_file(len(sys.argv)) # 標準入力ファイルを開く
 
 	# フィールド指定パラメータからNF相対欄位置リストを作成する
-	base_keylist = getTargetFields(sys.argv[1:])	# sys.argvに残っているのはコマンド名とフィールド指定のみ
+	base_keylist = getTargetFields(sys.argv[1:]) # sys.argvに残っているのはコマンド名とフィールド指定のみ
 
 	#
 	# メインループ

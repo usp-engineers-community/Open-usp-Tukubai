@@ -8,8 +8,8 @@ gyo : 行をカウント
 
 【書式】
 
-Usage   : gyo [-f] <file> ...
-Version : Wed May 20 04:47:48 JST 2020
+Usage   : gyo [-f] [<file> ...]
+Version : Tue Sep  6 08:55:48 JST 2022
 Edition : 1
 
 【説明】
@@ -85,6 +85,6 @@ $
 
 count(1)、juni(1)、rank(1)、retu(1)
 
-last modified: Fri Jul 15 15:42:38 JST 2022
+last modified: Tue Sep  6 09:02:05 JST 2022
 Contact us: uecinfo@usp-lab.com
 Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights

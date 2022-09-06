@@ -4,11 +4,11 @@
 # keta 桁整形フィルタ（Open usp Tukubai版）
 # 
 # designed by Nobuaki Tounaka
-# written  by Masatomo Togashi
+# written  by Hinata Yanagi
 #
 # The MIT License
 #
-# Copyright (C) 2020 Universal Shell Programming Laboratory
+# Copyright (C) 2022 Universal Shell Programming Laboratory
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -30,11 +30,11 @@
 
 from __future__ import print_function
 
-_usage = "keta n1 n2 .. <filename>"
-_usage1 = "keta -v <filename>"
-_usage2 = "keta [--] <filename>"
-_version = "Wed May 20 04:47:49 JST 2020"
-_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
+_usage = "keta n1 n2 .. [<filename>]"
+_usage1 = "keta -v [<filename>]"
+_usage2 = "keta [--] [<filename>]"
+_version = "Tue Sep  6 08:46:04 JST 2022"
+_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4+/UTF-8)"
 _keypat = r'(-?\d+)(x((\d+)|(NF)(-\d+)?))?$'
 		# 1: - width
 		# 4: constant multiplier
@@ -395,7 +395,7 @@ def mkwidtab(wid, nf):
 if __name__ == '__main__':
 
 	# 構文表示
-	if len(sys.argv) < 2: usage()
+	if len(sys.argv) < 2 and len(sys.argv) != 1: usage()
 	elif len(sys.argv) == 2:
 		if sys.argv[1] == '--help' or \
 		   sys.argv[1] == '--version':	usage()

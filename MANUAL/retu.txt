@@ -9,7 +9,7 @@ retu : 列をカウント
 【書式】
 
 Usage   : retu [-f] <file> ...
-Version : Sat Jun 20 21:57:22 JST 2020
+Version : Tue Sep  6 08:46:04 JST 2022
 Edition : 1
 
 【説明】
@@ -90,6 +90,6 @@ $ cat data2 | retu -f data1 - data3
 
 count(1)、gyo(1)、juni(1)、rank(1)
 
-last modified: Fri Jul 15 15:42:38 JST 2022
+last modified: Tue Sep  6 09:02:05 JST 2022
 Contact us: uecinfo@usp-lab.com
 Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights

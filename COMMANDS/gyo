@@ -4,11 +4,11 @@
 # gyo（Open usp Tukubai版）
 #
 # designed by Nobuaki Tounaka
-# written  by Masatomo Togashi
+# written  by Hinata Yanagi
 #
 # The MIT License
 #
-# Copyright (C) 2020 Universal Shell Programming Laboratory
+# Copyright (C) 2022 Universal Shell Programming Laboratory
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -30,9 +30,9 @@
 
 from __future__ import print_function
 
-_usage = "gyo [-f] <file> ..."
-_version = "Wed May 20 04:47:48 JST 2020"
-_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
+_usage = "gyo [-f] [<file> ...]"
+_version = "Tue Sep  6 08:55:48 JST 2022"
+_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4+/UTF-8)"
 
 import os
 import sys
@@ -59,13 +59,13 @@ def die(message):
 def count(filename):
 	file = None
 	if filename == "-":
-		filename = '/dev/fd/0'	# sys.stdinをファイルディスクリプターで表記する
-	elif not os.path.isfile(filename):
+		filename = '/dev/fd/0' # sys.stdinをファイルディスクリプターで表記する
+	elif not os.path.exists(filename) or os.path.isdir(filename):
 		die(filename + ":ファイルがありません。")
 	elif os.path.isdir(filename):
 		return 0
-	if Python3():	mode='r'
-	else:	mode='rU'	# Python2ではmodeがrUのときPython3と同様に読み込み時に各種改行記号がLF（\n）に統一される
+	if Python3(): mode='r'
+	else:	mode='rU' # Python2ではmodeがrUのときPython3と同様に読み込み時に各種改行記号がLF（\n）に統一される
 	try:
 		file = open(filename,mode)
 	except IOError:
@@ -98,16 +98,15 @@ if __name__ == '__main__':
 	argc = len(sys.argv)
 
 	# 構文表示
-	if len(sys.argv) < 2: printUsage()
-	elif len(sys.argv) == 2:
+	if len(sys.argv) == 2:
 		if sys.argv[1] == '--help' or \
-		   sys.argv[1] == '--version':	printUsage()
+		   sys.argv[1] == '--version': printUsage()
 
 	for i in range(1, argc):
 		arg = sys.argv[i]
-		if arg == "-f":		mode = "file"
-		elif arg == "-":	files.append(arg)
-		else:			files.append(arg)
+		if arg == "-f":  mode = "file"
+		elif arg == "-": files.append(arg)
+		else:            files.append(arg)
 
 	if len(files) == 0:
 		files.append("-")
@@ -118,5 +117,5 @@ if __name__ == '__main__':
 	for f in files:
 		n = count(f)
 		if n != None:
-			if mode == "normal":	print(n)
-			else:			print(f,n)
+			if mode == "normal": print(n)
+			else:                print(f,n)

@@ -8,10 +8,10 @@ keta : テキストファイルの桁そろえ
 
 【書式】
 
-Usage   : keta n1 n2 .. <filename>
-          keta -v <filename>
-          keta [--] <filename>
-Version : Wed May 20 04:47:49 JST 2020
+Usage   : keta n1 n2 .. [<filename>]
+          keta -v [<filename>]
+          keta [--] [<filename>]
+Version : Tue Sep  6 08:46:04 JST 2022
 Edition : 1
 
 【説明】
@@ -118,6 +118,6 @@ $ keta $(keta -v data) data
 
 comma(1)
 
-last modified: Fri Jul 15 16:44:16 JST 2022
+last modified: Tue Sep  6 09:02:05 JST 2022
 Contact us: uecinfo@usp-lab.com
 Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights

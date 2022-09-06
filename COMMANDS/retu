@@ -4,11 +4,11 @@
 # retu レコードのフィールド数を求める （Open usp Tukubai版）
 #
 # designed by Nobuaki Tounaka
-# written  by Masatomo Togashi
+# written  by Hinata Yanagi
 #
 # The MIT License
 #
-# Copyright (C) 2020 Universal Shell Programming Laboratory
+# Copyright (C) 2022 Universal Shell Programming Laboratory
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -30,9 +30,9 @@
 
 from __future__ import print_function
 
-_usage = "retu [-f] <file> ..."
-_version = "Sat Jun 20 21:57:22 JST 2020"
-_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
+_usage = "retu [-f] [<file> ...]"
+_version = "Tue Sep  6 08:46:04 JST 2022"
+_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4+/UTF-8)"
 
 import os
 import sys
@@ -52,10 +52,10 @@ def die(message):
 #
 def openFile(filename):
 	file = None
-	if filename == '-':	filename = '/dev/fd/0'	# sys.stdinをファイルディスクリプターで表記する
-	if Python3():	mode='r'
-	else:	mode='rU'	# Python2ではmodeがrUのときPython3と同様に読み込み時に各種改行記号がLF（\n）に統一される
-	if os.path.isfile(filename) or filename=='/dev/fd/0':
+	if filename == '-':	filename = '/dev/fd/0' # sys.stdinをファイルディスクリプターで表記する
+	if Python3(): mode='r'
+	else: mode='rU' # Python2ではmodeがrUのときPython3と同様に読み込み時に各種改行記号がLF（\n）に統一される
+	if os.path.exists(filename) and not os.path.isdir(filename):
 		try:
 			file = open(filename,mode)
 		except IOError:
@@ -99,8 +99,8 @@ def countFile(filename):
 
 # BOMの取得関数
 def get_BOM():
-	if Python3():	return chr(int("FEFF",16))	# U+FEFFはBOMのUnicode符号位置
-	else:			return "\xEF\xBB\xBF"	# BOMは「EF BB BF」の3バイト
+	if Python3(): return chr(int("FEFF",16)) # U+FEFFはBOMのUnicode符号位置
+	else:         return "\xEF\xBB\xBF" # BOMは「EF BB BF」の3バイト
 
 # Python3か判定する
 def Python3():
@@ -121,8 +121,7 @@ if __name__ == '__main__':
 	files = []
 
 	# 構文表示
-	if len(sys.argv) < 2: printUsage()
-	elif len(sys.argv) == 2:
+	if len(sys.argv) == 2:
 		if sys.argv[1] == '--help' or \
 		   sys.argv[1] == '--version':	printUsage()
 
