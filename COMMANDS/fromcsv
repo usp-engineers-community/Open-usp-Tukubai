@@ -1,0 +1,120 @@
+#!/usr/bin/env python
+#coding: utf-8
+#
+# fromcsv: convert an encoding of text (Open usp Tukubai)
+# 
+# designed by Nobuaki Tounaka
+# written  by Hinata Yanagi
+# 
+# The MIT License
+# 
+# Copyright (C) 2022 Universal Shell Programming Laboratory
+# 
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+from __future__ import print_function
+import sys
+import csv
+
+_usage = [ "fromcsv [-n<string>][-s<string>][-z<string>][-e][-q] [<file>]" ]
+_version = "Tue Sep 13 17:11:29 JST 2022"
+_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4+/UTF-8)"
+
+def usage():
+	sys.stderr.write("Usage     : "+ _usage[0] + "\n")
+	sys.stderr.write("Version   : "+ _version + "\n")
+	sys.stderr.write("          : "+ _code + "\n")
+	sys.exit(1)
+
+#
+# Throw an error and terminate in failure.
+#
+
+def error(msg, *arg):
+	print('Error[rjson] :', msg % arg, file=sys.stderr)
+	sys.exit(1)
+
+#
+# Open an input file
+#
+def open_file(n, quiet = False):
+	if type(n) == type(0):
+		if n >= len(sys.argv):
+			n = '-'
+		else:
+			n = sys.argv[n]
+	if n == '-':
+		file = sys.stdin
+	else:
+		try:
+			file = open(n)
+		except:
+			if not quiet:
+				error("Cannot open file '%s'", n)
+			else:
+				sys.exit(1)
+	return file
+
+
+def escape_field(field):
+	if field == '':
+		return null_padding
+	elif escape_underscore:
+		return field.replace('_', '\\_').replace(' ', '_')
+	else:
+		return field.replace(' ', whitespace).replace('\r\n', '\n').replace('\n', '\\n')
+#
+# Print records red from CSV.
+#
+
+def print_records(records):
+	for record in records:
+		print(' '.join(map(escape_field, record)))
+
+###########################################
+#メイン関数
+if __name__ == '__main__':
+	if '--help' in sys.argv or \
+	   '--version' in sys.argv: usage()
+
+	null_padding = '0'
+	whitespace = '_'
+	escape_underscore = False
+	escape_quotation = False
+
+	while len(sys.argv) > 1:
+		if sys.argv[1][:2] == "-n" and len(sys.argv[1]) > 2:
+			null_padding = sys.argv[1][2:]
+			del sys.argv[1]
+		elif sys.argv[1][:2] == "-s" and len(sys.argv[1]) > 2:
+			whitespace = sys.argv[1][2:]
+			del sys.argv[1]
+		elif sys.argv[1] == "-e":
+			escape_underscore = True
+			del sys.argv[1]
+		elif sys.argv[1] == "-q":
+			escape_quotation = sys.argv[1][2:]
+			del sys.argv[1]
+		elif len(sys.argv[1]) < 2 or sys.argv[1][0] != '-':
+			break
+
+	input_file = open_file(1)
+	print_records(csv.reader(input_file))
+
+	sys.exit(0)
