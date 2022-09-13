@@ -1,0 +1,146 @@
+#!/bin/bash
+#!/usr/local/bin/bash -xv # コマンド処理系の変更例
+#
+# test script of 1bai
+#
+# usage: [<test-path>/]calclock.test [<command-path> [<python-version>]]
+#
+#            <test-path>は
+#                    「現ディレクトリーからみた」本スクリプトの相対パス
+#                    または本スクリプトの完全パス
+#                    省略時は現ディレクトリーを仮定する
+#            <command-path>は
+#                    「本スクリプトのディレクトリーからみた」test対象コマンドの相対パス
+#                    またはtest対象コマンドの完全パス
+#                    省略時は本スクリプトと同じディレクトリーを仮定する
+#                    値があるときまたは空値（""）で省略を示したときはあとにつづく<python-version>を指定できる
+#            <python-version>は
+#                    使用するpython処理系のversion（minor versionまで指定可）を指定する
+#                    （例 python2 python2.6 phthon3 python3.4など）
+#                    単にpythonとしたときは現実行環境下でのdefault versionのpythonを使用する
+#                    文字列"python"は大文字/小文字の区別をしない
+#                    省略時はpythonを仮定する
+name=fromcsv # test対象コマンドの名前
+testpath=$(dirname $0) # 本スクリプト実行コマンドの先頭部($0)から本スクリプトのディレトリー名をとりだす
+cd $testpath # 本スクリプトのあるディレクトリーへ移動
+if test "$2" = ""; # <python-version>($2)がなければ
+	then pythonversion="python" # default versionのpythonとする
+	else pythonversion="$2" # <python-version>($2)があれば指定versionのpythonとする
+fi
+if test "$1" = ""; # <command-path>($1)がなければ
+	then commandpath="." # test対象コマンドは現ディレクトリーにある
+	else commandpath="$1" # <command-path>($1)があればtest対象コマンドは指定のディレクトリーにある
+fi
+com="${pythonversion} ${commandpath}/${name}" # python処理系によるtest対象コマンド実行の先頭部
+tmp=/tmp/$$
+
+ERROR_CHECK(){
+	[ "$(echo ${PIPESTATUS[@]} | tr -d ' 0')" = "" ] && return
+	echo $1
+	echo "${pythonversion} ${name}" NG
+	rm -f $tmp-*
+	exit 1
+}
+
+BOMandEOLvariation(){	# BOM無しLF改行ファイル（$1）からBOM付きCRLF改行ファイル（$2）とBOM付きCR改行ファイル（$3）を生成する
+	 [ $# -eq 3 ]; ERROR_CHECK "TESTスクリプト内のBOMandEOLvariation()でファイル指定が不正"
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r\n/g' -e 's/$/\r/' $1 >$2	# $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r/g' $1 | tr '\n' '\r' >$3	# $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
+}
+
+###########################################
+# TEST1
+# 空白文字とアンダースコアを含む CSV をオプションなしで読み取る。
+
+cat << FIN > $tmp-in
+"a b","c de","f g"
+h i,j_k,
+l m n
+FIN
+
+cat << FIN > $tmp-ans
+a_b c_de f_g
+h_i j_k 0
+l_m_n
+FIN
+
+${com} $tmp-in > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "Failed with read a simple CSV containg whitespaces and  underscores."
+
+############################################
+# TEST2
+# -z 引数で空のフィールド("")を代替する文字列を設定する。
+
+cat << FIN > $tmp-in
+"a b","c de","f g"
+h i,j_k,""
+l m n
+FIN
+
+cat << FIN > $tmp-ans
+a_b c_de f_g
+h_i j_k @
+l_m_n
+FIN
+
+${com} -n@ $tmp-in > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "Failed with read a CSV with whitespace -n option set."
+
+
+############################################
+# TEST3
+# -s 引数で空白を代替する文字列を設定する。
+
+cat << FIN > $tmp-in
+"a b","c de","f g"
+h i,j_k,
+l m n
+FIN
+
+cat << FIN > $tmp-ans
+a@b c@de f@g
+h@i j_k 0
+l@m@n
+FIN
+
+${com} -s@ $tmp-in > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "Failed with read a CSV with whitespace -s option set."
+
+##########################################
+# TEST4
+# \r\n (CR + LF) と \n (LF) は "\n" に置換される。
+
+echo -e 'a,"b\r\n\nc", d' > $tmp-in
+
+cat << FIN > $tmp-ans
+a b\n\nc _d
+FIN
+
+${com} $tmp-in > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "CR + LF and LF must be converted to \"\n\"."
+
+
+##########################################
+# TEST5
+# -e オプションを指定すると "_" は "\_" に置換される。
+
+echo -e 'a,b_c' > $tmp-in
+
+cat << FIN > $tmp-ans
+a b\_c
+FIN
+
+${com} -e $tmp-in > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "\"_\" must be replaced with \"\_\" when -e option is specifeid."
+
+##########################################
+
+
+rm -f $tmp-*
+echo "${pythonversion} ${name}" OK
+exit 0

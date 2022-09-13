@@ -1,0 +1,52 @@
+Tukubaiオンラインコマンドマニュアル
+
+fromcsv(1)
+
+【名前】
+
+fromcsv : CSVフィルター
+
+【書式】
+
+Usage   : fromcsv [<file>]
+Option  : -n <null_string>
+          -s <space_character>
+          -e
+          -q
+Version : Tue Sep 13 17:11:29 JST 2022
+
+【説明】
+
+CSVファイルをスペース区切りのファイルに変換します。
+ファイル名を指定しない時、または '-' の時は標準入力を読み込みます。
+
+【仕様】
+
+ 1. 空の文字列は0に変換します。
+ 2. 文字列1の中の "" は " に変換します。
+ 3. 文字列の中の半角スペースは、_ に変換します。
+    -s オプションで_を別の1バイト文字に変更できます。
+ 4. -e オプションを指定すると、_（または -s オプションで指定した文字）
+    \ には \ を前置します。
+ 5. -q オプションを指定すると、\" は " に、\\ は \ に変換します。
+ 6. 行末の \r\n は自動的に \n に変換します。
+ 7. 文字列1内の改行は "\n" と変換します。
+ 8. 最終行は改行が無くても構いません。
+
+【例1】
+$ cat data
+,"",3,"a_b","cde
+f\gh","i j","k,""l"
+
+$ fromcsv data
+0 _ 3 a_b cde\nf\gh i_j k,"l
+$ fromcsv -e data
+0 _ 3 a\_b cde\nf\\gh i_j k,"l
+
+【関連項目】
+
+tocsv(1)
+
+last modified: Tue Sep 13 17:13:54 JST 2022
+Contact us: uecinfo@usp-lab.com
+Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights

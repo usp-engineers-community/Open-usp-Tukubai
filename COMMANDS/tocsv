@@ -1,0 +1,126 @@
+#!/usr/bin/env python
+#coding: utf-8
+#
+# tocsv: convert an encoding of text (Open usp Tukubai)
+# 
+# designed by Nobuaki Tounaka
+# written  by Hinata Yanagi
+# 
+# The MIT License
+# 
+# Copyright (C) 2022 Universal Shell Programming Laboratory
+# 
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+from __future__ import print_function
+from typing import Optional
+import csv
+import io
+import sys
+import re
+
+_usage = [ "tocsv [<f1> <f2> ... <file>]" ]
+_version = "Tue Sep 15:22:31 JST 2022"
+_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4+/UTF-8)"
+
+def error(msg, *arg):
+	print('Error[tocsv] :', msg % arg, file=sys.stderr)
+	sys.exit(1)
+
+def usage():
+	sys.stderr.write("Usage     : "+ _usage[0] + "\n")
+	sys.stderr.write("Version   : "+ _version + "\n")
+	sys.stderr.write("          : "+ _code + "\n")
+	sys.exit(1)#
+
+# ファイルオープン
+#
+def open_file(filename, mode = 'r'):
+	if mode=="w": # 出力ファイルのとき
+		filename = '/dev/fd/'+filename # modeがwのときはファイル名は数字で与えられていてファイルディスクリプタにする
+	else:
+		if filename == '-': filename = '/dev/fd/0' # sys.stdinをファイルディスクリプターで表記する
+		if not sys.version_info >= (3, 0):
+			mode='rU' # Python2ではmodeがrUのときPython3と同様に読み込み時に各種改行記号がLF（\n）に統一される
+	try:
+		file = open(filename, mode)
+	except:
+		if filename=='/dev/fd/0':
+			error("標準入力ファイルをオープンできません。")
+		else:
+			error("ファイル '%s' をオープンできません。", filename)
+	return file
+
+
+###########################################
+#メイン関数
+if __name__ == '__main__':
+	if '--help' in sys.argv or \
+	   '--version' in sys.argv: usage()
+
+	record_splitter = re.compile(r'(\\ |[^ ]+)+')
+	space_alternative = "_"
+	null_alftenative = "_"
+
+	if len(sys.argv) == 1:
+		sys.argv.append("/dev/fd/0")
+
+	null_value = "_"
+	space_alternative: Optional[str]
+
+	while len(sys.argv) > 1:
+		if sys.argv[1][:2] == "-s" and len(sys.argv[1]) > 2:
+			space_alternative  = sys.argv[1][2:]
+			del sys.argv[1]
+		elif sys.argv[1][:2] == "-n" and len(sys.argv[1]) > 2:
+			null_value  = sys.argv[1][2:]
+			del sys.argv[1]
+		else:
+			break
+
+	target = sys.stdin if len(sys.argv) == 1 or sys.argv[-1] == "-" else  open_file(sys.argv[1]) 
+
+	# 出力するデータを Shift-JIS でエンコードする
+	sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding = "shift-jis")
+
+	writer = csv.writer(sys.stdout, quoting = csv.QUOTE_ALL)
+
+	for line in target.readlines():
+		line = record_splitter.findall(line.rstrip())
+		line = map(lambda element: "" if element == "_" else element, line)
+		line = list(line)
+
+		for index in range(len(line)):
+			if line[index] == null_value:
+				line[index] = ""
+				next
+
+			matches = re.match(r'\\(.)', line[index])
+
+			if space_alternative is not None:
+				line[index] = line[index].replace(space_alternative, " ")
+
+			if matches is None:
+				line[index] = line[index].replace("_", " ").replace("\ ", "_")
+			else:
+				line[index] = matches.groups(1)[0]
+
+		writer.writerow(line)
+
+	sys.exit(0)

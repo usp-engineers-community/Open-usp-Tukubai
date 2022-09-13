@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8">
-  <title>check_need_name - UEC - usp engineers' community - Tukubaiオンラインコマンドマニュアル</title>
+  <title>tocsv - UEC - usp engineers' community - Tukubaiオンラインコマンドマニュアル</title>
   <link rel="stylesheet" href="COMMON/CSS/MAIN.CSS">
   <link rel="stylesheet" href="COMMON/CSS/MENU.CSS">
   <link rel="stylesheet" href="COMMON/CSS/PRINT.CSS">
@@ -132,63 +132,47 @@
     <div id="main">
       <h1>Tukubaiオンラインコマンドマニュアル</h1>
 
-<h2>check_need_name(1)</h2>
+<h2>tocsv(1)</h2>
 <h3>【名前】</h3>
-<p><code>check_need_name</code> :  ネームファイルの整合性判定</p>
+<p><code>tocsv</code> :  スペース区切りファイルをCSVファイルに変換する</p>
 <h3>【書式】</h3>
-<pre class="list">Usage   : check_need_name &lt;check_file&gt; &lt;name_file&gt;
-Option  : --blank &lt;string&gt;
-Version : Mon Dec 20 21:02:03 JST 2021
-Edition : 1</pre>
+<pre class="list">Usage   : tocsv [&lt;f1&gt; &lt;f2&gt; ... &lt;file&gt;]
+Option  : -s&lt;space_string&gt;
+          -n&lt;null_string&gt;
+Version : Tue Sep 15:22:31 JST 2022</pre>
 <h3>【説明】</h3>
-<p><code>&lt;check_file&gt;</code>に記述されているフィールド値に基づいて、<code>&lt;name_file&gt;</code>ネームファイルの整合性を判断する。<code>&lt;check_file&gt;</code>に記述されている第1フィールドの値が<code>&lt;name_file&gt;</code>の第1フィールドのどこにも存在しなかったり、<code>&lt;name_file&gt;</code>の第2フィールドの値がない、または_だった場合にコマンドはエラー終了し、標準出力にそのフィールド値を出力する。</p>
-<p><code>&lt;check_file&gt;</code>ファイルは2フィールドあっても動作する。詳しくは例1を参照のこと。<code>&lt;check_file&gt;</code>は、フィールド値+(_以外の文字列)でも正しく認識する。</p>
-<p><code>--blank &lt;string&gt;</code>オプションは、<code>&lt;name_file&gt;</code>のデータの値が<code>&lt;string&gt;</code>の場合はデータがないとみなす。つまり、<code>&lt;check_file&gt;</code>に指定されていて値が<code>&lt;string&gt;</code>である行はエラーになる。<code>&lt;string&gt;</code>のデフォルトは_となる。</p>
-<h3>【例1】通常のチェック</h3>
-<pre class="prettyprint">$ cat check_file
-A
-B
-C
-D
-$</pre>
-<pre class="prettyprint">$ cat check_file2               ←check_fileとcheck_file2は同等
-A need
-B need
-C need
-D need
-E _
-F _
-$</pre>
-<pre class="prettyprint">$ cat name_file
-A _
-B 12345
-C abcde
-D_001 _
-D_002 xxx
-$</pre>
-<pre class="prettyprint">$ check_need_name check_file name_file
-A
-D_001
-$ echo $?
-1
-$</pre>
-<h3>【例2】--blank オプションでヌルデータを指定する。</h3>
-<pre class="prettyprint">$ cat name_file2
-A @
-B 1
-C 2
-D 3
-$</pre>
-<pre class="prettyprint">$ check_need_name --blank @ check_file name_file2
-A
-$ echo $?
-1
-$</pre>
+<p>スペース区切りファイルをCSVファイルに変換します。コマンド引数で指定したフィールドは文字列2と見なし、<code>&quot; &quot;</code>で囲んだ形式に変換します。指定していないフィールドは文字列0とみなし、<code>&quot; &quot;</code>で囲みません。</p>
+<p>ファイル名を指定しない場合、および<code>&quot;-&quot;</code>の時は、標準入力を期待します。</p>
+<h3>【仕様】</h3>
+<ol>
+<li> 文字列 _ は ヌル文字列に変換します。
+ オプションで _ を別の文字列に変更できます)</li>
+<li> 文字列 \c は c に変換します。
+ 文字列 \ 一文字は(半角スペース)に変換します。</li>
+<li> _ を半角スペースに変換します。
+ オプションで _ を別の文字列に変更できます)</li>
+<li> 行末の<code>\n</code> は自動的に<code>\r\n</code> に変換します。
+ 文字列1の場合、" は "" に変換します。</li>
+</ol>
+<h3>【例1】</h3>
+<pre class="prettyprint">$ cat data
+a _ \_ \ b_c b\_c &quot;</pre>
+<pre class="prettyprint">$ tocsv 1/NF data
+&quot;a&quot;,&quot;&quot;,&quot;_&quot;,&quot; &quot;,&quot;b c&quot;,&quot;b_c&quot;,&quot;&quot;&quot;&quot;</pre>
+<h3>【例2】</h3>
+<pre class="prettyprint">$ tocsv data
+a,,_, ,b c,b_c,&quot;</pre>
+<h3>【例3】</h3>
+<pre class="prettyprint">$ echo the_first @ | tocsv -n@
+&quot;the first&quot;,&quot;&quot;</pre>
+<h3>【例4】</h3>
+<pre class="prettyprint">$ echo the_first this_is_apple | tocsv -s_apple
+&quot;the first&quot;,&quot;this is &quot;</pre>
 <h3>【関連項目】</h3>
-<p><a href="name-format.html" class="command">ネーム形式(5)</a></p>
+<p><a href="fromcsv.html" class="command">fromcsv(1)</a></p>
     </div>
 
-    <div id="lastmodified">Last modified: Fri Jul 15 16:36:52 JST 2022</div>
+    <div id="lastmodified">Last modified: Tue Sep 13 17:30:27 JST 2022 </div>
 
     <div id="footer">Contact us: uecinfo@usp-lab.com<br>Copyright &copy; 2012-2022 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
   </div>

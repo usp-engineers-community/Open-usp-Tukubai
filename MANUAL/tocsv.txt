@@ -1,0 +1,62 @@
+Tukubaiオンラインコマンドマニュアル
+
+tocsv(1)
+
+【名前】
+
+tocsv : スペース区切りファイルをCSVファイルに変換する
+
+【書式】
+
+Usage   : tocsv [<f1> <f2> ... <file>]
+Option  : -s<space_string>
+          -n<null_string>
+Version : Tue Sep 15:22:31 JST 2022
+
+【説明】
+スペース区切りファイルをCSVファイルに変換します。コマンド引数で指定
+したフィールドは文字列2と見なし、" " で囲んだ形式に変換します。指
+定していないフィールドは文字列0とみなし、" " で囲みません。
+
+ファイル名を指定しない場合、および "-" の時は、標準入力を期待します。
+
+【仕様】
+
+1. 文字列 _ は ヌル文字列に変換します。
+ (-n オプションで _ を別の文字列に変更できます)
+2. 文字列 \c は c に変換します。
+3. 文字列 \ 一文字は(半角スペース)に変換します。
+4. _ を半角スペースに変換します。
+ (-s オプションで _ を別の文字列に変更できます)
+5. 行末の \n は自動的に \r\n に変換します。
+6. 文字列1の場合、" は "" に変換します。
+
+【例1】
+
+$ cat data
+a _ \_ \ b_c b\_c "
+
+$ tocsv 1/NF data
+"a","","_"," ","b c","b_c",""""
+
+【例2】
+
+$ tocsv data
+a,,_, ,b c,b_c,"
+
+【例3】
+
+$ echo the_first @ | tocsv -n@
+"the first",""
+
+【例4】
+
+$ echo the_first this_is_apple | tocsv -s_apple
+"the first","this is "
+【関連項目】
+
+fromcsv(1)
+
+last modified: Tue Sep 13 17:30:27 JST 2022 
+Contact us: uecinfo@usp-lab.com
+Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights
