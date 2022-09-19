@@ -1,8 +1,8 @@
-#!/usr/bin/env bash -u
+#!/usr/bin/env bash
 #
 # MAKEMANUAL: MANUAL/*.txt から MANUALHTML を作成する
 #
-# : written by 柳 日向 (h-yanagi@usp-lab.com; 2022-08-13)
+# : written by 柳 日向 (h-yanagi@usp-lab.com; 2022-09-19)
 #
 
 ####################################################################
@@ -19,7 +19,7 @@ exec 2> >(cat > /dev/stderr; rm "${tmp}"*)
 commands=COMMANDS
 dir=$(realpath .)
 
-if hash gawk; then
+if hash gawk 2> /dev/null; then
 	alias awk=gawk
 elif [ "$(uname)" = Darwin ]; then
 	echo "GNU awk is required." >&2
@@ -69,11 +69,10 @@ html2man() {
 			sed -e 's/^.\(.*\)./\1/'                                      `
 
 		commands_pattern=$(
-			find "${dir}/COMMANDS" -type f   |
-			xargs basename                   |
+			find "${dir}/COMMANDS" -type f -printf "%f\n" |
 			awk '
-			NR == 1 {printf $0; next}
-			{printf "|" $0}'
+				NR == 1 {printf $0; next}
+				{printf "|" $0}'
 		)
 
 		awk -vtmp="${tmp}" '
@@ -403,7 +402,7 @@ html2man() {
 	}                                                                               |
 
 	# マニュアル・メニューを作成する。
-	awk -vcommands_string="$(find ${dir}/COMMANDS -type f | xargs basename | sort -u)" '
+	awk -vcommands_string="$(find ${dir}/COMMANDS -type f -printf "%f\n" | sort -u)" '
 		 /^<!-- CONTENTS_MENU -->/ {
 			template = ""
 	
@@ -445,7 +444,7 @@ if [ "$#" -eq 1 ]; then
 else
 	# アルファベット順にコマンド一覧を列挙する
 
-	for command in $(find -s ${commands} -type f | xargs basename); do
+	for command in $(find ${commands} -type f -printf "%f\n"); do
 		echo building a MANUAL"$([ ! -s "${uec:-}" ] && echo -n UEC || echo -n HTML)" of ${command} >&2
 		html2man "${command}" "${dir}"
 	done
