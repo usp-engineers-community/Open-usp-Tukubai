@@ -4,8 +4,8 @@
 #
 #|Usage   : ido <y> <x> <file>
 #|          ido -f[<padstr>] <lines> <cols> <file>
-#|Version : Tue Jul 26 18:59:04 JST 2022
-#|Auther  : Hinata Yanagi (h-yanagi@usp-lab.com)
+#|Version : Mon Sep 19 12:11:13 JST 2022
+#|Auther  : Tpaefawzen (from GitHub)
 #
 
 set -Cu
@@ -70,7 +70,7 @@ if [ -s "$tmp-ispad" ] ; then
 fi
 
 if [ ! "$#" -gt 0 ]; then
-    MSG "ERROR bad artument, liens null"
+    MSG "ERROR bad artument, lines null"
     PRINT_USAGE
 fi
 
