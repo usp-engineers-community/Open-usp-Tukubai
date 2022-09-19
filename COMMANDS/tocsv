@@ -29,14 +29,14 @@
 # THE SOFTWARE.
 
 from __future__ import print_function
-from typing import Optional
+import codecs
 import csv
 import io
 import sys
 import re
 
 _usage = [ "tocsv [<f1> <f2> ... <file>]" ]
-_version = "Tue Sep 15:22:31 JST 2022"
+_version = "Mon Sep 19 13:18:58 JST 2022"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4+/UTF-8)"
 
 def error(msg, *arg):
@@ -82,7 +82,7 @@ if __name__ == '__main__':
 		sys.argv.append("/dev/fd/0")
 
 	null_value = "_"
-	space_alternative: Optional[str]
+	space_alternative = None
 
 	while len(sys.argv) > 1:
 		if sys.argv[1][:2] == "-s" and len(sys.argv[1]) > 2:
@@ -97,7 +97,12 @@ if __name__ == '__main__':
 	target = sys.stdin if len(sys.argv) == 1 or sys.argv[-1] == "-" else  open_file(sys.argv[1]) 
 
 	# 出力するデータを Shift-JIS でエンコードする
-	sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding = "shift-jis")
+	if sys.version_info >= (3, 0):
+		sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding = "shift-jis")
+	else:
+		sys.stdout = codecs.getwriter("shift-jis")(sys.stdout)
+		write = sys.stdout.write
+		sys.stdout.write = lambda string: write(string.decode("utf-8"))
 
 	writer = csv.writer(sys.stdout, quoting = csv.QUOTE_ALL)
 
