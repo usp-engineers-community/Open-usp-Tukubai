@@ -70,7 +70,7 @@ if [ -s "$tmp-ispad" ] ; then
 fi
 
 if [ ! "$#" -gt 0 ]; then
-    MSG "ERROR bad artument, liens null"
+    MSG "ERROR bad artument, lines null"
     PRINT_USAGE
 fi
 
