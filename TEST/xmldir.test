@@ -46,7 +46,7 @@ ERROR_CHECK(){
 # Check for ordinal examples.
 
 ${com} / <<< '<empty/>' > $tmp-ans
-[ "$(wc -c $tmp-ans | awk "{print $1}")" -eq 0 -a $? -eq 0 ]; ERROR_CHECK "An empty element must not be output and left vacant."
+[ "$(wc -c $tmp-ans | awk '{print $1}')" -eq 0 -a $? -eq 0 ]; ERROR_CHECK "An empty element must not be output and left vacant."
 
 ${com} /paragraph <<< '<paragraph>hello</paragraph>' > $tmp-ans
 [ -z "$(echo paragraph hello | diff $tmp-ans -)" -a $? -eq 0 ]; ERROR_CHECK "<paragraph>hello</paragraph> must be converted to a single line \"paragraph hello\"."
@@ -86,7 +86,7 @@ dir1 dir2 day 25/Jul.2022
 dir1 dir2 day 26/Jul.2022
 EOF
 
-[ -z "$(diff $tmp-ans $tmp-required > /tmp/debug)" -a $? -eq 0 ]; ERROR_CHECK 'Must interpret a complicated nest like /dir1/dir2/day.'
+[ -z "$(diff $tmp-ans $tmp-required > /dev/null)" -a $? -eq 0 ]; ERROR_CHECK 'Must interpret a complicated nest like /dir1/dir2/day.'
 
 
 rm -f $tmp-*
