@@ -20,6 +20,7 @@ DIRECT-MODE
         mdate -e <yyyymm>m/±<dif>               : dif 月先までの月を連続出力
         mdate <yyyymm1>m <yyyymm2>m             : 月の差
         mdate -ly <yyyymm>m                     : 前年月
+        mdate today                             : 今日の年月日
 
 FILTER-MODE
 日付    mdate -f -y <f>                         : 曜日
@@ -39,7 +40,7 @@ FILTER-MODE
         mdate -f -e <f>m ±<dif>                 : 月の加算展開
         mdate -f -ly <f>m                       : 前年月
 
-Version : Sat Jun 20 21:57:21 JST 2020
+Version : Sun Sep 25 06:47:00 JST 2022
 Edition : 1
 
 【例1】dif先の日付、月の情報を出力
@@ -138,6 +139,6 @@ $
 
 calclock(1)、dayslash(1)、yobi(1)
 
-last modified: Fri Jul 15 15:42:38 JST 2022
+last modified: Sun Sep 25 06:49:14 JST 2022
 Contact us: uecinfo@usp-lab.com
 Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights

@@ -4,11 +4,11 @@
 # mdate 日付、月の処理 （Open usp Tukubai版）
 # 
 # designed by Nobuaki Tounaka
-# written  by Masatomo Togashi
+# written  by Hinata Yanagi
 #
 # The MIT License
 #
-# Copyright (C) 2020 Universal Shell Programming Laboratory
+# Copyright (C) 2022 Universal Shell Programming Laboratory
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -65,7 +65,7 @@ _usage = """
 # mdate -ly <yyyymmdd>              : 前年同日
 # mdate -ly <f>              : 前年日
 
-_version = "Sat Jun 20 21:57:21 JST 2020"
+_version = "Sun Sep 25 06:47:00 JST 2022"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
 
 import re
@@ -269,6 +269,9 @@ def directMode(opt):
 		d1 = strToDate(sys.argv[1])
 		d2 = strToDate(sys.argv[2])
 		print((d1 - d2).days)
+	elif opt == 'today':
+			printDay(date.today())
+			print()
 	else:
 		usage()
 
@@ -632,7 +635,7 @@ if __name__ == '__main__':
 
 	# オプションで処理を変える（べた書き->あとからリファクタリング）
 	opt = " ".join(sys.argv[1:])
-	if len(sys.argv) == 1:				usage()
+	if len(sys.argv) == 1: usage()
 	elif re.compile('--help').match(opt):		usage()
 	elif re.compile('--version').match(opt):	version()
 	elif sys.argv[1] == "-f":			filterMode(opt)
