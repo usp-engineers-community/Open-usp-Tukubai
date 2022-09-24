@@ -70,6 +70,7 @@
               <li><a href="join1x.html">join1x(1)</a></li>
               <li><a href="join2.html">join2(1)</a></li>
               <li><a href="join2x.html">join2x(1)</a></li>
+              <li><a href="joinx.html">joinx(1)</a></li>
               <li><a href="juni.html">juni(1)</a></li>
               <li><a href="kasan.html">kasan(1)</a></li>
               <li><a href="keta.html">keta(1)</a></li>
@@ -112,8 +113,6 @@
               <li><a href="zen.html">zen(1)</a></li>
               <li></li>
 
-<li></li>
-
               <li class="separator"><hr></li>
               <li class="separator"><hr></li>
               <li class="separator"><hr></li>
@@ -143,17 +142,17 @@ Option  : -n &lt;null_string&gt;
           -q
 Version : Tue Sep 13 17:11:29 JST 2022</pre>
 <h3>【説明】</h3>
-<p>CSVファイルをスペース区切りのファイルに変換します。ファイル名を指定しない時、または<code>'<code>-</code>'</code>の時は標準入力を読み込みます。</p>
+<p>CSVファイルをスペース区切りのファイルに変換します。ファイル名を指定しない時、または<code>'<code>-</code>'</code> の時は標準入力を読み込みます。</p>
 <h3>【仕様】</h3>
 	  <ol>
 <li>空の文字列は0に変換します。</li>
 <li>文字列1の中の &quot;&quot; は &quot; に変換します。</li>
-<li>文字列の中の半角スペースは、_ に変換します。<code>-s</code>オプションで_を別の1バイト文字に変更できます。
+<li>文字列の中の半角スペースは、_ に変換します。<code>-s</code> オプションで_を別の1バイト文字に変更できます。
 </li>
-<li><code>-e</code>オプションを指定すると、_(または<code>-s</code>オプションで指定した文字)\ には \ を前置します。
+<li><code>-e</code> オプションを指定すると、_(または<code>-s</code> オプションで指定した文字)\ には \ を前置します。
 </li>
-<li><code>-q</code>オプションを指定すると、\&quot; は &quot; に、\\ は \ に変換します。</li>
-<li>行末の<code>\r\n</code>は自動的に<code>\n</code>に変換します。</li>
+<li><code>-q</code> オプションを指定すると、\&quot; は &quot; に、\\ は \ に変換します。</li>
+<li>行末の \r<code>\n</code> は自動的に<code>\n</code> に変換します。</li>
 <li>文字列1内の改行は &quot;<code>\n</code>&quot; と変換します。</li>
  <li>最終行は改行が無くても構いません。
 </li>

@@ -70,6 +70,7 @@
               <li><a href="join1x.html">join1x(1)</a></li>
               <li><a href="join2.html">join2(1)</a></li>
               <li><a href="join2x.html">join2x(1)</a></li>
+              <li><a href="joinx.html">joinx(1)</a></li>
               <li><a href="juni.html">juni(1)</a></li>
               <li><a href="kasan.html">kasan(1)</a></li>
               <li><a href="keta.html">keta(1)</a></li>
@@ -111,8 +112,6 @@
               <li><a href="ysum.html">ysum(1)</a></li>
               <li><a href="zen.html">zen(1)</a></li>
               <li></li>
-
-<li></li>
 
               <li class="separator"><hr></li>
               <li class="separator"><hr></li>
@@ -179,7 +178,7 @@ place somewhere
 country japan
 $</pre>
 <h3>【例5】</h3>
-<p><code>--template</code>オプションを指定することで、指定したHTMLテンプレートより、radioboxとcheckboxの名称を取り出し、その名称でデータが出力されなければ、出力をその名称で補完する。radioboxやcheckboxは選択しないでsubmitすると値そのものが出力されない。何も選択しなかったというデータを生成するためにこのオプションを使用する。</p>
+<p><code>--template</code>オプションを指定することで、指定したHTMLテンプレートより、radioboxとcheckboxの名称を取り出し、その名称でデータが出力されなければ、出力をその名称で補完する。radioboxやcheckboxは選択しないでsubmitすると値そのものが出力されない。何も選択しなかったというデータを生成するためにこ<code>の</code>オプションを使用する。</p>
 <pre class="prettyprint">$ cat html
 -----省略
 &lt;input type=&quot;radiobox&quot; name=&quot;XXXX&quot; value=&quot;A&quot; /&gt;
@@ -197,7 +196,7 @@ YYYY _
 -----省略
 $</pre>
 <h3>【例6】</h3>
-<p>radiobox checkboxがhtmlテンプレートの<code>mojihame -l</code>コマンド対象部分にある場合においても、タグ名_%数字を認識して選択値がなくてもタグ名を出力する。</p>
+<p>radiobox checkboxがhtmlテンプレートの<code>mojihame</code><code>-l</code>コマンド対象部分にある場合においても、タグ名_%数字を認識して選択値がなくてもタグ名を出力する。</p>
 <pre class="prettyprint">$ cat html
 -----省略
 &lt;!-- MOJIHAME --&gt;

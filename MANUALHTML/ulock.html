@@ -70,6 +70,7 @@
               <li><a href="join1x.html">join1x(1)</a></li>
               <li><a href="join2.html">join2(1)</a></li>
               <li><a href="join2x.html">join2x(1)</a></li>
+              <li><a href="joinx.html">joinx(1)</a></li>
               <li><a href="juni.html">juni(1)</a></li>
               <li><a href="kasan.html">kasan(1)</a></li>
               <li><a href="keta.html">keta(1)</a></li>
@@ -112,8 +113,6 @@
               <li><a href="zen.html">zen(1)</a></li>
               <li></li>
 
-<li></li>
-
               <li class="separator"><hr></li>
               <li class="separator"><hr></li>
               <li class="separator"><hr></li>
@@ -143,10 +142,10 @@ Option  : --timeout=&lt;sec&gt;/--invalid=&lt;sec&gt;
 Version : Fri Oct 21 11:26:06 JST 2011
 Edition : 1</pre>
 <h3>【説明】</h3>
-<p>書式１(<code>ulock &lt;lock-file&gt;</code>)は、完全排他区間を実現します。この場合、<code>ulock</code>は排他的に<code>&lt;lock-file&gt;</code>を生成します。</p>
-<p>書式２は、リード・ライトロックを実現します。<code>-w</code>(ライトロック)の場合、<code>ulock</code>は排他的に<code>&lt;lock-file&gt;</code>を生成した上に、<code>&lt;counter-file&gt;</code>のリンクカウントが１になるまで待ちます。<code>-r</code>(リードロック)の場合、<code>&lt;lock-file&gt;</code>が存在しなくなるまで、<code>&lt;counter-file&gt;</code>のリンクカウントを１増やすことを試み、成功したら、<code>&lt;command&gt;</code>を実行し、そのあと、<code>&lt;counter-file&gt;</code>のリンクカウントを１減らします。</p>
-<p><code>--timeout</code>オプションで<code>comma</code>nd が起動されるまでの待ち時間の最大値を指定できます。-1 を指定すると無限に待ちます。デフォルトは -1 (無限に待つ)です。</p>
-<p><code>--invalid</code>オプションで古いロックファイルの削除を行います。デフォルトは 60 秒です。</p>
+<p>書式１(<code>ulock</code><code>&lt;lock-file&gt;</code>)は、完全排他区間を実現します。この場合、<code>ulock</code> は排他的に<code>&lt;lock-file&gt;</code> を生成します。</p>
+<p>書式２は、リード・ライトロックを実現します。<code>-w</code> (ライトロック)の場合、<code>ulock</code> は排他的に<code>&lt;lock-file&gt;</code> を生成した上に、<code>&lt;counter-file&gt;</code> のリンクカウントが１になるまで待ちます。<code>-r</code> (リードロック)の場合、<code>&lt;lock-file&gt;</code> が存在しなくなるまで、<code>&lt;counter-file&gt;</code>のリンクカウントを１増やすことを試み、成功したら、<code>&lt;command&gt;</code> を実行し、そのあと、<code>&lt;counter-file&gt;</code> のリンクカウントを１減らします。</p>
+<p><code>--timeout</code> オプションで<code>comma</code>nd が起動されるまでの待ち時間の最大値を指定できます。-1 を指定すると無限に待ちます。デフォルトは -1 (無限に待つ)です。</p>
+<p><code>--invalid</code> オプションで古いロックファイルの削除を行います。デフォルトは 60 秒です。</p>
 <h3>【例１】 完全排他区間の実現</h3>
 <pre class="prettyprint">$ cat lock.sh
 #!/bin/bash
@@ -184,8 +183,8 @@ ulock -r lock counter cat master</pre>
 <p><em style="margin-right: 0.5em; letter-spacing: 0.5em; font-family: monospace;">X--</em>書き込みロックがないことを確認。ロックされていれば 1 減らして戻る。</p>
 <p><em style="margin-right: 0.5em; letter-spacing: 0.5em; font-family: monospace;">X--</em>読むだけの処理</p>
 <p><em style="margin-right: 0.5em; letter-spacing: 0.5em; font-family: monospace;">X--</em>カウンタを1減らす (アトミック)</p>
-<p><code>ulock</code>では書き込みロックはハードリンクファイル生成の一意性を利用し、カウンタオペレーションは、ハードリンクファイルのリンク(一意)数を利用しています。<code>ulock</code>は上記アルゴリズムのうち、X の部分を実装しています。</p>
-<p><code>lock-file</code>、<code>counter-file</code>とも<code>NFS</code>上に作成すれば、各サーバーからのリードライトロックが実現します。</p>
+<p><code>ulock</code> では書き込みロックはハードリンクファイル生成の一意性を利用し、カウンタオペレーションは、ハードリンクファイルのリンク(一意)数を利用しています。<code>ulock</code> は上記アルゴリズムのうち、X の部分を実装しています。</p>
+<p><code>lock-file</code>、<code>counter-file</code> とも<code>NFS</code> 上に作成すれば、各サーバーからのリードライトロックが実現します。</p>
     </div>
 
     <div id="lastmodified">Last modified: Fri Aug 12 12:56:05 JST 2022</div>

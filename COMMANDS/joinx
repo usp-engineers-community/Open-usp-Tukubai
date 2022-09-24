@@ -1,0 +1,138 @@
+#!/usr/bin/env python
+#coding: utf-8
+#
+# joinx 総掛けで連結する（Open usp Tukubai版）
+# 
+# designed by Nobuaki Tounaka
+# written  by Hinata Yanagi
+#
+# The MIT License
+#
+# Copyright (C) 2022 Universal Shell Programming Laboratory
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+from __future__ import print_function
+
+_usage = "joinx <file1> [<file2>]"
+_version = "Sat Sep 24 08:21:57 JST 2022"
+_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4+/UTF-8)"
+_keypat = r'((\d+|NF(-\d+)?)(/(\d+|NF(-\d+)?))?)(@((\d+|NF(-\d+)?)(/(\d+|NF(-\d+)?))?))*$'
+_keypatNF=r'(?P<m0>(?P<m01>\d+)|(?P<m02>NF(?P<m03>-\d+)?))(/(?P<m1>(?P<m11>\d+)|(?P<m12>NF(?P<m13>-\d+)?)))?$'
+
+import re
+import os
+import sys
+import codecs
+
+def error(msg, *arg):
+	print('Error[joinx] :', msg % arg, file=sys.stderr)
+	sys.exit(1)
+
+def usage():
+	print("Usage   :", _usage, file=sys.stderr)
+	print("Version :", _version, file=sys.stderr)
+	print("         ", _code, file=sys.stderr)
+	sys.exit(1)
+
+#
+# ファイルオープン
+#
+def open_file(filename, mode = 'r'):
+	if mode=="w":	# 出力ファイルのとき
+		filename = '/dev/fd/'+filename	# modeがwのときはファイル名は数字で与えられていてファイルディスクリプタにする
+	else:
+		if filename == '-':	filename = '/dev/fd/0'	# sys.stdinをファイルディスクリプターで表記する
+		if not Python3():
+			mode='rU'	# Python2ではmodeがrUのときPython3と同様に読み込み時に各種改行記号がLF（\n）に統一される
+	try:
+		file = open(filename, mode)
+	except:
+		if filename=='/dev/fd/0':
+			error("標準入力ファイルをオープンできません。")
+		else:
+			error("ファイル '%s' をオープンできません。", filename)
+	return file
+
+# 改行符号（\r\n）の削除関数
+def rm_eol(line):
+	return line.rstrip("\r\n")	# 改行記号としてCRLF('\r\n')/CR('\r')/LF('\n')のすべてに対応する
+
+# BOMの取得関数
+def get_BOM():
+	if Python3():	return chr(int("FEFF",16))	# U+FEFFはBOMのUnicode符号位置
+	else:			return "\xEF\xBB\xBF"	# BOMは「EF BB BF」の3バイト
+
+# BOMの削除関数
+def rm_BOM(line):
+	global firstline
+	if not firstline: return line
+	firstline=False
+	if line.startswith(get_BOM()):	line=line[len(get_BOM()):]	# 行頭にBOMがあったらBOMを削除する
+	return line
+
+# ファイル入力行の前処理
+def preproc_line(line):
+	line=rm_eol(line)	# 行末の改行記号を削除する
+	line=rm_BOM(line)	# ファイル先頭行の行頭にBOMがあったらこれを削除する
+	line=re.sub(r' {2,}',' ',line)	# 入力行の連続空白を単空白にする
+	return line
+
+# Python3か判定する
+def Python3():
+	if sys.version_info >= (3, 0):
+		return True
+	else:
+		return False
+
+#
+# メイン関数
+#
+if __name__ == '__main__':
+
+	if len(sys.argv) < 2:	usage()	# 最小パラメータ構成は「joinx <file1>」
+	if sys.argv[1] == '--help' \
+	 or sys.argv[1] == '--version':
+		usage()
+
+	# file1とfile2を確定する
+	num_arg=len(sys.argv)	# ここまでで残ったargvの長さは2または3でなければならない
+	if num_arg<2:	error("実行パラメータが少なすぎます。")
+	if num_arg>3:	error("実行パラメータが多すぎます。")
+	file1=sys.argv[1]
+	if num_arg==2:	file2="-"	# tranが省略されたらtranとして標準入力を仮定する
+	else: file2=sys.argv[2]	# tranが省略されていなければパラメータからとる
+
+	# masterファイルとtranファイルを開く
+	file1 = open_file(file1)
+	file2 = open_file(file2)
+	file2_lines = file2.readlines()
+
+	firstline=True
+
+	#
+	# メインループ
+	#
+	for line1 in file1.readlines():
+		line1 = preproc_line(line1.strip())
+
+		for line2 in file2_lines:
+			line2 = line2.strip()
+
+			print("%s %s" % (line1, preproc_line(line2)))

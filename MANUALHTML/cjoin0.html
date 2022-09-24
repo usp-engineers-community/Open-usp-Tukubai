@@ -70,6 +70,7 @@
               <li><a href="join1x.html">join1x(1)</a></li>
               <li><a href="join2.html">join2(1)</a></li>
               <li><a href="join2x.html">join2x(1)</a></li>
+              <li><a href="joinx.html">joinx(1)</a></li>
               <li><a href="juni.html">juni(1)</a></li>
               <li><a href="kasan.html">kasan(1)</a></li>
               <li><a href="keta.html">keta(1)</a></li>
@@ -112,8 +113,6 @@
               <li><a href="zen.html">zen(1)</a></li>
               <li></li>
 
-<li></li>
-
               <li class="separator"><hr></li>
               <li class="separator"><hr></li>
               <li class="separator"><hr></li>
@@ -145,7 +144,7 @@ Edition : 1</pre>
 <p>masterの第1フィールドとtranの第<code>&lt;n&gt;</code>フィールドは整列されていなくてもよく、キーフィールドに同じ値を持つレコードはいくつあっても構わない。</p>
 <p>キーに選択するフィールドは複数指定することもできる。たとえば<code>key=3/5</code>のように指定した場合、tranの第3、第4、第5フィールドを意味するようになる。またこの場合、masterのキーは第1、第2、第3フィールドとなる。<code>key=3@5</code>とすると第3、第5フィールドを意味する。行のフィールド数を意味する<code>NF</code>を使用して<code>NF</code>または<code>NF-x</code>の形でフィールド位置を指定することができる</p>
 <p>キー指定にひとつでも0があると全フィールドを指定したことになる</p>
-<p><code>+ng</code>オプションをつけると、一致した行を標準出力ファイルへ、一致しなかった行をファイルデスクリプタ<code>&lt;fd&gt;</code>のファイルへ出力する。<code>&lt;fd&gt;</code>を省略した場合は標準エラー出力ファイルへ出力する。</p>
+<p><code>+ng</code> オプションをつけると、一致した行を標準出力ファイルへ、一致しなかった行をファイルデスクリプタ<code>&lt;fd&gt;</code>のファイルへ出力する。<code>&lt;fd&gt;</code>を省略した場合は標準エラー出力ファイルへ出力する。</p>
 <p><code>tran</code>のキーが整列済みであれば<a href="cjoin0.html" class="command">cjoin0(1)</a>ではなく<a href="join0.html" class="command">join0(1)</a>で処理できる。<a href="cjoin0.html" class="command">cjoin0(1)</a>はtranのキーが整列されていないものも処理できるが、masterをすべてメモリに読み込むため、メモリ確保エラーが発生する可能性がある。<a href="cjoin0.html" class="command">cjoin0(1)</a>はmasterが小さくtranが大容量な場合に効果的に使用できる。</p>
 <h3>【例1】基本パターン</h3>
 <p>成績ファイルkekkaからmasterに登録されている4人のデータを抽出する。</p>

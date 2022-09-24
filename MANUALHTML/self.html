@@ -70,6 +70,7 @@
               <li><a href="join1x.html">join1x(1)</a></li>
               <li><a href="join2.html">join2(1)</a></li>
               <li><a href="join2x.html">join2x(1)</a></li>
+              <li><a href="joinx.html">joinx(1)</a></li>
               <li><a href="juni.html">juni(1)</a></li>
               <li><a href="kasan.html">kasan(1)</a></li>
               <li><a href="keta.html">keta(1)</a></li>
@@ -112,8 +113,6 @@
               <li><a href="zen.html">zen(1)</a></li>
               <li></li>
 
-<li></li>
-
               <li class="separator"><hr></li>
               <li class="separator"><hr></li>
               <li class="separator"><hr></li>
@@ -140,7 +139,7 @@
         : self -d &lt;f1&gt; &lt;f2&gt; ... &lt;string&gt;
 Version : Fri Aug 20 22:29:15 JST 2022</pre>
 <h3>【説明】</h3>
-<p>fileから指定したフィールドのデータだけを取り出して出力する(<code>self=select</code>field)。<code>&lt;file&gt;</code>として<code>-</code>を指定するかまたは省略すると標準入力を使用する。フィールド指定において0は全フィールドを意味する。コマンド入力が「<code>self</code>」でパラメータがないときはコマンドの構文を表示して終了する。<code>-d</code>オプションが指定された場合、引数の文字列に対して処理が適用される。</p>
+<p>fileから指定したフィールドのデータだけを取り出して出力する(<code>self=select</code> field)。<code>&lt;file&gt;</code>として<code>-</code>を指定するかまたは省略すると標準入力を使用する。フィールド指定において0は全フィールドを意味する。コマンド入力が「<code>self</code>」でパラメータがないときはコマンドの構文を表示して終了する。<code>-d</code>オプションが指定された場合、引数の文字列に対して処理が適用される。</p>
 <h3>【例1】</h3>
 <p>テキストデータの第4フィールドと第2フィールドを取り出して出力する。</p>
 <pre class="prettyprint">$ cat data
@@ -231,7 +230,7 @@ $</pre>
 $</pre>
 <h3>【注意】</h3>
 <p>入力ファイルが改行文字で終了していない場合、つまり行が尻切れになっている場合はファイル末尾に改行文字が追加されて完結した行になる。</p>
-<p><code>-d</code>指定がないとき 数字名のファイルを使用してはならない。 もし10という名前のファイルが存在しても<code>self</code>1 10は標準入力ファイルから第1および第10フィールドを抽出するという動作をする 数字名以外であっても最後のパラメータがフィールド指定形式に見合った文字列のとき それはファイル名ではなくフィールド指定とみなされて入力は標準入力から行なわれる</p>
+<p><code>-d</code>指定がないとき 数字名のファイルを使用してはならない。 もし10という名前のファイルが存在しても<code>self</code> 1 10は標準入力ファイルから第1および第10フィールドを抽出するという動作をする 数字名以外であっても最後のパラメータがフィールド指定形式に見合った文字列のとき それはファイル名ではなくフィールド指定とみなされて入力は標準入力から行なわれる</p>
 <p>また、文字列切り出し指定において、切り取りや長さが文字の区切りに一致しないときにはエラーとなる。フィールドの幅より大きい開始位置を指定してもエラーとなる。</p>
 <h3>【関連項目】</h3>
 <p><a href="delf.html" class="command">delf(1)</a></p>

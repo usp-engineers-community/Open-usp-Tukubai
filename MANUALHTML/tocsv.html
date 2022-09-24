@@ -70,6 +70,7 @@
               <li><a href="join1x.html">join1x(1)</a></li>
               <li><a href="join2.html">join2(1)</a></li>
               <li><a href="join2x.html">join2x(1)</a></li>
+              <li><a href="joinx.html">joinx(1)</a></li>
               <li><a href="juni.html">juni(1)</a></li>
               <li><a href="kasan.html">kasan(1)</a></li>
               <li><a href="keta.html">keta(1)</a></li>
@@ -112,8 +113,6 @@
               <li><a href="zen.html">zen(1)</a></li>
               <li></li>
 
-<li></li>
-
               <li class="separator"><hr></li>
               <li class="separator"><hr></li>
               <li class="separator"><hr></li>
@@ -139,21 +138,12 @@
 <pre class="list">Usage   : tocsv [&lt;f1&gt; &lt;f2&gt; ... &lt;file&gt;]
 Option  : -s&lt;space_string&gt;
           -n&lt;null_string&gt;
-Version : Tue Sep 15:22:31 JST 2022</pre>
+Version : Mon Sep 19 13:18:58 JST 2022</pre>
 <h3>【説明】</h3>
-<p>スペース区切りファイルをCSVファイルに変換します。コマンド引数で指定したフィールドは文字列2と見なし、<code>&quot; &quot;</code>で囲んだ形式に変換します。指定していないフィールドは文字列0とみなし、<code>&quot; &quot;</code>で囲みません。</p>
-<p>ファイル名を指定しない場合、および<code>&quot;-&quot;</code>の時は、標準入力を期待します。</p>
+<p>スペース区切りファイルをCSVファイルに変換します。コマンド引数で指定したフィールドは文字列2と見なし、<code>&quot; &quot;</code> で囲んだ形式に変換します。指定していないフィールドは文字列0とみなし、<code>&quot; &quot;</code> で囲みません。</p>
+<p>ファイル名を指定しない場合、および<code>&quot;-&quot;</code> の時は、標準入力を期待します。</p>
 <h3>【仕様】</h3>
-<ol>
-<li> 文字列 _ は ヌル文字列に変換します。
- オプションで _ を別の文字列に変更できます)</li>
-<li> 文字列 \c は c に変換します。
- 文字列 \ 一文字は(半角スペース)に変換します。</li>
-<li> _ を半角スペースに変換します。
- オプションで _ を別の文字列に変更できます)</li>
-<li> 行末の<code>\n</code> は自動的に<code>\r\n</code> に変換します。
- 文字列1の場合、" は "" に変換します。</li>
-</ol>
+<p>1. 文字列 _ は ヌル文字列に変換します。 (<code>-n</code> オプションで _ を別の文字列に変更できます)2. 文字列 \c は c に変換します。3. 文字列 \ 一文字は(半角スペース)に変換します。4. _ を半角スペースに変換します。 (<code>-s</code> オプションで _ を別の文字列に変更できます)5. 行末の<code>\n</code> は自動的に \r<code>\n</code> に変換します。6. 文字列1の場合、&quot; は &quot;&quot; に変換します。</p>
 <h3>【例1】</h3>
 <pre class="prettyprint">$ cat data
 a _ \_ \ b_c b\_c &quot;</pre>

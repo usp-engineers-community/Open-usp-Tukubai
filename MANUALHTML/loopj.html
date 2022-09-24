@@ -70,6 +70,7 @@
               <li><a href="join1x.html">join1x(1)</a></li>
               <li><a href="join2.html">join2(1)</a></li>
               <li><a href="join2x.html">join2x(1)</a></li>
+              <li><a href="joinx.html">joinx(1)</a></li>
               <li><a href="juni.html">juni(1)</a></li>
               <li><a href="kasan.html">kasan(1)</a></li>
               <li><a href="keta.html">keta(1)</a></li>
@@ -112,8 +113,6 @@
               <li><a href="zen.html">zen(1)</a></li>
               <li></li>
 
-<li></li>
-
               <li class="separator"><hr></li>
               <li class="separator"><hr></li>
               <li class="separator"><hr></li>
@@ -140,7 +139,7 @@
 Version : Sat Jun 20 21:57:20 JST 2020
 Edition : 1</pre>
 <h3>【説明】</h3>
-<p>引数で指定した複数のテキストファイルを、第1フィールドから<code><code>num=&lt;n&gt;</code></code>で指定したフィールドまでをキーにしてすべて連結する(<code>loopj=loop</code>of join)。各ファイルの中でキーフィールドが一致しない行についてはそれぞれ0でフィールドを補完する。</p>
+<p>引数で指定した複数のテキストファイルを、第1フィールドから<code><code>num=&lt;n&gt;</code></code>で指定したフィールドまでをキーにしてすべて連結する(<code>loopj=loop</code> of join)。各ファイルの中でキーフィールドが一致しない行についてはそれぞれ0でフィールドを補完する。</p>
 <p>連結する各ファイルは0バイトより大きく、キーとなるフィールドは必ずユニークかつ昇順で整列されていることが条件となる。フィールド数がキーフィールド数に満たない場合エラーとなる。また、<code>&lt;file&gt;</code>が0バイトファイルの場合にもエラーとなる。</p>
 <h3>【例1】基本的な使い方</h3>
 <pre class="prettyprint">$ cat file1

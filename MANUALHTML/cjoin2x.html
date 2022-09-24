@@ -70,6 +70,7 @@
               <li><a href="join1x.html">join1x(1)</a></li>
               <li><a href="join2.html">join2(1)</a></li>
               <li><a href="join2x.html">join2x(1)</a></li>
+              <li><a href="joinx.html">joinx(1)</a></li>
               <li><a href="juni.html">juni(1)</a></li>
               <li><a href="kasan.html">kasan(1)</a></li>
               <li><a href="keta.html">keta(1)</a></li>
@@ -112,8 +113,6 @@
               <li><a href="zen.html">zen(1)</a></li>
               <li></li>
 
-<li></li>
-
               <li class="separator"><hr></li>
               <li class="separator"><hr></li>
               <li class="separator"><hr></li>
@@ -140,10 +139,10 @@
 Version : Fri Jul 22 01:09:14 JST 2022
 Edition : 1</pre>
 <h3>【説明】</h3>
-<p>テキストファイル<code>&lt;tran&gt;</code>の<code>&quot;key=&lt;n&gt;&quot;</code>で指定したキーフィールドがマスターファイル<code>&lt;master&gt;</code>の第１フィールド(キーフィールド)とマッチした行を<code>&lt;tran&gt;</code>から抽出して、<code>&lt;master&gt;</code>の情報を連結して出力します。マッしない行は、ダミーデータ<code>&quot;_&quot;</code>をフィールド数分だけ結合して出力します。ダミーデータは指定することもできます。</p>
-<p><code>&lt;master&gt;</code>の第１フィールドについては必ず昇順でソートされていることが条件になります。</p>
-<p><code>&lt;master&gt;</code>が空ファイル(0バイト)の場合はエラーになります。</p>
-<p><code>cjoin2</code>との違いは、マスターファイルのキーフィールドの値が同一のレコードが複数存在できる点です。マスターとトランザクションファイルのキーフィールド値が同一のレコード同士を総掛けで連結して出力します。</p>
+<p>テキストファイル<code>&lt;tran&gt;</code> の<code>&quot;key=&lt;n&gt;&quot;</code> で指定したキーフィールドがマスターファイル<code>&lt;master&gt;</code> の第１フィールド(キーフィールド)とマッチした行を<code>&lt;tran&gt;</code> から抽出して、<code>&lt;master&gt;</code> の情報を連結して出力します。マッしない行は、ダミーデータ<code>&quot;_&quot;</code> をフィールド数分だけ結合して出力します。ダミーデータは指定することもできます。</p>
+<p><code>&lt;master&gt;</code> の第１フィールドについては必ず昇順でソートされていることが条件になります。</p>
+<p><code>&lt;master&gt;</code> が空ファイル(0バイト)の場合はエラーになります。</p>
+<p><code>cjoin2</code> との違いは、マスターファイルのキーフィールドの値が同一のレコードが複数存在できる点です。マスターとトランザクションファイルのキーフィールド値が同一のレコード同士を総掛けで連結して出力します。</p>
 <h3>【例１】</h3>
 <p>(マスターファイル：master)</p>
 <pre class="prettyprint">$ cat master

@@ -70,6 +70,7 @@
               <li><a href="join1x.html">join1x(1)</a></li>
               <li><a href="join2.html">join2(1)</a></li>
               <li><a href="join2x.html">join2x(1)</a></li>
+              <li><a href="joinx.html">joinx(1)</a></li>
               <li><a href="juni.html">juni(1)</a></li>
               <li><a href="kasan.html">kasan(1)</a></li>
               <li><a href="keta.html">keta(1)</a></li>
@@ -112,8 +113,6 @@
               <li><a href="zen.html">zen(1)</a></li>
               <li></li>
 
-<li></li>
-
               <li class="separator"><hr></li>
               <li class="separator"><hr></li>
               <li class="separator"><hr></li>
@@ -144,7 +143,7 @@ Edition : 1</pre>
 <p>masterに<code>-</code>を指定すると標準入力をマスタファイルとする。tranが無指定かまたは<code>-</code>が指定されている場合には、標準入力がトランザクションファイルとなる。</p>
 <p>masterの第1フィールドおよびtranの第<code>&lt;n&gt;</code>フィールドは必ず昇順で整列されていることが条件となる。また、masterのキーフィールド(第1フィールド)はユニークでなければならない。(第1フィールドが同じ値をもつ行が複数あってはならない)。tranについてはこの制約はなく、キーフィールド(第<code>&lt;n&gt;</code>フィールド)が同じ値の行はいくつあっても構わない。</p>
 <p>キー指定にひとつでも0があると全フィールドを指定したことになる</p>
-<p><code>+ng &lt;fd&gt;</code>オプションを使うことで、一致した行を標準出力ファイルへ、一致しなかった行をファイルデスクリプタ<code>&lt;fd&gt;</code>のファイルへ出力することが可能。<code>&lt;fd&gt;</code>を省略した場合は標準エラー出力へ出力する。</p>
+<p><code>+ng</code><code>&lt;fd&gt;</code>オプションを使うことで、一致した行を標準出力ファイルへ、一致しなかった行をファイルデスクリプタ<code>&lt;fd&gt;</code>のファイルへ出力することが可能。<code>&lt;fd&gt;</code>を省略した場合は標準エラー出力へ出力する。</p>
 <p><code>tran</code>でキーが整列されていないものは<a href="join1.html" class="command">join1(1)</a>では処理できない。その場合は一旦tranを整列してから<a href="join1.html" class="command">join1(1)</a>で処理するか、<a href="join1.html" class="command">join1(1)</a>のかわりに<a href="cjoin1.html" class="command">cjoin1(1)</a>を使って処理すればよい。</p>
 <h3>【例1】基本パターン</h3>
 <p>経費ファイルkeihiからmasterに登録されている4人のデータを抽出し、マスタファイルの内容を連結する。</p>

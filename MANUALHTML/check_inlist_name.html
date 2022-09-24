@@ -70,6 +70,7 @@
               <li><a href="join1x.html">join1x(1)</a></li>
               <li><a href="join2.html">join2(1)</a></li>
               <li><a href="join2x.html">join2x(1)</a></li>
+              <li><a href="joinx.html">joinx(1)</a></li>
               <li><a href="juni.html">juni(1)</a></li>
               <li><a href="kasan.html">kasan(1)</a></li>
               <li><a href="keta.html">keta(1)</a></li>
@@ -112,8 +113,6 @@
               <li><a href="zen.html">zen(1)</a></li>
               <li></li>
 
-<li></li>
-
               <li class="separator"><hr></li>
               <li class="separator"><hr></li>
               <li class="separator"><hr></li>
@@ -141,10 +140,10 @@ Option  : --through &lt;string&gt;
 Version : Sun Nov 21 17:29:32 JST 2021
 Edition : 1</pre>
 <h3>【説明】</h3>
-<p><code>&lt;check_file&gt;</code>に記述されているタグ名とリスト名にしたがい、<code>&lt;name_file&gt;</code>の値がリストに存在しているかのチェックをします。<code>&lt;check_file&gt;</code>で複数のタグ名を「.」で区切って連接しタグ組として指定したときは<code>&lt;name_file&gt;</code>の複数の行で同一の連番でタグ組を構成しそれぞれの値でつくる組がリストファイル中に存在するかをチェックします</p>
+<p><code>&lt;check_file&gt;</code> に記述されているタグ名とリスト名にしたがい、<code>&lt;name_file&gt;</code>の値がリストに存在しているかのチェックをします。<code>&lt;check_file&gt;</code> で複数のタグ名を「.」で区切って連接しタグ組として指定したときは<code>&lt;name_file&gt;</code>の複数の行で同一の連番でタグ組を構成しそれぞれの値でつくる組がリストファイル中に存在するかをチェックします</p>
 <p>エラーがあった場合は、コマンドはエラー終了し、標準出力にタグ名とリスト名を出力します。 </p>
 <h4>オプション</h4>
-<p><code>--through &lt;string&gt; &lt;name_file&gt;</code>のデータが<code>&lt;string&gt;</code>に等しい場合は、チェックを実施しません。<code>&lt;string&gt;</code>のデフォルトは、<code>&quot;_&quot;</code>となります。このオプションは繰り返し使って複数の<code>&lt;string&gt;</code>を指定することができます。</p>
+<p><code>--through &lt;string&gt;</code><code>&lt;name_file&gt;</code> のデータが<code>&lt;string&gt;</code>に等しい場合は、チェックを実施しません。<code>&lt;string&gt;</code>のデフォルトは、<code>&quot;_&quot;</code> となります。こ<code>の</code>オプションは繰り返し使って複数の<code>&lt;string&gt;</code>を指定することができます。</p>
 <h3>【例１】</h3>
 <pre class="prettyprint">[usp1 usp@ ~]$ cat check
 A /tmp/OS_FILE      &lt;-- タグ名とリストファイル名(絶対パスであること)

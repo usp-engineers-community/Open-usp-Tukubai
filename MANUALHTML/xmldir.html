@@ -70,6 +70,7 @@
               <li><a href="join1x.html">join1x(1)</a></li>
               <li><a href="join2.html">join2(1)</a></li>
               <li><a href="join2x.html">join2x(1)</a></li>
+              <li><a href="joinx.html">joinx(1)</a></li>
               <li><a href="juni.html">juni(1)</a></li>
               <li><a href="kasan.html">kasan(1)</a></li>
               <li><a href="keta.html">keta(1)</a></li>
@@ -112,8 +113,6 @@
               <li><a href="zen.html">zen(1)</a></li>
               <li></li>
 
-<li></li>
-
               <li class="separator"><hr></li>
               <li class="separator"><hr></li>
               <li class="separator"><hr></li>
@@ -142,9 +141,9 @@ Version : Sun Aug 28 11:35:26 JST 2022
 Edition : 1</pre>
 <h3>【説明】</h3>
 <p>ディレクトリタグの絶対パスを指定して、絶対パスとすべてのサブツリーの項目、属性、値を出力します。出力は末端のファイルパスに対して１行出力されます。</p>
-<p><code>-c</code>オプションで、指定パスのインデックスが出力されます。<code>-s</code>オプションで設定した文字が空白の代わりに出力されます。</p>
+<p><code>-c</code> オプションで、指定パスのインデックスが出力されます。<code>-s</code> オプションで設定した文字が空白の代わりに出力されます。</p>
 <p>N 階層のパスの場合、インデックスは N 個となり、タグが繰り返されるとインデックスはインクリメントされます。上位のタグがインクリメントされた場合、下位のタグのインデックスは１にリセットされます。</p>
-<p><code>-c &lt;n&gt;</code>の場合、インデックスは前０埋め<code>&lt;n&gt;</code>桁の数字になります。</p>
+<p><code>-c</code><code>&lt;n&gt;</code> の場合、インデックスは前０埋め<code>&lt;n&gt;</code> 桁の数字になります。</p>
 <h3>【例１】 単純な例</h3>
 <pre class="prettyprint">$ cat xml
 &lt;dir1&gt;
