@@ -444,7 +444,7 @@ if [ "$#" -eq 1 ]; then
 else
 	# アルファベット順にコマンド一覧を列挙する
 
-	for command in $(find ${commands} -type f -printf "%f\n"); do
+	for command in $(tr ' ' '\n' <<< 'field-format master-file name-file name-format tag-format'; find ${commands} -type f -printf "%f\n"); do
 		echo building a MANUAL"$([ ! -s "${uec:-}" ] && echo -n UEC || echo -n HTML)" of ${command} >&2
 		html2man "${command}" "${dir}"
 	done
