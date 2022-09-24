@@ -393,7 +393,7 @@ FIN
 # $tmp-file1中でIVSを使用して-lオプションの「齋󠄄藤」と一致する「齋󠄄(U+9F4B;U+E0104)藤(U+85E4)」の行（1か所）と
 # UCSを使用した「齋(U+9F4B)藤(U+85E4)」の行（1か所）を「さいとう」に置換する
 # -lオプションの「齋󠄄藤」はIVSを使用した「齋󠄄(U+9F4B;U+E0104)藤(U+85E4)」
-${com} -l齋󠄄藤 $tmp-file1 $tmp-file2 > $tmp-out
+${com} -l齋󠄄藤 $tmp-file1 < $tmp-file2 > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST5-2 error"
 

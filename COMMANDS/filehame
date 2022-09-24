@@ -4,7 +4,7 @@
 # filehame ファイルのはめこみ（Open usp Tukubai版）
 # 
 # designed by Nobuaki Tounaka
-# written  by Masatomo Togashi
+# written  by Hinata Yanagi
 #
 # The MIT License
 #
@@ -30,8 +30,8 @@
 
 from __future__ import print_function
 
-_usage = "filehame <-lSTRING> <file1> <file2>"
-_version = "Fri Jan 21 15:38:06 JST 2022"
+_usage = "filehame <-lSTRING> <file1> [<file2>]"
+_version = "Sat Sep 24 10:59:05 JST 2022"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4+, 3.1, 3.2/UTF-8)"
 
 # 濁音と半濁音のNFD表記でNFC表記もできるもの→NFDtoNFC変換でNFCに統一する
@@ -394,7 +394,7 @@ def Xfind(str1,str2):	# str1がstr2の中にあるか？
 # メイン関数
 if __name__ == '__main__':
 
-	if len(sys.argv) < 4 :		usage()
+	if len(sys.argv) < 3 :		usage()
 	if sys.argv[1] == '--help' :	usage()
 	if sys.argv[1] == '--version':	usage()
 
@@ -428,7 +428,7 @@ if __name__ == '__main__':
 		error("invalid mark position")
 
 	# insertファイルから挿入用データを準備する
-	insert_file = openReadFile(sys.argv[2])
+	insert_file = openReadFile(sys.argv[2] if len(sys.argv) == 3 else "-")
 	firstline=True	# 先頭行処理用flagの初期化
 	ins_line = insert_file.read()
 	ins_line = preproc_line(ins_line)
