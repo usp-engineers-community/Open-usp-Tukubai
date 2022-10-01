@@ -11,11 +11,11 @@ import Text.Printf
 ratio（Open usp Tukubai）
 
 designed by Nobuaki Tounaka
-written  by Ryuichi Ueda
+written  by Hinata Yanagi
 
 The MIT License
 
-Copyright (C) 2012 Universal Shell Programming Laboratory
+Copyright (C) 2022 Universal Shell Programming Laboratory
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -38,17 +38,18 @@ THE SOFTWARE.
 
 showUsage :: IO ()
 showUsage = do
-    System.IO.hPutStr stderr "Usage    : ratio [-<m>] [ref=<ref>] key=<n> <file>\n"
-    System.IO.hPutStr stderr "Version  : Tue Aug 20 10:29:46 JST 2013\n"
-    System.IO.hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n"
+    System.IO.hPutStr stderr "Usage    : ratio [-<m>] [ref=<ref>] val=<n> [<file>]\n"
+    System.IO.hPutStr stderr "Version  : Sat Oct  1 20:30:16 JST 2022\n"
+    System.IO.hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD)\n"
 
 main :: IO ()
 main = do args <- getArgs
           case args of
-              []         -> showUsage
-              ["-h"]     -> showUsage
-              ["--help"] -> showUsage
-              _          -> mainProc (setOpts args)
+              []            -> showUsage
+              ["-h"]        -> showUsage
+              ["--help"]    -> showUsage
+              ["--version"] -> showUsage
+              _             -> mainProc (setOpts args)
 
 mainProc :: Opts -> IO ()
 mainProc (Opts keta ref key file) = readF file >>= mainProc' keta ref key
@@ -140,7 +141,7 @@ ref = do string "ref="
          char ' '
          return (read a)
 
-key = do string "key="
+key = do string "val="
          a <- try(atnums) <|> try(slashnums) <|> simplepos
          char ' '
          return a
