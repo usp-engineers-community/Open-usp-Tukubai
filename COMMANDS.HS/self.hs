@@ -38,19 +38,20 @@ THE SOFTWARE.
 
 showUsage :: IO ()
 showUsage = do
-    System.IO.hPutStr stderr "Usage    : self <f1> <f2> ... <file>\n"
-    System.IO.hPutStr stderr "Version  : Mon Apr 18 10:34:00 JST 2022\n"
-    System.IO.hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n"
+    System.IO.hPutStr stderr "Usage    : self <f1> <f2> ... [<file>]\n"
+    System.IO.hPutStr stderr "Version  : Sat Oct  1 21:43:34 JST 2022\n"
+    System.IO.hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD)\n"
 
 main :: IO ()
 main = do
     args <- getArgs
     case args of
-      []         -> showUsage
-      ["-h"]     -> showUsage
-      ["--help"] -> showUsage
-      "-d":as    -> directMode as
-      _          -> readF (getFileName os) >>= mainProc (getFields os)
+      []            -> showUsage
+      ["-h"]        -> showUsage
+      ["--help"]    -> showUsage
+      ["--version"] -> showUsage
+      "-d":as       -> directMode as
+      _             -> readF (getFileName os) >>= mainProc (getFields os)
                                      where os = setOpts args
 
 readF :: String -> IO BS.ByteString

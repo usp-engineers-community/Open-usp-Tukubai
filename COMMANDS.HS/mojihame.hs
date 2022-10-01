@@ -6,11 +6,40 @@ import qualified Data.ByteString.Lazy.Char8 as BS
 import Data.List
 import Data.List.Split
 
+{--
+loopx（Open usp Tukubai）
+
+designed by Nobuaki Tounaka
+written  by Hinata Yanagi
+
+The MIT License
+
+Copyright (C) 2022 Universal Shell Programming Laboratory
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+--}
+
 showUsage :: IO ()
 showUsage = do
-    System.IO.hPutStr stderr "Usage    : mojihame [-lLABEL] <template> <data> \n"
-    System.IO.hPutStr stderr "Version  : Fri Feb  6 17:18:24 JST 2015\n"
-    System.IO.hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD+Mac), Haskell ver.\n"
+    System.IO.hPutStr stderr "Usage    : mojihame [-lLABEL] <template> [<data>]\n"
+    System.IO.hPutStr stderr "Version  : Sat Oct  1 20:05:47 JST 2022\n"
+    System.IO.hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD+Mac)\n"
     exitWith (ExitFailure 1)
 
 die str = System.IO.hPutStr stderr ( "Error[mojihame] : " ++ str ++ "\n")
@@ -19,6 +48,7 @@ die str = System.IO.hPutStr stderr ( "Error[mojihame] : " ++ str ++ "\n")
 main :: IO ()
 main = do args <- getArgs
           case args of
+              [tmpf]                       -> noopt tmpf "-"
               [tmpf,dataf]                 -> noopt tmpf dataf
               [('-':'l':label),tmpf,dataf] -> lopt (BS.pack label) tmpf dataf
               _          -> showUsage
@@ -33,7 +63,7 @@ noopt tmpf dataf = do t <- readF tmpf
                       BS.putStr $ noopt' t (BS.words d)
 
 noopt' :: BS.ByteString -> [BS.ByteString] -> BS.ByteString
-noopt' template ws = BS.pack . concat $ map (markToStr ws) (findPos $ BS.unpack template)
+noopt' template ws = BS.pack . concat $ map decode_underscores $ map (markToStr ws) (findPos $ BS.unpack template)
 
 markToStr :: [BS.ByteString] -> (String,Int) -> String
 markToStr ws (str,pos)
@@ -74,3 +104,10 @@ splitTemplate lb t = map BS.unlines lst
 lopt' :: [BS.ByteString] -> [BS.ByteString] -> IO ()
 lopt' (pr:t:pt:_) ds = mapM_ BS.putStr $ [pr] ++ map (lopt'' t) ds ++ [pt]
     where lopt'' t d = noopt' t (BS.words d)
+
+decode_underscores :: [Char] -> [Char]
+decode_underscores [] = []
+decode_underscores ('\\':'_':xs) = '_' : decode_underscores xs
+decode_underscores ['_'] = []
+decode_underscores ('_':xs) = ' ' : decode_underscores xs
+decode_underscores (x:xs) = x : decode_underscores xs

@@ -73,16 +73,17 @@ showUsage = do System.IO.hPutStr stderr ("Usage    : \n" ++
                               "         mdate -f -e <f>m ±<dif>       : 月の加算展開\n"++
                               "         mdate -f -ly <f>m             : 前年月\n"++
                               "\n"++
-                              "Version  : Fri Apr 22 16:12:00 JST 2022\n" ++
-                              "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
+                              "Version  : Sat Oct  1 21:43:34 JST 2022\n" ++
+                              "Open usp Tukubai (LINUX+FREEBSD)\n")
 
 main :: IO ()
 main = do args <- getArgs
           case args of
-              ("-f":as)  -> filterMode (setOpts as)
-              ("-h":as)  -> showUsage
-              []         -> showUsage
-              _          -> directMode (setOpts args) 
+              ("-f":as)         -> filterMode (setOpts as)
+              ("-h":as)         -> showUsage
+              ("--version":as)  -> showUsage
+              []                -> showUsage
+              _                 -> directMode (setOpts args) 
 
 directMode :: Opts -> IO ()
 directMode (Week str) = BS.putStrLn $ toWeekStr (date8 str)

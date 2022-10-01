@@ -10,7 +10,7 @@ import Data.List as DL
 yarr（Open usp Tukubai）
 
 designed by Nobuaki Tounaka
-written by Ryuichi Ueda
+written  by Hinata Yanagi
 
 The MIT License
 
@@ -37,15 +37,16 @@ THE SOFTWARE.
 
 showUsage :: IO ()
 showUsage = do
-     System.IO.hPutStr stderr "Usage    : yarr [num=<n>] [-<m>] <file>\n"
-     System.IO.hPutStr stderr "Sat Jul 27 10:19:35 JST 2013\n"
-     System.IO.hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n"
+     System.IO.hPutStr stderr "Usage    : yarr [num=<n>] [-<m>] [<file>]\n"
+     System.IO.hPutStr stderr "Version  : Sat Oct  1 21:43:34 JST 2022\n"
+     System.IO.hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD)\n"
 
 main :: IO ()
 main = do args <- getArgs
           case args of
-              ["-h"]     -> showUsage
-              ["--help"] -> showUsage
+              ["-h"]        -> showUsage
+              ["--help"]    -> showUsage
+              ["--version"] -> showUsage
               []         -> do mainProc (Option 0 0 "-")
               _          -> do mainProc (setOpts args)
 

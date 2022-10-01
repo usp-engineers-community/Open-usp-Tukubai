@@ -11,7 +11,7 @@ written  by Hinata Yanagi
 
 The MIT License
 
-Copyright (C) 2012 Universal Shell Programming Laboratory
+Copyright (C) 2022 Universal Shell Programming Laboratory
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -34,19 +34,20 @@ THE SOFTWARE.
 
 showUsage :: IO ()
 showUsage = do
-    hPutStr stderr "Usage    : gyo [-f] <file>\n"
-    hPutStr stderr "Version  : Wed Aug 15 19:29:08 JST 2012\n"
-    hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n"
+    hPutStr stderr "Usage    : gyo [-f] [<file>]\n"
+    hPutStr stderr "Version  : Sat Oct  1 16:34:58 JST 2022\n"
+    hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD)\n"
 
 main :: IO ()
 main = do
     args <- getArgs
     case args of
         [] -> printCount
-        ["-"] -> printCount
-        ("-f":as) -> fmode as
-        ["-h"] -> showUsage
-        ["--help"] -> showUsage
+        ["-"]         -> printCount
+        ("-f":as)     -> fmode as
+        ["-h"]        -> showUsage
+        ["--help"]    -> showUsage
+        ["--version"] -> showUsage
         _ -> mmode args
 
 printCount :: IO ()

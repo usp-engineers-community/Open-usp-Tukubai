@@ -38,19 +38,21 @@ THE SOFTWARE.
 showUsage :: IO ()
 showUsage = do
     System.IO.hPutStr stderr "Usage    : cjoin0 [+ng] <key=n> <master> <tran>\n"
-    System.IO.hPutStr stderr "Version  : Tue Apr 19 13:08:23 JST 2022\n"
-    System.IO.hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n"
+    System.IO.hPutStr stderr "Version  : Sat Oct  1 21:43:34 JST 2022\n"
+    System.IO.hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD)\n"
 
 main :: IO ()
 main = do args <- getArgs
           case args of
-                []         -> showUsage
-                ["-h"]     -> showUsage
-                ["--help"] -> showUsage
+                []            -> showUsage
+                ["-h"]        -> showUsage
+                ["--help"]    -> showUsage
+                ["--version"] -> showUsage
                 ["+ng",key,master,tran] -> mainProc True  key master tran
                 ["+ng",key,master]      -> mainProc True  key master "-"
                 [key,master,tran]       -> mainProc False key master tran
                 [key,master]            -> mainProc False key master "-"
+                _             -> showUsage
 
 
 mainProc :: Bool -> String -> String -> String -> IO ()

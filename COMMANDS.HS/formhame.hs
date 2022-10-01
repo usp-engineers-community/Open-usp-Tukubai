@@ -6,17 +6,17 @@ import Control.Monad
 import Control.Applicative hiding ((<|>), many)
 import Data.List 
 import qualified Data.Text as DT (replace)
-import qualified Text.Regex as RE (mkRegex,subRegex)
+import qualified Text.Regex.Posix as RE
 
 {--
 formhame（Open usp Tukubai）
 
 designed by Nobuaki Tounaka
-written by Hinata Yanagi
+written  by Hinata Yanagi
 
 The MIT License
 
-Copyright (C) 2013-2022 Universal Shell Programming Laboratory
+Copyright (C) 2022 Universal Shell Programming Laboratory
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -40,8 +40,8 @@ THE SOFTWARE.
 showUsage :: IO ()
 showUsage = do
     System.IO.hPutStr stderr "Usage    : formhame <html_template> <data>\n"
-    System.IO.hPutStr stderr "Version  : Mon Apr 18 16:55:00 JST 2022\n"
-    System.IO.hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n"
+    System.IO.hPutStr stderr "Version  : Sat Oct  1 21:43:34 JST 2022\n"
+    System.IO.hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD)\n"
 
 data Opts = NormalOpts TemplateFile DataFile | Error String deriving Show
 
@@ -56,6 +56,7 @@ main = do args <- getArgs
               []                       -> showUsage
               ["-h"]                   -> showUsage
               ["--help"]               -> showUsage
+              ["--version"]            -> showUsage
               [('-':'i':istr),('-':'d':dstr),f1,f2]    -> main' istr dstr f1 f2
               [('-':'i':istr),('-':'d':dstr),f1]    -> main' istr dstr f1 "-"
               [('-':'d':dstr),('-':'i':istr),f1,f2]    -> main' istr dstr f1 f2
@@ -108,48 +109,53 @@ replaceValue "textarea" (kv:[]) lns  = replaceTextArea kv (unwords lns)
 replaceValue "select"   (kv:[]) lns  = replaceSelect kv lns
 replaceValue _ _ lns                 = putStr $ unlines lns
 
+subRegex :: String -> String -> String -> String
+subRegex str old new = 
+  let (a,b,c) = RE.match (RE.makeRegex str :: RE.Regex) old
+  in if b=="" then str else a ++ new ++ subRegex c old new
+
 {-- RADIO --}
 replaceValueRadio :: KeyValue -> String -> IO ()
 replaceValueRadio (k,v) ln = putStrLn newln
-    where bareln = RE.subRegex ckd ln "" 
-          ckd = RE.mkRegex "(checked=\"checked\"|checked) *"
+    where bareln = subRegex ckd ln "" 
+          ckd = "(checked=\"checked\"|checked) *"
           newln = checkRadio v bareln
 
 checkRadio :: String -> String -> String
 checkRadio val ln = if vstr `isInfixOf` ln then newln else ln
     where vstr = "value=\"" ++ val ++ "\""
-          re = RE.mkRegex " */>$"
-          newln = RE.subRegex re ln " checked=\"checked\" />"
+          re = " */>$"
+          newln = subRegex re ln " checked=\"checked\" />"
 
 {-- CHECKBOX --}
 replaceValueChkbox :: [KeyValue] -> String -> IO ()
 replaceValueChkbox kvs ln = putStrLn newln
-    where bareln = RE.subRegex ckd ln "" 
-          ckd = RE.mkRegex "(checked=\"checked\"|checked) *"
+    where bareln = subRegex ckd ln "" 
+          ckd = "(checked=\"checked\"|checked) *"
           newln = checkChkbox kvs bareln
 
 checkChkbox :: [KeyValue] -> String -> String
 checkChkbox []          ln = ln
 checkChkbox ((k,v):kvs) ln = if f v ln then rep ln else checkChkbox kvs ln
     where f val ln = ("value=\"" ++ val ++ "\"") `isInfixOf` ln
-          rep str = RE.subRegex ckd str " checked=\"checked\" />"
-          ckd = RE.mkRegex " */>"
+          rep str = subRegex ckd str " checked=\"checked\" />"
+          ckd = " */>"
 
 {-- TEXT --}
 replaceValueText :: KeyValue -> String -> IO ()
 replaceValueText (k,v) ln = putStrLn newln
-    where re = RE.mkRegex "value=\"[^\"]*\""
+    where re = "value=\"[^\"]*\""
           str = "value=\"" ++ v ++ "\""
-          newln = if isValue ln then RE.subRegex re ln str else insertValue ln str
+          newln = if isValue ln then subRegex re ln str else insertValue ln str
 
 {-- SELECT --}
 replaceSelect :: KeyValue -> [String] -> IO ()
 replaceSelect (k,v) lns = putStr $ unlines ans
-    where barelns = map (\ln -> RE.subRegex re ln "") lns
-          re = RE.mkRegex " *(selected=\"selected\"|selected) *"
+    where barelns = map (\ln -> subRegex re ln "") lns
+          re = " *(selected=\"selected\"|selected) *"
           target = "value=\"" ++ v ++ "\""
-          ans = [ if target `isInfixOf` ln then RE.subRegex re2 ln sel else ln | ln <- barelns ]
-          re2 = RE.mkRegex "<option"
+          ans = [ if target `isInfixOf` ln then subRegex re2 ln sel else ln | ln <- barelns ]
+          re2 = "<option"
           sel = "<option selected=\"selected\""
 
 getSelectBlock :: [String] -> ([String],[String]) -> ([String],[String])
@@ -161,10 +167,10 @@ getSelectBlock (ln:lns) (a,[])
 {-- TEXTAREA --}
 replaceTextArea :: KeyValue -> String -> IO ()
 replaceTextArea (k,v) ln = putStr $ unlines ans
-    where lns = lines $ RE.subRegex re ln ">\n<"
-          re = RE.mkRegex ">.*<"
-          re2 = RE.mkRegex "\\\\n"
-          vn = RE.subRegex re2 v "\n"
+    where lns = lines $ subRegex re ln ">\n<"
+          re = ">.*<"
+          re2 = "\\\\n"
+          vn = subRegex re2 v "\n"
           ans = (head lns) : vn : (drop 1 lns)
 
 getTextBoxBlock :: [String] -> ([String],[String]) -> ([String],[String])

@@ -35,15 +35,17 @@ THE SOFTWARE.
 showUsage :: IO ()
 showUsage = do
         System.IO.hPutStr stderr "Usage    : ctail [-f] <file>\n"
-        System.IO.hPutStr stderr "Version  : Tue Apr 19 14:38:55 JST 2022\n"
-        System.IO.hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n"
+        System.IO.hPutStr stderr "Version  : Sat Oct  1 21:43:34 JST 2022\n"
+        System.IO.hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD)\n"
 
 main :: IO ()
 main = do
     args <- getArgs
     case args of
-                []         -> showUsage
-                ["-h"]     -> showUsage
+                []            -> showUsage
+                ["-h"]        -> showUsage
+                ["--help"]    -> showUsage
+                ["--version"] -> showUsage
                 [num]      -> readF "-"  >>= mainProc (readN num)
                 [num,file] -> readF file >>= mainProc (readN num)
                 _          -> showUsage

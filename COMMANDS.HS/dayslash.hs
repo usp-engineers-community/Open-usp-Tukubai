@@ -39,16 +39,17 @@ THE SOFTWARE.
 
 showUsage :: IO ()
 showUsage = do
-    System.IO.hPutStr stderr "Usage   : dayslash [-r] <format> <field> <file>\n"
-    System.IO.hPutStr stderr "Version : Tue Apr 19 14:44:33 JST 2022\n"
-    System.IO.hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n"
+    System.IO.hPutStr stderr "Usage   : dayslash [-r] <format> <field> [<file>]\n"
+    System.IO.hPutStr stderr "Version : Sat Oct  1 21:43:34 JST 2022\n"
+    System.IO.hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD)\n"
 
 main :: IO ()
 main = do args <- getArgs
           case args of
-                []         -> showUsage
-                ["-h"]     -> showUsage
-                ["--help"] -> showUsage
+                []            -> showUsage
+                ["-h"]        -> showUsage
+                ["--help"]    -> showUsage
+                ["--version"] -> showUsage
                 ["-r",fmt,fld,files] -> readF files >>= main' True fmt ((read fld) -1) . BS.lines
                 ["-r",fmt,fld]       -> readF "-" >>= main' True fmt ((read fld) -1)  . BS.lines
                 [fmt,fld,files]      -> readF files >>= main' False fmt ((read fld) -1) . BS.lines

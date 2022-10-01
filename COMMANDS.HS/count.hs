@@ -38,17 +38,19 @@ THE SOFTWARE.
 showUsage :: IO ()
 showUsage = do
     System.IO.hPutStr stderr "Usage   : count [+ng] <key=n> <master> <tran>\n"
-    System.IO.hPutStr stderr "Version : Tue Apr 19 14:30:24 JST 2022\n"
-    System.IO.hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n"
+    System.IO.hPutStr stderr "Version : Sat Oct  1 21:43:34 JST 2022\n"
+    System.IO.hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD)\n"
 
 main :: IO ()
 main = do args <- getArgs
           case args of
-                []         -> showUsage
-                ["-h"]     -> showUsage
-                ["--help"] -> showUsage
+                []            -> showUsage
+                ["-h"]        -> showUsage
+                ["--help"]    -> showUsage
+                ["--version"] -> showUsage
                 [one,two]      -> readF "-"  >>= mainProc (read one::Int) (read two::Int)
                 [one,two,file] -> readF file >>= mainProc (read one::Int) (read two::Int)
+                _              -> showUsage
 
 
 mainProc :: Int -> Int -> BS.ByteString -> IO ()

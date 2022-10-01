@@ -13,11 +13,11 @@ import Text.Read
 sm2（Open usp Tukubai）
 
 designed by Nobuaki Tounaka
-written  by Ryuichi Ueda
+written  by Hinata Yanagi
 
 The MIT License
 
-Copyright (C) 2012 Universal Shell Programming Laboratory
+Copyright (C) 2022 Universal Shell Programming Laboratory
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -40,20 +40,22 @@ THE SOFTWARE.
 
 showUsage :: IO ()
 showUsage = do
-    System.IO.hPutStr stderr "Usage    : sm2 [+ng] <key=n> <master> <tran>\n"
-    System.IO.hPutStr stderr "Version  : Fri Jul 26 11:50:49 JST 2013\n"
-    System.IO.hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n"
+    System.IO.hPutStr stderr "Usage    : sm2 [+count] <k1> <k2> <s1> <s2>\n"
+    System.IO.hPutStr stderr "Version  : Sun Oct  2 03:56:26 JST 2022\n"
+    System.IO.hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD)\n"
     exitWith (ExitFailure 1)
 
 main :: IO ()
 main = do args <- getArgs
           case args of
-                ["-h"]     -> showUsage
-                ["--help"] -> showUsage
+                ["-h"]        -> showUsage
+                ["--help"]    -> showUsage
+                ["--version"] -> showUsage
                 ["+count",a,b,c,d] -> readF "-"   >>= mainProc True (read a::Int) (read b::Int) (read c::Int) (read d::Int)
                 ["+count",a,b,c,d,file] -> readF file  >>= mainProc True (read a::Int) (read b::Int) (read c::Int) (read d::Int)
-                [a,b,c,d]       -> readF "-"   >>= mainProc False (read a::Int) (read b::Int) (read c::Int) (read d::Int)
-                [a,b,c,d,file]  -> readF file  >>= mainProc False (read a::Int) (read b::Int) (read c::Int) (read d::Int)
+                []              -> readF "-"  >>= mainProc False 0 0 1 1
+                [a,b,c,d]       -> readF "-"  >>= mainProc False (read a::Int) (read b::Int) (read c::Int) (read d::Int)
+                [a,b,c,d,file]  -> readF file >>= mainProc False (read a::Int) (read b::Int) (read c::Int) (read d::Int)
                 _               -> showUsage
 
 

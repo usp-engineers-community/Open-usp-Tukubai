@@ -10,11 +10,11 @@ import Control.Applicative hiding ((<|>), many)
 kasan（Open usp Tukubai）
 
 designed by Nobuaki Tounaka
-written by Ryuichi Ueda
+written  by Hinata Yanagi
 
 The MIT License
 
-Copyright (C) 2012 Universal Shell Programming Laboratory
+Copyright (C) 2022 Universal Shell Programming Laboratory
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -36,16 +36,17 @@ THE SOFTWARE.
 --}
 
 showUsage :: IO ()
-showUsage = do System.IO.hPutStr stderr ("Usage    : kasan [+r] [ref=<ref>] key=<n> <file>\n" ++ 
-                "Version  : Tue Aug 20 10:23:06 JST 2013\n" ++
-                "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
+showUsage = do System.IO.hPutStr stderr ("Usage    : kasan [+r] [ref=<ref>] key=<n> [<file>]\n" ++ 
+                "Version  : Sat Oct  1 16:57:51 JST 2022\n" ++
+                "Open usp Tukubai (LINUX+FREEBSD)\n")
 
 main :: IO ()
 main = do args <- getArgs
           case args of
-              []         -> showUsage
-              ["-h"]     -> showUsage
-              ["--help"] -> showUsage
+              []            -> showUsage
+              ["-h"]        -> showUsage
+              ["--help"]    -> showUsage
+              ["--version"] -> showUsage
               _          -> mainProc (setOpts args)
 
 mainProc :: Opts -> IO ()

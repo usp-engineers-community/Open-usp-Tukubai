@@ -38,16 +38,17 @@ THE SOFTWARE.
 showUsage :: IO ()
 showUsage = do
     System.IO.hPutStr stderr "Usage   : cgi-name [-d<c>] [-i<c>]\n"
-    System.IO.hPutStr stderr "Version : Mon Apr 18 14:31:30 JST 2022\n"
-    System.IO.hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n"
+    System.IO.hPutStr stderr "Version : Sat Oct  1 21:43:34 JST 2022\n"
+    System.IO.hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD)\n"
 
 main :: IO ()
 main = do
       args <- getArgs
       case args of
-        ["-h"]     -> showUsage
-        ["--help"] -> showUsage
-        _          -> readF f >>= main' dstr istr
+        ["-h"]        -> showUsage
+        ["--help"]    -> showUsage
+        ["--version"] -> showUsage
+        _             -> readF f >>= main' dstr istr
                     where opt = snd $ parseOpt (args,[" ","","-"])
                           dstr = opt !! 0
                           istr = opt !! 1

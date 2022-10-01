@@ -11,7 +11,7 @@ import Data.Time.Format (parseTime)
 calclock（Open usp Tukubai）
 
 designed by Nobuaki Tounaka
-written by Hinata Yanagi
+written  by Hinata Yanagi
 
 The MIT License
 
@@ -40,17 +40,18 @@ showUsage :: IO ()
 showUsage = do
         hPutStr stderr (
          "Usage    : calclock <f1> <f2> ... <file>\n" ++
-         "Version  : Mon Apr 18 14:22:50 JST 2022\n" ++
-         "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
+         "Version  : Sat Oct  1 21:43:34 JST 2022\n" ++
+         "Open usp Tukubai (LINUX+FREEBSD)\n")
 
 main :: IO ()
 main = do
     args <- getArgs
     case args of
-        []         -> showUsage
-        ["-h"]     -> showUsage
-        ["--help"] -> showUsage
-        _          -> do if f == "-"
+        []            -> showUsage
+        ["-h"]        -> showUsage
+        ["--help"]    -> showUsage
+        ["--version"] -> showUsage
+        _             -> do if f == "-"
                                      then getContents >>= mainProc opt
                                      else readFile f >>= mainProc opt
                                           where opt = setOpts args

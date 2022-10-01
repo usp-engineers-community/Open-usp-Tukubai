@@ -7,11 +7,11 @@ import Data.ByteString.Lazy.Char8 as BS hiding (filter,take,concat,map,drop,leng
 check_need_name（Open usp Tukubai）
 
 designed by Nobuaki Tounaka
-written by Ryuichi Ueda
+written  by Hinata Yanagi
 
 The MIT License
 
-Copyright (C) 2012 Universal Shell Programming Laboratory
+Copyright (C) 2022 Universal Shell Programming Laboratory
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -35,22 +35,23 @@ THE SOFTWARE.
 showUsage :: IO ()
 showUsage = do
                 System.IO.hPutStr stderr "Usage    : check_need_name [--blank <string>] <check_file> <name_file>\n"
-                System.IO.hPutStr stderr "Version  : Mon Apr 18 17:22:00 JST 2022\n"
-                System.IO.hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n"
+                System.IO.hPutStr stderr "Version  : Sat Oct  1 21:43:34 JST 2022\n"
+                System.IO.hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD)\n"
 
 main :: IO ()
 main = do args <- getArgs
           case args of
-                []         -> showUsage
-                ["-h"]     -> showUsage
-                ["--help"] -> showUsage
+                []            -> showUsage
+                ["-h"]        -> showUsage
+                ["--help"]    -> showUsage
+                ["--version"] -> showUsage
                 ["--blank",str,check,name] -> do cf <- readF check
                                                  nf <- readF name
                                                  doCheck (BS.pack str) cf nf
-                [check,name] -> do cf <- readF check
+                [check,name]  -> do cf <- readF check
                                    nf <- readF name
                                    doCheck (BS.pack "_") cf nf
-                _          -> showUsage
+                _             -> showUsage
 
 type Key = BS.ByteString
 

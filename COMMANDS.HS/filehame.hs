@@ -37,7 +37,7 @@ showUsage :: IO ()
 showUsage = do
      System.IO.hPutStr stderr "Usage    : filehame <-lSTRING> <file1> <file2>\n"
      System.IO.hPutStr stderr "Version  : Tue Apr 19 15:03:21 JST 2022\n"
-     System.IO.hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n"
+     System.IO.hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD)\n"
 
 main :: IO ()
 main = do args <- getArgs

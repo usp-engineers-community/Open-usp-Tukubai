@@ -12,11 +12,11 @@ import Text.Printf
 maezero（Open usp Tukubai）
 
 designed by Nobuaki Tounaka
-written by Ryuichi Ueda
+written  by Hinata Yanagi
 
 The MIT License
 
-Copyright (C) 2012 Universal Shell Programming Laboratory
+Copyright (C) 2022 Universal Shell Programming Laboratory
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -38,9 +38,9 @@ THE SOFTWARE.
 --}
 
 showUsage :: IO ()
-showUsage = do System.IO.hPutStr stderr ("Usage    : maezero <f1.k1> <f2.k2> ... <file>\n" ++ 
-                "Version  : Tue Jul 30 15:06:18 JST 2013\n" ++
-                "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
+showUsage = do System.IO.hPutStr stderr ("Usage    : maezero <f1.k1> <f2.k2> ... [<file>]\n" ++ 
+                "Version  : Sat Oct  1 21:43:34 JST 2022\n" ++
+                "Open usp Tukubai (LINUX+FREEBSD)\n")
 
 type OneLine = BS.ByteString
 type AllLines = BS.ByteString
@@ -49,10 +49,11 @@ type UWord = BS.ByteString
 main :: IO ()
 main = do args <- getArgs
           case args of
-              []         -> showUsage
-              ["-h"]     -> showUsage
-              ["--help"] -> showUsage
-              _          -> mainProc (setOpts args) 
+              []            -> showUsage
+              ["-h"]        -> showUsage
+              ["--help"]    -> showUsage
+              ["--version"] -> showUsage
+              _             -> mainProc (setOpts args) 
 
 mainProc :: Opts -> IO ()
 mainProc (Opts fs file) = readF file >>= mainProc' fs

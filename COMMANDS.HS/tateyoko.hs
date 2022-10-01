@@ -9,11 +9,11 @@ import qualified Data.ByteString.Lazy.Char8 as BS
 tateyoko（Open usp Tukubai）
 
 designed by Nobuaki Tounaka
-written  by Ryuichi Ueda
+written  by Hinata Yanagi
 
 The MIT License
 
-Copyright (C) 2012 Universal Shell Programming Laboratory
+Copyright (C) 2022 Universal Shell Programming Laboratory
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -36,16 +36,17 @@ THE SOFTWARE.
 
 showUsage :: IO ()
 showUsage = do
-    hPutStr stderr "Usage    : tateyoko <file>\n"
-    hPutStr stderr "Version  : Thu Jul 25 22:01:12 JST 2013\n"
-    hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n"
+    hPutStr stderr "Usage    : tateyoko [<file>]\n"
+    hPutStr stderr "Version  : Sat Oct  1 21:43:34 JST 2022\n"
+    hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD)\n"
 
 main :: IO ()
 main = do
         args <- getArgs
         case args of
-            ["-h"]     -> showUsage
-            ["--help"] -> showUsage
+            ["-h"]        -> showUsage
+            ["--help"]    -> showUsage
+            ["--version"] -> showUsage
             _          -> do readF f >>= mainProc
                              where f = if (length args) > 0
                                        then args !! 0 else "-"

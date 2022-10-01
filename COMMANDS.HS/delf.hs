@@ -36,17 +36,18 @@ THE SOFTWARE.
 
 showUsage :: IO ()
 showUsage = do
-    System.IO.hPutStr stderr "Usage    : delf <f1> <f2> ... <file>\n"
-    System.IO.hPutStr stderr "Version  : Thu Jul 25 21:57:24 JST 2013\n"
-    System.IO.hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n"
+    System.IO.hPutStr stderr "Usage    : delf <f1> <f2> ... [<file>]\n"
+    System.IO.hPutStr stderr "Version  : Sat Oct  1 21:43:34 JST 2022\n"
+    System.IO.hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD)\n"
 
 main :: IO ()
 main = do args <- getArgs
           case args of
-              []         -> showUsage
-              ["-h"]     -> showUsage
-              ["--help"] -> showUsage
-              _          -> do readF (getFileName os) >>= mainProc fs
+              []            -> showUsage
+              ["-h"]        -> showUsage
+              ["--help"]    -> showUsage
+              ["--version"] -> showUsage
+              _             -> do readF (getFileName os) >>= mainProc fs
                                      where fs = getFields os
                                            os = setOpts args
 

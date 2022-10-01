@@ -7,11 +7,11 @@ import Data.Char
 keta（Open usp Tukubai）
 
 designed by Nobuaki Tounaka
-written by Ryuichi Ueda
+written  by Hinata Yanagi
 
 The MIT License
 
-Copyright (C) 2012 Universal Shell Programming Laboratory
+Copyright (C) 2022 Universal Shell Programming Laboratory
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -34,21 +34,22 @@ THE SOFTWARE.
 
 showUsage :: IO ()
 showUsage = do
-    System.IO.hPutStr stderr "Usage: keta n1 n2 .. <filename>\n"
-    System.IO.hPutStr stderr "       keta -v <filename>\n"
-    System.IO.hPutStr stderr "       keta -- <filename>\n"
-    System.IO.hPutStr stderr "Version   : Sun Dec 29 15:58:05 JST 2013\n"
-    System.IO.hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n"
+    System.IO.hPutStr stderr "Usage   : keta [n1 n2 .. <filename>]\n"
+    System.IO.hPutStr stderr "          keta -v [<filename>]\n"
+    System.IO.hPutStr stderr "          keta -- [<filename>]\n"
+    System.IO.hPutStr stderr "Version : Sat Oct  1 16:57:51 JST 2022\n"
+    System.IO.hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD)\n"
 
 main :: IO ()
 main = do args <- getArgs
           case args of
-              ["-h"]     -> showUsage
-              ["--help"] -> showUsage
-              ("-v":as)  -> do cs <- readF (getFilename as) 
-                               let wlns = [ words ln | ln <- lines cs ]
-                               let widths = map (wordsWid) wlns
-                               putStrLn $ unwords $ map show $ head $ solveWid widths
+              ["-h"]        -> showUsage
+              ["--help"]    -> showUsage
+              ["--version"] -> showUsage
+              ("-v":as)     -> do cs <- readF (getFilename as) 
+                                  let wlns = [ words ln | ln <- lines cs ]
+                                  let widths = map (wordsWid) wlns
+                                  putStrLn $ unwords $ map show $ head $ solveWid widths
               ("--":as)  -> main' True  $ parseOpt (Opt [] "-") as
               _          -> main' False $ parseOpt (Opt [] "-") args
 

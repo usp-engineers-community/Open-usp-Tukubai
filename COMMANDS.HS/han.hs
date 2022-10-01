@@ -13,11 +13,11 @@ import Text.Printf
 han（Open usp Tukubai）
 
 designed by Nobuaki Tounaka
-written  by Ryuichi Ueda
+written  by Hinata Yanagi
 
 The MIT License
 
-Copyright (C) 2012 Universal Shell Programming Laboratory
+Copyright (C) 2022 Universal Shell Programming Laboratory
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -39,21 +39,17 @@ THE SOFTWARE.
 --}
 
 showUsage :: IO ()
-showUsage = do System.IO.hPutStr stderr ("Usage    : han <f1> <f2> ... <file>\n" ++ 
-                "Thu Aug 15 21:44:50 JST 2013\n" ++
-                "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
+showUsage = do System.IO.hPutStr stderr ("Usage    : han <f1> <f2> ... [<file>]\n" ++ 
+                "Version  : Sat Oct  1 16:38:37 JST 2022\n" ++
+                "Open usp Tukubai (LINUX+FREEBSD)\n")
 
 main :: IO ()
 main = do args <- getArgs
           case args of
-                ["-h"]     -> showUsage
-                ["--help"] -> showUsage
-                _         -> mainProc (setOpts args)
-{--
-                [a]        -> readF a   >>= simpleHan
-                [a,b]      -> readF "-" >>= mainProc (read a) (read b)
-                [a,b,c]    -> readF c   >>= mainProc (read a) (read b)
---}
+                ["-h"]        -> showUsage
+                ["--help"]    -> showUsage
+                ["--version"] -> showUsage
+                _             -> mainProc (setOpts args)
 
 mainProc :: Opts -> IO ()
 mainProc (Opts fs file) = readF file >>= mainProc' fs

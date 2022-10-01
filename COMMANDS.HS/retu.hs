@@ -34,9 +34,9 @@ THE SOFTWARE.
 
 showUsage :: IO ()
 showUsage = do
-    hPutStr stderr "Usage    : retu [-f] <file>\n"
-    hPutStr stderr "Thu Aug 16 22:23:09 JST 2012\n"
-    hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n"
+    hPutStr stderr "Usage    : retu [-f] [<file>]\n"
+    hPutStr stderr "Version  : Sat Oct  1 21:24:39 JST 2022\n"
+    hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD)\n"
 
 main :: IO ()
 main = do
@@ -46,6 +46,7 @@ main = do
         ["--help"] -> showUsage
         [] -> printCount
         ["-"] -> printCount
+        ["-f"] -> fmode ["-"]
         ("-f":as) -> fmode as
         _ -> mmode args
 
@@ -64,15 +65,16 @@ printCountM :: String -> IO ()
 printCountM arg = BS.readFile arg >>= putStr . unlines . toStr . countFile
 
 printCountF :: String -> IO()
+
 printCountF arg = do
-            bs <- BS.readFile arg
+            bs <- if arg == "-" then BS.getContents else BS.readFile arg
             putStr $ unlines $ countFileF arg bs
 
 countFileF :: String -> BS.ByteString -> [String]
 countFileF arg bs = [ arg ++ " " ++ show(x) | x <- (countFile bs) ]
 
 countFile :: BS.ByteString -> [Int]
-countFile bs = unq $ [ length ( BS.split ' ' ln ) | ln <- (BS.lines bs) ]
+countFile bs = unq $ [ length ( BS.words ln ) | ln <- (BS.lines bs) ]
 
 unq :: [Int] -> [Int]
 unq [n] = [n]

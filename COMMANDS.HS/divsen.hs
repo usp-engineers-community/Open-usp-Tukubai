@@ -39,17 +39,18 @@ THE SOFTWARE.
 
 showUsage :: IO ()
 showUsage = do
-    System.IO.hPutStr stderr "Usage    : divsen <f1> <f2> ... <file>\n"
-    System.IO.hPutStr stderr "Version  : Tue Jul 30 14:54:45 JST 2013\n"
-    System.IO.hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n"
+    System.IO.hPutStr stderr "Usage    : divsen <f1> <f2> ... [<file>]\n"
+    System.IO.hPutStr stderr "Version  : Sat Oct  1 21:43:34 JST 2022\n"
+    System.IO.hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD)\n"
 
 main :: IO ()
 main = do args <- getArgs
           case args of
-              []         -> showUsage
-              ["-h"]     -> showUsage
-              ["--help"] -> showUsage
-              _          -> mainProc (setOpts args) 
+              []            -> showUsage
+              ["-h"]        -> showUsage
+              ["--help"]    -> showUsage
+              ["--version"] -> showUsage
+              _             -> mainProc (setOpts args) 
 
 readF :: String -> IO BS.ByteString
 readF "-" = BS.getContents

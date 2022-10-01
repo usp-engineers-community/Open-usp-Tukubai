@@ -5,11 +5,40 @@ import System.IO
 import System.Exit
 import Text.Read
 
+{--
+maezero（Open usp Tukubai）
+
+designed by Nobuaki Tounaka
+written  by Hinata Yanagi
+
+The MIT License
+
+Copyright (C) 2022 Universal Shell Programming Laboratory
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+--}
+
 showUsage :: IO ()
 showUsage = do System.IO.hPutStr stderr (
-                "Usage    : map <num=<n>> <file> \n" ++
-                "Version  : Thu Oct 23 08:52:44 JST 2014\n" ++
-                "Open usp Tukubai (LINUX+FREEBSD+Mac), Haskell ver.\n")
+                "Usage    : map <num=<n>> [<file>]\n" ++
+                "Version  : Sat Oct  1 21:43:34 JST 2022\n" ++
+                "Open usp Tukubai (LINUX+FREEBSD)\n")
                exitWith (ExitFailure 1) 
 
 udie str = System.IO.hPutStr stderr ( "Error[map] : " ++ str ++ "\n")
@@ -18,8 +47,9 @@ udie str = System.IO.hPutStr stderr ( "Error[map] : " ++ str ++ "\n")
 main :: IO ()
 main = do args <- getArgs
           case args of
-              ["-h"]     -> showUsage
-              ["--help"] -> showUsage
+              ["-h"]        -> showUsage
+              ["--help"]    -> showUsage
+              ["--version"] -> showUsage
               [num]      -> readF "-"  >>= main' (getNum num)
               [num,file] -> readF file >>= main' (getNum num)
               _          -> showUsage

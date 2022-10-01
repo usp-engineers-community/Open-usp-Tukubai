@@ -39,9 +39,9 @@ THE SOFTWARE.
 
 showUsage :: IO ()
 showUsage = do
-    System.IO.hPutStr stderr "Usage    : marume [+age|-sage] <f1.k1> <f2.k2> ... <file>\n"
-    System.IO.hPutStr stderr "Version  : Fri Apr 22 16:17:13 JST 2022\n"
-    System.IO.hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n"
+    System.IO.hPutStr stderr "Usage    : marume [+age|-sage] <f1.k1> <f2.k2> ... [<file>]\n"
+    System.IO.hPutStr stderr "Version  : Sat Oct  1 21:43:34 JST 2022\n"
+    System.IO.hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD)\n"
 
 type OneLine = BS.ByteString
 type AllLines = BS.ByteString
@@ -50,10 +50,11 @@ type UWord = BS.ByteString
 main :: IO ()
 main = do args <- getArgs
           case args of
-              []         -> showUsage
-              ["-h"]     -> showUsage
-              ["--help"] -> showUsage
-              _          -> mainProc (setOpts args) 
+              []            -> showUsage
+              ["-h"]        -> showUsage
+              ["--help"]    -> showUsage
+              ["--version"] -> showUsage
+              _             -> mainProc (setOpts args)
 
 mainProc :: Opts -> IO ()
 mainProc (Opts flg fs file) = readF file >>= mainProc' flg fs

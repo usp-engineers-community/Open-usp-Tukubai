@@ -11,11 +11,11 @@ import Data.List as DL
 juni（Open usp Tukubai）
 
 designed by Nobuaki Tounaka
-written by Ryuichi Ueda
+written by  Hinata Yanagi
 
 The MIT License
 
-Copyright (C) 2012 Universal Shell Programming Laboratory
+Copyright (C) 2022 Universal Shell Programming Laboratory
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -37,19 +37,21 @@ THE SOFTWARE.
 --}
 
 showUsage :: IO ()
-showUsage = do System.IO.hPutStr stderr ("Usage    : juni <f1> <f2> <file>\n" ++ 
-                "Version   : Tue Aug  6 10:40:57 JST 2013\n" ++
-                "Open usp Tukubai (LINUX+FREEBSD), Haskell ver.\n")
+showUsage = do System.IO.hPutStr stderr ("Usage    : juni [<f1> <f2> <file>]\n" ++ 
+                "Version  : Sat Oct  1 16:57:51 JST 2022\n" ++
+                "Open usp Tukubai (LINUX+FREEBSD)\n")
 
 main :: IO ()
 main = do args <- getArgs
           case args of
-                ["-h"]     -> showUsage
-                ["--help"] -> showUsage
+                ["-h"]        -> showUsage
+                ["--help"]    -> showUsage
+                ["--version"] -> showUsage
                 []         -> readF "-" >>= simpleJuni
                 [a]        -> readF a   >>= simpleJuni
                 [a,b]      -> readF "-" >>= mainProc (read a) (read b)
                 [a,b,c]    -> readF c   >>= mainProc (read a) (read b)
+                _          -> showUsage
 
 simpleJuni :: BS.ByteString -> IO ()
 simpleJuni cs = simpleJuni' (BS.lines cs) 1
