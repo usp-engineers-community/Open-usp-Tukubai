@@ -8,23 +8,22 @@ cgi-name : CGI POSTメソッドで受け渡されるデータをネーム形式�
 
 【書式】
 
-Usage   : cgi-name [-d<c>][-i<string>] <param_file>
+Usage   : cgi-name [-d<c>][-i<string>] [<param_file>]
 Option  :          [--template <html>]
-Version : Wed May 20 04:47:47 JST 2020
+Version : Sun Oct  2 14:17:02 JST 2022
 Edition : 1
 
 【説明】
 
 cgi-nameはWEBサーバのCGI POSTメソッドで受け渡されるデータをネーム形式へ変換する
 。
-<param_file>として-を指定すると標準入力を使用する。
 
 【例1】
 
 Webサーバよりplace=tokyo&country=japanという文字列が渡される場合、キー値と値を
 ネーム形式に変更して出力する。
 
-$ dd bs=$CONTENT_LENGTH | cgi-name -
+$ dd bs=$CONTENT_LENGTH | cgi-name
 place tokyo
 country japan
 $
@@ -42,17 +41,17 @@ $
 
 -dオプションを指定すると半角空白は削除あるいは指定文字に変換される。
 
-$ echo 'place=tokyo osaka&country=japan' | cgi-name -
+$ echo 'place=tokyo osaka&country=japan' | cgi-name
 place tokyo osaka
 country japan
 $
 
-$ echo 'place=tokyo osaka&country=japan' | cgi-name -d_ -
+$ echo 'place=tokyo osaka&country=japan' | cgi-name -d_
 place tokyo_osaka
 country japan
 $
 
-$ echo 'place=tokyo osaka&country=japan' | cgi-name -d -
+$ echo 'place=tokyo osaka&country=japan' | cgi-name -d
 place tokyoosaka
 country japan
 $
@@ -61,12 +60,12 @@ $
 
 -iオプションを指定することで、返される文字列がヌルの場合の初期値を指定できる。
 
-$ echo 'place=&country=japan' | cgi-name -
+$ echo 'place=&country=japan' | cgi-name
 place
 country japan
 $
 
-$ echo 'place=&country=japan' | cgi-name -isomewhere -
+$ echo 'place=&country=japan' | cgi-name -isomewhere
 place somewhere
 country japan
 $
@@ -89,7 +88,7 @@ $ cat html
 -----省略
 $
 
-$ dd bs=$CONTENT_LENGTH | cgi-name -i_ --template html -
+$ dd bs=$CONTENT_LENGTH | cgi-name -i_ --template html
 -----省略
 XXXX _
 YYYY _
@@ -109,7 +108,7 @@ $ cat html
 -----省略
 $
 
-$ dd bs=$CONTENT_LENGTH | cgi-name -i_ --template html -
+$ dd bs=$CONTENT_LENGTH | cgi-name -i_ --template html
 -----省略
 X _
 -----省略
@@ -125,6 +124,6 @@ CGI POSTメソッドで受け渡されるデータには改行がない。通常
 
 mime-read(1)、nameread(1)、ネーム形式(5)
 
-last modified: Fri Jul 15 16:33:19 JST 2022
+last modified: Sun Oct  2 14:16:48 JST 2022
 Contact us: uecinfo@usp-lab.com
 Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights

@@ -135,15 +135,15 @@
 <h3>【名前】</h3>
 <p><code>cgi-name</code> :  CGI POSTメソッドで受け渡されるデータをネーム形式に変換</p>
 <h3>【書式】</h3>
-<pre class="list">Usage   : cgi-name [-d&lt;c&gt;][-i&lt;string&gt;] &lt;param_file&gt;
+<pre class="list">Usage   : cgi-name [-d&lt;c&gt;][-i&lt;string&gt;] [&lt;param_file&gt;]
 Option  :          [--template &lt;html&gt;]
-Version : Wed May 20 04:47:47 JST 2020
+Version : Sun Oct  2 14:17:02 JST 2022
 Edition : 1</pre>
 <h3>【説明】</h3>
-<p><code>cgi-name</code>はWEBサーバのCGI POSTメソッドで受け渡されるデータをネーム形式へ変換する。<code>&lt;param_file&gt;</code>として<code>-</code>を指定すると標準入力を使用する。</p>
+<p><code>cgi-name</code>はWEBサーバのCGI POSTメソッドで受け渡されるデータをネーム形式へ変換する。</p>
 <h3>【例1】</h3>
 <p>Webサーバより<code>place=tokyo&amp;country=japan</code>という文字列が渡される場合、キー値と値をネーム形式に変更して出力する。</p>
-<pre class="prettyprint">$ dd bs=$CONTENT_LENGTH | cgi-name -
+<pre class="prettyprint">$ dd bs=$CONTENT_LENGTH | cgi-name
 place tokyo
 country japan
 $</pre>
@@ -155,30 +155,30 @@ country ja pan
 $</pre>
 <h3>【例3】</h3>
 <p><code>-d</code>オプションを指定すると半角空白は削除あるいは指定文字に変換される。</p>
-<pre class="prettyprint">$ echo 'place=tokyo osaka&amp;country=japan' | cgi-name -
+<pre class="prettyprint">$ echo 'place=tokyo osaka&amp;country=japan' | cgi-name
 place tokyo osaka
 country japan
 $</pre>
-<pre class="prettyprint">$ echo 'place=tokyo osaka&amp;country=japan' | cgi-name -d_ -
+<pre class="prettyprint">$ echo 'place=tokyo osaka&amp;country=japan' | cgi-name -d_
 place tokyo_osaka
 country japan
 $</pre>
-<pre class="prettyprint">$ echo 'place=tokyo osaka&amp;country=japan' | cgi-name -d -
+<pre class="prettyprint">$ echo 'place=tokyo osaka&amp;country=japan' | cgi-name -d
 place tokyoosaka
 country japan
 $</pre>
 <h3>【例4】</h3>
 <p><code>-i</code>オプションを指定することで、返される文字列がヌルの場合の初期値を指定できる。</p>
-<pre class="prettyprint">$ echo 'place=&amp;country=japan' | cgi-name -
+<pre class="prettyprint">$ echo 'place=&amp;country=japan' | cgi-name
 place
 country japan
 $</pre>
-<pre class="prettyprint">$ echo 'place=&amp;country=japan' | cgi-name -isomewhere -
+<pre class="prettyprint">$ echo 'place=&amp;country=japan' | cgi-name -isomewhere
 place somewhere
 country japan
 $</pre>
 <h3>【例5】</h3>
-<p><code>--template</code>オプションを指定することで、指定したHTMLテンプレートより、radioboxとcheckboxの名称を取り出し、その名称でデータが出力されなければ、出力をその名称で補完する。radioboxやcheckboxは選択しないでsubmitすると値そのものが出力されない。何も選択しなかったというデータを生成するためにこ<code>の</code>オプションを使用する。</p>
+<p><code>--template</code>オプションを指定することで、指定したHTMLテンプレートより、radioboxとcheckboxの名称を取り出し、その名称でデータが出力されなければ、出力をその名称で補完する。radioboxやcheckboxは選択しないでsubmitすると値そのものが出力されない。何も選択しなかったというデータを生成するためにこのオプションを使用する。</p>
 <pre class="prettyprint">$ cat html
 -----省略
 &lt;input type=&quot;radiobox&quot; name=&quot;XXXX&quot; value=&quot;A&quot; /&gt;
@@ -189,7 +189,7 @@ $</pre>
 &lt;input type=&quot;checkbox&quot; name=&quot;YYYY&quot; value=&quot;c&quot; /&gt;
 -----省略
 $</pre>
-<pre class="prettyprint">$ dd bs=$CONTENT_LENGTH | cgi-name -i_ --template html -
+<pre class="prettyprint">$ dd bs=$CONTENT_LENGTH | cgi-name -i_ --template html
 -----省略
 XXXX _
 YYYY _
@@ -204,7 +204,7 @@ $</pre>
 &lt;!-- MOJIHAME --&gt;
 -----省略
 $</pre>
-<pre class="prettyprint">$ dd bs=$CONTENT_LENGTH | cgi-name -i_ --template html -
+<pre class="prettyprint">$ dd bs=$CONTENT_LENGTH | cgi-name -i_ --template html
 -----省略
 X _
 -----省略
@@ -215,7 +215,7 @@ $</pre>
 <p><a href="mime-read.html" class="command">mime-read(1)</a>、<a href="nameread.html" class="command">nameread(1)</a>、<a href="name-format.html" class="command">ネーム形式(5)</a></p>
     </div>
 
-    <div id="lastmodified">Last modified: Fri Jul 15 16:33:19 JST 2022</div>
+    <div id="lastmodified">Last modified: Sun Oct  2 14:16:48 JST 2022</div>
 
     <div id="footer">Contact us: uecinfo@usp-lab.com<br>Copyright &copy; 2012-2022 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
   </div>

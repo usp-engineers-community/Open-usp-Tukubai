@@ -4,11 +4,11 @@
 # cgi-name ＰＯＳＴメソッドによる変数と値を name 形式に変換する（Open usp Tukubai版）
 # 
 # designed by Nobuaki Tounaka
-# written  by Masatomo Togashi
+# written  by Hinata Yanagi
 # 
 # The MIT License
 # 
-# Copyright (C) 2020 Universal Shell Programming Laboratory
+# Copyright (C) 2022 Universal Shell Programming Laboratory
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -30,9 +30,9 @@
 
 from __future__ import print_function
 
-_usage = "cgi-name [-d<c>] [-i<string>] <param_file>"
+_usage = "cgi-name [-d<c>] [-i<string>] [<param_file>]"
 _option = "         [--template <html>]"
-_version = "Wed May 20 04:47:47 JST 2020"
+_version = "Sun Oct  2 14:17:02 JST 2022"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
 
 import re
@@ -183,6 +183,8 @@ def utf2ucs(instr):
 # メイン関数
 #
 if __name__ == '__main__':
+	if len(sys.argv) == 1:
+		sys.argv.append("/dev/stdin")
 
 	# 構文表示
 	if len(sys.argv) < 2: usage()
