@@ -1,6 +1,6 @@
 ﻿               Universal Shell Programming Laboratory
-                          info@usp-lab.com
-                             2022/09/24
+                         uecgit@usp-lab.com
+                             2022/10/03
  
 Open usp Tukubaiとは
 ====================
@@ -13,7 +13,7 @@ Open usp Tukubaiはターミナルから操作するインタラクティブな�
 
 Open usp Tukubaiのサポート(有償)、商用版Tukubaiに関するお問合せ先は下記へ。
 
-                         info@usp-lab.com
+                         uecgit@usp-lab.com
 
 ダウンロード
 ===========
