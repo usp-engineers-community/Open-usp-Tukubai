@@ -174,11 +174,23 @@ uninstall:
 deinstall: uninstall
 
 package: clean
-	${MKDIR} ${NAME}-${TODAY}
-	cp -Rp COMMANDS MANUAL MANUALHTML MANUALPDF INSTALL LICENSE Makefile README README.md ${NAME}-${TODAY}
-	tar vcf ${NAME}-${TODAY}.tar ${NAME}-${TODAY}
-	bzip2 ${NAME}-${TODAY}.tar
-	${RM} ${NAME}-${TODAY}
+	date=$$(git log --date=format-local:"%Y%m%d" -1 --pretty=%cd COMMANDS);                                        \
+	working_directory=$$(mktemp -d);                                                                               \
+	cp -Rp COMMANDS MANUAL MANUALHTML MANUALPDF INSTALL LICENSE Makefile README README.md "$${working_directory}"; \
+	pushd "$${working_directory}";                                                                                 \
+	tar vcf "$${working_directory}.tar" .;                                                                         \
+	popd;                                                                                                          \
+	bzip2 "$${working_directory}.tar";                                                                             \
+	cp -p "$${working_directory}.tar.bz2" open-usp-tukubai-$${date}.tar.bz2;                                       \
+	rm -rf $${working_directory}
+
+#tar vcf "$${working_directory}.tar" "$${working_directory}";                                                   \
+
+#${MKDIR} ${NAME}-${TODAY}
+#cp -Rp COMMANDS MANUAL MANUALHTML MANUALPDF INSTALL LICENSE Makefile README README.md ${NAME}-${TODAY}
+#tar vcf ${NAME}-${TODAY}.tar ${NAME}-${TODAY}
+#bzip2 ${NAME}-${TODAY}.tar
+#${RM} ${NAME}-${TODAY}
 
 clean:
 	rm -rf ${NAME}-${TODAY}*
