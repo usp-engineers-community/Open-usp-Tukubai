@@ -63,6 +63,8 @@ html2man() {
 		fi                                                                |
 		sed 's/<!--CONTENTS_TITLE-->/'"${TARGET} - "'/'
 
+		[ -f "${dir}/COMMANDS/${TARGET}" ] || return
+
 		version=`
 			egrep 2> /dev/null "^_version = " "${dir}/COMMANDS/${TARGET}" |
 			cut -d" " -f 3-9                                              |
@@ -418,8 +420,10 @@ html2man() {
 				printf(template "\n              ", commands[position], commands[position])
 			}
 
-			for (position = 0; position <= NF % 3 - 2; position++) {
-				print "<li></li>\n"
+			if (NF % 3 - 2 != 0) {
+				for (position = 0; position <= NF % 3 - 2; position++) {
+					print "<li></li>\n"
+				}
 			}
 
 			next
@@ -444,7 +448,7 @@ if [ "$#" -eq 1 ]; then
 else
 	# アルファベット順にコマンド一覧を列挙する
 
-	for command in $(tr ' ' '\n' <<< 'field-format master-file name-file name-format tag-format'; find ${commands} -type f -printf "%f\n"); do
+	for command in $(tr ' ' '\n' <<< 'field-format master-file name-file name-format tag-format'; find ${commands} -type f -printf "%f\n" | sort); do
 		echo building a MANUAL"$([ ! -s "${uec:-}" ] && echo -n UEC || echo -n HTML)" of ${command} >&2
 		html2man "${command}" "${dir}"
 	done
