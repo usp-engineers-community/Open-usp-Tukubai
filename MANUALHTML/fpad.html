@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8">
-  <title>count - UEC - usp engineers' community - Tukubaiオンラインコマンドマニュアル</title>
+  <title>fpad - UEC - usp engineers' community - Tukubaiオンラインコマンドマニュアル</title>
   <link rel="stylesheet" href="COMMON/CSS/MAIN.CSS">
   <link rel="stylesheet" href="COMMON/CSS/MENU.CSS">
   <link rel="stylesheet" href="COMMON/CSS/PRINT.CSS">
@@ -130,45 +130,40 @@
     <div id="main">
       <h1>Tukubaiオンラインコマンドマニュアル</h1>
 
-<h2>count(1)</h2>
+<h2>fpad(1)</h2>
 <h3>【名前】</h3>
-<p><code>count</code> :  同じキーの行数をカウント</p>
+<p><code>fpad</code> :  フィールドのパディング</p>
 <h3>【書式】</h3>
-<pre class="list">Usage   : count &lt;k1&gt; &lt;k2&gt; &lt;file&gt;
-Version : Thu Aug 20 03:13:37 JST 2020
+<pre class="list">Usage   : fpad [-t] &lt;s&gt; &lt;n&gt; [&lt;file&gt;]
+Version : Sat Oct  8 17:55:00 JST 2022
 Edition : 1</pre>
 <h3>【説明】</h3>
-<p>引数のファイルまたは標準入力のテキストデータの指定したキーフィールドの値が同じ行(行)の数を出力する。キーとなるフィールドは開始となるフィールドkey1から、終了となるフィールドkey2への形で指定する。</p>
-<h3>【例1】</h3>
+<p><code>&lt;file&gt;</code>ファイルの各レコードが<code>&lt;n&gt;</code>フィールド未満の時、文字列<code>&lt;s&gt;</code>で残フィールドを埋めます。</p>
+<p><code>&lt;file&gt;</code>ファイルの指定が無いとき、あるいはファイル名が<code>&quot;-&quot;</code>の時は、標準入力から読み込みます。</p>
+<p><code>-t</code>オプションを指定すると、レコードが<code>&lt;n&gt;</code>フィールドを超える時、超えたフィールドを削除します。(<code>-t</code>は truncate の略)</p>
+<h3>【例１】</h3>
 <pre class="prettyprint">$ cat data
-01 埼玉県 01 さいたま市 91 59 20 76 54
-01 埼玉県 02 川越市 46 39 8 5 21
-01 埼玉県 03 熊谷市 82 0 23 84 10
-02 東京都 04 新宿区 30 50 71 36 30
-02 東京都 05 中央区 78 13 44 28 51
-02 東京都 06 港区 58 71 20 10 6
-02 東京都 07 千代田区 39 22 13 76 08
-02 東京都 08 八王子市 82 79 16 21 80
-02 東京都 09 立川市 50 2 33 15 62
-03 千葉県 10 千葉市 52 91 44 9 0
-03 千葉県 11 市川市 60 89 33 18 6
-03 千葉県 12 柏市 95 60 35 93 76
-04 神奈川県 13 横浜市 92 56 83 96 75
-04 神奈川県 14 川崎市 30 12 32 44 19
-04 神奈川県 15 厚木市 48 66 23 71 24
-04 神奈川県 16 小田原市 45 21 24 39 03
-$</pre>
-<pre class="prettyprint">$ count 1 2 data                ←県ごとの市の数を数えて出力
-01 埼玉県 3
-02 東京都 6
-03 千葉県 3
-04 神奈川県 4
-$</pre>
-<h3>【関連項目】</h3>
-<p><a href="gyo.html" class="command">gyo(1)</a>、<a href="juni.html" class="command">juni(1)</a>、<a href="rank.html" class="command">rank(1)</a>、<a href="retu.html" class="command">retu(1)</a></p>
+a
+a a
+a a a
+a a a a
+a a a a a</pre>
+<pre class="prettyprint">$ fpad _ 4 data
+a _ _ _
+a a _ _
+a a a _
+a a a a
+a a a a a</pre>
+<h3>【例２】</h3>
+<pre class="prettyprint">$ fpad -t _ 4 data
+a _ _ _
+a a _ _
+a a a _
+a a a a
+a a a a</pre>
     </div>
 
-    <div id="lastmodified">Last modified: Fri Jul 15 16:39:53 JST 2022</div>
+    <div id="lastmodified">Last modified: Sat Oct  8 18:00:45 JST 2022</div>
 
     <div id="footer">Contact us: uecinfo@usp-lab.com<br>Copyright &copy; 2012-2022 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
   </div>

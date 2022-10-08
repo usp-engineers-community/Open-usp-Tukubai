@@ -56,6 +56,7 @@
               <li><a href="extname.html">extname(1)</a></li>
               <li><a href="filehame.html">filehame(1)</a></li>
               <li><a href="formhame.html">formhame(1)</a></li>
+              <li><a href="fpad.html">fpad(1)</a></li>
               <li><a href="fromcsv.html">fromcsv(1)</a></li>
               <li><a href="fsed.html">fsed(1)</a></li>
               <li><a href="getfirst.html">getfirst(1)</a></li>
@@ -111,9 +112,7 @@
               <li><a href="yobi.html">yobi(1)</a></li>
               <li><a href="ysum.html">ysum(1)</a></li>
               <li><a href="zen.html">zen(1)</a></li>
-              <li></li>
-
-              <li class="separator"><hr></li>
+                            <li class="separator"><hr></li>
               <li class="separator"><hr></li>
               <li class="separator"><hr></li>
               <li><a href="tag-format.html">タグ形式(5)</a></li>
@@ -139,9 +138,9 @@
 Version : Sun Feb 21 04:35:05 JST 2021
 Edition : 1</pre>
 <h3>【説明】</h3>
-<p>ファイル<code>&lt;file&gt;</code> のフィールド<code>&lt;n&gt;</code> の中で、文字列<code>&lt;org&gt;</code> を文字列<code>&lt;new&gt;</code>に置換します。<code>&lt;n&gt;</code> に<code>'g'</code> を指定すると、全フィールドの指定になります。</p>
-<p><code>-e</code> オプションを使うと<code>&lt;org&gt;</code> を正規表現と解釈します。<code>-i</code> オプションを使うと大文字／小文字を区別しない正規表現になります。</p>
-<p>置換指定は複数指定できます。この場合、<code>-e</code>/<code>-i</code> オプションは、正規表現を使う置換指定毎に指定する必要があります。</p>
+<p>ファイル<code>&lt;file&gt;</code>のフィールド<code>&lt;n&gt;</code>の中で、文字列<code>&lt;org&gt;</code>を文字列<code>&lt;new&gt;</code>に置換します。<code>&lt;n&gt;</code>に<code>'g'</code>を指定すると、全フィールドの指定になります。</p>
+<p><code>-e</code>オプションを使うと<code>&lt;org&gt;</code>を正規表現と解釈します。<code>-i</code>オプションを使うと大文字／小文字を区別しない正規表現になります。</p>
+<p>置換指定は複数指定できます。この場合、<code>-e</code>/<code>-i</code>オプションは、正規表現を使う置換指定毎に指定する必要があります。</p>
 <h3>【例１】</h3>
 <p>第１フィールドの tokyo を TOKYO に、第３フィールドの osaka をOSAKAに置換します。</p>
 <pre class="prettyprint">$ cat data1
@@ -178,13 +177,13 @@ TOKYO 7777</pre>
 横浜 5678
 川崎 7777</pre>
 <h3>【例６】</h3>
-<p>置換指定の区切り文字<code>'/'</code> を置換対象にする場合。</p>
+<p>置換指定の区切り文字<code>'/'</code>を置換対象にする場合。</p>
 <pre class="prettyprint">$ cat data6
 001 /home/MANUAL/TOOL/fsed.txt</pre>
-<p>data6 の中で、<code>'/'</code> を<code>'<code>-</code>'</code> に置換する場合、置換指定の区切り文字を<code>'/'</code>以外の文字(本例では<code>','</code>)にします。この文字には、任意の ASCII 文字を指定できます。</p>
+<p>data6 の中で、<code>'/'</code>を<code>'<code>-</code>'</code>に置換する場合、置換指定の区切り文字を<code>'/'</code>以外の文字(本例では<code>','</code>)にします。この文字には、任意の ASCII 文字を指定できます。</p>
 <pre class="prettyprint">$ fsed 's,/,-,2' data6
 001 -home-MANUAL-TOOL-fsed.txt</pre>
-<p>区切り文字は<code>'/'</code> のままにしておいて、パターン中の<code>'/'</code> に<code>'\'</code> を前置してもよいです。</p>
+<p>区切り文字は<code>'/'</code>のままにしておいて、パターン中の<code>'/'</code>に<code>'\'</code>を前置してもよいです。</p>
 <pre class="prettyprint">$ fsed 's/\//-/2' data6
 001 -home-MANUAL-TOOL-fsed.txt</pre>
     </div>

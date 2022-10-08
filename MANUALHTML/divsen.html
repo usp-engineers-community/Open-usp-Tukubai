@@ -56,6 +56,7 @@
               <li><a href="extname.html">extname(1)</a></li>
               <li><a href="filehame.html">filehame(1)</a></li>
               <li><a href="formhame.html">formhame(1)</a></li>
+              <li><a href="fpad.html">fpad(1)</a></li>
               <li><a href="fromcsv.html">fromcsv(1)</a></li>
               <li><a href="fsed.html">fsed(1)</a></li>
               <li><a href="getfirst.html">getfirst(1)</a></li>
@@ -111,9 +112,7 @@
               <li><a href="yobi.html">yobi(1)</a></li>
               <li><a href="ysum.html">ysum(1)</a></li>
               <li><a href="zen.html">zen(1)</a></li>
-              <li></li>
-
-              <li class="separator"><hr></li>
+                            <li class="separator"><hr></li>
               <li class="separator"><hr></li>
               <li class="separator"><hr></li>
               <li><a href="tag-format.html">タグ形式(5)</a></li>
@@ -139,7 +138,7 @@
 Version : Fri Aug 20 22:29:15 JST 2022</pre>
 <h3>【説明】</h3>
 <p>引数のファイルまたは標準入力のテキストデータの数値を1,000で除算し出力する。千単位の表を作成する場合などに使用する。引数において1,000で除算する各フィールドを順に指定する。なお、小数点以下の数値は四捨五入される。<code>-s</code>オプションを指定すると四捨五入せず、小数点の値をそのまま出力する。</p>
-<p><code>&lt;file&gt;</code>として<code>-</code>を指定するかまたは省略すると標準入力を使用する。フィールド指定<code>&lt;f1&gt; &lt;f2&gt;</code> ... を省略すると全フィールド指定となる。フィールド指定<code>&lt;f1&gt; &lt;f2&gt;</code> ... にひとつでも0があると全フィールド指定となる。コマンド入力が「<code>divsen</code><code>-s</code>」であったときは標準入力に対して全フィールドを1,000で除算し小数点以下を四捨五入せずに表示するコマンド入力が「<code>divsen</code>」であったときはコマンドの構文を表示して終了する</p>
+<p><code>&lt;file&gt;</code>として<code>-</code>を指定するかまたは省略すると標準入力を使用する。フィールド指定<code>&lt;f1&gt; &lt;f2&gt;</code>... を省略すると全フィールド指定となる。フィールド指定<code>&lt;f1&gt; &lt;f2&gt;</code>... にひとつでも0があると全フィールド指定となる。コマンド入力が「<code>divsen -s</code>」であったときは標準入力に対して全フィールドを1,000で除算し小数点以下を四捨五入せずに表示するコマンド入力が「<code>divsen</code>」であったときはコマンドの構文を表示して終了する</p>
 <h3>【例1】</h3>
 <pre class="prettyprint">$ cat data
 20060201 296030 6710000
@@ -169,7 +168,7 @@ $</pre>
 <h3>【ワンポイント】</h3>
 <p><code>divsen</code>された結果をさらにパイプでつないで<code>divsen</code>を実行すると、100万単位のデータを作成することができる。</p>
 <h3>【注意】</h3>
-<p><code>&lt;file&gt;</code>を省略するときは注意が必要<code>divsen</code> 1 10の実行において もし「10」という数字名のファイルが存在すると 標準入力ファイルの第1および第10フィールドを1,000で除算するという動作を「しない」で 「10」というファイルの第1フィールドを1,000で除算するという動作を「する」最後のパラータが「存在するファイルの名前」であればこれを入力ファイル指定としそうでなければフィールド指定として処理し入力ファイル指定は省略されたとして標準入力を仮定する</p>
+<p><code>&lt;file&gt;</code>を省略するときは注意が必要<code>divsen</code>1 10の実行において もし「10」という数字名のファイルが存在すると 標準入力ファイルの第1および第10フィールドを1,000で除算するという動作を「しない」で 「10」というファイルの第1フィールドを1,000で除算するという動作を「する」最後のパラータが「存在するファイルの名前」であればこれを入力ファイル指定としそうでなければフィールド指定として処理し入力ファイル指定は省略されたとして標準入力を仮定する</p>
 <h3>【関連項目】</h3>
 <p><a href="marume.html" class="command">marume(1)</a></p>
     </div>

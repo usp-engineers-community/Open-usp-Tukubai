@@ -56,6 +56,7 @@
               <li><a href="extname.html">extname(1)</a></li>
               <li><a href="filehame.html">filehame(1)</a></li>
               <li><a href="formhame.html">formhame(1)</a></li>
+              <li><a href="fpad.html">fpad(1)</a></li>
               <li><a href="fromcsv.html">fromcsv(1)</a></li>
               <li><a href="fsed.html">fsed(1)</a></li>
               <li><a href="getfirst.html">getfirst(1)</a></li>
@@ -111,9 +112,7 @@
               <li><a href="yobi.html">yobi(1)</a></li>
               <li><a href="ysum.html">ysum(1)</a></li>
               <li><a href="zen.html">zen(1)</a></li>
-              <li></li>
-
-              <li class="separator"><hr></li>
+                            <li class="separator"><hr></li>
               <li class="separator"><hr></li>
               <li class="separator"><hr></li>
               <li><a href="tag-format.html">タグ形式(5)</a></li>
@@ -140,9 +139,9 @@ Option  : --through &lt;string&gt;
 Version : Sun Nov 21 17:29:32 JST 2021
 Edition : 1</pre>
 <h3>【説明】</h3>
-<p><code>&lt;check_file&gt;</code> に記述されているタグ名について、<code>&lt;name_file&gt;</code>の値の重複チェックをします。重複があった場合は、そのつど標準出力に重複のあったタグ名を出力し、コマンド終了時には「エラー終了」とします。最初のエラーで終了するのではなく、複数の重複があっても対応します。</p>
+<p><code>&lt;check_file&gt;</code>に記述されているタグ名について、<code>&lt;name_file&gt;</code>の値の重複チェックをします。重複があった場合は、そのつど標準出力に重複のあったタグ名を出力し、コマンド終了時には「エラー終了」とします。最初のエラーで終了するのではなく、複数の重複があっても対応します。</p>
 <h3>【オプション】</h3>
-<p><code>--through &lt;string&gt;</code><code>&lt;name_file&gt;</code> のデータが<code>&lt;string&gt;</code>と等しい場合は、チェックを実施しません。<code>&lt;string&gt;</code>のデフォルトは、<code>&quot;_&quot;</code> となります。こ<code>の</code>オプションは繰り返し使って複数の<code>&lt;string&gt;</code>を指定することができます。</p>
+<p><code>--through &lt;string&gt; &lt;name_file&gt;</code>のデータが<code>&lt;string&gt;</code>と等しい場合は、チェックを実施しません。<code>&lt;string&gt;</code>のデフォルトは、<code>&quot;_&quot;</code>となります。このオプションは繰り返し使って複数の<code>&lt;string&gt;</code>を指定することができます。</p>
 <h3>【例１】</h3>
 <pre class="prettyprint">[usp1 usp@ ~]$ cat check
 A</pre>

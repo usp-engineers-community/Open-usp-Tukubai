@@ -56,6 +56,7 @@
               <li><a href="extname.html">extname(1)</a></li>
               <li><a href="filehame.html">filehame(1)</a></li>
               <li><a href="formhame.html">formhame(1)</a></li>
+              <li><a href="fpad.html">fpad(1)</a></li>
               <li><a href="fromcsv.html">fromcsv(1)</a></li>
               <li><a href="fsed.html">fsed(1)</a></li>
               <li><a href="getfirst.html">getfirst(1)</a></li>
@@ -111,9 +112,7 @@
               <li><a href="yobi.html">yobi(1)</a></li>
               <li><a href="ysum.html">ysum(1)</a></li>
               <li><a href="zen.html">zen(1)</a></li>
-              <li></li>
-
-              <li class="separator"><hr></li>
+                            <li class="separator"><hr></li>
               <li class="separator"><hr></li>
               <li class="separator"><hr></li>
               <li><a href="tag-format.html">タグ形式(5)</a></li>
@@ -162,7 +161,7 @@ a店 7日目 412 301 702
 $</pre>
 <h3>【例2】</h3>
 <p>あるフィールドの値が変わった場所で加算をリセットする場合は、そのリセットのキーとなるフィールドを<code>ref=</code>で指定する。たとえば店別の累計仕入数を算出する場合には、次のように1フィールド目が変更されるごとに加算をリセットする。</p>
-<p><code>ref=&lt;ref&gt;</code>で指定できるのは数値、範囲(/)、<code>NF</code><code>NF</code><code>-&lt;n&gt;</code>である。</p>
+<p><code>ref=&lt;ref&gt;</code>で指定できるのは数値、範囲(/)、<code>NF NF -&lt;n&gt;</code>である。</p>
 <pre class="prettyprint">$ cat data
 a店 1日目 103 62                ←店名 日付 売れ数 仕入数
 a店 2日目 157 94
@@ -230,7 +229,7 @@ B 2.34 4.34
 B 3 7.34
 $</pre>
 <h3>【例5】</h3>
-<p><code>key=&lt;pos&gt;</code>で指定できるのは数値、範囲(/)、列挙(@)、<code>NF</code><code>NF</code><code>-&lt;n&gt;</code>である。</p>
+<p><code>key=&lt;pos&gt;</code>で指定できるのは数値、範囲(/)、列挙(@)、<code>NF NF -&lt;n&gt;</code>である。</p>
 <pre class="prettyprint">$ kasan key=1 data</pre>
 <p>第2から第3フィールドの各フィールドを加算し、加算値をそれぞれのフィールドの直後に挿入するには次のようにコマンドを実行する。</p>
 <pre class="prettyprint">$ cat data

@@ -56,6 +56,7 @@
               <li><a href="extname.html">extname(1)</a></li>
               <li><a href="filehame.html">filehame(1)</a></li>
               <li><a href="formhame.html">formhame(1)</a></li>
+              <li><a href="fpad.html">fpad(1)</a></li>
               <li><a href="fromcsv.html">fromcsv(1)</a></li>
               <li><a href="fsed.html">fsed(1)</a></li>
               <li><a href="getfirst.html">getfirst(1)</a></li>
@@ -111,9 +112,7 @@
               <li><a href="yobi.html">yobi(1)</a></li>
               <li><a href="ysum.html">ysum(1)</a></li>
               <li><a href="zen.html">zen(1)</a></li>
-              <li></li>
-
-              <li class="separator"><hr></li>
+                            <li class="separator"><hr></li>
               <li class="separator"><hr></li>
               <li class="separator"><hr></li>
               <li><a href="tag-format.html">タグ形式(5)</a></li>
@@ -140,7 +139,7 @@
           1bai -[r]d &lt;string&gt;
 Version : Fri Aug 20 22:29:15 JST 2022</pre>
 <h3>【説明】</h3>
-<p>指定したファイルの指定フィールドや指定した文字列の先頭の０を取り除きます。(小数点以下の後０も削除します)<code>r</code>オプションをつけると-1倍します。<code>d</code>オプションをつけると引数で指定した文字列に対する処理をします。<code>&lt;file&gt;</code>として<code>-</code>を指定するかまたは省略すると標準入力を使用します。フィールド指定<code>&lt;f1&gt; &lt;f2&gt;</code> ... を省略すると全フィールド指定となります。フィールド指定<code>&lt;f1&gt; &lt;f2&gt;</code> ... にひとつでも0があると全フィールド指定となります。コマンド入力が「<code>1bai</code><code>-r</code>」であったときは標準入力に対して全フィールドを-1倍します。コマンド入力が「<code>1bai</code>」であったときはコマンドの構文を表示して終了します</p>
+<p>指定したファイルの指定フィールドや指定した文字列の先頭の０を取り除きます。(小数点以下の後０も削除します)<code>r</code>オプションをつけると-1倍します。<code>d</code>オプションをつけると引数で指定した文字列に対する処理をします。<code>&lt;file&gt;</code>として<code>-</code>を指定するかまたは省略すると標準入力を使用します。フィールド指定<code>&lt;f1&gt; &lt;f2&gt;</code>... を省略すると全フィールド指定となります。フィールド指定<code>&lt;f1&gt; &lt;f2&gt;</code>... にひとつでも0があると全フィールド指定となります。コマンド入力が「<code>1bai -r</code>」であったときは標準入力に対して全フィールドを-1倍します。コマンド入力が「<code>1bai</code>」であったときはコマンドの構文を表示して終了します</p>
 <h3>【例１】</h3>
 <pre class="prettyprint">$ cat data
 0000000 浜地______ 50 F 91 59 20 76 54
@@ -158,7 +157,7 @@ $ cat data2   &lt;- 1フィールド目の頭 &quot;0&quot; を取り去りま�
 5 崎村______ 20 M 82 79 16 21 80
 7 梶川______ 42 F 50 2 33 15 62</pre>
 <h3>【例２】</h3>
-<p><code>-r</code> (reverse) オプションをつけると-1倍します。</p>
+<p><code>-r</code>(reverse) オプションをつけると-1倍します。</p>
 <pre class="prettyprint">$ cat file
 a 1 2 3 4 5
 b 1 2 3 4 5
@@ -172,7 +171,7 @@ $ 1bai -r 2 NF-1/NF file
 a -1 2 3 -4 -5
 b -1 2 3 -4 -5</pre>
 <h3>【例３】</h3>
-<p><code>up3</code> と<code>sm2</code> を組み合わせて同じキーをもつレコードの引き算を行います。</p>
+<p><code>up3</code>と<code>sm2</code>を組み合わせて同じキーをもつレコードの引き算を行います。</p>
 <pre class="prettyprint">$ cat data
 a 5
 b 2
@@ -183,7 +182,7 @@ $ 1bai -r 2 data2 | up3 key=1 data | sm2 1 1 2 2
 a 3
 b 1</pre>
 <h3>【例４】</h3>
-<p><code>-d</code> オプションはダイレクトモードです。引数に直接編集したい文字列を指定します。</p>
+<p><code>-d</code>オプションはダイレクトモードです。引数に直接編集したい文字列を指定します。</p>
 <pre class="prettyprint">$ 1bai -d 0123
 123
 $ 1bai -d 0123.400
@@ -206,7 +205,7 @@ $ printf '%04d\n' $num
 $ printf '%04d\n' $(1bai -d $num)
 0010</pre>
 <h3>【例６】</h3>
-<p>固定長テキストから変換されたデータは、符号や前０後０がついたものが多く、<code>1bai</code> コマンドが役立ちます。</p>
+<p>固定長テキストから変換されたデータは、符号や前０後０がついたものが多く、<code>1bai</code>コマンドが役立ちます。</p>
 <pre class="prettyprint">$ cat file
 a 000123.000 000345.000
 b 000098.450 000100.000
@@ -216,7 +215,7 @@ b 98.45 100</pre>
 <h3>【注意】</h3>
 <p>実行時パラメータの最後尾が実際に存在するファイルの名前であればそれを入力ファイルとして開く。このファイル名は「10」のような数字列であってもかまわない。最後尾が存在するファイル名でないときはそれをフィールドとして処理し、入力ファイル名は省略されたものとして標準入力(stdin)を使用する。</p>
 <h3>【コラム】</h3>
-<p>命名の由来対象の数字の文字列に１倍を掛けることにより０を取り除くため、<code>1bai</code> と命名されています。</p>
+<p>命名の由来対象の数字の文字列に１倍を掛けることにより０を取り除くため、<code>1bai</code>と命名されています。</p>
     </div>
 
     <div id="lastmodified">Last modified: Sat Aug 20 22:29:15 JST 2022</div>

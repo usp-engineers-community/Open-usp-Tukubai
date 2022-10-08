@@ -1,20 +1,19 @@
-<!doctype html>
-
+<!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="utf-8">
-  <title>マスタファイル(5) - UEC - usp engineers' community - Tukubaiオンラインコマンドマニュアル</title>
-  <link rel="stylesheet" href="COMMON/CSS/MAIN.CSS" />
-  <link rel="stylesheet" href="COMMON/CSS/MENU.CSS" />
-  <link rel="stylesheet" href="COMMON/CSS/PRINT.CSS" />
+  <title>master-file - UEC - usp engineers' community - Tukubaiオンラインコマンドマニュアル</title>
+  <link rel="stylesheet" href="COMMON/CSS/MAIN.CSS">
+  <link rel="stylesheet" href="COMMON/CSS/MENU.CSS">
+  <link rel="stylesheet" href="COMMON/CSS/PRINT.CSS">
   <!--[if lte IE 8]>
-  <link rel="stylesheet" href="COMMON/CSS/IE67HACK.CSS" />
+  <link rel="stylesheet" href="COMMON/CSS/IE67HACK.CSS">
   <![endif]-->
   <!--[if IE 7]>
-  <link rel="stylesheet" href="COMMON/CSS/IE7HACK.CSS" />
+  <link rel="stylesheet" href="COMMON/CSS/IE7HACK.CSS">
   <![endif]-->
   <!--[if IE 6]>
-  <link rel="stylesheet" href="COMMON/CSS/IE6HACK.CSS" />
+  <link rel="stylesheet" href="COMMON/CSS/IE6HACK.CSS">
   <![endif]-->
   <script src="COMMON/JS/MENU.JS"></script>
 </head>
@@ -22,7 +21,7 @@
   <div id="container">
     <div id="header">
       <div id="logo">
-        <img id="logoimage" src="COMMON/IMG/TUKUBAI_LOGO.JPG" />
+        <img id="logoimage" src="COMMON/IMG/TUKUBAI_LOGO.JPG">
       </div>
       <div id="title">
         <p id="slogan"></p>
@@ -57,6 +56,8 @@
               <li><a href="extname.html">extname(1)</a></li>
               <li><a href="filehame.html">filehame(1)</a></li>
               <li><a href="formhame.html">formhame(1)</a></li>
+              <li><a href="fpad.html">fpad(1)</a></li>
+              <li><a href="fromcsv.html">fromcsv(1)</a></li>
               <li><a href="fsed.html">fsed(1)</a></li>
               <li><a href="getfirst.html">getfirst(1)</a></li>
               <li><a href="getlast.html">getlast(1)</a></li>
@@ -70,6 +71,7 @@
               <li><a href="join1x.html">join1x(1)</a></li>
               <li><a href="join2.html">join2(1)</a></li>
               <li><a href="join2x.html">join2x(1)</a></li>
+              <li><a href="joinx.html">joinx(1)</a></li>
               <li><a href="juni.html">juni(1)</a></li>
               <li><a href="kasan.html">kasan(1)</a></li>
               <li><a href="keta.html">keta(1)</a></li>
@@ -99,6 +101,7 @@
               <li><a href="tarr.html">tarr(1)</a></li>
               <li><a href="tateyoko.html">tateyoko(1)</a></li>
               <li><a href="tcat.html">tcat(1)</a></li>
+              <li><a href="tocsv.html">tocsv(1)</a></li>
               <li><a href="uconv.html">uconv(1)</a></li>
               <li><a href="ulock.html">ulock(1)</a></li>
               <li><a href="unmap.html">unmap(1)</a></li>
@@ -109,10 +112,9 @@
               <li><a href="yobi.html">yobi(1)</a></li>
               <li><a href="ysum.html">ysum(1)</a></li>
               <li><a href="zen.html">zen(1)</a></li>
-              <li></li>
-              <li class="separator"><hr/></li>
-              <li class="separator"><hr/></li>
-              <li class="separator"><hr/></li>
+                            <li class="separator"><hr></li>
+              <li class="separator"><hr></li>
+              <li class="separator"><hr></li>
               <li><a href="tag-format.html">タグ形式(5)</a></li>
               <li><a href="name-format.html">ネーム形式(5)</a></li>
               <li><a href="field-format.html">フィールド形式(5)</a></li>
@@ -128,58 +130,3 @@
     <div id="main">
       <h1>Tukubaiオンラインコマンドマニュアル</h1>
 
-      <h2>マスタファイル(5)</h2>
-
-      <h3>【名前】</h3>
-
-      <p>マスタファイル : マスタの性質を満たす<a href="field-format.html">フィールド形式(5)</a>のファイル</p>
-
-      <h3>【書式】</h3>
-
-      <pre class="list">第1フィールド 第2フィールド 第3フィールド ...
-...</pre>
-
-      <h3>【説明】</h3>
-
-      <p>それぞれの行がIDなどで管理され重複する行がなく、データの更新もあらかじめ定められたタイミングでのみ実施され、随時データの変更が入ったり、逐次データが追加されるといったことがなく、商品や店、都道府県、市区町村などデータ処理中に主要なデータとして出現するようなデータを一般的にマスタと呼んでいる。</p>
-
-      <p><a href="https://uec.usp-lab.com/INFO/CGI/INFO.CGI?POMPA=ABOUTUNICAGE">ユニケージ開発手法</a>では、マスタに該当する<a href="field-format.html">フィールド形式(5)</a>のファイルをマスタファイル(5)と呼んでいる。マスタの特性以外に、<a href="https://uec.usp-lab.com/INFO/CGI/INFO.CGI?POMPA=ABOUTUNICAGE">ユニケージ開発手法</a>におけるマスタファイル(5)は次の特性を満たしている必要がある。</p>
-
-      <ul>
-      <li>第1フィールドまたは第1フィールドから連続するいくつかのフィールドがキーフィールドになっている。</li>
-      <li>それ以外のフィールドはキーフィールドに対応する値になっている。</li>
-      <li>キーフィールド同士は重複しない。</li>
-      <li>キーフィールドがLANG=C sortで整列されている。</li>
-      </ul>
-
-      <p>たとえば第1フィールドが店番号、第2フィールドが店名で構成される2フィールドの<a href="field-format.html">フィールド形式(5)</a>のファイルで、第1フィールドの値がLANG=C sortで整列されたファイルはマスタファイル(5)と呼ばれる。</p>
-
-      <p>マスタファイル(5)は短縮してマスタと呼ばれることがあり、また、<a href="index.html">Tukubaiコマンドマニュアル</a>ではmasterと表記される。マスタファイル(5)とは対照的に随時データが追加されるようなフィールド形式(5)のファイルは<a href="transaction-file.html">トランザクションファイル(5)</a>と呼ばれている。</p>
-
-      <h3>【例1】</h3>
-
-      <p>マスタファイルの例は次のとおり。</p>
-
-      <pre class="prettyprint linenums">001 新橋店
-002 目黒店
-003 五反田店
-004 新宿店
-005 池袋店
-006 原宿店
-007 渋谷店
-008 吉祥寺店
-009 下北沢店
-010 品川店</pre>
-
-      <h3>【関連項目】</h3>
-
-      <p><a href="name-file.html">ネームファイル(5)</a>、<a href="transaction-file.html">トランザクションファイル(5)</a>、<a href="field-format.html">フィールド形式(5)</a>、<a href="tag-format.html">タグ形式(5)</a>、<a href="name-format.html">ネーム形式(5)</a></p>
-
-    </div>
-
-    <div id="lastmodified">last modified: Mon Aug  8 07:43:36 JST 2022</div>
-
-    <div id="footer">Contact us: uecinfo@usp-lab.com<br/>Copyright &copy; 2012-2022 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
-  </div>
-</body>
-</html>

@@ -56,6 +56,7 @@
               <li><a href="extname.html">extname(1)</a></li>
               <li><a href="filehame.html">filehame(1)</a></li>
               <li><a href="formhame.html">formhame(1)</a></li>
+              <li><a href="fpad.html">fpad(1)</a></li>
               <li><a href="fromcsv.html">fromcsv(1)</a></li>
               <li><a href="fsed.html">fsed(1)</a></li>
               <li><a href="getfirst.html">getfirst(1)</a></li>
@@ -111,9 +112,7 @@
               <li><a href="yobi.html">yobi(1)</a></li>
               <li><a href="ysum.html">ysum(1)</a></li>
               <li><a href="zen.html">zen(1)</a></li>
-              <li></li>
-
-              <li class="separator"><hr></li>
+                            <li class="separator"><hr></li>
               <li class="separator"><hr></li>
               <li class="separator"><hr></li>
               <li><a href="tag-format.html">タグ形式(5)</a></li>
@@ -140,10 +139,10 @@ Option  : -s&lt;space_string&gt;
           -n&lt;null_string&gt;
 Version : Mon Sep 19 13:18:58 JST 2022</pre>
 <h3>【説明】</h3>
-<p>スペース区切りファイルをCSVファイルに変換します。コマンド引数で指定したフィールドは文字列2と見なし、<code>&quot; &quot;</code> で囲んだ形式に変換します。指定していないフィールドは文字列0とみなし、<code>&quot; &quot;</code> で囲みません。</p>
-<p>ファイル名を指定しない場合、および<code>&quot;-&quot;</code> の時は、標準入力を期待します。</p>
+<p>スペース区切りファイルをCSVファイルに変換します。コマンド引数で指定したフィールドは文字列2と見なし、<code>&quot; &quot;</code>で囲んだ形式に変換します。指定していないフィールドは文字列0とみなし、<code>&quot; &quot;</code>で囲みません。</p>
+<p>ファイル名を指定しない場合、および<code>&quot;-&quot;</code>の時は、標準入力を期待します。</p>
 <h3>【仕様】</h3>
-<p>1. 文字列 _ は ヌル文字列に変換します。 (<code>-n</code> オプションで _ を別の文字列に変更できます)2. 文字列 \c は c に変換します。3. 文字列 \ 一文字は(半角スペース)に変換します。4. _ を半角スペースに変換します。 (<code>-s</code> オプションで _ を別の文字列に変更できます)5. 行末の<code>\n</code> は自動的に \r<code>\n</code> に変換します。6. 文字列1の場合、&quot; は &quot;&quot; に変換します。</p>
+<p>1. 文字列 _ は ヌル文字列に変換します。 (<code>-n</code>オプションで _ を別の文字列に変更できます)2. 文字列 \c は c に変換します。3. 文字列 \ 一文字は(半角スペース)に変換します。4. _ を半角スペースに変換します。 (<code>-s</code>オプションで _ を別の文字列に変更できます)5. 行末の<code>\n</code>は自動的に \r<code>\n</code>に変換します。6. 文字列1の場合、&quot; は &quot;&quot; に変換します。</p>
 <h3>【例1】</h3>
 <pre class="prettyprint">$ cat data
 a _ \_ \ b_c b\_c &quot;</pre>

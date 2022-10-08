@@ -1,0 +1,53 @@
+Tukubaiオンラインコマンドマニュアル
+
+fpad(1)
+
+【名前】
+
+fpad : フィールドのパディング
+
+【書式】
+
+Usage   : fpad [-t] <s> <n> [<file>]
+Version : Sat Oct  8 17:55:00 JST 2022
+Edition : 1
+
+【説明】
+
+<file> ファイルの各レコードが <n> フィールド未満の時、文字列 <s> で
+残フィールドを埋めます。
+
+<file> ファイルの指定が無いとき、あるいはファイル名が "-" の時は、標
+準入力から読み込みます。
+
+-t オプションを指定すると、レコードが <n> フィールドを超える時、超え
+たフィールドを削除します。（-t は truncate の略）
+
+【例１】
+
+$ cat data
+a
+a a
+a a a
+a a a a
+a a a a a
+
+$ fpad _ 4 data
+a _ _ _
+a a _ _
+a a a _
+a a a a
+a a a a a
+
+【例２】
+
+$ fpad -t _ 4 data
+a _ _ _
+a a _ _
+a a a _
+a a a a
+a a a a
+
+last modified: Sat Oct  8 18:00:45 JST 2022
+Contact us: uecinfo@usp-lab.com
+Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights

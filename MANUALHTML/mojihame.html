@@ -56,6 +56,7 @@
               <li><a href="extname.html">extname(1)</a></li>
               <li><a href="filehame.html">filehame(1)</a></li>
               <li><a href="formhame.html">formhame(1)</a></li>
+              <li><a href="fpad.html">fpad(1)</a></li>
               <li><a href="fromcsv.html">fromcsv(1)</a></li>
               <li><a href="fsed.html">fsed(1)</a></li>
               <li><a href="getfirst.html">getfirst(1)</a></li>
@@ -111,9 +112,7 @@
               <li><a href="yobi.html">yobi(1)</a></li>
               <li><a href="ysum.html">ysum(1)</a></li>
               <li><a href="zen.html">zen(1)</a></li>
-              <li></li>
-
-              <li class="separator"><hr></li>
+                            <li class="separator"><hr></li>
               <li class="separator"><hr></li>
               <li class="separator"><hr></li>
               <li><a href="tag-format.html">タグ形式(5)</a></li>
@@ -186,7 +185,7 @@ $</pre>
 3rd=@ 4th=d
 $</pre>
 <h3>【例3】行単位</h3>
-<p>dataは1行単位に読み込まれ、行の各フィールドが%1 %2 ...に対応する。次の行が読み込まれるときは再びtemplateが使用され、データがはめ込まれ出力される。この使い方は旧<code>mojihame</code>の<code>-r</code>と互換性がある。<code>mojihame</code><code>-r</code>は将来廃止される。</p>
+<p>dataは1行単位に読み込まれ、行の各フィールドが%1 %2 ...に対応する。次の行が読み込まれるときは再びtemplateが使用され、データがはめ込まれ出力される。この使い方は旧<code>mojihame</code>の<code>-r</code>と互換性がある。<code>mojihame -r</code>は将来廃止される。</p>
 <pre class="prettyprint">$ cat data
 a b c d
 w x y z
@@ -267,7 +266,7 @@ $</pre>
 性別＝女
 $</pre>
 <h3>【例6】行単位その4</h3>
-<p>デフォルトでは@というデータはヌル文字列として置換される。このデフォルトを変更するには<code>-d</code> オプションを使用する。<code>-d</code> オプションは<code>-l</code>オプションの後に指定する必要がある。</p>
+<p>デフォルトでは@というデータはヌル文字列として置換される。このデフォルトを変更するには<code>-d</code>オプションを使用する。<code>-d</code>オプションは<code>-l</code>オプションの後に指定する必要がある。</p>
 <pre class="prettyprint">$ mojihame -lLABEL -dx template data</pre>
 <h3>【例7】階層データ</h3>
 <p><code>-h</code>オプションは階層的にデータのはめ込みを実施する。templateにおいて階層的ラベルに囲まれた部分に現れる%数字がdataの階層的キーフィールドに対応する。</p>

@@ -56,6 +56,7 @@
               <li><a href="extname.html">extname(1)</a></li>
               <li><a href="filehame.html">filehame(1)</a></li>
               <li><a href="formhame.html">formhame(1)</a></li>
+              <li><a href="fpad.html">fpad(1)</a></li>
               <li><a href="fromcsv.html">fromcsv(1)</a></li>
               <li><a href="fsed.html">fsed(1)</a></li>
               <li><a href="getfirst.html">getfirst(1)</a></li>
@@ -111,9 +112,7 @@
               <li><a href="yobi.html">yobi(1)</a></li>
               <li><a href="ysum.html">ysum(1)</a></li>
               <li><a href="zen.html">zen(1)</a></li>
-              <li></li>
-
-              <li class="separator"><hr></li>
+                            <li class="separator"><hr></li>
               <li class="separator"><hr></li>
               <li class="separator"><hr></li>
               <li><a href="tag-format.html">タグ形式(5)</a></li>
@@ -140,7 +139,7 @@
 Version : Sun Apr 19 23:32:18 JST 2020
 Edition : 1</pre>
 <h3>【説明】</h3>
-<p>MIME形式のファイル&lt;MIME<code>-file</code>&gt;ファイルの各セクションの中から、<code>name=&quot;&lt;name&gt;&quot;</code> または<code>filename=&quot;&lt;name&gt;&quot;</code>の記述があるパートを見つけだし、その部分のデータを出力する。<code>-v</code> を指定した場合はすべての<code>name=&quot;...&quot;</code>または<code>filename=&quot;...&quot;</code>を対象として名前の一覧を出力する。</p>
+<p>MIME形式のファイル&lt;MIME<code>-file</code>&gt;ファイルの各セクションの中から、<code>name=&quot;&lt;name&gt;&quot;</code>または<code>filename=&quot;&lt;name&gt;&quot;</code>の記述があるパートを見つけだし、その部分のデータを出力する。<code>-v</code>を指定した場合はすべての<code>name=&quot;...&quot;</code>または<code>filename=&quot;...&quot;</code>を対象として名前の一覧を出力する。</p>
 <h3>【例】</h3>
 <p><code>mime-file</code>の中からabc.xlsで指定される名前のセクションを取り出す。</p>
 <pre class="prettyprint">$ mime-read abc.xls mime-file &gt; abc.xls</pre>

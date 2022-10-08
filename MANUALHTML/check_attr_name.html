@@ -56,6 +56,7 @@
               <li><a href="extname.html">extname(1)</a></li>
               <li><a href="filehame.html">filehame(1)</a></li>
               <li><a href="formhame.html">formhame(1)</a></li>
+              <li><a href="fpad.html">fpad(1)</a></li>
               <li><a href="fromcsv.html">fromcsv(1)</a></li>
               <li><a href="fsed.html">fsed(1)</a></li>
               <li><a href="getfirst.html">getfirst(1)</a></li>
@@ -111,9 +112,7 @@
               <li><a href="yobi.html">yobi(1)</a></li>
               <li><a href="ysum.html">ysum(1)</a></li>
               <li><a href="zen.html">zen(1)</a></li>
-              <li></li>
-
-              <li class="separator"><hr></li>
+                            <li class="separator"><hr></li>
               <li class="separator"><hr></li>
               <li class="separator"><hr></li>
               <li><a href="tag-format.html">タグ形式(5)</a></li>
@@ -155,7 +154,7 @@ Version         : Mon Dec 20 21:02:03 JST 2021
 Edition         : 1</pre>
 <h3>【説明】</h3>
 <p><code>&lt;check_file&gt;</code>に記述されているタグ名、属性+桁数の指定にしたがって<code>&lt;name_file&gt;</code>のデータを判定する。データが大文字なら桁数に等しい値を、小文字なら指定桁数未満の値を要求する。<code>&lt;name_file&gt;</code>のタグは、タグ名_数値であれば、_数値部分を取り除いたタグ名のみでチェックをする。エラーがあった場合は、コマンドはエラー終了し標準出力にタグ名と桁数+属性を出力する。</p>
-<p><code>--through &lt;string&gt;</code>オプションは、<code>&lt;name_file&gt;</code>のデータが<code>&lt;string&gt;</code>のうちいずれかに等しい場合はチェックを実施しない。<code>&lt;string&gt;</code>のデフォルトは_となる。こ<code>の</code>オプションは繰り返し使って複数の<code>&lt;string&gt;</code>を指定することができる。</p>
+<p><code>--through &lt;string&gt;</code>オプションは、<code>&lt;name_file&gt;</code>のデータが<code>&lt;string&gt;</code>のうちいずれかに等しい場合はチェックを実施しない。<code>&lt;string&gt;</code>のデフォルトは_となる。このオプションは繰り返し使って複数の<code>&lt;string&gt;</code>を指定することができる。</p>
 <p><code>--ngword &lt;ng_file&gt;</code>オプションは、Z X K などの日本語文字チェックのときに、<code>&lt;ng_file&gt;</code>に含まれてるマルチバイト文字をエラーとする。</p>
 <h3>【例1】通常のチェック</h3>
 <pre class="prettyprint">$ cat check

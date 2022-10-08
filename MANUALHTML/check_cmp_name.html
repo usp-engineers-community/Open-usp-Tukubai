@@ -56,6 +56,7 @@
               <li><a href="extname.html">extname(1)</a></li>
               <li><a href="filehame.html">filehame(1)</a></li>
               <li><a href="formhame.html">formhame(1)</a></li>
+              <li><a href="fpad.html">fpad(1)</a></li>
               <li><a href="fromcsv.html">fromcsv(1)</a></li>
               <li><a href="fsed.html">fsed(1)</a></li>
               <li><a href="getfirst.html">getfirst(1)</a></li>
@@ -111,9 +112,7 @@
               <li><a href="yobi.html">yobi(1)</a></li>
               <li><a href="ysum.html">ysum(1)</a></li>
               <li><a href="zen.html">zen(1)</a></li>
-              <li></li>
-
-              <li class="separator"><hr></li>
+                            <li class="separator"><hr></li>
               <li class="separator"><hr></li>
               <li class="separator"><hr></li>
               <li><a href="tag-format.html">タグ形式(5)</a></li>
@@ -140,9 +139,9 @@ Option  : --through &lt;string&gt;
 Version : Tue Oct 19 23:46:03 JST 2021
 Edition : 1</pre>
 <h3>【説明】</h3>
-<p><code>&lt;expression&gt;</code> の記述に従って、<code>&lt;name_file&gt;</code> のデータのタグ同士やタグと値の大小関係をチェックします。</p>
-<p>エラーがある場合，<code>&lt;expression&gt;</code> を満たさないタグ名をすべて標準出力に出力してから、エラー終了します。</p>
-<p><code>&lt;expression&gt;</code> は、'左辺 記号 右辺' と記述します。左辺と右辺にはタグ名や値を指定します。記号については、次の６種類が使えます。</p>
+<p><code>&lt;expression&gt;</code>の記述に従って、<code>&lt;name_file&gt;</code>のデータのタグ同士やタグと値の大小関係をチェックします。</p>
+<p>エラーがある場合，<code>&lt;expression&gt;</code>を満たさないタグ名をすべて標準出力に出力してから、エラー終了します。</p>
+<p><code>&lt;expression&gt;</code>は、'左辺 記号 右辺' と記述します。左辺と右辺にはタグ名や値を指定します。記号については、次の６種類が使えます。</p>
 <pre>
     -EQ -eq  <--  =  (equal)
     -NE -ne  <-- !=  (not equal)
@@ -150,7 +149,7 @@ Edition : 1</pre>
     -GT -gt  <--  >  (greater)
     -LE -le  <-- <=  (less or equal)
     -LT -lt  <--  <  (less)
-<p><code>--through &lt;string&gt;</code> に関しては<code>&lt;name_file&gt;</code> で定義されるデータが<code>&lt;string&gt;</code> に一致する場合は、チェックを実施しません。<code>&lt;string&gt;</code> のデフォルトは<code>'_'</code> です。こ<code>の</code>オプションは繰り返し使って複数の<code>&lt;string&gt;</code> を指定できます。</p>
+<p><code>--through &lt;string&gt;</code>に関しては<code>&lt;name_file&gt;</code>で定義されるデータが<code>&lt;string&gt;</code>に一致する場合は、チェックを実施しません。<code>&lt;string&gt;</code>のデフォルトは<code>'_'</code>です。このオプションは繰り返し使って複数の<code>&lt;string&gt;</code>を指定できます。</p>
 <h3>【例１】</h3>
 <pre class="prettyprint">[usp1 usp@ ~]$ cat data
 A 200
@@ -176,7 +175,7 @@ $ echo $?
 A
 $ echo $?
 1</pre>
-<p>(<code>'_'</code> の場合はチェックしない)</p>
+<p>(<code>'_'</code>の場合はチェックしない)</p>
 <pre class="prettyprint">$ check_cmp_name 'C -ne 0' data
 $ echo $?
 0</pre>

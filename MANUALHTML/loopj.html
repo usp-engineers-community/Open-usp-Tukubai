@@ -56,6 +56,7 @@
               <li><a href="extname.html">extname(1)</a></li>
               <li><a href="filehame.html">filehame(1)</a></li>
               <li><a href="formhame.html">formhame(1)</a></li>
+              <li><a href="fpad.html">fpad(1)</a></li>
               <li><a href="fromcsv.html">fromcsv(1)</a></li>
               <li><a href="fsed.html">fsed(1)</a></li>
               <li><a href="getfirst.html">getfirst(1)</a></li>
@@ -111,9 +112,7 @@
               <li><a href="yobi.html">yobi(1)</a></li>
               <li><a href="ysum.html">ysum(1)</a></li>
               <li><a href="zen.html">zen(1)</a></li>
-              <li></li>
-
-              <li class="separator"><hr></li>
+                            <li class="separator"><hr></li>
               <li class="separator"><hr></li>
               <li class="separator"><hr></li>
               <li><a href="tag-format.html">タグ形式(5)</a></li>
@@ -139,7 +138,7 @@
 Version : Sat Jun 20 21:57:20 JST 2020
 Edition : 1</pre>
 <h3>【説明】</h3>
-<p>引数で指定した複数のテキストファイルを、第1フィールドから<code><code>num=&lt;n&gt;</code></code>で指定したフィールドまでをキーにしてすべて連結する(<code>loopj=loop</code> of join)。各ファイルの中でキーフィールドが一致しない行についてはそれぞれ0でフィールドを補完する。</p>
+<p>引数で指定した複数のテキストファイルを、第1フィールドから<code><code>num=&lt;n&gt;</code></code>で指定したフィールドまでをキーにしてすべて連結する(<code>loopj=loop</code>of join)。各ファイルの中でキーフィールドが一致しない行についてはそれぞれ0でフィールドを補完する。</p>
 <p>連結する各ファイルは0バイトより大きく、キーとなるフィールドは必ずユニークかつ昇順で整列されていることが条件となる。フィールド数がキーフィールド数に満たない場合エラーとなる。また、<code>&lt;file&gt;</code>が0バイトファイルの場合にもエラーとなる。</p>
 <h3>【例1】基本的な使い方</h3>
 <pre class="prettyprint">$ cat file1

@@ -1,0 +1,150 @@
+#!/bin/bash
+#!/usr/local/bin/bash -xv # コマンド処理系の変更例
+#
+# test script of fpad
+#
+# usage: [<test-path>/]calclock.test [<command-path> [<python-version>]]
+#
+#            <test-path>は
+#                    「現ディレクトリーからみた」本スクリプトの相対パス
+#                    または本スクリプトの完全パス
+#                    省略時は現ディレクトリーを仮定する
+#            <command-path>は
+#                    「本スクリプトのディレクトリーからみた」test対象コマンドの相対パス
+#                    またはtest対象コマンドの完全パス
+#                    省略時は本スクリプトと同じディレクトリーを仮定する
+#                    値があるときまたは空値（""）で省略を示したときはあとにつづく<python-version>を指定できる
+#            <python-version>は
+#                    使用するpython処理系のversion（minor versionまで指定可）を指定する
+#                    （例 python2 python2.6 phthon3 python3.4など）
+#                    単にpythonとしたときは現実行環境下でのdefault versionのpythonを使用する
+#                    文字列"python"は大文字/小文字の区別をしない
+#                    省略時はpythonを仮定する
+name=fpad # test対象コマンドの名前
+testpath=$(dirname $0) # 本スクリプト実行コマンドの先頭部($0)から本スクリプトのディレトリー名をとりだす
+cd $testpath # 本スクリプトのあるディレクトリーへ移動
+if test "$2" = ""; # <python-version>($2)がなければ
+	then pythonversion="python" # default versionのpythonとする
+	else pythonversion="$2" # <python-version>($2)があれば指定versionのpythonとする
+fi
+if test "$1" = ""; # <command-path>($1)がなければ
+	then commandpath="." # test対象コマンドは現ディレクトリーにある
+	else commandpath="$1" # <command-path>($1)があればtest対象コマンドは指定のディレクトリーにある
+fi
+com="${pythonversion} ${commandpath}/${name}" # python処理系によるtest対象コマンド実行の先頭部
+tmp=/tmp/$$
+
+ERROR_CHECK(){
+	[ "$(echo ${PIPESTATUS[@]} | tr -d ' 0')" = "" ] && return
+	echo $1
+	echo "${pythonversion} ${name}" NG
+	rm -f $tmp-*
+	exit 1
+}
+
+BOMandEOLvariation(){	# BOM無しLF改行ファイル（$1）からBOM付きCRLF改行ファイル（$2）とBOM付きCR改行ファイル（$3）を生成する
+	 [ $# -eq 3 ]; ERROR_CHECK "TESTスクリプト内のBOMandEOLvariation()でファイル指定が不正"
+	awk '{print '\xEF\xBB\xBF' $0}' $1 > $2 # $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
+	awk 'BEGIN {ORS = "\r"}  {print '\xEF\xBB\xBF' $0}' $1 > $3 # $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
+}
+
+###########################################
+# TEST1
+# ファイルに対しての実行（4 列）
+
+cat << FIN > $tmp-in
+あ
+あ い
+あ い う
+あ い う え
+あ い う え お
+FIN
+
+cat << FIN > $tmp-ans
+あ _ _ _
+あ い _ _
+あ い う _
+あ い う え
+あ い う え お
+FIN
+
+${com} _ 4 $tmp-in > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1 error"
+
+###########################################
+# TEST2
+# 標準入力に対しての実行（4 列）
+
+cat << FIN > $tmp-in
+あ
+あ い
+あ い う
+あ い う え
+あ い う え お
+FIN
+
+cat << FIN > $tmp-ans
+あ _ _ _
+あ い _ _
+あ い う _
+あ い う え
+あ い う え お
+FIN
+
+${com} _ 4 < $tmp-in > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2 error"
+
+###########################################
+# TEST3
+# ファイルに対しての実行（4 列; "わ" でパディング）
+
+cat << FIN > $tmp-in
+あ
+あ い
+あ い う
+あ い う え
+あ い う え お
+FIN
+
+cat << FIN > $tmp-ans
+あ わ わ わ
+あ い わ わ
+あ い う わ
+あ い う え
+あ い う え お
+FIN
+
+${com} わ 4 < $tmp-in > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3 error"
+
+###########################################
+# TEST4
+# ファイルに対しての実行（4 列; -t; -t オプション）
+
+cat << FIN > $tmp-in
+あ
+あ い
+あ い う
+あ い う え
+あ い う え お
+FIN
+
+cat << FIN > $tmp-ans
+あ _ _ _
+あ い _ _
+あ い う _
+あ い う え
+あ い う え
+FIN
+
+${com} -t _ 4 $tmp-in > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4 error"
+
+###########################################
+rm -f $tmp-*
+echo "${pythonversion} ${name}" OK
+exit 0

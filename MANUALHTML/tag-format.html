@@ -1,20 +1,19 @@
-<!doctype html>
-
+<!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="utf-8">
-  <title>タグ形式(5) - UEC - usp engineers' community - Tukubaiオンラインコマンドマニュアル</title>
-  <link rel="stylesheet" href="COMMON/CSS/MAIN.CSS" />
-  <link rel="stylesheet" href="COMMON/CSS/MENU.CSS" />
-  <link rel="stylesheet" href="COMMON/CSS/PRINT.CSS" />
+  <title>tag-format - UEC - usp engineers' community - Tukubaiオンラインコマンドマニュアル</title>
+  <link rel="stylesheet" href="COMMON/CSS/MAIN.CSS">
+  <link rel="stylesheet" href="COMMON/CSS/MENU.CSS">
+  <link rel="stylesheet" href="COMMON/CSS/PRINT.CSS">
   <!--[if lte IE 8]>
-  <link rel="stylesheet" href="COMMON/CSS/IE67HACK.CSS" />
+  <link rel="stylesheet" href="COMMON/CSS/IE67HACK.CSS">
   <![endif]-->
   <!--[if IE 7]>
-  <link rel="stylesheet" href="COMMON/CSS/IE7HACK.CSS" />
+  <link rel="stylesheet" href="COMMON/CSS/IE7HACK.CSS">
   <![endif]-->
   <!--[if IE 6]>
-  <link rel="stylesheet" href="COMMON/CSS/IE6HACK.CSS" />
+  <link rel="stylesheet" href="COMMON/CSS/IE6HACK.CSS">
   <![endif]-->
   <script src="COMMON/JS/MENU.JS"></script>
 </head>
@@ -22,7 +21,7 @@
   <div id="container">
     <div id="header">
       <div id="logo">
-        <img id="logoimage" src="COMMON/IMG/TUKUBAI_LOGO.JPG" />
+        <img id="logoimage" src="COMMON/IMG/TUKUBAI_LOGO.JPG">
       </div>
       <div id="title">
         <p id="slogan"></p>
@@ -57,6 +56,8 @@
               <li><a href="extname.html">extname(1)</a></li>
               <li><a href="filehame.html">filehame(1)</a></li>
               <li><a href="formhame.html">formhame(1)</a></li>
+              <li><a href="fpad.html">fpad(1)</a></li>
+              <li><a href="fromcsv.html">fromcsv(1)</a></li>
               <li><a href="fsed.html">fsed(1)</a></li>
               <li><a href="getfirst.html">getfirst(1)</a></li>
               <li><a href="getlast.html">getlast(1)</a></li>
@@ -70,6 +71,7 @@
               <li><a href="join1x.html">join1x(1)</a></li>
               <li><a href="join2.html">join2(1)</a></li>
               <li><a href="join2x.html">join2x(1)</a></li>
+              <li><a href="joinx.html">joinx(1)</a></li>
               <li><a href="juni.html">juni(1)</a></li>
               <li><a href="kasan.html">kasan(1)</a></li>
               <li><a href="keta.html">keta(1)</a></li>
@@ -99,6 +101,7 @@
               <li><a href="tarr.html">tarr(1)</a></li>
               <li><a href="tateyoko.html">tateyoko(1)</a></li>
               <li><a href="tcat.html">tcat(1)</a></li>
+              <li><a href="tocsv.html">tocsv(1)</a></li>
               <li><a href="uconv.html">uconv(1)</a></li>
               <li><a href="ulock.html">ulock(1)</a></li>
               <li><a href="unmap.html">unmap(1)</a></li>
@@ -109,10 +112,9 @@
               <li><a href="yobi.html">yobi(1)</a></li>
               <li><a href="ysum.html">ysum(1)</a></li>
               <li><a href="zen.html">zen(1)</a></li>
-              <li></li>
-              <li class="separator"><hr/></li>
-              <li class="separator"><hr/></li>
-              <li class="separator"><hr/></li>
+                            <li class="separator"><hr></li>
+              <li class="separator"><hr></li>
+              <li class="separator"><hr></li>
               <li><a href="tag-format.html">タグ形式(5)</a></li>
               <li><a href="name-format.html">ネーム形式(5)</a></li>
               <li><a href="field-format.html">フィールド形式(5)</a></li>
@@ -128,52 +130,3 @@
     <div id="main">
       <h1>Tukubaiオンラインコマンドマニュアル</h1>
 
-      <h2>タグ形式(5)</h2>
-
-      <h3>【名前】</h3>
-
-      <p>タグ形式 : 1行目にヘッダがついた<a href="field-format.html">フィールド形式(5)</a></p>
-
-      <h3>【書式】</h3>
-
-      <pre class="list">ヘッダ1 ヘッダ2 ヘッダ3...
-フィールド1 フィールド2 フィールド3...
-...</pre>
-
-      <h3>【説明】</h3>
-
-      <p><a  href="tag-format.html">タグ形式(5)</a>は<a href="field-format.html">フィールド形式(5)</a>のデータの先頭行にヘッダが配置されたもの。主に次の用途で使用される。</p>
-
-      <ul>
-      <li>複数の<a href="name-file.html">ネームファイル(5)</a>を単一のファイルにまとめる</li>
-      <li>フィールド数がきわめて多い場合</li>
-      </ul>
-
-      <p><a href="name-file.html">ネームファイル(5)</a>を使用することでフィールドに名前を与えることはできるが、1つの鍵にいくつもの値が存在するケースではファイル数が増えることになり扱いにくい面がある。<a href="tag-format.html">タグ形式(5)</a>はこうした場合に単一ファイル化する方法として利用できる。</p>
-
-      <h3>【例1】</h3>
-
-      <pre class="prettyprint linenums">ID DATE AGE GENDER VALUE
-0001 20111008 23 F 0.845814
-0002 20111009 15 M 0.193475
-0003 20111010 81 F 0.484983
-0004 20111011 15 F 0.491736
-0005 20111012 91 F 0.893188
-0006 20111013 22 M 0.571077
-0007 20111014 33 F 0.502931
-0008 20111015 56 M 0.0401409
-0009 20111016 10 M 0.013111
-0010 20111017 72 F 0.482945 </pre>
-
-      <h3>【関連項目】</h3>
-
-      <p><a href="field-format.html">フィールド形式(5)</a>、<a href="name-format.html">ネーム形式(5)</a>、<a href="name-file.html">ネームファイル(5)</a></p>
-
-    </div>
-
-    <div id="lastmodified">Last modified: Thu Aug 11 13:46:08 JST 2022</div>
-
-    <div id="footer">Contact us: uecinfo@usp-lab.com<br/>Copyright &copy; 2012-2022 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
-  </div>
-</body>
-</html>

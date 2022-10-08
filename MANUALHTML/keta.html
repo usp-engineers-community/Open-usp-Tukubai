@@ -56,6 +56,7 @@
               <li><a href="extname.html">extname(1)</a></li>
               <li><a href="filehame.html">filehame(1)</a></li>
               <li><a href="formhame.html">formhame(1)</a></li>
+              <li><a href="fpad.html">fpad(1)</a></li>
               <li><a href="fromcsv.html">fromcsv(1)</a></li>
               <li><a href="fsed.html">fsed(1)</a></li>
               <li><a href="getfirst.html">getfirst(1)</a></li>
@@ -111,9 +112,7 @@
               <li><a href="yobi.html">yobi(1)</a></li>
               <li><a href="ysum.html">ysum(1)</a></li>
               <li><a href="zen.html">zen(1)</a></li>
-              <li></li>
-
-              <li class="separator"><hr></li>
+                            <li class="separator"><hr></li>
               <li class="separator"><hr></li>
               <li class="separator"><hr></li>
               <li><a href="tag-format.html">タグ形式(5)</a></li>
@@ -170,8 +169,8 @@ $</pre>
 $</pre>
 <h3>【例2】</h3>
 <p>各フィールド毎の桁数を指定して出力する。引数としてファイルの各フィールドの1番目から最終フィールドまでのそれぞれの桁数を順に指定する。</p>
-<p> ↓2フィールド目の桁数<code>keta</code> n1 n2 n3 ・・・・n<code>NF</code> ↑ ↑ 1フィールド目の桁数 最終フィールド目の桁数</p>
-<p>なお、桁数は半角での文字数で指定する。大文字の場合は半角2文字分の指定が必要である。<code>keta</code> 4は半角では4文字分、全角では2文字分になる。次のコマンドで例1と同じ出力が得られる。</p>
+<p> ↓2フィールド目の桁数<code>keta</code>n1 n2 n3 ・・・・n<code>NF</code>↑ ↑ 1フィールド目の桁数 最終フィールド目の桁数</p>
+<p>なお、桁数は半角での文字数で指定する。大文字の場合は半角2文字分の指定が必要である。<code>keta</code>4は半角では4文字分、全角では2文字分になる。次のコマンドで例1と同じ出力が得られる。</p>
 <pre class="prettyprint">$ keta 2 8 2 10 2 2 2 2 2 data</pre>
 <h3>【例3】</h3>
 <p>通常は桁は右詰めで出力されるが、左詰めで出力する場合は桁数に<code>-</code>をつけて指定すれば良い。例えば第2フィールドと第4フィールドを左詰めにして出力するには次のようにコマンドを実行する。</p>
@@ -184,7 +183,7 @@ $</pre>
 04 神奈川県 13 横浜市     92 56 83 96 7
 $</pre>
 <h3>【例4】</h3>
-<p>同じ桁数を連続したフィールドに指定する場合は<code>&lt;桁数x連続するフィールド数&gt;</code>と表記することができる。<code>keta</code> 3x4は<code>keta</code> 3 3 3 3と同じ意味を持つ。フィールド数には<code>NF</code>(1行のフィールド数)を使用し<code>NF-xx</code>と指定できる。次のコマンドで例3と同じ出力が得られる。</p>
+<p>同じ桁数を連続したフィールドに指定する場合は&lt;桁数x連続するフィールド数&gt;と表記することができる。<code>keta</code>3x4は<code>keta</code>3 3 3 3と同じ意味を持つ。フィールド数には<code>NF</code>(1行のフィールド数)を使用し<code>NF-xx</code>と指定できる。次のコマンドで例3と同じ出力が得られる。</p>
 <pre class="prettyprint">$ keta 2 -8 2 -10 2x5 data</pre>
 <pre class="prettyprint">$ keta 2 -8 2 -10 2xNF-4 data</pre>
 <h3>【例5】</h3>

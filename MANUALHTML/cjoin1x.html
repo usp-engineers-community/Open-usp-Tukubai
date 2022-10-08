@@ -56,6 +56,7 @@
               <li><a href="extname.html">extname(1)</a></li>
               <li><a href="filehame.html">filehame(1)</a></li>
               <li><a href="formhame.html">formhame(1)</a></li>
+              <li><a href="fpad.html">fpad(1)</a></li>
               <li><a href="fromcsv.html">fromcsv(1)</a></li>
               <li><a href="fsed.html">fsed(1)</a></li>
               <li><a href="getfirst.html">getfirst(1)</a></li>
@@ -111,9 +112,7 @@
               <li><a href="yobi.html">yobi(1)</a></li>
               <li><a href="ysum.html">ysum(1)</a></li>
               <li><a href="zen.html">zen(1)</a></li>
-              <li></li>
-
-              <li class="separator"><hr></li>
+                            <li class="separator"><hr></li>
               <li class="separator"><hr></li>
               <li class="separator"><hr></li>
               <li><a href="tag-format.html">タグ形式(5)</a></li>
@@ -138,12 +137,12 @@
 <pre class="list">Usage   : cjoin1x [+ng[&lt;fd&gt;]] key=&lt;n&gt; &lt;master&gt; [&lt;tran&gt;]
 Version : Fri Jul 22 01:09:14 JST 2022</pre>
 <h3>【説明】</h3>
-<p>テキストファイル<code>&lt;tran&gt;</code> の<code>&quot;key=&lt;n&gt;&quot;</code> で指定したキーフィールドがマスターファイル<code>&lt;master&gt;</code> の第１フィールド(キーフィールド)とマッチした行のみを<code>&lt;tran&gt;</code> から抽出して、<code>&lt;master&gt;</code> の情報を連結して出力します。連結は<code>&lt;tran&gt;</code> のキーフィールドの直後に<code>&lt;master&gt;</code> の内容のうちキーフィールド以外を挿入する形で行われます。</p>
-<p>複数のキーフィールドがある場合、<code>&lt;master&gt;</code> のキーフィールドは、<code>&lt;tran&gt;</code> のキーフィールドと同じ並びで、最小フィールドが１となるようスライドさせたキーフィールドとなります。例えば、<code>key=3/5</code> のときは、並び＝３フィールド連続したキー、なので、<code>&lt;master&gt;</code> は１から３連続したフィールド、つまり、第１から第３フィールドがキーとなります。</p>
+<p>テキストファイル<code>&lt;tran&gt;</code>の<code>&quot;key=&lt;n&gt;&quot;</code>で指定したキーフィールドがマスターファイル<code>&lt;master&gt;</code>の第１フィールド(キーフィールド)とマッチした行のみを<code>&lt;tran&gt;</code>から抽出して、<code>&lt;master&gt;</code>の情報を連結して出力します。連結は<code>&lt;tran&gt;</code>のキーフィールドの直後に<code>&lt;master&gt;</code>の内容のうちキーフィールド以外を挿入する形で行われます。</p>
+<p>複数のキーフィールドがある場合、<code>&lt;master&gt;</code>のキーフィールドは、<code>&lt;tran&gt;</code>のキーフィールドと同じ並びで、最小フィールドが１となるようスライドさせたキーフィールドとなります。例えば、<code>key=3/5</code>のときは、並び＝３フィールド連続したキー、なので、<code>&lt;master&gt;</code>は１から３連続したフィールド、つまり、第１から第３フィールドがキーとなります。</p>
 <p>masterまたはtranに<code>-</code>を指定すると標準入力を使用する。tranが無指定の場合には標準入力を使用する。</p>
-<p><code>&lt;master&gt;</code> の第１フィールドについては必ず昇順でソートされていることが条件になります。</p>
+<p><code>&lt;master&gt;</code>の第１フィールドについては必ず昇順でソートされていることが条件になります。</p>
 <p><code>+ng</code>オプションをつけると、一致した行を標準出力ファイルへ、一致しなかった行をファイルディスクリプタ<code>&lt;fd&gt;</code>のファイルへ出力する。<code>&lt;fd&gt;</code>を省略した場合は標準エラー出力ファイルへ出力する。</p>
-<p><code>cjoin1</code> との違いは、マスターファイルのキーフィールドの値が同一のレコードが複数存在できる点です。マスターとトランザクションファイルのキーフィールド値が同一のレコード同士を総掛けで連結して出力します。</p>
+<p><code>cjoin1</code>との違いは、マスターファイルのキーフィールドの値が同一のレコードが複数存在できる点です。マスターとトランザクションファイルのキーフィールド値が同一のレコード同士を総掛けで連結して出力します。</p>
 <h3>【例１】</h3>
 <p>(マスター：master)</p>
 <pre class="prettyprint">$ cat master
