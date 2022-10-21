@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #coding: utf-8
 #
-# self: select field (Open usp Tukubai)
+# self select field (Open usp Tukubai)
 # 
 # designed by Nobuaki Tounaka
 # written  by Masatomo Togashi
@@ -35,8 +35,8 @@ import codecs
 import unicodedata	# unicode関連処理用
 
 _usage = [ "self <f1> <f2> ... [<file>]", "self -d <f1> <f2> ... <string>" ]
-_version = "Fri Aug 20 22:29:15 JST 2022"
-_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4+, 3.1, 3.2/UTF-8)"
+_version = "Oct 20 17:32:09 JST 2022"
+_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4+/UTF-8)"
 
 _keypat = r'(?P<ndot>(\d+|NF(-\d+)?)(/(\d+|NF(-\d+)?))?)|(?P<dot>(\d+|NF(-\d+)?)(\.\d+(\.\d+)?)?)$'	# a a/b または a a.b a.b.c
 _keypatNF = r'(?P<m0>(?P<m01>\d+)|(?P<m02>NF(?P<m03>-\d+)?))/(?P<m1>(?P<m11>\d+)|(?P<m12>NF(?P<m13>-\d+)?))$'	# a a/b
@@ -222,7 +222,7 @@ class Operator:
 
 	def output(self,line):
 		global NF,keylist
-		tokens = [line] + [w for w in line.split(" ")]
+		tokens = [line] + line.split(" ")
 		nf=len(tokens)-1
 		if nf != NF:	# 欄数が変化したかまたは先頭行なら
 			NF=nf

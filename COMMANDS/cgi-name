@@ -4,7 +4,7 @@
 # cgi-name ＰＯＳＴメソッドによる変数と値を name 形式に変換する（Open usp Tukubai版）
 # 
 # designed by Nobuaki Tounaka
-# written  by Hinata Yanagi
+# written  by Masatomo Togashi
 # 
 # The MIT License
 # 
@@ -30,10 +30,10 @@
 
 from __future__ import print_function
 
-_usage = "cgi-name [-d<c>] [-i<string>] [<param_file>]"
+_usage = "cgi-name [-d<c>] [-i<string>] <param_file>"
 _option = "         [--template <html>]"
-_version = "Sun Oct  2 14:17:02 JST 2022"
-_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
+_version = "Oct 20 17:32:09 JST 2022"
+_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4+/UTF-8)"
 
 import re
 import os
@@ -76,6 +76,10 @@ def open_file(n, quiet = False):
 			sys.exit(1)
 	return file
 
+# 不要な空白の削除関数
+def rm_sp(line):
+	return re.sub(r' {2,}',' ',re.sub(r'^ +| +$','',line))	# 行頭と行末の空白を削除し連続空白を単空白にする
+
 # 改行符号（\r\n）の削除関数
 def rm_eol(line):
 	return line.rstrip("\r\n")	# 改行記号としてCRLF('\r\n')/CR('\r')/LF('\n')のすべてに対応する
@@ -97,6 +101,7 @@ def rm_BOM(line):
 def preproc_line(line):
 	line=rm_eol(line)	# 行末の改行記号を削除する
 	line=rm_BOM(line)	# ファイル先頭行の行頭にBOMがあったらこれを削除する
+	line=rm_sp(line)	# 行頭と行末の空白を削除し連続空白を単空白にする
 	return line
 
 # Python3か判定する
@@ -184,7 +189,7 @@ def utf2ucs(instr):
 #
 if __name__ == '__main__':
 	if len(sys.argv) == 1:
-		sys.argv.append("/dev/stdin")
+		sys.argv.append("/dev/fd/0")
 
 	# 構文表示
 	if len(sys.argv) < 2: usage()

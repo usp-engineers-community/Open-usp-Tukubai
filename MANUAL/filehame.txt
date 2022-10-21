@@ -61,6 +61,6 @@ $
 
 formhame(1)、mojihame(1)
 
-last modified: Sat Sep 24 11:00:18 JST 2022
+last modified: Fri Oct 21 08:21:02 JST 2022
 Contact us: uecinfo@usp-lab.com
 Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights

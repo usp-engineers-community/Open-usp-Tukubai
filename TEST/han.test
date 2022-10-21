@@ -542,6 +542,77 @@ diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST14 error"
 
 ###########################################
+#TEST15
+# 「全フィールドの半角化」と「行全体の半角化」の試験
+
+# フィールド指定にひとつでも0があると全フィールドを指定したことになる
+
+cat << FIN > $tmp-in
+００１ ａｂｃアイウ エオｘｙｚ １２３ ４５６ 789
+FIN
+
+cat << FIN > $tmp-ans
+001 abcｱｲｳ ｴｵxyz 123 456 789
+FIN
+
+${com} 2 5/4 2 0 $tmp-in > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST15-1 error"
+
+# 「全フィールドの半角化」では
+# 各フィールド中の全角空白も半角化されて半角空白が新たに出現するのでフィールド構成が変化することがある
+
+cat << FIN > $tmp-in
+　００１ ａｂｃ　　アイウ エオｘｙｚ １２３ ４５６ 789　
+FIN
+# $tmp-inの1行の半角空白と全角空白を"#"と"＝"であらわして「」でくくると
+#  「＝００１#ａｂｃ＝＝アイウ#エオｘｙｚ#１２３#４５６#789＝」
+
+cat << FIN > $tmp-ans
+ 001 abc  ｱｲｳ ｴｵxyz 123 456 789 
+FIN
+# $tmp-ansの1行の半角空白と全角空白を"#"と"＝"であらわして「」でくくると
+#  「#001#abc##ｱｲｳ#ｴｵxyz#123#456#789 」
+
+${com} 2 5/4 2 0 $tmp-in > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST15-2 error"
+
+# フィールド指定を省略すると行全体を半角化する
+
+cat << FIN > $tmp-in
+００１ ａｂｃアイウ エオｘｙｚ １２３ ４５６ 789
+FIN
+
+cat << FIN > $tmp-ans
+001 abcｱｲｳ ｴｵxyz 123 456 789
+FIN
+
+${com} $tmp-in > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST15-3 error"
+
+# 「行全体の半角化」では
+# 行頭と行末にある半角空白や連続する半角空白についてはそのまま出力される
+# 行頭と行末にある全空白や連続する全角空白は半角空白化されて出力される
+
+cat << FIN > $tmp-in
+ 　００１ ａｂｃ　アイウ エオ　　ｘｙｚ １２３ ４５６ 789 　
+FIN
+# $tmp-inの1行の半角空白と全角空白を"#"と"＝"であらわすと
+#＝００１#ａｂｃ＝アイウ#エオ＝＝ｘｙｚ#１２３#４５６#789#＝
+
+cat << FIN > $tmp-ans
+  001 abc ｱｲｳ ｴｵ  xyz 123 456 789  
+FIN
+# $tmp-ansの1行の半角空白と全角空白を"#"と"＝"であらわすと
+##001#abc#ｱｲｳ#ｴｵ##xyz#123#456#789##
+
+${com} $tmp-in > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST15-4 error"
+
+###########################################
 rm -f $tmp-*
 echo "${pythonversion} ${name}" OK
 exit 0

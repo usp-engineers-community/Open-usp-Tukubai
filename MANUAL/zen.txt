@@ -10,13 +10,15 @@ zen : 全角へ変換
 
 Usage   : zen  [-k] [<f1> <f2> ..] [<file>]
         : zen -d [<string>]
-Version : Tue Sep  6 08:46:04 JST 2022
+Version : Oct 20 17:32:09 JST 2022
 Edition : 1
 
 【説明】
 
 引数のファイルまたは標準入力におけるテキストデータの半角英数記号およびカタカナをす
 べて全角に変換して出力する。
+フィールド指定において0は全フィールドを意味する。
+コマンド入力が「zen」でパラメータがないときはコマンドの構文を表示して終了する。
 
 【例1】
 
@@ -67,6 +69,6 @@ $
 
 han(1)
 
-last modified: Tue Sep  6 16:40:00 JST 2022
+last modified: Fri Oct 21 08:21:02 JST 2022
 Contact us: uecinfo@usp-lab.com
 Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights

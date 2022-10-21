@@ -4,7 +4,7 @@
 # sm2 サムアップツール（Open usp Tukubai版）
 # 
 # designed by Nobuaki Tounaka
-# written  by Hinata Yanagi
+# written  by Masatomo Togashi
 #
 # The MIT License
 #
@@ -30,9 +30,9 @@
 
 from __future__ import print_function
 
-_usage = "sm2 [+count] <k1> <k2> <s1> <s2> [<file>]"
-_version = "Fri Jul 29 15:32:20 JST 2022"
-_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
+_usage = "sm2 [+count] [<k1> <k2> <s1> <s2> <file>]"
+_version = "Oct 20 17:32:09 JST 2022"
+_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4+/UTF-8)"
 _keypat = r'\d+|NF(-\d+)?$'
 
 import re
@@ -114,6 +114,10 @@ def open_file(n):
 			error("ファイル '%s' をオープンできません。", filename)
 	return file
 
+# 不要な空白の削除関数
+def rm_sp(line):
+	return re.sub(r' {2,}',' ',re.sub(r'^ +| +$','',line))	# 行頭と行末の空白を削除し連続空白を単空白にする
+
 # 改行符号（\r\n）の削除関数
 def rm_eol(line):
 	return line.rstrip("\r\n")	# 改行記号としてCRLF('\r\n')/CR('\r')/LF('\n')のすべてに対応する
@@ -135,6 +139,7 @@ def rm_BOM(line):
 def preproc_line(line):
 	line=rm_eol(line)	# 行末の改行記号を削除する
 	line=rm_BOM(line)	# ファイル先頭行の行頭にBOMがあったらこれを削除する
+	line=rm_sp(line)	# 行頭と行末の空白を削除し連続空白を単空白にする
 	return line
 
 # Python3か判定する
@@ -288,4 +293,3 @@ if __name__ == '__main__':
 	print(sum[s2])
 
 	sys.exit(0)
-

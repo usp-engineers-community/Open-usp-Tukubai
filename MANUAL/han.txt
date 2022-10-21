@@ -10,13 +10,15 @@ han : 半角へ変換
 
 Usage   : han f1 f2 .. [file]
           han -d string
-Version : Mon Mar 21 16:31:46 JST 2022
+Version : Oct 20 17:32:09 JST 2022
 Edition : 1
 
 【説明】
 
 引数のファイルまたは標準入力のテキストデータの、全角スペース、全角英数記号およびカ
 タカナの部分をすべて半角に変換して出力する。
+フィールド指定において0は全フィールドを意味する。
+コマンド入力が「han」でパラメータがないときはコマンドの構文を表示して終了する。
 
 【例1】
 
@@ -69,6 +71,6 @@ $
 
 zen(1)
 
-last modified: Fri Jul 15 16:43:52 JST 2022
+last modified: Fri Oct 21 08:21:02 JST 2022
 Contact us: uecinfo@usp-lab.com
 Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights

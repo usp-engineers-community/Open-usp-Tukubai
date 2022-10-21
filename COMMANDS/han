@@ -30,10 +30,10 @@
 
 from __future__ import print_function
 
-_usage = "han <f1> <f2> .. [<file>]"
+_usage = "han [<f1> <f2> ..] [<file>]"
 _usage1 = "han -d <string>"
-_version = "Mon Mar 21 16:31:46 JST 2022"
-_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
+_version = "Oct 20 17:32:09 JST 2022"
+_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4+/UTF-8)"
 _keypat = r'((\d+|NF(-\d+)?)(/(\d+|NF(-\d+)?))?)(@((\d+|NF(-\d+)?)(/(\d+|NF(-\d+)?))?))*$'
 _keypatNF=r'(?P<m0>(?P<m01>\d+)|(?P<m02>NF(?P<m03>-\d+)?))(/(?P<m1>(?P<m11>\d+)|(?P<m12>NF(?P<m13>-\d+)?)))?$'
 
@@ -240,11 +240,13 @@ def getpos(base_pos):
 		if pos < 0:	error("フィールド指定でNF-x の x が大きすぎます。 %s","NF-"+str(-base_pos))
 	return pos
 
-# NF相対欄位置リスト（base_keylist）からNF（欄数）に応じた実際の欄位置リスト（keylist）を作成する
-def make_keylist(base_keylist):
-	# base_keylistの要素には区間をあらわす整数tupleの(start,end)と、単一欄をあらわす整数がある
+# NF相対欄位置リスト（rel_keylist）からNF（欄数）に応じた実際の欄位置リスト（keylist）を作成する
+def make_keylist(rel_keylist):
+	# rel_keylistの要素には区間をあらわす整数tupleの(start,end)と、単一欄をあらわす整数がある
+	if rel_keylist==[None]:	# 全欄指定
+		return list(range(0,NF))
 	keylist=[]
-	for fieldpos in base_keylist:
+	for fieldpos in rel_keylist:
 		if type(fieldpos)==int:	keylist.append(getpos(fieldpos))	# 単一欄
 		else:	# (a/b)の区間
 			start=getpos(fieldpos[0])
@@ -260,14 +262,15 @@ def getFieldNum(str,str1,str2):
 	# n または NF または NF-x の形式の欄番号をNF相対形式の整数で確定する
 	# 正規表現で「\d+|NF(-\d+)?」にmatchする全体をstrが、「\d+」でmatchする部分をstr1が、「(-\d+)?」でmatchする部分をstr2が保持している
 	# NF相対形式の整数化:
-	#  nのときは整数のnに
-	#  NFのときは整数の0に
-	#  NF-nのときは整数の-nに
+	#  単独のnが0のときはNone
+	#  単独のnが0以外のときは整数のn
+	#  単独のNFのときは整数の0
+	#  NF-nのときは整数の-n
 	# 実際の欄番号にする際には行ごとに得たNF（欄数）を使用して計算する
 	if str1:	# n
 		fieldnum=int(str1)
-		if fieldnum==0:
-			error("フィールド指定に0があります。")
+		if fieldnum==0:	# 欄番号0は全欄指定を意味する
+			fieldnum=None
 	else:	# NF-n または NF
 		if str2:	# NF-n
 			fieldnum=int(str2)
@@ -298,11 +301,19 @@ def getFieldList(field_param):
 #	コマンドのフィールド指定パラメータリストから処理対象のNF相対欄位置リストを作成する
 #
 def getTargetFields(args):
+	if args==[]:
+		return [None]	# フィールド指定パラメータリストが空のときは全欄指定とする
 	ans = []
 	for e in args:
 		ans+=getFieldList(e)
+	if None in ans:
+		return [None]	# 欄位置にひとつでも0を指定するものがあるときは全欄指定とする
 	ans=list(set(ans)) # 集合化によってリストの重複を解消する
 	return ans
+
+# 不要な空白の削除関数
+def rm_sp(line):
+	return re.sub(r' {2,}',' ',re.sub(r'^ +| +$','',line))	# 行頭と行末の空白を削除し連続空白を単空白にする
 
 # 改行符号（\r\n）の削除関数
 def rm_eol(line):
@@ -348,6 +359,8 @@ if __name__ == '__main__':
 	# 全角半角変換辞書を作る
 	dic=makezenhandic()
 
+	firstline=True
+
 	#
 	# -d
 	#
@@ -362,37 +375,32 @@ if __name__ == '__main__':
 		sys.exit(0)
 
 	# 実行時パラメータ列の最後尾をファイル名と仮定してしてファイルを開く
-	file = open_file(len(sys.argv)-1)	# openに成功すればsys.argvの最後尾は削除される
+	file = open_file(len(sys.argv)-1)	# sys.argvの最後尾をファイル指定としてopenに成功すれば最後尾は削除される
 	if len(sys.argv)==1:	# sys.argvに実行時パラメータが残っていない
 		# フィールド指定がなく最終位置のパラメ－タがファイル名であった
-		firstline=True
 		for line in file:
 			line=preproc_line(line)	# 入力行の前処理
 			print(to_han(line,dic))	# 行全体を半角変換する
 		sys.exit(0)
 
 	# フィールド指定パラメータからNF相対欄位置リストを作成する
-	base_keylist = getTargetFields(sys.argv[1:])	# sys.argvに残っているのはコマンド名とフィールド指定のみ
+	rel_keylist = getTargetFields(sys.argv[1:])	# sys.argvに残っているのはコマンド名とフィールド指定のみ
 
 	#
 	# メインループ
 	#
-	firstline=True
+	NF=-1
 	for line in file:
-		line=preproc_line(line)	# 入力行の前処理
-		fields = line.split()
-		NF=len(fields)
-		key=make_keylist(base_keylist)	# 行の欄数NFを見てNF相対欄位置リストから(絶対)欄位置リストを決定する
+		line=rm_sp(preproc_line(line))	# 入力行の前処理 rm_sp()による行頭と行末にある半角空白削除や連続半角空白の単一半角空白化もする
+		fields = line.split(" ")
+		nf=len(fields)
+		if nf != NF:	# 欄数が変化したかまたは先頭行なら
+			NF=nf
+			key=make_keylist(rel_keylist)	# 行の欄数NFを見てNF相対欄位置リストから(絶対)欄位置リストを決定する
+
 		#
 		# 半角変換
 		#
-		endchar=' '
-		for i in range(0, NF):
-			if i==NF-1: endchar=''
-			if i in key:
-				print(to_han(fields[i],dic), end=endchar)
-			else:
-				print(fields[i], end=endchar)
-		print()
+		print(" ".join(list(map(lambda x: to_han(fields[x],dic) if x in key else fields[x], range(NF)))))
 
 	sys.exit(0)

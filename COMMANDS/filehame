@@ -4,7 +4,7 @@
 # filehame ファイルのはめこみ（Open usp Tukubai版）
 # 
 # designed by Nobuaki Tounaka
-# written  by Hinata Yanagi
+# written  by Masatomo Togashi
 #
 # The MIT License
 #
@@ -30,9 +30,9 @@
 
 from __future__ import print_function
 
-_usage = "filehame <-lSTRING> <file1> [<file2>]"
-_version = "Sat Sep 24 10:59:05 JST 2022"
-_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4+, 3.1, 3.2/UTF-8)"
+_usage = "filehame -l<string> <template> <data>"
+_version = "Oct 20 17:32:09 JST 2022"
+_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4+/UTF-8)"
 
 # 濁音と半濁音のNFD表記でNFC表記もできるもの→NFDtoNFC変換でNFCに統一する
 _comb_pat=r"(((う|か|き|く|け|こ|さ|し|す|せ|そ|た|ち|つ|て|と|は|ひ|ふ|へ|ほ|ウ|カ|キ|ク|ケ|コ|サ|シ|ス|セ|ソ|タ|チ|ツ|テ|ト|ハ|ヒ|フ|ヘ|ホ|ワ|ヰ|ヱ|ヲ)゙)|((は|ひ|ふ|へ|ほ|ハ|ヒ|フ|ヘ|ホ)゚))+"
@@ -47,9 +47,9 @@ def error(msg, *arg):
 	sys.exit(1)
 
 def usage():
-	sys.stderr.write( "Usage     : %s\n" % _usage );
-	sys.stderr.write( "Version   : %s\n" % _version );
-	sys.stderr.write( "            %s\n" % _code );
+	sys.stderr.write( "Usage     :%s\n" % _usage );
+	sys.stderr.write( "Version   :%s\n" % _version );
+	sys.stderr.write( "	   %s\n" % _code );
 	sys.exit(1)
 
 #
@@ -416,11 +416,12 @@ if __name__ == '__main__':
 
 	# 「ゆるい文字列一致」の指定
 	LooseMatch=True	# 現在は固定
-	#LooseMatch=False	# 試験用（2022年01月14日(金)16時21分44秒）
 
 	# -lオプションを解析
 	if sys.argv[1][0:2] == '-l':
-		mark=utf2ucs(sys.argv[1][2:])	# python2において返値はunicodeとなる
+		mark=utf2ucs(sys.argv[1][2:])	# 直接指定文字列の前処理 Python2においてはUTF8からUnicode文字へ変換する
+		if len(mark)==0:	# 値がなかったら
+			error("-lバラメータに文字列がありません")
 		mark = NFDtoNFC(mark)	# -lオプションをNFCに変換
 		Xmark=toXstr(mark)	# -lオプションを拡張文字列に変換
 		del sys.argv[1]

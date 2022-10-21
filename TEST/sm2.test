@@ -296,7 +296,6 @@ diff $tmp-ans $tmp-out
 ###########################################
 #TEST9 sums up every value in an input.
 
-
 seq 1 10 > $tmp-in
 
 echo 55 > $tmp-out
@@ -306,8 +305,9 @@ ${com}      > $tmp-ans
 
 diff $tmp-ans $tmp-out
 
-[ $? -eq 0 ] ; ERROR_CHECK "TEST7 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST9 error"
 
+###########################################
 rm -f $tmp-*
 echo "${pythonversion} ${name}" OK
 exit 0

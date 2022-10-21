@@ -124,6 +124,6 @@ CGI POSTメソッドで受け渡されるデータには改行がない。通常
 
 mime-read(1)、nameread(1)、ネーム形式(5)
 
-last modified: Sun Oct  2 14:16:48 JST 2022
+last modified: Fri Oct 21 08:21:02 JST 2022
 Contact us: uecinfo@usp-lab.com
 Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights

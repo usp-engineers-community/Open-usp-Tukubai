@@ -8,7 +8,7 @@
 # 
 # The MIT License
 # 
-# Copyright (C) 2021 Universal Shell Programming Laboratory
+# Copyright (C) 2022 Universal Shell Programming Laboratory
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -30,10 +30,10 @@
 
 from __future__ import print_function
 
-_usage = "check_need_name <check_file> <name_file>"
+_usage = "check_need_name <check_file> [<name_file>]"
 _option = "--blank <string>"
-_version = "Mon Dec 20 21:02:03 JST 2021"
-_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4+, 3.1, 3.2/UTF-8)"
+_version = "Oct 20 17:32:10 JST 2022"
+_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4+/UTF-8)"
 
 # 濁音と半濁音のNFD表記でNFC表記もできるもの→NFDtoNFC変換でNFCに統一する
 _comb_pat=r"(((う|か|き|く|け|こ|さ|し|す|せ|そ|た|ち|つ|て|と|は|ひ|ふ|へ|ほ|ウ|カ|キ|ク|ケ|コ|サ|シ|ス|セ|ソ|タ|チ|ツ|テ|ト|ハ|ヒ|フ|ヘ|ホ|ワ|ヰ|ヱ|ヲ)゙)|((は|ひ|ふ|へ|ほ|ハ|ヒ|フ|ヘ|ホ)゚))+"
@@ -428,6 +428,10 @@ def utf2ucs(instr):
 	if len(intlist)>0:	outstr+= bytes(intlist).decode("utf_8")
 	return outstr
 
+# 不要な空白の削除関数
+def rm_sp(line):
+	return re.sub(r' {2,}',' ',re.sub(r'^ +| +$','',line))	# 行頭と行末の空白を削除し連続空白を単空白にする
+
 # 改行符号（\r\n）の削除関数
 def rm_eol(line):
 	return line.rstrip("\r\n")	# 改行記号としてCRLF('\r\n')/CR('\r')/LF('\n')のすべてに対応する
@@ -449,6 +453,7 @@ def rm_BOM(line):
 def preproc_line(line):
 	line=rm_eol(line)	# 行末の改行記号を削除する
 	line=rm_BOM(line)	# ファイル先頭行の行頭にBOMがあったらこれを削除する
+	line=rm_sp(line)	# 行頭と行末の空白を削除し連続空白を単空白にする
 	return line
 
 # Python3か判定する
