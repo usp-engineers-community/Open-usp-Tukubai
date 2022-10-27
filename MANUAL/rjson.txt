@@ -150,8 +150,8 @@ $ rjson jsondata2
 
 【関連項目】
 
-xmldir(1)
+wjson(1)
 
-last modified: Mon Sep 12 16:52:11 JST 2022
+last modified: Thu Oct 27 16:33:08 JST 2022
 Contact us: uecinfo@usp-lab.com
 Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights

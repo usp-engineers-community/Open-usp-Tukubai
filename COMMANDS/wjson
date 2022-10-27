@@ -1,0 +1,208 @@
+#!/usr/bin/env python
+#coding: utf-8
+#
+# wjson : JSON 形式のファイルをフィールド形式に変換する（Open usp Tukubai版）
+# 
+# designed by Aoki Takemasa
+# written  by Hinata Yanagi
+#
+# The MIT License
+#
+# Copyright (C) 2022 Universal Shell Programming Laboratory
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+from __future__ import print_function
+import sys
+import os.path
+import io
+import json
+import re
+from collections import OrderedDict
+
+_usage = "wjson [-p<c>][-m<c>][-s<c>][-n<string>] [<field-file>]"
+_usage_additional = "--null / --truefalse"
+_version = "Thu Oct 27 16:32:20 JST 2022"
+_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.7+/UTF-8)"
+
+# supplementary assignment for under 3.0
+if sys.version_info >= (3, 0):
+	unicode = str
+
+def usage():
+	print("Usage   :", _usage, file=sys.stderr)
+	print("         ", _usage_additional, file=sys.stderr)
+	print("Version :", _version, file=sys.stderr)
+	print("         ", _code, file=sys.stderr)
+	sys.exit(1)
+
+#
+# Throw an error and terminate in failure.
+#
+
+def error(msg, *arg):
+	print('Error[wjson] :', msg % arg, file=sys.stderr)
+	sys.exit(1)
+
+#
+# Open an input file
+#
+def open_file(n, quiet = False):
+	if type(n) == type(0):
+		if n >= len(sys.argv):
+			n = '-'
+		else:
+			n = sys.argv[n]
+	if n == '-':
+		file = sys.stdin
+	else:
+		try:
+			file = open(n)
+		except:
+			if not quiet:
+				error("Cannot open file '%s'", n)
+			else:
+				sys.exit(1)
+	return file
+
+#
+# Translate number indexed objects into arrays.
+#
+
+def translate(target):
+	if not type(target) == dict:
+		return target
+
+	if all(map(lambda field: field.isdigit(), target.keys())):
+		indices = [name for name in enumerate(target)]
+		indices.sort(key = lambda item: int(item[1]))
+		array = []
+
+		for index in map(lambda item: item[1], indices):
+			array.append(translate(target[index]))
+	
+		return array
+	else:
+		for name in target:
+			target[name] = translate(target[name])
+
+		return target
+
+
+def format_object_key(key_whitespace, name):
+	if name == key_whitespace:
+		return ""
+	else:
+		return name.replace(key_whitespace, " ")
+
+#
+#  Print an object in JavaScript Object Notation.
+#
+
+def stringify_object(input_file):
+	root = dict()
+
+	for line in input_file:
+		fields = [field for field in re.split(r" +", line.rstrip("\n")) if len(field)]
+
+		if len(fields) < 2:
+			error("1行あたり2フィールド以上が必要です。")
+
+		path = list(map(lambda name: format_object_key(key_whitespace, name), fields[0].split(separator)))
+
+		if fields[1] == null_padding:
+			value = ""
+		else:
+			value = fields[1].replace(value_whitespace, " ")
+
+		if value == "" and print_string_null:
+			value = None
+
+		if value in ["false", "true"] and print_string_boolean:
+			value = {"false": False, "true": True}[value]
+
+		context = root
+
+		for name in path[:-1]:
+			if not name in context:
+				# キーを新たに作成する場合。
+				context[name] = dict()
+
+			context = context[name]
+	
+		if type(context) != dict:
+			error("値がプロパティを持つことはできません。")
+
+		context[path[-1]] = value
+
+	if len(root) == 0:
+		return
+
+	
+	json.dump(translate(root), sys.stdout, ensure_ascii = False, separators = (",", ":"))
+	print()
+
+#
+# main
+#
+
+if __name__ == '__main__':
+	# Read from the standard input if no arguments given.
+	if len(sys.argv) == 1:
+		sys.argv = ["-"]
+	# Print how to use the command
+	elif sys.argv[1] == '--help' or sys.argv[1] == '--version':
+		usage()
+
+	separator = '.'
+	key_whitespace = '_'
+	value_whitespace = '_'
+	null_padding = '_'
+	print_string_null = False
+	print_string_boolean = False
+
+	while len(sys.argv) > 1:
+		if sys.argv[1][:2] == "-p" and len(sys.argv[1]) > 2:
+			separator = sys.argv[1][2:]
+			del sys.argv[1]
+		elif sys.argv[1][:2] == "-m" and len(sys.argv[1]) > 2:
+			key_whitespace = sys.argv[1][2:]
+			del sys.argv[1]
+		elif sys.argv[1][:2] == "-s" and len(sys.argv[1]) > 2:
+			value_whitespace = sys.argv[1][2:]
+			del sys.argv[1]
+		elif sys.argv[1][:2] == "-n" and len(sys.argv[1]) > 2:
+			null_padding = sys.argv[1][2:]
+			del sys.argv[1]
+		elif sys.argv[1] == "--null":
+			print_string_null = True
+			del sys.argv[1]
+		elif sys.argv[1] == "--truefalse":
+			print_string_boolean = True
+			del sys.argv[1]
+		elif len(sys.argv[1]) < 2 or sys.argv[1][0] != '-':
+			break;
+		else:
+			error("an unknown option is specified.")
+
+	input_file = open_file(1)
+
+	stringify_object(input_file)
+
+	sys.exit(0)

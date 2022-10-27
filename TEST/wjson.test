@@ -1,0 +1,128 @@
+#!/bin/bash
+#!/usr/local/bin/bash -xv # コマンド処理系の変更例
+#
+# test script of wjson
+#
+# usage: [<test-path>/]wjson.test [<command-path> [<python-version>]]
+#
+#            <test-path>は
+#                    「現ディレクトリーからみた」本スクリプトの相対パス
+#                    または本スクリプトの完全パス
+#                    省略時は現ディレクトリーを仮定する
+#            <command-path>は
+#                    「本スクリプトのディレクトリーからみた」test対象コマンドの相対パス
+#                    またはtest対象コマンドの完全パス
+#                    省略時は本スクリプトと同じディレクトリーを仮定する
+#                    値があるときまたは空値（""）で省略を示したときはあとにつづく<python-version>を指定できる
+#            <python-version>は
+#                    使用するpython処理系のversion（minor versionまで指定可）を指定する
+#                    （例 python2 python2.6 phthon3 python3.4など）
+#                    単にpythonとしたときは現実行環境下でのdefault versionのpythonを使用する
+#                    文字列"python"は大文字/小文字の区別をしない
+#                    省略時はpythonを仮定する
+name=wjson # test対象コマンドの名前
+testpath=$(dirname $0) # 本スクリプト実行コマンドの先頭部($0)から本スクリプトのディレトリー名をとりだす
+cd $testpath # 本スクリプトのあるディレクトリーへ移動
+if test "$2" = ""; # <python-version>($2)がなければ
+	then pythonversion="python" # default versionのpythonとする
+	else pythonversion="$2" # <python-version>($2)があれば指定versionのpythonとする
+fi
+if test "$1" = ""; # <command-path>($1)がなければ
+	then commandpath="." # test対象コマンドは現ディレクトリーにある
+	else commandpath="$1" # <command-path>($1)があればtest対象コマンドは指定のディレクトリーにある
+fi
+com="${pythonversion} ${commandpath}/${name}" # python処理系によるtest対象コマンド実行の先頭部
+tmp=$(mktemp)
+
+ERROR_CHECK(){
+	[ "$(echo ${PIPESTATUS[@]} | tr -d ' 0')" = "" ] && return
+	echo $1
+	echo "${pythonversion} ${name}" NG
+	rm -f $tmp-*
+	exit 1
+}
+
+###########################################
+# Check for primitive targets.
+
+echo -n | ${com} > $tmp-ans
+[ -z "$(cat $tmp-ans)" -a $? -eq 0 ]; ERROR_CHECK "An empty input must result in converted in an empty input'."
+
+${com} - <<< '_ _' > $tmp-ans
+
+[ $? -eq 0 ] && diff $tmp-ans - <<EOF
+{"":""}
+EOF
+
+ERROR_CHECK "\"_ _\" must be converted into '{\"\":\"\"}'."
+
+${com} --null - <<< '_ _' > $tmp-ans
+
+[ $? -eq 0 ] && diff $tmp-ans - <<EOF
+{"":null}
+EOF
+
+ERROR_CHECK "\"_ _\" must be converted into '{\"\":\"\"}'."
+
+${com} - <<< '0' 2> /dev/null
+[ $? -eq 1 ] || "0 must cause failure."
+
+${com} -n@ - <<< 'あ @' |
+diff - <(echo '{"あ":""}')
+
+ERROR_CHECK "\"あ @\" must be converted into {\"あ\":\"\"}."
+
+${com} -p@ - <<< 'あ@い う' |
+diff - <(echo '{"あ":{"い":"う"}}')
+
+ERROR_CHECK "\"あ@い う\" must be converted into {\"あ\":{\"い\":\"う\"}} with -p@ option."
+
+${com} -m@ - <<< 'あ@い う@え' |
+diff - <(echo '{"あ い":"う@え"}')
+
+ERROR_CHECK "\"あ@い う@え\" must be converted into {\"あ い\":\"う@え\"}} with -m@ option."
+
+${com} -s@ - <<< 'あ@い う@え' |
+diff - <(echo '{"あ@い":"う え"}')
+
+ERROR_CHECK "\"あ@い う@え\" must be converted into {\"あ@い\":\"う え\"}} with -s@ option."
+
+${com} -n@ - <<< '@ @' |
+diff - <(echo '{"@":""}')
+
+ERROR_CHECK "\"@ @\" must be converted into {\"@\":\"\"}} with -s@ option."
+###########################################
+# Check for mixtures of objects and arrays.
+
+(echo あ a; echo い b) | ${com} > $tmp-ans
+
+[ $? -eq 0 ] && diff $tmp-ans - <<EOF
+{"あ":"a","い":"b"}
+EOF
+
+ERROR_CHECK "\"あ a\" line feed \"い b\" must be converted into '{\"あ\":\"a\",\"い\":\"b\"}'."
+
+(echo a.b あ; echo a.c true) | ${com} --truefalse > $tmp-ans
+
+[ $? -eq 0 ] &&
+(echo '{"a":{"b":"あ","c":true}}' | diff $tmp-ans - ||
+ echo '{"a":{"c":true,"b":"あ"}}' | diff $tmp-ans -) 2>&1 > /dev/null 
+
+ERROR_CHECK "\"a.b あ\" line feed \"b.c true\" must be converted into '{\"a\":{\"b\":\"あ\"},\"c\":true}' with --truefalse option."
+
+(echo a.1 あ; echo a.2 い) | ${com} 2>&1 > /dev/null
+
+[ $? -ne 1 ] || ERROR_CHECK "References to a value must cause failure."
+
+${com} <(echo 'あ.い.う え'; echo あ.い.お.0 か) > $tmp-ans
+
+[ $? -eq 0 ] &&
+(echo '{"あ":{"い":{"お":["か"],"う":"え"}}}' | diff $tmp-ans - ||
+ echo '{"あ":{"い":{"う":"え","お":["か"]}}}' | diff $tmp-ans -) 2>&1 > /dev/null 
+
+
+ERROR_CHECK "Must handle a mixture of object and array."
+
+rm -f $tmp-*
+echo "${pythonversion} ${name}" OK
+exit 0

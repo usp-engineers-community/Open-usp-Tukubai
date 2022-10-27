@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8">
-  <title>unmap - UEC - usp engineers' community - Tukubaiオンラインコマンドマニュアル</title>
+  <title>wjson - UEC - usp engineers' community - Tukubaiオンラインコマンドマニュアル</title>
   <link rel="stylesheet" href="COMMON/CSS/MAIN.CSS">
   <link rel="stylesheet" href="COMMON/CSS/MENU.CSS">
   <link rel="stylesheet" href="COMMON/CSS/PRINT.CSS">
@@ -135,58 +135,108 @@
     <div id="main">
       <h1>Tukubaiオンラインコマンドマニュアル</h1>
 
-<h2>unmap(1)</h2>
+<h2>wjson(1)</h2>
 <h3>【名前】</h3>
-<p><code>unmap</code> :  縦キー/横キー形式の表データを縦型ファイルに変換</p>
+<p><code>wjson</code> :  フィールド形式ファイルを JSON 形式に変換する</p>
 <h3>【書式】</h3>
-<pre class="list">Usage   : map       [-&lt;l&gt;] num=&lt;n&gt;x&lt;m&gt; &lt;file&gt;
-        : map +yarr [-&lt;l&gt;] num=&lt;n&gt;x&lt;m&gt; &lt;file&gt;
-        : map +arr  [-&lt;l&gt;] num=&lt;n&gt;x&lt;m&gt; &lt;file&gt;
-Version : Fri Nov 20 17:00:13 JST 2020
-Edition : 1</pre>
+<pre class="list">Usage   : wjson [-p&lt;c&gt;][-m&lt;c&gt;][-s&lt;c&gt;][-n&lt;string&gt;] [&lt;field-file&gt;]
+          --null
+          --truefalse
+Version : Thu Oct 27 16:32:20 JST 2022
+Edition : 2</pre>
 <h3>【説明】</h3>
-<p><a href="map.html" class="command">map(1)</a>と逆の動作をする。</p>
-<h3>【例1】</h3>
-<p>表データを縦型ファイルに変換する。<code><code>num=&lt;n&gt;</code></code>の値は縦キーのフィールド数を表す。</p>
-<pre class="prettyprint">$ cat data
-*   * 01/01 01/02
-001 a店   103   157
-002 b店   210   237
-$</pre>
-<pre class="prettyprint">$ unmap num=2 data |  keta
-001 a店 01/01 103
-001 a店 01/02 157
-002 b店 01/01 210
-002 b店 01/02 237
-$</pre>
-<h3>【例2】</h3>
-<p>データ部が複数種ある場合は、複数列にマッピングする。</p>
-<pre class="prettyprint">$ cat data
-* * 1日目 2日目 3日目 4日目 5日目 6日目 7日目
-a店 A   103   157    62   131   189   350   412
-a店 B    62    94    30    84   111    20   301
-b店 A   210   237   150   198   259   421   589
-b店 B   113   121    82   105   189   287   493
-c店 A    81    76    38    81    98   109   136
-c店 B    52    49    21    48    61    91   110
-d店 A    75    72    34    74    91    98   101
-d店 B    48    42    19    43    51    69    90
-$</pre>
-<pre class="prettyprint">$ unmap num=1 data |  keta
-a店 1日目 103 62
-a店 2日目 157 94
-a店 3日目 62 30
-a店 4日目 131 84
-・
-・
-d店 6日目 98 69
-d店 7日目 101 90
-$</pre>
+<p>フィールド形式ファイル &lt;field<code>-file</code>&gt; を JSON 形式(RFC8259)に変換します。</p>
+<p>キー部の項目はデフォルトで<code>&quot;.&quot;</code>で区切られますが、値が数字の時は、リストの項番を意味し、それ以外(文字列)の時は、オブジェクトのキー名を意味します。キー部の階層構造に従い、フィールド形式のファイルを JSON 形式に変換します。</p>
+<h3>【オプション】</h3>
+<p><code>-p</code>: キー部の区切り文字を変更します。デフォルトは<code>&quot;.&quot;</code>です。</p>
+<p><code>-m</code>: キー部において半角空白で出力する文字を変更します。デフォルトは<code>&quot;_&quot;</code>です。</p>
+<p><code>-s</code>: 値部において半角空白で出力する文字を変更します。デフォルトは<code>&quot;_&quot;</code>です。</p>
+<p><code>-n</code>: 値部において空文字列として出力する文字列を変更します。デフォルトは<code>&quot;_&quot;</code>です。</p>
+<p><code>--null</code>: 空文字列の出力を、ヌル値に変更します。ダブルクォーテーションで 囲まれない null が出力されます。</p>
+<p><code>--truefalse</code>: 文字列 &quot;true&quot; の出力を true に、文字列 &quot;false&quot; の出力を false に 変更します。ダブルクォーテーションでは囲まれません。</p>
+<h3>【備考】</h3>
+<p>値に含まれる以下の文字はエスケープされます。</p>
+<p> ダブルクォーテーション(&quot;) → \&quot;</p>
+<p> バックスラッシュ(\) → \\</p>
+<h3>【例１】</h3>
+<pre class="prettyprint">$ cat fielddata
+1.name Alice_Brown
+1.sku 54321
+1.price 199.95
+1.shipTo.name Bob_Brown
+1.shipTo.address 456_Oak_Lane
+1.shipTo.city Pretendville
+1.shipTo.state _
+1.shipTo.zip 98999
+1.billTo.name Alice_Brown
+1.billTo.address 456_Oak_Lane
+1.billTo.city Pretendville
+1.billTo.state HI
+1.billTo.zip 98999
+2.name Donald_Tramp
+2.sku 24680
+2.price 153.32
+2.shipTo.name Kim_Jonil
+2.shipTo.address 123_Hidroask
+2.shipTo.city Pyonyan
+2.shipTo.state NK
+2.shipTo.zip 10012
+2.billTo.name Donald_Tramp
+2.billTo.address 456_Oak_Lane
+2.billTo.city Pretendville
+2.billTo.state HI
+2.billTo.zip 98999</pre>
+<pre class="prettyprint">$ wjson &lt; fielddata
+[{&quot;name&quot;:&quot;Alice Brown&quot;,&quot;sku&quot;:&quot;54321&quot;,&quot;price&quot;:&quot;199.95&quot;,&quot;shipTo&quot;:{&quot;name&quot;:&quot;Bob Brown&quot;,&quot;address&quot;:&quot;456 Oak Lane&quot;,&quot;city&quot;:&quot;Pretendville&quot;,&quot;state&quot;:&quot;&quot;,&quot;zip&quot;:&quot;98999&quot;},&quot;billTo&quot;:{&quot;name&quot;:&quot;Alice Brown&quot;,&quot;address&quot;:&quot;456 Oak Lane&quot;,&quot;city&quot;:&quot;Pretendville&quot;,&quot;state&quot;:&quot;HI&quot;,&quot;zip&quot;:&quot;98999&quot;}},{&quot;name&quot;:&quot;Donald Tramp&quot;,&quot;sku&quot;:&quot;24680&quot;,&quot;price&quot;:&quot;153.32&quot;,&quot;shipTo&quot;:{&quot;name&quot;:&quot;Kim Jonil&quot;,&quot;address&quot;:&quot;123 Hidroask&quot;,&quot;city&quot;:&quot;Pyonyan&quot;,&quot;state&quot;:&quot;NK&quot;,&quot;zip&quot;:&quot;10012&quot;},&quot;billTo&quot;:{&quot;name&quot;:&quot;Donald Tramp&quot;,&quot;address&quot;:&quot;456 Oak Lane&quot;,&quot;city&quot;:&quot;Pretendville&quot;,&quot;state&quot;:&quot;HI&quot;,&quot;zip&quot;:&quot;98999&quot;}}]</pre>
+<h3>【例２】</h3>
+<pre class="prettyprint">$ cat fielddata2
+1.1 a
+1.2 b
+2.1 c
+2.2 d</pre>
+<pre class="prettyprint">$ wjson fielddata2
+[[&quot;a&quot;,&quot;b&quot;],[&quot;c&quot;,&quot;d&quot;]]</pre>
+<h3>【例３】</h3>
+<pre class="prettyprint">$ cat fielddata3
+year 2013
+title Turn_It_Down,_Or_Else!
+info.directors.1 Alice_Smith
+info.directors.2 Bob_Jones
+info.release_date 2013-01-18T00:00:00Z
+info.rating 6.2
+info.genres.1 Comedy
+info.genres.2 Drama
+info.image_url http://ia.media-imdb.com/images/N/O9ERWAU7FS797AJ7LU8HN09AMUP908RLlo5JF90EWR7LJKQ7@@._V1_SX400_.jpg
+info.plot A_rock_band_plays_their_music_at_high_volumes,_annoying_the_neighbors.
+info.rank 11
+info.running_time_secs 5215
+info.actors.1 David_Matthewman
+info.actors.2 Ann_Thomas
+info.actors.3 Jonathan_G._Neff</pre>
+<p>第1引数にファイルのパスを与える。</p>
+<pre class="prettyprint">$ wjson fielddata3
+{&quot;year&quot;:&quot;2013&quot;,&quot;title&quot;:&quot;Turn It Down, Or Else!&quot;,&quot;info&quot;:{&quot;directors&quot;:[&quot;Alice Smith&quot;,&quot;Bob Jones&quot;],&quot;release date&quot;:&quot;2013-01-18T00:00:00Z&quot;,&quot;rating&quot;:&quot;6.2&quot;,&quot;genres&quot;:[&quot;Comedy&quot;,&quot;Drama&quot;],&quot;image url&quot;:&quot;http://ia.media-imdb.com/images/N/O9ERWAU7FS797AJ7LU8HN09AMUP908RLlo5JF90EWR7LJKQ7@@. V1 SX400 .jpg&quot;,&quot;plot&quot;:&quot;A rock band plays their music at high volumes, annoying the neighbors.&quot;,&quot;rank&quot;:&quot;11&quot;,&quot;running time secs&quot;:&quot;5215&quot;,&quot;actors&quot;:[&quot;David Matthewman&quot;,&quot;Ann Thomas&quot;,&quot;Jonathan G. Neff&quot;]}}</pre>
+<h3>【例４】</h3>
+<pre class="prettyprint">$ cat fielddata
+data1 null
+data2 _
+data3 _
+data4 true
+data5 false
+data6 0.000000000000000000000000000000000662607</pre>
+<pre class="prettyprint">$ wjson fielddata
+{&quot;data1&quot;:&quot;null&quot;,&quot;data2&quot;:&quot;&quot;,&quot;data3&quot;:&quot;&quot;,&quot;data4&quot;:&quot;true&quot;,&quot;data5&quot;:&quot;false&quot;,&quot;data6&quot;:&quot;0.000000000000000000000000000000000662607&quot;}</pre>
+<p><code>--truefalse</code>オプション を用いると文字列型ではなく真偽値として表記する。</p>
+<pre class="prettyprint">$ wjson --null --truefalse fielddata
+{&quot;data1&quot;:&quot;null&quot;,&quot;data2&quot;:null,&quot;data3&quot;:null,&quot;data4&quot;:true,&quot;data5&quot;:false,&quot;data6&quot;:&quot;0.000000000000000000000000000000000662607&quot;}</pre>
+<p><code>-n</code>オプションにつづけて空の文字列を代替するラベルを指定する。</p>
+<pre class="prettyprint">$ wjson -nnull --null --truefalse fielddata
+{&quot;data1&quot;:null,&quot;data2&quot;:&quot; &quot;,&quot;data3&quot;:&quot; &quot;,&quot;data4&quot;:true,&quot;data5&quot;:false,&quot;data6&quot;:&quot;0.000000000000000000000000000000000662607&quot;}</pre>
 <h3>【関連項目】</h3>
-<p><a href="map.html" class="command">map(1)</a>、<a href="tateyoko.html" class="command">tateyoko(1)</a></p>
+<p><a href="rjson.html" class="command">rjson(1)</a></p>
     </div>
 
-    <div id="lastmodified">Last modified: Fri Jul 15 15:42:38 JST 2022</div>
+    <div id="lastmodified">Last modified: Thu Oct 27 17:32:13 JST 2022</div>
 
     <div id="footer">Contact us: uecinfo@usp-lab.com<br>Copyright &copy; 2012-2022 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
   </div>
