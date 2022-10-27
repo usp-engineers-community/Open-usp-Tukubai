@@ -53,6 +53,9 @@
   #main a[href^=http]:after {
     content:" (" attr(href) ") ";
   }
+  #main pre {
+    overflow: hidden;
+  }
   #footer a {
     font-weight: normal;
     text-decoration: none;
