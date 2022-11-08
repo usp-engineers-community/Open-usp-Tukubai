@@ -1,6 +1,6 @@
 ﻿               Universal Shell Programming Laboratory
-                         uecgit@usp-lab.com
-                             2022/10/27
+                         uecinfo@usp-lab.com
+                             2022/11/08
  
 Open usp Tukubaiとは
 ====================
@@ -13,7 +13,7 @@ Open usp Tukubaiはターミナルから操作するインタラクティブな�
 
 Open usp Tukubaiのサポート(有償)、商用版Tukubaiに関するお問合せ先は下記へ。
 
-                         uecgit@usp-lab.com
+                         uecinfo@usp-lab.com
 
 ダウンロード
 ===========
@@ -36,7 +36,7 @@ GitHub Read-Only
 
 Open usp Tukubaiはスクリプト言語Pythonで開発されている。PythonのインストールされたUNIX系OSで利用できる。Open usp Tukubaiのインストールおよびセットアップに関してはINSTALLファイルを参照のこと。
 
-なお、業務システム向けに提供されている商用版のTukubaiはC言語で開発されている。商用版の提供や教育プログラムに興味がある場合にはinfo@usp-lab.comまでご連絡いただきたい。
+なお、業務システム向けに提供されている商用版のTukubaiはC言語で開発されている。商用版の提供や教育プログラムに興味がある場合にはuecinfo@usp-lab.comまでご連絡いただきたい。
 
 
 リファレンス
