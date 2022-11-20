@@ -72,6 +72,9 @@ FIN
 ${com} yyyy/m/d 1 $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out ; ERROR_CHECK "TEST1-1 error"
 
+${com} --output yyyy/m/d 1 $tmp-in > $tmp-out
+diff $tmp-ans $tmp-out ; ERROR_CHECK "TEST1-2 error"
+
 cat << FIN > $tmp-ans
 2012/01/01
 2013/02/01
@@ -83,7 +86,7 @@ FIN
 
 cat $tmp-in		|
 ${com} yyyy/mm/dd 1 - > $tmp-out
-diff $tmp-ans $tmp-out ; ERROR_CHECK "TEST1-2 error"
+diff $tmp-ans $tmp-out ; ERROR_CHECK "TEST1-3 error"
 
 cat << FIN > $tmp-ans
 1/1
@@ -96,7 +99,7 @@ FIN
 
 cat $tmp-in	|
 ${com} m/d 1 - > $tmp-out
-diff $tmp-ans $tmp-out ; ERROR_CHECK "TEST1-3 error"
+diff $tmp-ans $tmp-out ; ERROR_CHECK "TEST1-4 error"
 
 cat << FIN > $tmp-ans
 01月2012年
@@ -109,7 +112,7 @@ FIN
 
 cat $tmp-in		|
 ${com} mm月yyyy年 1 - > $tmp-out
-diff $tmp-ans $tmp-out ; ERROR_CHECK "TEST1-4 error"
+diff $tmp-ans $tmp-out ; ERROR_CHECK "TEST1-5 error"
 
 ###########################################
 #TEST2: 時刻

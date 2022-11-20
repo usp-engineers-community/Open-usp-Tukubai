@@ -4,11 +4,11 @@
 # dayslash 日付のフォーマット (Open usp Tukubai版）
 # 
 # designed by Nobuaki Tounaka
-# written  by Masatomo Togashi
+# written  by Hinata Yanagi
 #
 # The MIT License
 #
-# Copyright (C) 2020 Universal Shell Programming Laboratory
+# Copyright (C) 2022 Universal Shell Programming Laboratory
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -30,8 +30,8 @@
 
 from __future__ import print_function
 
-_usage = "dayslash [-r] <format> <field> <file>"
-_version = "Wed May 20 04:47:48 JST 2020"
+_usage = "dayslash [-r] [--output] <format> <field> [<file>]"
+_version = "Mon Nov 21 07:17:29 JST 2022"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4+, 3.1, 3.2/UTF-8)"
 
 import re
@@ -344,6 +344,9 @@ if __name__ == '__main__':
 	if len(sys.argv) < 2 :		usage()
 	if sys.argv[1] == '--help' :	usage()
 	if sys.argv[1] == '--version':	usage()
+
+	if sys.argv[1] == '--output':
+		del sys.argv[1]
 
 	if sys.argv[1] == '-r':	# リバースモード（未実装）
 		rev()
