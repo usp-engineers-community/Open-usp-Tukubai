@@ -38,7 +38,7 @@ from collections import OrderedDict
 
 _usage = "wjson [-p<c>][-m<c>][-s<c>][-n<string>] [<field-file>]"
 _usage_additional = "--null / --truefalse"
-_version = "Thu Oct 27 16:32:20 JST 2022"
+_version = "Fri Oct 28 08:01:44 JST 2022"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.7+/UTF-8)"
 
 # supplementary assignment for under 3.0
@@ -199,7 +199,7 @@ if __name__ == '__main__':
 		elif len(sys.argv[1]) < 2 or sys.argv[1][0] != '-':
 			break;
 		else:
-			error("an unknown option is specified.")
+			error("不明なオプションです: %s", sys.argv[1])
 
 	input_file = open_file(1)
 
