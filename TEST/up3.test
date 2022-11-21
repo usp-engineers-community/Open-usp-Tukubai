@@ -38,14 +38,14 @@ ERROR_CHECK(){
 	[ "$(echo ${PIPESTATUS[@]} | tr -d ' 0')" = "" ] && return
 	echo $1
 	echo "${pythonversion} ${name}" NG
-	#rm -f $tmp-*
+	rm -f $tmp-*
 	exit 1
 }
 
 BOMandEOLvariation(){	# BOM無しLF改行ファイル（$1）からBOM付きCRLF改行ファイル（$2）とBOM付きCR改行ファイル（$3）を生成する
 	 [ $# -eq 3 ]; ERROR_CHECK "TESTスクリプト内のBOMandEOLvariation()でファイル指定が不正"
-	awk '{print '\xEF\xBB\xBF' $0}' $1 > $2 # $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
-	awk 'BEGIN {ORS = "\r"}  {print '\xEF\xBB\xBF' $0}' $1 > $3 # $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r\n/g' -e 's/$/\r/' $1 >$2	# $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r/g' $1 | tr '\n' '\r' >$3	# $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
 }
 
 ###########################################
@@ -152,7 +152,7 @@ diff $tmp-ans $tmp-out
 #TEST3
 # masterの1日目から3日目までのデータに
 # tranの4日目から5日目までのデータをマージする
-# 複数のキーフィールドを逆順指定（/」を使用）
+# 複数のキーフィールドを逆順指定（「/」を使用）
 cat << FIN > $tmp-master
 a店 1日目 103 62
 b店 1日目 210 113
@@ -426,6 +426,58 @@ diff $tmp-ans $tmp-out
 cat $tmp-tran | ${com} key=1 $tmp-master > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST6-2 error"
+
+###########################################
+#TEST7
+# TEST3を原型として欄数変化への対処試験
+#  最終欄のひとつ前の欄に「検査済」が挿入されていることがある
+# masterの1日目から3日目までのデータに
+# tranの4日目から5日目までのデータをマージする
+# 複数の「@」を使用して並べる
+# 行頭と行末の空白削除と行中の連続空白を単空白に変換する試験も行なう
+
+cat << FIN > $tmp-master
+a店 103 62           1日目
+ b店 210 113  検査済 1日目 
+c店 81 52            1日目
+a店 157 94           2日目
+b店 237 121   検査済 2日目
+c店 76 49            2日目
+a店 62 30            3日目
+b店 150 82    検査済 3日目
+c店 38 21            3日目
+FIN
+
+cat << FIN > $tmp-tran
+a店 131 84       4日目
+b店 198 105      4日目
+c店 81 48 検査済 4日目
+a店 189 111      5日目
+ b店 259 189     5日目
+c店 98 61 検査済 5日目 
+FIN
+
+cat << FIN > $tmp-ans
+a店 103 62 1日目
+b店 210 113 検査済 1日目
+c店 81 52 1日目
+a店 157 94 2日目
+b店 237 121 検査済 2日目
+c店 76 49 2日目
+a店 62 30 3日目
+b店 150 82 検査済 3日目
+c店 38 21 3日目
+a店 131 84 4日目
+b店 198 105 4日目
+c店 81 48 検査済 4日目
+a店 189 111 5日目
+b店 259 189 5日目
+c店 98 61 検査済 5日目
+FIN
+
+${com} key=NF@1 $tmp-master $tmp-tran > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST0 error"
 
 ###########################################
 rm -f $tmp-*

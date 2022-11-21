@@ -8,15 +8,15 @@ kasan : 累計
 
 【書式】
 
-Usage   : kasan [+r] [ref=<ref>] key=<n> <file>
-Version : Sat Sep 19 23:49:25 JST 2020
-Edition : 1
+Usage   : kasan [+r] [ref=<ref>] key=<n> [<file>]
+Version : Mon Nov 15 02:12:05 JST 2022
 
 【説明】
 
 引数のファイルまたは標準入力のテキストデータの指定したフィールドの値を、各行ご
 とに加算して指定したフィールドの次のフィールドに挿入する。累計値を求める場合な
 どに使用する。
+<file>として-を指定するか省略すると標準入力を使用する。
 
 【例1】
 
@@ -166,6 +166,6 @@ $ kasan key=NF-2 data
 
 plus(1)、ratio(1)、sm2(1)、sm4(1)、sm5(1)、ysum(1)
 
-last modified: Fri Jul 15 15:42:38 JST 2022
+last modified: MODIFIED
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights
+Copyright (c) 2012-2014 Universal Shell Programming Laboratory All Rights

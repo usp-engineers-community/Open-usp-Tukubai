@@ -8,18 +8,18 @@ ratio : 構成比算出
 
 【書式】
 
-Usage   : ratio key=<key> <file>
+Usage   : ratio key=<key> [<file>]
 Option  : ref=<ref>             ←参照キーの指定
         : -<s>                  ←小数点以下の精度
         : +<n>h                 ←先頭<n>行をヘッダーとみなす
-Version : Tue Oct 20 15:17:47 JST 2020
-Edition : 1
+Version : Mon Nov 15 02:12:05 JST 2022
 
 【説明】
 
 引数のファイルまたは標準入力のテキストデータに対し、key=で指定したフィールドに
 対して全行の合計に対する各フィールドの値の構成比を算出し、次のフィールドに挿入
 して出力する。
+<file>として-を指定するか省略すると標準入力を使用する。
 
 【例1】
 
@@ -139,6 +139,6 @@ $
 
 kasan(1)、plus(1)、sm2(1)、sm4(1)、sm5(1)、ysum(1)
 
-last modified: Fri Jul 15 15:42:38 JST 2022
+last modified: MODIFIED
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights
+Copyright (c) 2012-2014 Universal Shell Programming Laboratory All Rights

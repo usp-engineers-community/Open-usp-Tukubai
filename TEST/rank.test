@@ -44,8 +44,8 @@ ERROR_CHECK(){
 
 BOMandEOLvariation(){	# BOM無しLF改行ファイル（$1）からBOM付きCRLF改行ファイル（$2）とBOM付きCR改行ファイル（$3）を生成する
 	 [ $# -eq 3 ]; ERROR_CHECK "TESTスクリプト内のBOMandEOLvariation()でファイル指定が不正"
-	awk '{print '\xEF\xBB\xBF' $0}' $1 > $2 # $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
-	awk 'BEGIN {ORS = "\r"}  {print '\xEF\xBB\xBF' $0}' $1 > $3 # $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r\n/g' -e 's/$/\r/' $1 >$2	# $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r/g' $1 | tr '\n' '\r' >$3	# $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
 }
 
 ###########################################
@@ -258,6 +258,41 @@ FIN
 ${com} ref=1 key=3 $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST7 error"
+
+###########################################
+#TEST8
+# 行の欄数変化への対応と行中行端の空白処理の試験
+# TEST5の変形
+# refとkey指定
+#   ref指定については「数値、範囲(/)、列挙(@)、NF、NF-<n>」の組み合わせ
+#   key指定についてはNFを使用
+
+cat << FIN > $tmp-in
+JPN       杉山______ A   東 26
+JPN       崎村______ A B 東 27
+JPN       梶川______     西 27
+JPN       柳本______ C   西 30
+USA D     E          F East 25
+ USA      GEROGE____ G East 29 
+USA       SAM_______   West 29
+USA       TOM_______ H West 35
+FIN
+
+cat << FIN > $tmp-ans
+1 JPN 杉山______ A 東 26
+2 JPN 崎村______ A B 東 27
+1 JPN 梶川______ 西 27
+2 JPN 柳本______ C 西 30
+1 USA D E F East 25
+2 USA GEROGE____ G East 29
+1 USA SAM_______ West 29
+2 USA TOM_______ H West 35
+FIN
+
+${com} ref=1@NF-1 key=NF $tmp-in > $tmp-out
+#${com} ref=NF-3/NF-2@NF-3@NF-2@2/1@1/2@2@1@NF-2/NF-3 key=NF $tmp-in > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST8 error"
 
 ###########################################
 rm -f $tmp-*

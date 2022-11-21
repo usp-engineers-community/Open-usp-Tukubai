@@ -44,8 +44,8 @@ ERROR_CHECK(){
 
 BOMandEOLvariation(){	# BOM無しLF改行ファイル（$1）からBOM付きCRLF改行ファイル（$2）とBOM付きCR改行ファイル（$3）を生成する
 	 [ $# -eq 3 ]; ERROR_CHECK "TESTスクリプト内のBOMandEOLvariation()でファイル指定が不正"
-	awk '{print '\xEF\xBB\xBF' $0}' $1 > $2 # $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
-	awk 'BEGIN {ORS = "\r"}  {print '\xEF\xBB\xBF' $0}' $1 > $3 # $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r\n/g' -e 's/$/\r/' $1 >$2	# $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r/g' $1 | tr '\n' '\r' >$3	# $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
 }
 
 ###########################################
@@ -323,6 +323,32 @@ FIN
 ${com} ref=2 key=4 $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST6 error"
+
+###########################################
+#TEST7
+# 欄数変化に対応する処理の試験
+# TEST1を原型とする
+# 行頭と行末の空白削除と行中の連続空白を単空白に変換する試験も行なう
+
+cat << FIN > $tmp-in
+a店 1日目 103  62
+b店 1日目 処理済 210 113
+ c店 1日目 処理済 81   52 
+d店 1日目 処理済 75   48
+e店 1日目 211 140
+FIN
+
+cat << FIN > $tmp-ans
+a店 1日目 103 15.1 62
+b店 1日目 処理済 210 30.9 113
+c店 1日目 処理済 81 11.9 52
+d店 1日目 処理済 75 11.0 48
+e店 1日目 211 31.0 140
+FIN
+
+cat $tmp-in | ${com} key=NF-1 - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST7-4 error"
 
 ###########################################
 rm -f $tmp-*
