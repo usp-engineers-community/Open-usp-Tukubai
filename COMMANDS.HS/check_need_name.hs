@@ -1,5 +1,6 @@
 #!/usr/bin/env runghc --
 import System.Environment
+import System.Exit
 import System.IO
 import Data.ByteString.Lazy.Char8 as BS hiding (filter,take,concat,map,drop,length)
 
@@ -34,8 +35,8 @@ THE SOFTWARE.
 
 showUsage :: IO ()
 showUsage = do
-                System.IO.hPutStr stderr "Usage    : check_need_name [--blank <string>] <check_file> <name_file>\n"
-                System.IO.hPutStr stderr "Version  : Sat Oct  1 21:43:34 JST 2022\n"
+                System.IO.hPutStr stderr "Usage    : check_need_name [--blank <string>] <check_file> [<name_file>]\n"
+                System.IO.hPutStr stderr "Version  : Fri Dec  2 13:46:27 JST 2022\n"
                 System.IO.hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD)\n"
 
 main :: IO ()
@@ -48,9 +49,12 @@ main = do args <- getArgs
                 ["--blank",str,check,name] -> do cf <- readF check
                                                  nf <- readF name
                                                  doCheck (BS.pack str) cf nf
-                [check,name]  -> do cf <- readF check
-                                   nf <- readF name
-                                   doCheck (BS.pack "_") cf nf
+                [check]       -> do cf <- readF check
+                                    nf <- readF "-"
+                                    doCheck (BS.pack "_") cf nf
+                [check, name] -> do cf <- readF check
+                                    nf <- readF name
+                                    doCheck (BS.pack "_") cf nf
                 _             -> showUsage
 
 type Key = BS.ByteString
@@ -65,7 +69,7 @@ doCheck ngstr cf nf = putWithFinalState outputkeys
 putWithFinalState :: [Key] -> IO ()
 putWithFinalState [] = do return ()
 putWithFinalState ks = do BS.putStr $ BS.unlines ks
-                          error "no value"
+                          exitWith $ ExitFailure 1
 
 check :: Key -> [Key] -> [Key] -> [Key]
 check k vs nvs

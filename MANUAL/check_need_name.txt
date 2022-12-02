@@ -8,9 +8,9 @@ check_need_name : ネームファイルの整合性判定
 
 【書式】
 
-Usage   : check_need_name <check_file> <name_file>
+Usage   : check_need_name <check_file> [<name_file>]
 Option  : --blank <string>
-Version : Mon Dec 20 21:02:03 JST 2021
+Version : Oct 20 17:32:10 JST 2022
 Edition : 1
 
 【説明】
@@ -80,6 +80,6 @@ $
 
 ネーム形式(5)
 
-last modified: Fri Oct 21 08:21:02 JST 2022
+last modified: Fri Dec  2 13:48:00 JST 2022
 Contact us: uecinfo@usp-lab.com
 Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights
