@@ -32,7 +32,7 @@ if test "$1" = ""; # <command-path>($1)がなければ
 	else commandpath="$1" # <command-path>($1)があればtest対象コマンドは指定のディレクトリーにある
 fi
 com="${pythonversion} ${commandpath}/${name}" # python処理系によるtest対象コマンド実行の先頭部
-tmp=/tmp/$$
+tmp=$(mktemp)
 
 ERROR_CHECK(){
 	[ "$(echo ${PIPESTATUS[@]} | tr -d ' 0')" = "" ] && return
@@ -117,7 +117,7 @@ ${com} $tmp-data > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST3-1 error"
 
-${com} 0 4 $tmp-data > $tmp-out
+${com} 0 2 $tmp-data > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST3-2 error"
 
@@ -188,6 +188,61 @@ diff $tmp-ans $tmp-out
 cat $tmp-dataBOMCR | ${com} 1 2 - > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST5-4 error"
+
+###########################################
+# TEST6
+# 入力ファイルの欄数が変化する場合
+
+cat << FIN > $tmp-data2
+001 japan america china france
+002 england canada brazil
+FIN
+
+cat << FIN > $tmp-ans1
+001 JAPAN AMERICA china FRANCE
+002 ENGLAND CANADA BRAZIL
+FIN
+
+# TEST6-1
+
+${com} 2 3 NF $tmp-data2 > $tmp-out2
+diff $tmp-ans1 $tmp-out2
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-3 error"
+
+# TEST6-2
+
+# TEST6-2は「キーの絶対欄位置指定群とNF相対欄位置指定群が交叉している例」を実行し、
+# エラーメッセージが出るように設定されている
+#  key指定のうち絶対欄位置指定の「2」とNF相対欄位置指定の「NF-2/NF」が入力ファイルの2行目で重なるのでエラーとなる
+${com} 2 3 NF-2/NF $tmp-data2 > $tmp-out2 2> /dev/null
+[ $? -ne 0 ] ; ERROR_CHECK "TEST6-2 error"
+
+# TEST6-3
+
+# TEST6-3は「keyの区間指定において絶対欄位置指定とNF相対欄位置指定が混在している状態でフィールド数が変化する例」を実行し、
+# エラーメッセージが出るように設定されている
+#  key指定の区間指定「2/NF」は入力ファイルの欄数変化にともなってキーの欄数も変化するのでエラーとなる
+${com} 2/NF $tmp-data2 > $tmp-out2 2> /dev/null
+[ $? -ne 0 ] ; ERROR_CHECK "TEST6-3 error"
+
+#  全フィールドをキーとする場合はキーの欄数が変化しても受理される
+
+cat << FIN > $tmp-ans2
+001 JAPAN AMERICA CHINA FRANCE
+002 ENGLAND CANADA BRAZIL
+FIN
+
+# TEST6-4
+
+${com} $tmp-data2 > $tmp-out2
+diff $tmp-ans2 $tmp-out2
+[ $? -eq 0 ] ; ERROR_CHECK "TEST6-4 error"
+
+# TEST6-5
+
+${com} 0 2 $tmp-data2 > $tmp-out2
+diff $tmp-ans2 $tmp-out2
+[ $? -eq 0 ] ; ERROR_CHECK "TEST6-5 error"
 
 ###########################################
 rm -f $tmp-*
