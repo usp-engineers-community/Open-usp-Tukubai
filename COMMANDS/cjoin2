@@ -8,7 +8,7 @@
 #
 # The MIT License
 #
-# Copyright (C) 2022 Universal Shell Programming Laboratory
+# Copyright (C) 2023 Universal Shell Programming Laboratory
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -30,9 +30,9 @@
 
 from __future__ import print_function
 
-_usage = "cjoin2 [-d<string>] [+<string>] key=<key> <master> [<tran>]"
-_version = "Fri May 20 21:16:07 JST 2022"
-_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4+, 3.1, 3.2/UTF-8)"
+_usage = "cjoin2 [-d<string>] [+<string>] key=<key> <master> [<tran>]"	# -d + tranは省略可能
+_version = "Thu Jan 19 03:12:32 JST 2023"
+_code = "Open usp Tukubai (LINUX/PYTHON2.4+, 3.6/UTF-8)"
 		# 1: 1st field
 		# 3: 2nd and later fields with separator
 wide_class = ["W","F","A"]	# 全角文字クラス
@@ -86,11 +86,10 @@ def setMasterDummyFixed(master_file,masterkeylist,dummy_string):
 
 	for line in master_file:
 		line=preproc_line(line)
-		#tokens = list(map(NFDtoNFC,line.split(' ')))	# token列に対してNFDtoNFC()を適用する
-		tokens = list(map(NFDtoNFC,line.split()))	# token列に対してNFDtoNFC()を適用する
+		tokens = list(map(NFDtoNFC,line.split(" ")))	# token列に対してNFDtoNFC()を適用する
 		nonkeyvallist=getnonkeyvallist(tokens,masterkeylist)	# tranに連結するための「masterの非キー欄」を得る
 		master_nonkeyval.append(nonkeyvallist)
-		key = " ".join(getkeyvallist(tokens,masterkeylist))
+		key = " ".join(getkeyvallist("master",tokens,masterkeylist))
 		Xkey=toXstr(key)	# keyを拡張文字列に変換する
 		Xmaster.append(Xkey)
 		if len(master_nonkeyval)==1:
@@ -109,11 +108,10 @@ def setMaster(master_file,masterkeylist):
 	max_lengths = []
 	for line in master_file:
 		line=preproc_line(line)
-		#tokens = list(map(NFDtoNFC,line.split(' ')))	# token列に対してNFDtoNFC()を適用する
-		tokens = list(map(NFDtoNFC,line.split()))	# token列に対してNFDtoNFC()を適用する
+		tokens = list(map(NFDtoNFC,line.split(" ")))	# token列に対してNFDtoNFC()を適用する
 		nonkeyvallist=getnonkeyvallist(tokens,masterkeylist)	# tranに連結するための「masterの非キー欄」を得る
 		master_nonkeyval.append(nonkeyvallist)
-		key = " ".join(getkeyvallist(tokens,masterkeylist))
+		key = " ".join(getkeyvallist("master",tokens,masterkeylist))
 		Xkey=toXstr(key)	# keyを拡張文字列に変換する
 		Xmaster.append(Xkey)
 
@@ -136,36 +134,63 @@ def setMaster(master_file,masterkeylist):
 def getpos(base_pos):
 	# NF相対欄位置からの変換:
 	#  nのときはそのまま
-	#  0のときはNF（欄数）に
-	#  -nのときはNF-nに
-	# 0発進とするために-1を加える
+	#  0のときはNF（欄数）
+	#  -nのときはNF-n
+	# 0発信とするために-1を加える
 	if base_pos > 0:
 		pos=base_pos-1
-		if pos > NF-1:	error("フィールド番号が大きすぎます。%s",str(base_pos))
+		if pos >= NF:	error("フィールド番号が大きすぎます。 %s",str(base_pos))
+		return False,pos	# 元からの絶対欄位置
 	else:
 		pos=NF+base_pos-1
-		if pos < 0:	error("フィールド指定で NF-x の x が大きすぎます。 %s","NF-"+str(-base_pos))
+		if pos < 0:	error("フィールド指定でNF-x の x が大きすぎます。 %s","NF-"+str(-base_pos))
+		return True,pos	# NF相対欄位置からの絶対化欄位置
 	return pos
 
 # NF相対欄位置リスト（rel_keylist）からNF（欄数）に応じた実際の欄位置リスト（keylist）を作成する
-def make_keylist(rel_keylist):
+def make_keylist(rel_keylist,abs_rel_mixed_range):
+	# NF相対欄位置リスト（rel_keylist）とは「NFやNF-xのNF相対欄位置指定を含む欄位置リスト」を意味しリストには絶対欄位置も含む
 	# rel_keylistの要素には区間をあらわす整数tupleの(start,end)と、単一欄をあらわす整数がある
+	# rel_keylistを構成するそれぞれの整数は絶対欄位置指定とNF相対欄位置指定の両方がありうる
 	if rel_keylist==[None]:	# 全欄指定
-		return list(range(0,NF))
-	keylist=[]
+		return list(range(0,NF)),False
+	rel_list=[]	# key指定順に並べたNF相対からの絶対化欄位置リスト
+	abs_list=[]	# key指定順に並べた絶対欄位置リスト
+	abs_rel_cross=False
+	range_list=[]
 	for fieldpos in rel_keylist:
-		if type(fieldpos)==int:	keylist.append(getpos(fieldpos))	# 単一欄
-		else:	# (a/b)の区間
-			start=getpos(fieldpos[0])
-			end=getpos(fieldpos[1])
+		if type(fieldpos)==int:	# 単一欄
+			rel,pos=getpos(fieldpos)
+			if rel:
+				rel_list.append(pos)
+			else:
+				abs_list.append(pos)
+		else:	# (a/b)の区間指定
+			rel1,start=getpos(fieldpos[0])
+			rel2,end=getpos(fieldpos[1])
 			if start <= end:	# 正順
-				keylist+=range(start,end+1)
+				range_list=range(start,end+1)
 			else:	# 逆順
-				keylist+=range(start,end-1,-1)
-	for key in keylist:
-		if key < 0 or key >= NF:
-			error("キーの位置が行のフィールド範囲を逸脱しています。")
-	return list(set(keylist))	# 欄位置は0発進
+				range_list=range(start,end-1,-1)
+			if rel1 or rel2:	# 区間の端にNF相対襴位置指定があった
+				rel_list+=range_list	# 片端のみがNF相対襴位置指定のときも便宜的にrel_listに加える
+			else:
+				abs_list+=range_list
+	if abs_rel_mixed_range:	pass	# 絶対欄位置指定とNF相対欄位置指定による区間指定があるときは交叉検査をしない
+	elif len(abs_list)*len(rel_list)==0:	pass	# 絶対欄位置指定群/NF相対欄位置指定群いずれかがないときは交叉検査をしない
+	else:	# 両群ともに存在するときは交叉検査をする
+		min_abs=min(abs_list)
+		max_abs=max(abs_list)
+		min_rel=min(rel_list)
+		max_rel=max(rel_list)
+		if max_abs < min_rel or max_rel < min_abs:	pass	# 両群が交叉しない
+		else:	# 両群が交叉する
+			abs_rel_cross=True
+	# 返値のリストを整理する
+	abs_and_rellist=abs_list+rel_list
+	# 重複を解消しkey指定の順序はabs_list→rel_listの順としabs_list内とrel_list内の順序もそれぞれ保つ
+	return_list=sorted(set(abs_and_rellist),key=abs_and_rellist.index)
+	return return_list,abs_rel_cross	# 欄位置は0発進 集合化によってリストの重複を解消しkey指定の順序は保つ
 
 # 欄番号文字列をNF相対形式で整数化する
 def getFieldNum(str,str1,str2):
@@ -177,11 +202,9 @@ def getFieldNum(str,str1,str2):
 	#  単独のNFのときは整数の0
 	#  NF-nのときは整数の-n
 	# 実際の欄番号にする際には行ごとに得たNF（欄数）を使用して計算する
-	
 	if str1:	# n
 		fieldnum=int(str1)
 		if fieldnum==0:	# 欄番号0は全欄指定を意味する
-			#error("フィールド指定に0があります。")
 			fieldnum=None
 	else:	# NF-n または NF
 		if str2:	# NF-n
@@ -197,7 +220,9 @@ def getFieldList(field_param):
 	mobj = re.match(_keypat,field_param)	# 構文検査のために実行する
 	if not mobj:	# フィールド指定の形式が不正
 		error("フィールド指定の形式が不正です。 %s",field_param)
+	field_param=field_param.replace("NF-0","NF")	# NF-0はNFと書き替える
 	fieldlist=[]
+	abs_rel_mixed_range=False
 	concatlist=field_param.split("@")	# @で分割する
 	for fieldnum in concatlist:
 		mobj = re.match(_keypatNF,fieldnum)
@@ -205,10 +230,55 @@ def getFieldList(field_param):
 		if mobj.group('m1'):	# a/bの形式で区間指定をしている
 			end=getFieldNum(fieldnum,mobj.group('m11'),mobj.group('m13'))	# 後端部を得る
 			fieldlist.append((start,end))	# 区間で確定
+			# 絶対欄位置指定とNF相対欄位置指定が混在するときはmarkする
+			if (start>0 and end <=0) or (start<=0 and end >0):
+				abs_rel_mixed_range=True
 		else:
 			fieldlist.append(start)	# 前端部単独で確定
-	if None in fieldlist:	return [None]	# 欄位置にひとつでも0を指定するものがあるときは全欄指定とする
-	return fieldlist
+	return fieldlist,abs_rel_mixed_range
+
+#
+#	コマンドのフィールド指定パラメータから処理対象のNF相対欄位置リストを作成する
+#
+def getTargetFields(param):
+	if param=="":
+		return [None],False	# フィールド指定パラメータリストが空のときは全欄指定とする
+	fieldlist,abs_rel_mixed_range=getFieldList(param)
+	if None in fieldlist:
+		return [None],False	# 欄位置にひとつでも0を指定するものがあるときは全欄指定とする
+	# 集合化によってリストの重複を解消する（絶対欄位置/NF相対欄位置それぞれに重複解消される）
+	fieldlist=sorted(set(fieldlist), key=fieldlist.index)	# 元のリスト（set）における出現順を維持する
+	return fieldlist,abs_rel_mixed_range
+
+#
+# 行の欄数検査
+#   先頭行ではkeyの区間指定で絶対欄位置指定とNF相対欄位置指定が混在しているか検査する
+#   先頭行以外では
+#     絶対欄位置リストとNF相対欄位置絶対化リスト（区間の端がNF相対襴位置だったものも含む）の間に重複があるか検査する
+#
+def check_num_fields_variation(fields):
+	global NF,key_list,abs_rel_cross_first,abs_rel_cross,abs_rel_mixed_range
+	# abs_rel_cross キーの絶対欄位置によるリストとNF相対欄位置からの絶対化欄位置リストの間に重複があればTrue
+	#               NF=5のときにキー指定が「1/4@NF-3/NF」となっているときなどにTrueとなる
+	# abs_rel_cross_first=False 先頭行においてabs_rel_crossがTrueであればTrue
+	start=False
+	nf=len(fields)
+	if NF==-1:	start=True
+	if nf != NF:	# 欄数が変化したかまたは先頭行なら
+		NF=nf	# NFを更新
+		# 行の欄数NFを見てNF相対欄位置リストから(絶対)欄位置リストを決定する
+		key_list,abs_rel_cross=make_keylist(rel_keylist,abs_rel_mixed_range)
+		if start:	# 先頭行なら
+			if abs_rel_cross:	abs_rel_cross_first=True	# 先頭行において区間指定でabs_rel混在だったらmarkしておく
+			else:	abs_rel_cross_first=False
+		else:	# 先頭行以外で欄数変化があったら
+			if rel_keylist==[None]:	# 全欄指定なら
+				error("全フィールドをkeyとする指定においてフィールド数の変化がありました。")
+			if abs_rel_mixed_range:	# 区間指定においてabs_rel混在だったら
+				error("keyの区間指定において絶対欄位置指定とNF相対欄位置指定が混在している状態でフィールド数が変化しました。")
+			if abs_rel_cross_first or abs_rel_cross:	# （区間指定においてabs_rel非混在で）絶対欄位置指定とNF相対欄位置指定に交叉が生じたら
+				error("フィールド数変化に際してkeyの絶対欄位置指定とNF相対欄位置指定に交叉がありました。")
+	return
 
 #
 # tranファイルにおけるキーの欄番号リストからmasterファイルにおける対応欄番号リストを得る
@@ -223,8 +293,10 @@ def getmasterkeylist(keylist):
 #
 #	与えられた文字列のリストから指定のkeylistにしたがって欄を抽出する
 #
-def getkeyvallist(tokens,keylist):
+def getkeyvallist(file,tokens,keylist):
 	keyvallist=[]
+	if len(tokens) <= max(keylist):	# 行の欄数が不足している
+		error("%sの行のフィールド数がキー指定に比べて足りません。行=%s",file," ".join(tokens))
 	for fn in keylist:
 		keyvallist.append(tokens[fn])
 	return keyvallist
@@ -264,6 +336,10 @@ def utf2ucs(instr):
 	if len(intlist)>0:	outstr+= bytes(intlist).decode("utf_8")
 	return outstr
 
+# 不要な空白の削除関数
+def rm_sp(line):
+	return re.sub(r' {2,}',' ',re.sub(r'^ +| +$','',line))	# 行頭と行末の空白を削除し連続空白を単空白にする
+
 # 改行符号（\r\n）の削除関数
 def rm_eol(line):
 	return line.rstrip("\r\n")	# 改行記号としてCRLF('\r\n')/CR('\r')/LF('\n')のすべてに対応する
@@ -285,6 +361,7 @@ def rm_BOM(line):
 def preproc_line(line):
 	line=rm_eol(line)	# 行末の改行記号を削除する
 	line=rm_BOM(line)	# ファイル先頭行の行頭にBOMがあったらこれを削除する
+	line=rm_sp(line)	# 行頭と行末の空白を削除し連続空白を単空白にする
 	return line
 
 # Python3か判定する
@@ -606,6 +683,8 @@ def Xin_list(str,strlist):
 # メイン関数
 if __name__ == '__main__':
 
+	global NF,key_list,abs_rel_cross_first,abs_rel_cross
+
 	if len(sys.argv) < 3 :		usage()	# 最小パラメータ構成は「cjoin2 key=<n> <master>」
 	if sys.argv[1] == '--help' :	usage()
 	if sys.argv[1] == '--version':	usage()
@@ -659,17 +738,20 @@ if __name__ == '__main__':
 	if master==tran:
 		error("masterファイルとtranファイルが同じファイルです。")
 
-	rel_keylist = getFieldList(num_str)	# パラメータからNF相対欄位置リストを作成する
+	rel_keylist,abs_rel_mixed_range = getTargetFields(num_str)	# パラメータからNF相対欄位置リストを作成する
 
 	# メイン処理：トランザクションとマスタのマッチング
+	NF=-1
 	firstline=True
 	for line in open_file(tran):
-		# 指定フィールドのNF相対欄位置リストをNF（欄数）に応じた絶対欄位置リストに変換する
-		NF=len(line.split())	# NFを得る
-		keylist=make_keylist(rel_keylist)
+		line=preproc_line(line)
+		if NF==-1:	firstline=True	# 先頭行ならpreproc_line()でFalseにされたfirstlineを復旧する
+		inputfields=line.split(" ")
+
+		check_num_fields_variation(inputfields)	# 先頭行または欄数変化のあるときはkey指定の検査をする
 
 		if firstline:	# 先頭行ならmasterファイルの内容をとりこむ
-			masterkeylist=getmasterkeylist(keylist)	# tranファイルにおけるキーの欄番号リストからmasterファイルにおける対応欄番号リストを得る
+			masterkeylist=getmasterkeylist(sorted(key_list))	# tranファイルにおけるキーの欄番号リストからmasterファイルにおける対応欄番号リストを得る
 			# マスタファイルの内容を移す
 			if dummy_string == None:
 				master_nonkeyval,Xmaster,dummy = setMaster(open_file(master),masterkeylist)	# master_nonkeyvalはmasterファイルの非キー部 Xmasterはmasterファイルのキー部で拡張文字列のリスト dummyは可変長
@@ -677,10 +759,10 @@ if __name__ == '__main__':
 				master_nonkeyval,Xmaster,dummy = setMasterDummyFixed(open_file(master),masterkeylist,dummy_string)	# master_nonkeyvalはmasterファイルの非キー部 Xmasterはmasterファイルのキー部で拡張文字列のリスト dummyは固定長
 
 		line=preproc_line(line)
-		tokens = list(map(NFDtoNFC,line.split()))	# token列に対してNFDtoNFC()を適用する
+		tokens = list(map(NFDtoNFC,inputfields))	# token列に対してNFDtoNFC()を適用する
 
-		keyvallist=getkeyvallist(tokens,keylist)	# tranファイルからキー値のリストを得る
-		nonkeyvallist=getnonkeyvallist(tokens,keylist)	# tranファイルから非キー値のリストを得る
+		keyvallist=getkeyvallist("tran",tokens,sorted(key_list))	# tranファイルからキー値のリストを得る
+		nonkeyvallist=getnonkeyvallist(tokens,sorted(key_list))	# tranファイルから非キー値のリストを得る
 		key = " ".join(keyvallist)
 
 		Xkey=toXstr(key)	# keyを拡張文字列に変換する
@@ -691,3 +773,5 @@ if __name__ == '__main__':
 		else:
 			# 「キー部 dummy tranの非キー部」の並びで出力する
 			print(" ".join(keyvallist+dummy+nonkeyvallist).rstrip(' '))
+
+	sys.exit(0)
