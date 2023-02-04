@@ -11,7 +11,7 @@ Tukubaiオンラインコマンドマニュアル
 Usage   : 1bai [-r] [<f1> <f2> ...] [<file>]
           1bai -d[r] <string>
           1bai -[r]d <string>
-Version : Sat Aug 20 22:29:15 JST 2022
+Version : Thu Jan 19 03:12:32 JST 2023
 
 【説明】
 
@@ -121,6 +121,6 @@ b 98.45 100
 命名の由来
 対象の数字の文字列に１倍を掛けることにより０を取り除くため、1bai と命名されています。
 
-last modified: Sat Aug 20 22:29:15 JST 2022
+last modified: Sat Feb  4 18:01:52 JST 2023
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights
+Copyright (c) 2012-2023 Universal Shell Programming Laboratory All Rights

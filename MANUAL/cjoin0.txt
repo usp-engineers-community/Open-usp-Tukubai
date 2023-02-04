@@ -10,7 +10,7 @@ cjoin0 : マスタファイルにキーフィールドが一致するトラン�
 【書式】
 
 Usage   : cjoin0 [+ng[<fd>]] key=<n> <master> [<tran>]
-Version : Fri May 20 21:16:07 JST 2022
+Version : Thu Jan 19 03:12:32 JST 2023
 Edition : 1
 
 【説明】
@@ -89,6 +89,6 @@ $ cat master | cjoin0 +ng key=1 - tran > ok 2> ng
 cjoin0(1)、cjoin1(1)、cjoin2(1)、join1(1)、join2(1)、loopj(1)、loopx(1)、up3(1)
 、マスタファイル(5)、トランザクションファイル(5)
 
-last modified: Fri Jul 15 16:37:23 JST 2022
+last modified: Sat Feb  4 18:01:52 JST 2023
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights
+Copyright (c) 2012-2023 Universal Shell Programming Laboratory All Rights

@@ -10,7 +10,7 @@ cap : 半角英数の小文字を大文字に変換する
 
 Usage   : cap [<f1> <f2> ..] <file>
           cap -d <string>
-Version : Thu Apr 21 00:58:46 JST 2022
+Version : Thu Jan 19 03:12:32 JST 2023
 Edition : 1
 
 【説明】
@@ -45,6 +45,6 @@ $ cap -d japan
 JAPAN
 
 
-last modified: Thu Aug 11 10:19:55 JST 2022
+last modified: Sat Feb  4 18:01:52 JST 2023
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights
+Copyright (c) 2012-2023 Universal Shell Programming Laboratory All Rights

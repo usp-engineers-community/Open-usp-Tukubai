@@ -139,6 +139,6 @@ $
 
 kasan(1)、plus(1)、sm2(1)、sm4(1)、sm5(1)、ysum(1)
 
-last modified: MODIFIED
+last modified: Sat Feb  4 18:01:52 JST 2023
 Contact us: uecinfo@usp-lab.com
 Copyright (c) 2012-2014 Universal Shell Programming Laboratory All Rights
