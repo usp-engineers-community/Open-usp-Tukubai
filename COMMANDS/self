@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 #coding: utf-8
 #
-# self select field (Open usp Tukubai)
+# self: select field (Open usp Tukubai)
 # 
 # designed by Nobuaki Tounaka
 # written  by Masatomo Togashi
 # 
 # The MIT License
 # 
-# Copyright (C) 2022 Universal Shell Programming Laboratory
+# Copyright (C) 2023 Universal Shell Programming Laboratory
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -32,11 +32,11 @@ from __future__ import print_function
 import re
 import sys
 import codecs
-import unicodedata	# unicode関連処理用
+import unicodedata # unicode関連処理用
 
 _usage = [ "self <f1> <f2> ... [<file>]", "self -d <f1> <f2> ... <string>" ]
-_version = "Oct 20 17:32:09 JST 2022"
-_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4+/UTF-8)"
+_version = "Mon Feb 20 01:49:00 JST 2023"
+_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.6, 2.7, 3.6/UTF-8)"
 
 _keypat = r'(?P<ndot>(\d+|NF(-\d+)?)(/(\d+|NF(-\d+)?))?)|(?P<dot>(\d+|NF(-\d+)?)(\.\d+(\.\d+)?)?)$'	# a a/b または a a.b a.b.c
 _keypatNF = r'(?P<m0>(?P<m01>\d+)|(?P<m02>NF(?P<m03>-\d+)?))/(?P<m1>(?P<m11>\d+)|(?P<m12>NF(?P<m13>-\d+)?))$'	# a a/b
@@ -147,7 +147,9 @@ class Params:
 			# 単一欄指定で部分文字列指定なし [pos]
 			# 単一欄指定で部分文字列指定あり [pos,start,length]	（lengthはNoneの場合もある）
 			# 区間指定(部分文字列指定はない) [from,to]
+		global rel_keylist,abs_rel_mixed_range
 		self.fieldlist = []
+		field_param=field_param.replace("NF-0","NF")	# NF-0はNFと書き替える
 		# self.fieldlistの要素の形式
 			# 部分文字列指定なし [pos]
 			# 部分文字列指定あり [pos,start,length]	（lengthはNoneの場合もある）
@@ -162,8 +164,12 @@ class Params:
 				frm=self.getFieldNum(fieldnum,mobj.group('m01'),mobj.group('m03'))	# 前端部を得る
 				to=self.getFieldNum(fieldnum,mobj.group('m11'),mobj.group('m13'))	# 後端部を得る
 				self.fieldlist.append([frm,to])	# 区間で確定
+				# 絶対欄位置指定とNF相対欄位置指定が混在するときはmarkする
+				if (frm>0 and to <=0) or (frm<=0 and to >0):
+					abs_rel_mixed_range=True
 			else:	# 単独指定「a a.b a.b.c」
 				mobj = re.match(_keypatNF_dot,fieldnum)
+				if not mobj:	error("フィールド指定の形式が不正です。 %s",fieldnum)
 				field=self.getFieldNum(fieldnum,mobj.group('m01'),mobj.group('m03'))	# 欄番号を得る
 				if mobj.group('dot1'):
 					dot1=int(mobj.group('dot1'))
@@ -172,25 +178,6 @@ class Params:
 					self.fieldlist.append([field,dot1,dot2])	# 部分文字列指定がある
 				else:
 					self.fieldlist.append([field])	# 部分文字列指定はない
-
-	# 欄番号文字列をNF相対形式で整数化する
-	def getFieldNumOld(self,str,str1,str2):
-		# n または NF または NF-x の形式の欄番号をNF相対形式の整数で確定する
-		# 正規表現で「\d+|NF(-\d+)?」にmatchする全体をstrが、「\d+」でmatchする部分をstr1が、「(-\d+)?」でmatchする部分をstr2が保持している
-		# NF相対形式の整数化:
-		#  nのときは整数のn
-		#  NFのときは整数の0
-		#  NF-nのときは整数の-n
-		# 実際の欄番号にする際には行ごとに得たNF（欄数）を使用して計算する
-		if str1:	# n
-			fieldnum=int(str1)
-			if fieldnum==0:	fieldnum=None	# NF相対なので「0」を指定されたらNoneとしgetpos()でNoneを0に変換する
-		else:	# NF-n または NF
-			if str2:	# NF-n
-				fieldnum=int(str2)
-			else:	# NF
-				fieldnum=0
-		return fieldnum
 
 	def getFieldNum(self,str,str1,str2):
 		# n または NF または NF-x の形式の欄番号をNF相対形式の整数で確定する
@@ -221,15 +208,12 @@ class Operator:
 		self.out_sequence+=params.fieldlist	# listであるparams.fieldlistを連結する
 
 	def output(self,line):
-		global NF,keylist
+		global	NF,key_list,abs_rel_cross_first,abs_rel_cross,abs_rel_mixed_range
 		tokens = [line] + line.split(" ")
-		nf=len(tokens)-1
-		if nf != NF:	# 欄数が変化したかまたは先頭行なら
-			NF=nf
-			keylist=self.make_keylist(self.out_sequence)	# NF相対欄位置からNFの値を使って実際の欄位置に変換する
+		self.check_num_fields_variation(tokens[1:],self.out_sequence)	# 先頭行または欄数変化のあるときはkey指定の検査をする
 		# 0: 一行全体 1以降: 各フィールド
 		outlist=[]
-		for f in keylist:
+		for f in key_list:
 			if len(f)==1:	# 部分文字列指定なし
 				outlist+=[self.cutWord(tokens,f)]
 			else:	# 部分文字列指定あり
@@ -240,6 +224,34 @@ class Operator:
 				else:	# 各欄指定
 					outlist.append(self.cutWord(tokens,f))
 		print(" ".join(outlist))
+
+	#
+	# 行の欄数検査
+	#   先頭行ではkeyの区間指定で絶対欄位置指定とNF相対欄位置指定が混在しているか検査する
+	#   先頭行以外では
+	#     絶対欄位置リストとNF相対欄位置絶対化リスト（区間の端がNF相対襴位置だったものも含む）の間に重複があるか検査する
+	#
+	def check_num_fields_variation(self,fields,rel_keylist):
+		global	NF,key_list,abs_rel_cross_first,abs_rel_cross,abs_rel_mixed_range
+		# abs_rel_cross キーの絶対欄位置によるリストとNF相対欄位置からの絶対化欄位置リストの間に重複があればTrue
+		#               NF=5のときにキー指定が「1/4@NF-3/NF」となっているときなどにTrueとなる
+		# abs_rel_cross_first=False 先頭行においてabs_rel_crossがTrueであればTrue
+		start=False
+		nf=len(fields)
+		if NF==-1:	start=True
+		if nf != NF:	# 欄数が変化したかまたは先頭行なら
+			NF=nf	# NFを更新
+			# 行の欄数NFを見てNF相対欄位置リストから(絶対)欄位置リストを決定する
+			key_list,abs_rel_cross=self.make_keylist(rel_keylist,abs_rel_mixed_range)
+			if start:	# 先頭行なら
+				if abs_rel_cross:	abs_rel_cross_first=True	# 先頭行において区間指定でabs_rel混在だったらmarkしておく
+				else:	abs_rel_cross_first=False
+			else:	# 先頭行以外で欄数変化があったら
+				if abs_rel_mixed_range:	# 区間指定においてabs_rel混在だったら
+					error("keyの区間指定において絶対欄位置指定とNF相対欄位置指定が混在している状態でフィールド数が変化しました。")
+				if abs_rel_cross_first or abs_rel_cross:	# （区間指定においてabs_rel非混在で）絶対欄位置指定とNF相対欄位置指定に交叉が生じたら
+					error("フィールド数変化に際してkeyの絶対欄位置指定とNF相対欄位置指定に交叉がありました。")
+		return
 
 	def cutWord(self,tokens,param):
 		if len(param)==1:	# 部分文字列指定はない
@@ -311,7 +323,7 @@ class Operator:
 		else:	return 2	# 全角なら2
 
 	# NF相対欄位置リスト（rel_keylist）からNF（欄数）に応じた実際の欄位置リスト（keylist）を作成する
-	def make_keylist(self,rel_keylist):
+	def make_keylist(self,rel_keylist,abs_rel_mixed_range):
 		# rel_keylistはNF相対襴位置でgetpos()で実際の欄位置に変換する
 		# rel_keylistの要素は
 			# 単一欄指定で部分文字列指定なし [pos]
@@ -320,31 +332,58 @@ class Operator:
 		# keylistの要素は
 			# 部分文字列指定なし pos	返値とする段階では[pos]
 			# 部分文字列指定あり (pos,start,length)	（lengthはNoneの場合もある）	返値とする段階では[pos,start,length]
-		keylist=[]
+		rel_list=[]	# key指定順に並べたNF相対からの絶対化欄位置リスト
+		abs_list=[]	# key指定順に並べた絶対欄位置リスト
+		abs_rel_cross=False
+		range_list=[]
+		abs_and_rellist=[]
 		for fieldpos in rel_keylist:
 			if len(fieldpos)==1:	# 部分文字列指定がない単一欄
-				pos=self.getpos(fieldpos[0])
-				keylist.append(pos)
+				rel,pos=self.getpos(fieldpos[0])
+				if rel:
+					rel_list.append(pos)
+				else:
+					abs_list.append(pos)
+				abs_and_rellist.append(pos)
 			elif len(fieldpos)==2:	# (a/b)の区間
-				frm=self.getpos(fieldpos[0])
-				to=self.getpos(fieldpos[1])
+				rel1,frm=self.getpos(fieldpos[0])
+				rel2,to=self.getpos(fieldpos[1])
 				if frm <= to:	# 正順
 					for i in range(frm,to+1):
-						keylist.append(i)	# 部分文字列指定がない欄指定
+						range_list.append(i)	# 部分文字列指定がない欄指定
 				else:	# 逆順
-					for i in range(to,frm+1):
-						keylist.append(i)	# 部分文字列指定がない欄指定
+					range_list=range(frm,to-1,-1)	# 部分文字列指定がない欄指定
+				if rel1 or rel2:	# 区間の端にNF相対襴位置指定があった
+					rel_list+=range_list	# 片端のみがNF相対襴位置指定のときも便宜的にrel_listに加える
+				else:
+					abs_list+=range_list
+				abs_and_rellist+=range_list
 			else:	# 部分文字列指定がある単一欄
-				pos=self.getpos(fieldpos[0])
-				keylist.append((pos,fieldpos[1],fieldpos[2]))
-		keylist=sorted(set(keylist), key=keylist.index)	 # 集合化によってリストの重複を解消し元のリストにおける出現位置をキーとしてsort
+				rel,pos=self.getpos(fieldpos[0])
+				if rel:
+					rel_list.append(pos)
+				else:
+					abs_list.append(pos)
+				abs_and_rellist.append((pos,fieldpos[1],fieldpos[2]))
+		if abs_rel_mixed_range:	pass	# 絶対欄位置指定とNF相対欄位置指定による区間指定があるときは交叉検査をしない
+		elif len(abs_list)*len(rel_list)==0:	pass	# 絶対欄位置指定群/NF相対欄位置指定群いずれかがないときは交叉検査をしない
+		else:	# 両群ともに存在するときは交叉検査をする
+			min_abs=min(abs_list)
+			max_abs=max(abs_list)
+			min_rel=min(rel_list)
+			max_rel=max(rel_list)
+			if max_abs < min_rel or max_rel < min_abs:	pass	# 両群が交叉しない
+			else:	# 両群が交叉する
+				abs_rel_cross=True
+		# 重複を解消する 出力するkey位置の順序はコマンドパラメータにおける指定出現順を保つ
+		return_list=sorted(set(abs_and_rellist),key=abs_and_rellist.index)
 		# 返値を「listのlist」にする
-		for i,key in enumerate(keylist):
+		for i,key in enumerate(return_list):
 			if type(key)==int:
-				keylist[i]=[key]	# 部分文字列指定がない欄はintから要素数1のlistに
+				return_list[i]=[key]	# 部分文字列指定がない欄はintから要素数1のlistに
 			else:
-				keylist[i]=list(key)	# 部分文字列指定がある欄はtupleから要素数3のlistに
-		return keylist
+				return_list[i]=list(key)	# 部分文字列指定がある欄はtupleから要素数3のlistに
+		return return_list,abs_rel_cross
 
 	# NF相対欄位置からNF（欄数）に応じた1発進の欄位置に変換する（0は行全体を指す）
 	def getpos(self,base_pos):
@@ -353,14 +392,16 @@ class Operator:
 		#  0のときはNF（欄数）に
 		#  -nのときはNF-nに
 		# 0は行全体を指し1以上は各欄を指す
-		if base_pos==None:	return 0
+		if base_pos==None:
+			return False,0
 		if base_pos > 0:
 			pos=base_pos
 			if pos > NF:	error("フィールド番号が大きすぎます。 %s",str(base_pos))
+			return False,pos	# 元からの絶対欄位置
 		else:
 			pos=NF+base_pos
 			if pos < 0:	error("フィールド指定でNF-x の x が大きすぎます。 %s","NF-"+str(-base_pos))
-		return pos
+			return True,pos	# NF相対欄位置からの絶対化欄位置
 
 def directMode(argv):
 	global NF
@@ -573,6 +614,9 @@ def utf2ucs(instr):
 ###########################################
 # メイン関数
 if __name__ == '__main__':
+
+	global	NF,key_list,abs_rel_cross_first,abs_rel_cross,abs_rel_mixed_range
+	abs_rel_mixed_range=False
 
 	# 構文表示
 	if len(sys.argv) < 2: usage()

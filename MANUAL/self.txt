@@ -10,7 +10,7 @@ self : 指定したフィールドのデータ取り出し
 
 Usage   : self <f1> <f2> ... [<file>]
         : self -d <f1> <f2> ... <string>
-Version : Sat Aug 20 22:29:15 JST 2022
+Version : Mon Feb 20 01:49:00 JST 2023
 
 【説明】
 
@@ -159,6 +159,6 @@ $
 
 delf(1)
 
-last modified: Fri Oct 21 08:21:02 JST 2022
+last modified: Mon Feb 20 01:48:41 JST 2023
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights
+Copyright (c) 2012-2023 Universal Shell Programming Laboratory All Rights

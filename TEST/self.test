@@ -186,23 +186,39 @@ diff $tmp-ans $tmp-out
 
 ############################################
 #TEST8
-# NF should be static on the business command.
-# This test is obsolete.
-#
-#cat << FIN > $tmp-in
-#   a    b  
-#c   d e
-#FIN
-#
-#cat << FIN > $tmp-ans
-#a b
-#c d e
-#FIN
-#
-#${com} 1/NF $tmp-in > $tmp-out
-#diff $tmp-ans $tmp-out
-#[ $? -eq 0 ] ; ERROR_CHECK "TEST8 error"
-#
+# 不要な空白の除去
+
+cat << FIN > $tmp-in1
+   a    b   c   
+ d  e  f
+FIN
+
+cat << FIN > $tmp-ans1
+a b c
+d e f
+FIN
+
+${com} 1/NF $tmp-in1 > $tmp-out
+diff $tmp-ans1 $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST8-1 error"
+
+# 全角空白は区切り文字とはしない
+# $tmp-in2の第1行は「   全角空白a    b全角空白  c全角空白」
+
+cat << FIN > $tmp-in2
+   　a    b　  c　  
+d   e f
+FIN
+
+cat << FIN > $tmp-ans2
+　a b　 c　
+d e f
+FIN
+
+${com} 1/NF $tmp-in2 > $tmp-out
+diff $tmp-ans2 $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST8-2 error"
+
 ###########################################
 #TEST9
 
@@ -229,7 +245,7 @@ diff $tmp-ans $tmp-out
 #TEST11
 # 「Error[self] : 部分文字列の開始位置が全角文字の内部になります。」でerrorとなる
 
-# TEST11はエラーで終了するように設定されている
+# ${name}のTEST11はエラーで終了するように設定されている
 
 echo ＵＳＰ研究所 | ${com} 1.2.4 > $tmp-out 2> /dev/null
 [ $? -eq 1 ] ; ERROR_CHECK "TEST11 error"
@@ -238,7 +254,7 @@ echo ＵＳＰ研究所 | ${com} 1.2.4 > $tmp-out 2> /dev/null
 #TEST12
 # 「Error[self] : 部分文字列の開始位置が後ろすぎます。」でerrorとなる
 
-# TEST12はエラーで終了するように設定されている
+# ${name}のTEST12はエラーで終了するように設定されている
 
 echo ＵＳＰ研究所 | ${com} 1.20 > $tmp-out 2> /dev/null
 [ $? -eq 1 ] ; ERROR_CHECK "TEST12 error"
@@ -247,7 +263,7 @@ echo ＵＳＰ研究所 | ${com} 1.20 > $tmp-out 2> /dev/null
 #TEST13
 # 「Error[self] : 部分文字列の開始位置が全角文字の内部になります。」でerrorとなる
 
-# TEST13はエラーで終了するように設定されている
+# ${name}のTEST13はエラーで終了するように設定されている
 
 echo ＵＳＰ研究所 | ${com} 1.2 > $tmp-out 2> /dev/null
 [ $? -eq 1 ] ; ERROR_CHECK "TEST13 error"
@@ -256,7 +272,7 @@ echo ＵＳＰ研究所 | ${com} 1.2 > $tmp-out 2> /dev/null
 #TEST14
 # 「Error[self] : 部分文字列の開始位置が後ろすぎます。」でerrorとなる
 
-# TEST14はエラーで終了するように設定されている
+# ${name}のTEST14はエラーで終了するように設定されている
 
 echo 123 | ${com} 1.4 > $tmp-out 2> /dev/null
 [ $? -eq 1 ] ; ERROR_CHECK "TEST14 error"
@@ -311,7 +327,7 @@ diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST17-2 error"
 
 ###########################################
-#TEST18 全角をデリミタにしない
+#TEST18 全角空白をデリミタにしない
 
 cat << FIN > $tmp-in
 1　2
@@ -440,6 +456,9 @@ diff $tmp-ans $tmp-out
 ###########################################
 #TEST22
 # TEST3を原型とする
+# キー指定処理の検査
+#  欄数が変化する場合の試験
+# キーフィールドの列挙指定と範囲指定が欄数変化によって受理できなくなる場合の検査
 
 cat << FIN > $tmp-in
 0000000 浜地______ 50 F 91 59 20 76 54
@@ -457,17 +476,55 @@ cat << FIN > $tmp-ans
 50 崎村 005
 FIN
 
-# コマンドの説明
+# TEST22-1
 # フィールド指定の「NF-6@NF-6@NF-7.1.4 NF-8.5.3@3@1.5.3」はNF=9なので「3と3と2.1.4と1.5.3と3と1.5.3」となり
 # 重複を解消して整理すると「3と2.1.4と1.5.3」となる
 
 ${com} NF-6@NF-6@NF-7.1.4 NF-8.5.3@3@1.5.3 $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST22 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST22-1 error"
+
+# TEST22-2
+# フィールド指定の「NF-6@NF-6@NF-7.1.4 NF-8.5.3@3@1.5.3」は
+# 先頭行のNF=9でNF相対欄位置指定群は「NF-6とNF-7.1.4とNF-8.5.3」から「3と3と2.1.4と1.5.3」となり
+# 絶対欄位置指定群の「3と1.5.3」と交叉しているのでそのうしろの行における欄数変化は受理されない
+# したがって第3行の欄数変化に際してはエラーとなる
+
+# ${name}のTEST22-2はエラーで終了するように設定されている
+
+cat << FIN > $tmp-in
+0000000 浜地______ 50 F 91 59 20 76 54
+0000001 鈴田______ 50 F 46 39 8  5  21
+0000003 江頭______ 26 F 30 50 71 36 30 X
+0000004 白土______ 40 M 58 71 20 10 6
+0000005 崎村______ 50 F 82 79 16 21 80
+FIN
+
+${com} NF-6@NF-6@NF-7.1.4 NF-8.5.3@3@1.5.3 $tmp-in > $tmp-out 2> /dev/null
+[ $? -ne 0 ] ; ERROR_CHECK "TEST22-2 error"
+
+# TEST22-3
+# キー指定「1/NF-6」は絶対欄位置指定とNF相対欄位置指定が混在した区間指定なので
+# 欄数変化に際してはエラーとなる
+
+# ${name}のTEST22-3はエラーで終了するように設定されている
+
+${com} 1/NF-7 $tmp-in > $tmp-out 2> /dev/null
+[ $? -ne 0 ] ; ERROR_CHECK "TEST22-3 error"
+
+# TEST22-4
+# キー指定「1/NF-7 0」のうち最初の「1/NF-7」は絶対欄位置指定とNF相対欄位置指定が混在した区間指定なので
+# 欄数変化に際してはエラーとなる
+
+# ${name}のTEST22-4はエラーで終了するように設定されている
+
+${com} 1/NF-7 0 $tmp-in > $tmp-out 2> /dev/null
+[ $? -ne 0 ] ; ERROR_CHECK "TEST22-4 error"
 
 ###########################################
 #TEST23
 # フィールド指定の0は全フィールドとなる
+# フィールド指定の0は他の（0ではない）位置とともに指定できる
 
 cat << FIN > $tmp-in
 0000000 浜地______ 50 F 91 59 20 76 54
@@ -512,6 +569,9 @@ diff $tmp-ans2 $tmp-out
 ${com} 2 1 0 $tmp-in > $tmp-out
 diff $tmp-ans3 $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST23-3 error"
+
+# TEST23-4
+# フィールド指定の「2 1 0.1.2」によって第2欄と第1欄のあとに全欄が部分指定「1.2」で出力される
 
 cat << FIN > $tmp-in
 0099 浜地______ 50xx 91yy 59zz

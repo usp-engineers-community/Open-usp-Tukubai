@@ -8,7 +8,7 @@
 #
 # The MIT License
 #
-# Copyright (C) 2022 Universal Shell Programming Laboratory
+# Copyright (C) 2023 Universal Shell Programming Laboratory
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -30,9 +30,9 @@
 
 from __future__ import print_function
 
-_usage = "sm2 [+count] [<k1> <k2> <s1> <s2> <file>]"
-_version = "Oct 20 17:32:09 JST 2022"
-_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4+/UTF-8)"
+_usage = "sm2 [+count] <k1> <k2> <s1> <s2> [<file>]"
+_version = "Mon Feb 20 01:49:00 JST 2023"
+_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.6, 2.7, 3.6/UTF-8)"
 _keypat = r'\d+|NF(-\d+)?$'
 
 import re
@@ -82,6 +82,25 @@ class FieldLine:
 			error("フィールド番号が大きすぎます。")
 		return key
 
+	def getFieldNums(self,k1,k2,s1,s2):
+		min_key = self.getFieldNum(k1)
+		max_key = self.getFieldNum(k2)
+		min_sum = self.getFieldNum(s1)
+		max_sum = self.getFieldNum(s2)
+		# キー位置範囲指定と集計位置範囲指定における0の使用について検査
+		if min_sum * max_sum == 0 or (min_key * max_key == 0 and min_key + max_key != 0):
+			error("キー位置範囲指定と集計位置範囲指定における0の使用に不正がありました。")
+		# 降順を昇順化
+		if min_key > max_key:
+			min_key,max_key=max_key,min_key
+		if min_sum > max_sum:
+			min_sum,max_sum=max_sum,min_sum
+		# キー位置範囲と集計位置範囲の交叉検査
+		if max_key < min_sum or max_sum < min_key:	# 両群が交叉しない
+			return min_key,max_key,min_sum,max_sum
+		else:	# 両群が交叉する
+			error("キー位置の範囲と集計位置の範囲に交叉がありました。")
+
 	def getField(self, s, e = None):
 		s = self.getFieldNum(s)
 		if e == None:
@@ -113,6 +132,40 @@ def open_file(n):
 		else:
 			error("ファイル '%s' をオープンできません。", filename)
 	return file
+
+#
+# 行の欄数検査
+#   先頭行ではkeyの区間指定で絶対欄位置指定とNF相対欄位置指定が混在しているか検査する
+#   先頭行以外では
+#     絶対欄位置リストとNF相対欄位置絶対化リスト（区間の端がNF相対襴位置だったものも含む）の間に重複があるか検査する
+#
+def check_num_fields_variation(line):
+	global	NF,key,sum,k1,k2,s1,s2,key_range_size,sum_range_size
+	# abs_rel_cross キーの絶対欄位置によるリストとNF相対欄位置からの絶対化欄位置リストの間に重複があればTrue
+	#               NF=5のときにキー指定が「1/4@NF-3/NF」となっているときなどにTrueとなる
+	# abs_rel_cross_first=False 先頭行においてabs_rel_crossがTrueであればTrue
+
+	start=False
+	nf=line.size()
+	if NF==-1:	start=True
+	if nf != NF:	# 欄数が変化したかまたは先頭行なら
+		NF=nf	# NFを更新
+		k1,k2,s1,s2=line.getFieldNums(min_key_str,max_key_str,min_sum_str,max_sum_str)	# keyとsumの範囲を確定する
+		if start:	# 先頭行なら合計を初期化しておく
+			if not line:
+				sys.exit(0)
+			sum=[]
+			for i in range(s1, s2 + 1):
+				sum.append(getval(line, i))
+			if (k1):
+				key = NFDtoNFC(line.getField(k1, k2))	# キーフィールド値はNFC正規化する
+			key_range_size=k2-k1+1
+			sum_range_size=s2-s1+1
+			return True	# 先頭行
+		else:	# 先頭行以外で欄数変化があったら
+			if (k2-k1+1 != key_range_size) or (s2-s1+1 != sum_range_size):	# keyの区間長またはsumの区間長が変化したらエラー
+				error("欄数変化によってキー位置の区間長または集計位置の区間長が変化しました。")
+	return False	# 非先頭行
 
 # 不要な空白の削除関数
 def rm_sp(line):
@@ -191,14 +244,14 @@ def getval(line, n):
 	try:
 		return Decimal(line.getField(n))
 	except:
-		error("数値変換できません。")
+		error("数値変換できません。文字列=%s",line.getField(n))
 
 #
 # メイン関数
 #
 if __name__ == '__main__':
-	if len(sys.argv) <= 2:
-		sys.argv = [sys.argv[0]] + ["0", "0", "1", "1"] + sys.argv[1:]
+
+	global	NF,key,sum,k1,k2,s1,s2,key_range_size,sum_range_size
 
 	if len(sys.argv) < 5:
 		usage()
@@ -222,66 +275,48 @@ if __name__ == '__main__':
 	#
 	# key=<key>
 	#
-	k1 = sys.argv[1]
-	k2 = sys.argv[2]
-	s1 = sys.argv[3]
-	s2 = sys.argv[4]
+	min_key_str = sys.argv[1]
+	max_key_str = sys.argv[2]
+	min_sum_str = sys.argv[3]
+	max_sum_str = sys.argv[4]
 	p = re.compile(_keypat)
-	if not (p.match(k1) and p.match(k2) and p.match(s1) and p.match(s2)):
+	if not (p.match(min_key_str) and p.match(max_key_str) and p.match(min_sum_str) and p.match(max_sum_str)):
 		usage()
 
 	file = open_file(5)
 
 	#
-	# １行入力
-	#
-	line = file.readline()
-	if not line:
-		sys.exit(0)
-	firstline=True
-	line=preproc_line(line)	# 入力行の前処理
-	line = FieldLine(line, True)
-	k1 = line.getFieldNum(k1)
-	k2 = line.getFieldNum(k2)
-	s1 = line.getFieldNum(s1)
-	s2 = line.getFieldNum(s2)
-	# 降順を昇順化
-	if k1 > k2:	k1,k2=k2,k1
-	if s1 > s2:	s1,s2=s2,s1
-	if k2 > s1 or s1 * s2 == 0 or k1 * k2 == 0 and k1 + k2 != 0:
-		usage()
-
-	#
-	# 合計の初期化
-	#
-	sum = list(range(s2 + 1))
-	for i in range(s1, s2 + 1):
-		sum[i] = getval(line, i)
-	cnt = 1
-	if (k1):
-		key = NFDtoNFC(line.getField(k1, k2))	# キーフィールド値はNFC正規化する
-
-	#
 	# メインループ
 	#
+	NF=-1
+	cnt=1
 	firstline=True
 	for line in file:
 		line=preproc_line(line)	# 入力行の前処理
-		line = FieldLine(line)
+		line = FieldLine(line, True)
+		Top=check_num_fields_variation(line)	# 先頭行または欄数変化のあるときの処理
+		if Top:	continue	# 先頭行での集計は済んでいる
+		# keyが変化しないとき
 		if k1 == 0 or NFDtoNFC(line.getField(k1, k2)) == key:	# キーフィールド値はNFC正規化する
 			for i in range(s1, s2 + 1):
-				sum[i] += getval(line, i)
+				sum[i-s1] += getval(line, i)
 			cnt += 1
 			continue
+		# keyが変化したとき
+		#  前のkeyに対する集計を出力
 		print(key, end=' ')
 		if count: print(cnt, end=' ')
 		for i in range(s1, s2):
-			print(sum[i], end=' ')
-		print(sum[s2])
+			print(sum[i-s1], end=' ')
+		print(sum[s2-s1])
+		#  新しいkeyについてsumを初期化
 		for i in range(s1, s2 + 1):
-			sum[i] = getval(line, i)
+			sum[i-s1] = getval(line, i)
 		cnt = 1
 		key = NFDtoNFC(line.getField(k1, k2))	# キーフィールド値はNFC正規化する
+
+	if firstline:	# 入力ファイルが空
+		sys.exit()
 
 	#
 	# 残り合計の出力
@@ -289,7 +324,7 @@ if __name__ == '__main__':
 	if k1 != 0: print(key, end=' ')
 	if count: print(cnt, end=' ')
 	for i in range(s1, s2):
-		print(sum[i], end=' ')
-	print(sum[s2])
+		print(sum[i-s1], end=' ')
+	print(sum[s2-s1])
 
 	sys.exit(0)

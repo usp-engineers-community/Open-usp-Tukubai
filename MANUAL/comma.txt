@@ -10,7 +10,7 @@ comma : 指定したフィールドに3桁または4桁のカンマを追加
 
 Usage   : comma [+<n>h][-4] [<f1> <f2> ...] <file>
         : comma -d[4] <string>
-Version : Thu Apr 21 00:58:47 JST 2022
+Version : Mon Feb 20 01:49:00 JST 2023
 Edition : 1
 
 【説明】
@@ -106,6 +106,6 @@ $
 
 keta(1)
 
-last modified: Fri Jul 15 16:39:29 JST 2022
+last modified: Mon Feb 20 01:48:41 JST 2023
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights
+Copyright (c) 2012-2023 Universal Shell Programming Laboratory All Rights

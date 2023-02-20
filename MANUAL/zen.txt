@@ -10,7 +10,7 @@ zen : 全角へ変換
 
 Usage   : zen  [-k] [<f1> <f2> ..] [<file>]
         : zen -d [<string>]
-Version : Oct 20 17:32:09 JST 2022
+Version : Mon Feb 20 01:49:00 JST 2023
 Edition : 1
 
 【説明】
@@ -69,6 +69,6 @@ $
 
 han(1)
 
-last modified: Fri Oct 21 08:21:02 JST 2022
+last modified: Mon Feb 20 01:48:41 JST 2023
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights
+Copyright (c) 2012-2023 Universal Shell Programming Laboratory All Rights

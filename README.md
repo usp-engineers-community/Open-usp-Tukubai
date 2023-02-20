@@ -1,6 +1,6 @@
 ﻿               Universal Shell Programming Laboratory
                          uecinfo@usp-lab.com
-                             2023/02/04
+                             2023/02/23
  
 Open usp Tukubaiとは
 ====================
