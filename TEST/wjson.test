@@ -82,15 +82,26 @@ diff - <(echo '{"あ い":"う@え"}')
 
 ERROR_CHECK "\"あ@い う@え\" must be converted into {\"あ い\":\"う@え\"}} with -m@ option."
 
+${com} -m - <<< 'あ_い う_え' |
+diff - <(echo '{"あ_い":"う え"}')
+
+ERROR_CHECK "\"あ_い う_え\" must be converted into {\"あ_い\":\"う え\"}} with -m option."
+
 ${com} -s@ - <<< 'あ@い う@え' |
 diff - <(echo '{"あ@い":"う え"}')
 
 ERROR_CHECK "\"あ@い う@え\" must be converted into {\"あ@い\":\"う え\"}} with -s@ option."
 
+${com} -s - <<< 'あ_い う_え' |
+diff - <(echo '{"あ い":"う_え"}')
+
+ERROR_CHECK "\"あ_い う_え\" must be converted into {\"あ い\":\"う_え\"}} with -s option."
+
 ${com} -n@ - <<< '@ @' |
 diff - <(echo '{"@":""}')
 
 ERROR_CHECK "\"@ @\" must be converted into {\"@\":\"\"}} with -s@ option."
+
 ###########################################
 # Check for mixtures of objects and arrays.
 

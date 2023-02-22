@@ -8,10 +8,10 @@ wjson : フィールド形式ファイルを JSON 形式に変換する
 
 【書式】
 
-Usage   : wjson [-p<c>][-m<c>][-s<c>][-n<string>] [<field-file>]
+Usage   : wjson [-p|-p<c>][-m|-m<c>][-s<c>][-n<string>] [<field-file>]
           --null
           --truefalse
-Version : Fri Oct 28 08:01:44 JST 2022
+Version : Wed Feb 22 16:21:25 JST 2023
 Edition : 2
 
 【説明】
@@ -141,6 +141,6 @@ $ wjson -nnull --null --truefalse fielddata
 
 rjson(1)
 
-last modified: Fri Oct 28 08:06:15 JST 2022
+last modified: Wed Feb 22 16:37:21 JST 2023
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights
+Copyright (c) 2012-2023 Universal Shell Programming Laboratory All Rights

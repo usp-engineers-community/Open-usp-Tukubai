@@ -8,7 +8,7 @@
 #
 # The MIT License
 #
-# Copyright (C) 2022 Universal Shell Programming Laboratory
+# Copyright (C) 2023 Universal Shell Programming Laboratory
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -38,8 +38,8 @@ from collections import OrderedDict
 
 _usage = "wjson [-p<c>][-m<c>][-s<c>][-n<string>] [<field-file>]"
 _usage_additional = "--null / --truefalse"
-_version = "Fri Oct 28 08:01:44 JST 2022"
-_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.7+/UTF-8)"
+_version = "Wed Feb 22 16:21:25 JST 2023"
+_code = "Open usp Tukubai (LINUX/PYTHON2.7+, 3.9/UTF-8)"
 
 # supplementary assignment for under 3.0
 if sys.version_info >= (3, 0):
@@ -108,6 +108,8 @@ def translate(target):
 def format_object_key(key_whitespace, name):
 	if name == key_whitespace:
 		return ""
+	elif key_whitespace == "":
+		return name
 	else:
 		return name.replace(key_whitespace, " ")
 
@@ -128,6 +130,8 @@ def stringify_object(input_file):
 
 		if fields[1] == null_padding:
 			value = ""
+		elif value_whitespace == "":
+			value = fields[1]
 		else:
 			value = fields[1].replace(value_whitespace, " ")
 
@@ -181,10 +185,10 @@ if __name__ == '__main__':
 		if sys.argv[1][:2] == "-p" and len(sys.argv[1]) > 2:
 			separator = sys.argv[1][2:]
 			del sys.argv[1]
-		elif sys.argv[1][:2] == "-m" and len(sys.argv[1]) > 2:
+		elif sys.argv[1][:2] == "-m":
 			key_whitespace = sys.argv[1][2:]
 			del sys.argv[1]
-		elif sys.argv[1][:2] == "-s" and len(sys.argv[1]) > 2:
+		elif sys.argv[1][:2] == "-s":
 			value_whitespace = sys.argv[1][2:]
 			del sys.argv[1]
 		elif sys.argv[1][:2] == "-n" and len(sys.argv[1]) > 2:
