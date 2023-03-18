@@ -31,7 +31,7 @@
 from __future__ import print_function
 
 _usage = "filehame -l<string> <template> <data>"
-_version = "Oct 20 17:32:09 JST 2022"
+_version = "Thu 20 Oct 2022 17:32:09 JST"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4+/UTF-8)"
 
 # 濁音と半濁音のNFD表記でNFC表記もできるもの→NFDtoNFC変換でNFCに統一する
@@ -47,9 +47,9 @@ def error(msg, *arg):
 	sys.exit(1)
 
 def usage():
-	sys.stderr.write( "Usage     :%s\n" % _usage );
-	sys.stderr.write( "Version   :%s\n" % _version );
-	sys.stderr.write( "	   %s\n" % _code );
+	sys.stderr.write( "Usage     : %s\n" % _usage );
+	sys.stderr.write( "Version   : %s\n" % _version );
+	sys.stderr.write( "	    %s\n" % _code );
 	sys.exit(1)
 
 #
