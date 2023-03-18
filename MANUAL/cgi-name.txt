@@ -10,7 +10,7 @@ cgi-name : CGI POSTメソッドで受け渡されるデータをネーム形式�
 
 Usage   : cgi-name [-d<c>][-i<string>] [<param_file>]
 Option  :          [--template <html>]
-Version : Sun Oct  2 14:17:02 JST 2022
+Version : Mon Feb 20 01:49:00 JST 2023
 Edition : 1
 
 【説明】
@@ -124,6 +124,6 @@ CGI POSTメソッドで受け渡されるデータには改行がない。通常
 
 mime-read(1)、nameread(1)、ネーム形式(5)
 
-last modified: Fri Oct 21 08:21:02 JST 2022
+last modified: Sat Mar 18 14:13:31 JST 2023
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights
+Copyright (c) 2012-2023 Universal Shell Programming Laboratory All Rights

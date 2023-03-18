@@ -329,6 +329,20 @@ diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST7 error"
 
 ###########################################
+#TEST8
+# 
+cat << FIN > $tmp-ans
+あ い
+う え
+FIN
+
+echo '%E3%81%82=%E3%81%84&%E3%81%86=%E3%81%88' | ${com} > $tmp-out
+
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST8 error"
+
+
+###########################################
 rm -f $tmp-*
 echo "${pythonversion} ${name}" OK
 exit 0
