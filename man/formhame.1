@@ -1,0 +1,178 @@
+.TH  Tukubai 1 "28 Jun 2022" "usp Tukubai" "Tukubai コマンド マニュアル"
+
+.br
+formhame(1)
+.br
+
+.br
+【名前】
+.br
+
+.br
+formhame\ :\ HTML\ テンプレートに文字をはめ込む
+.br
+
+.br
+【書式】
+.br
+
+.br
+Usage\ \ \ :\ formhame\ <html_template>\ <data>
+.br
+Option\ \ :\ -i<c>
+.br
+        : -d<c>
+.br
+Version\ :\ Sun\ Mar\ 17\ 12:51:52\ JST\ 2013
+.br
+Edition\ :\ 1
+.br
+
+.br
+【説明】
+.br
+
+.br
+<html_template>ファイルの各種inputタグ(text,\ radio,checkbox,\ hidden)とtextarea
+.br
+タグ、selectタグの部分に<data>ファイル(第1フィールド:タグ名、第2フィールド以降:
+.br
+値)で指定される値を挿入する。
+.br
+
+.br
+【例】
+.br
+
+.br
+
+  $ cat html
+  <html><body>
+  <form name="name_form">
+  <input type="text" name="name_text1" />
+  <input type="text" name="name_text2" />
+  <input type="radio" name="name_radio" value="a"/>
+  <input type="radio" name="name_radio" value="b"/>
+  <input type="checkbox" name="name_checkbox" value="x"/>
+  <input type="checkbox" name="name_checkbox" value="y"/>
+  <textarea name="name_textarea">
+  </textarea>
+  <select name="name_pulldown">
+  <option value="pd1">pd1</option>
+  <option value="pd2">pd2</option>
+  <option value="pd3">pd3</option>
+  </select>
+  <input type="submit" name="submit" />
+  </form>
+  </body></html>
+
+  $
+
+.br
+
+  $ cat data
+  name_text1 hello
+  name_text2
+  name_radio b
+  name_checkbox y
+  name_textarea usp\nlaboratory
+  name_pulldown pd3
+
+  $
+
+.br
+
+  $ formhame html data
+  <html><body>
+  <form name="name_form">
+  <input type="text" name="name_text1" value="hello"/>
+  <input type="text" name="name_text2" />
+  <input type="radio" name="name_radio" value="a"/>
+  <input type="radio" name="name_radio" value="b" checked="checked" />
+  <input type="checkbox" name="name_checkbox" value="x"/>
+  <input type="checkbox" name="name_checkbox" value="y" checked="checked" />
+  <textarea name="name_textarea">
+  usp
+  laboratory
+  </textarea>
+  <select name="name_pulldown">
+  <option value="pd1">pd1</option>
+  <option value="pd2">pd2</option>
+  <option value="pd3" selected="selected">pd3</option>
+  </select>
+  <input type="submit" name="submit" />
+  </form>
+  </body></html>
+
+  $
+
+.br
+【備考】
+.br
+
+.br
+\ 1.\ inputタグの場合、すでにvalue=""とテンプレートに記述している場合は、値を置換
+.br
+\ \ \ \ する。同様にtextareaタグの場合も値を置換する。selectタグの場合は、すでに
+.br
+\ \ \ \ selected="selected"とテンプレートに指定されている場合、指定場所を移動する。
+.br
+\ 2.\ textareaの場合、すでにある値を置換する。.B\ \e
+nは改行に置換する。
+.br
+\ 3.\ 値が無い場合、値は挿入されない。
+.br
+\ 4.\ -iオプションで文字列を指定すると、その文字列に等しい値はヌル文字列にして挿
+.br
+\ \ \ \ 入する。
+.br
+\ 5.\ -dオプションで文字列を指定すると、値の中の指定文字列部分は半角空白文字に置換して
+.br
+\ \ \ \ 挿入する。ただし、.B\ \e
+指定文字列という部分は半角空白ではなく（.B\ \e
+をとった）指定文字列に置換して挿入する。
+.br
+\ 6.\ -iオプションと-dオプションの両方が指定された場合、-iオプションによる処理を先に行なう。
+.br
+\ 7.\ HTMLは正しく記述されている必要がある。タグは<タグ\ />あるいは、<タグ></タグ>と記述される必要がある。
+.br
+\ \ \ \ 変数は必ず"\ "で囲まれている必要がある(value="1"など)。
+.br
+\ \ \ \ input\ type="checkbox"のときは、必ずvalue="XXX"が指
+.br
+\ \ \ \ 定されている必要がある。
+.br
+\ 8.\ checkbox、radiobox、selectboxの複数選択の場合は、ネーム形式データ(5)は次の
+.br
+\ \ \ \ ように1つのタグに対して複行となる。
+.br
+
+.br
+name_radio\ a
+.br
+name_radio\ b
+.br
+name_checkbox\ x
+.br
+name_checkbox\ y
+.br
+name_pulldown\ pd1
+.br
+name_pulldown\ pd2
+.br
+
+.br
+【関連項目】
+.br
+
+.br
+filehame(1)、mojihame(1)
+.br
+
+.br
+last\ modified:\ Mon\ Aug\ \ 1\ 16:43:39\ JST\ 2022
+.br
+Contact\ us:\ uecinfo@usp-lab.com
+.br
+Copyright\ (c)\ 2012-2022\ Universal\ Shell\ Programming\ Laboratory\ All\ Rights
+.br

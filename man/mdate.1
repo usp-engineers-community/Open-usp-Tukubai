@@ -1,0 +1,264 @@
+.TH  Tukubai 1 "25 Sep 2022" "usp Tukubai" "Tukubai コマンド マニュアル"
+
+.br
+mdate(1)
+.br
+
+.br
+【名前】
+.br
+
+.br
+mdate\ :\ 日付、週、月の処理
+.br
+
+.br
+【書式】
+.br
+
+.br
+Usage\ \ \ :
+.br
+
+.br
+DIRECT-MODE
+.br
+日付\ \ \ \ mdate\ -y\ <yyyymmdd>.B\ \e
+1 .B\ \e
+2 .B\ \e
+3日
+.br
+        mdate -e <yyyywwdd>/±<dif>              : dif 日先までの日付を連続出力
+.br
+        mdate -e <yyyymmdd1> <yyyymmdd2>        : 日付の範囲を連続出力
+.br
+        mdate <yyyywwdd>/±<dif>                 : dif 日先の日付
+.br
+        mdate <yyyymmdd1> <yyyymmdd2>           : 日付の差
+.br
+        mdate <yyyymm>m/±<dif>                  : dif 月先の月
+.br
+        mdate -e <yyyymm>m/±<dif>               : dif 月先までの月を連続出力
+.br
+        mdate <yyyymm1>m <yyyymm2>m             : 月の差
+.br
+        mdate -ly <yyyymm>m                     : 前年月
+.br
+        mdate today                             : 今日の年月日
+.br
+
+.br
+FILTER-MODE
+.br
+日付\ \ \ \ mdate\ -f\ -y\ <f>.B\ \e
+1 .B\ \e
+2 .B\ \e
+3日
+.br
+        mdate -f -e <f>/±<dif>                  : dif 日先までの日付に展開
+.br
+        mdate -f -e <f1> <f2>                   : 日付間の展開
+.br
+        mdate -f <f>/±<dif>                     : dif 日先の日付
+.br
+        mdate -f <f1> <f2>                      : 日付の差
+.br
+        mdate -f <f1> ±<f2>                     : 日付の加算
+.br
+        mdate -f -e <f1> ±<f2>                  : 日付の加算または展開
+.br
+        mdate -f -ly <f>                        : 前年日
+.br
+月次\ \ \ \ mdate\ -f\ -d\ <f>m.B\ \e
+1 .B\ \e
+2 .B\ \e
+3付を1ヶ月分出力
+.br
+        mdate -f <f>m/±<dif>                    : dif 月先の月
+.br
+        mdate -f -e <f>m ±<dif>                 : dif 月先の月まで展開
+.br
+        mdate -f <f1>m <f2>m                    : 月の差
+.br
+        mdate -f -e <f1>m <f2>m                 : 月の展開
+.br
+        mdate -f <f>m ±<dif>                    : 月の加算
+.br
+        mdate -f -e <f>m ±<dif>                 : 月の加算展開
+.br
+        mdate -f -ly <f>m                       : 前年月
+.br
+
+.br
+Version\ :\ Sun\ Sep\ 25\ 06:47:00\ JST\ 2022
+.br
+Edition\ :\ 1
+.br
+
+.br
+【例1】dif先の日付、月の情報を出力
+.br
+
+.br
+
+  $ mdate 20090912/+5
+  20090917
+
+  $
+
+.br
+
+  $ mdate 200909m/+5
+  201002
+
+  $
+
+.br
+【例2】dif先までの連続した日付、月の情報を出力
+.br
+
+.br
+
+  $ mdate -e 20090912/+5
+  20090912 20090913 20090914 20090915 20090916 20090917
+
+  $
+
+.br
+
+  $ mdate -e 200909m/+5
+  200909 200910 200911 200912 201001 201002
+
+  $
+
+.br
+【例3】日付、月の差を出力
+.br
+
+.br
+
+  $ mdate 20090917 20090912
+  5
+
+  $
+
+.br
+
+  $ mdate 201002m 200909m
+  5
+
+  $
+
+.br
+【例4】日付、月の範囲を連続出力
+.br
+
+.br
+
+  $ mdate -e 20090912 20090917
+  20090912 20090913 20090914 20090915 20090916 20090917
+
+  $
+
+.br
+
+  $ mdate -e 200909m 201002m
+  200909 200910 200911 200912 201001 201002
+
+  $
+
+.br
+【例5】フィルターモード\ :\ dif先の日付、月の情報を挿入
+.br
+
+.br
+
+  $ cat date_data
+  A 20090901 B
+  A 20090902 B
+  A 20090903 B
+
+  $
+
+.br
+
+  $ mdate -f 2/+5 date_data
+  A 20090901 20090906 B
+  A 20090902 20090907 B
+  A 20090903 20090908 B
+
+  $
+
+.br
+
+  $ cat month_data
+  A 200909 B
+  A 200910 B
+  A 200911 B
+
+  $
+
+.br
+
+  $ mdate -f 2m/+5 month_data
+  A 200909 201002 B
+  A 200910 201003 B
+  A 200911 201004 B
+
+  $
+
+.br
+【例6】フィルターモード\ :\ dif先までの連続した日付、週、月の情報を挿入
+.br
+
+.br
+
+  $ cat date_data
+  A 20090901 B
+  A 20090902 B
+  A 20090903 B
+
+  $
+
+.br
+
+  $ mdate -f -e 2/+5 date_data
+  A 20090901 20090902 20090903 20090904 20090905 20090906 B
+  A 20090902 20090903 20090904 20090905 20090906 20090907 B
+  A 20090903 20090904 20090905 20090906 20090907 20090908 B
+
+  $
+
+.br
+
+  $ cat month_data
+  A 200909 B
+  A 200910 B
+  A 200911 B
+
+  $
+
+.br
+
+  $ mdate -f -e 2m/+5 month_data
+  A 200909 200910 200911 200912 201001 201002 B
+  A 200910 200911 200912 201001 201002 201003 B
+  A 200911 200912 201001 201002 201003 201004 B
+
+  $
+
+.br
+【関連項目】
+.br
+
+.br
+calclock(1)、dayslash(1)、yobi(1)
+.br
+
+.br
+last\ modified:\ Sun\ Sep\ 25\ 06:49:14\ JST\ 2022
+.br
+Contact\ us:\ uecinfo@usp-lab.com
+.br
+Copyright\ (c)\ 2012-2022\ Universal\ Shell\ Programming\ Laboratory\ All\ Rights
+.br

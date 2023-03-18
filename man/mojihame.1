@@ -1,0 +1,467 @@
+.TH  Tukubai 1 "20 Oct 2020" "usp Tukubai" "Tukubai コマンド マニュアル"
+
+.br
+mojihame(1)
+.br
+
+.br
+【名前】
+.br
+
+.br
+mojihame\ :\ テンプレートに文字をはめ込み
+.br
+
+.br
+【書式】
+.br
+
+.br
+Usage\ \ \ :\ mojihame\ <template>\ <data>\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (通常)
+.br
+        : mojihame -l <label> <template> <data>         (行単位)
+.br
+        : mojihame -h <label> <template> <data>         (階層データ)
+.br
+Version\ :\ Tue\ Oct\ 20\ 15:17:47\ JST\ 2020
+.br
+Edition\ :\ 1
+.br
+
+.br
+【説明】
+.br
+
+.br
+引数に指定するtemplateファイルに、dataあるいは環境変数からデータを読んで値をは
+.br
+め込む。次の3つの使い方がある。
+.br
+
+.br
+\ 1.\ dataのすべてのフィールドを順番にはめ込む(通常)
+.br
+\ 2.\ dataの行単位のフィールドをtemplateの指定ラベル間繰り返しはめ込む(行単位)
+.br
+\ 3.\ dataが階層データの場合、templateの指定ラベル間、階層的にはめ込む(階層データ)
+.br
+
+.br
+【例1】通常
+.br
+
+.br
+templateの中にある%1\ %2\ %3\ ...の部分に、dataのフィールド(左上から右下に順番に%1
+.br
+%2\ %3\ ...に対応)を読んで置換する。
+.br
+
+.br
+
+  $ cat data
+  a b
+  c d
+
+  $
+
+.br
+
+  $ cat template
+  1st=%1
+  2nd=%2
+  3rd=%3 4th=%4
+
+  $
+
+.br
+
+  $ mojihame template data
+  1st=a
+  2nd=b
+  3rd=c 4th=d
+
+  $
+
+.br
+【例2】通常その2
+.br
+
+.br
+デフォルトでは@というデータはヌル文字列として置換される。このデフォルトを変更す
+.br
+るには-dオプションを使用する。-dオプションを単独で使用した場合には、ヌル文字列
+.br
+に置換する機能は無効になる。
+.br
+
+.br
+
+  $ cat data
+  a @
+  @ d
+
+  $
+
+.br
+
+  $ cat template
+  1st=%1
+  2nd=%2
+  3rd=%3 4th=%4
+
+  $
+
+.br
+
+  $ mojihame template data
+  1st=a
+  2nd=
+  3rd= 4th=d
+
+  $
+
+.br
+
+  $ mojihame -da template data
+  1st=
+  2nd=@
+  3rd=@ 4th=d
+
+  $
+
+.br
+【例3】行単位
+.br
+
+.br
+dataは1行単位に読み込まれ、行の各フィールドが%1\ %2\ ...に対応する。次の行が読み
+.br
+込まれるときは再びtemplateが使用され、データがはめ込まれ出力される。この使い方
+.br
+は旧mojihameの-rと互換性がある。mojihame\ -rは将来廃止される。
+.br
+
+.br
+
+  $ cat data
+  a b c d
+  w x y z
+
+  $
+
+.br
+
+  $ cat template
+  1st=%1 2nd=%2
+  3rd=%3 4th=%4
+
+  $
+
+.br
+
+  $ mojihame -l template data
+  1st=a 2nd=b
+  3rd=c 4th=d
+  1st=w 2nd=x
+  3rd=y 4th=z
+
+  $
+
+.br
+
+  $ mojihame -r template data
+  1st=a 2nd=b
+  3rd=c 4th=d
+  1st=w 2nd=x
+  3rd=y 4th=z
+
+  $
+
+.br
+【例4】行単位その2
+.br
+
+.br
+-lオプションで引数(ラベル)を指定した場合、templateのラベルで囲まれた行のみにデ
+.br
+ータが繰り返しはめ込まれる。このときラベルを含む行は出力されない。また、ラベル
+.br
+にはさまれていない前後の部分は何も変換されず、そのまま出力される。ラベルは
+.br
+template内部に2回だけ記述可能で、それぞれはめ込み対象の開始行と終了行とみなされ
+.br
+る。指定ラベルは部分一致でラベル行と判断するので注意が必要。
+.br
+
+.br
+
+  $ cat data
+  a b
+  y z
+
+  $
+
+.br
+
+  $ cat template
+  header %1
+  LABEL
+  1st=%1 2nd=%2
+  LABEL
+  footer %2
+
+  $
+
+.br
+
+  $ mojihame -lLABEL template data
+  header %1
+  1st=a 2nd=b
+  1st=y 2nd=z
+  footer %2
+
+  $
+
+.br
+【例5】行単位その3
+.br
+
+.br
+-lオプションを繰り返し使用することにより、プルダウンなどのHTMLを簡易に生成する
+.br
+ことができる。指定ラベルはtemplateに1組しか認められていないので、次の例のように
+.br
+内側のラベルから順番に値をはめていくという手順でコマンドを実行する。
+.br
+
+.br
+
+  $ cat member
+  佐藤
+  鈴木
+
+  $
+
+.br
+
+  $ cat kbn1
+  東京
+  大阪
+  横浜
+
+  $
+
+.br
+
+  $ cat kbn2
+  男
+  女
+
+  $
+
+.br
+
+  $ cat template
+  MEMBER
+  氏名＝%1
+  K1
+  地名＝%1
+  K1
+  K2
+  性別＝%1
+  K2
+  MEMBER
+
+  $
+
+.br
+
+  $ mojihame -lK1 template kbn1 |   mojihame -lK2 - kbn2 | mojihame -lMEMBER - member
+  氏名＝佐藤
+  地名＝東京
+  地名＝大阪
+  地名＝横浜
+  性別＝男
+  性別＝女
+  氏名＝鈴木
+  地名＝東京
+  地名＝大阪
+  地名＝横浜
+  性別＝男
+  性別＝女
+
+  $
+
+.br
+【例6】行単位その4
+.br
+
+.br
+デフォルトでは@というデータはヌル文字列として置換される。このデフォルトを変更す
+.br
+るには-d\ オプションを使用する。-d\ オプションは-lオプションの後に指定する必要が
+.br
+ある。
+.br
+
+.br
+
+  $ mojihame -lLABEL -dx template data
+
+.br
+【例7】階層データ
+.br
+
+.br
+-hオプションは階層的にデータのはめ込みを実施する。templateにおいて階層的ラベル
+.br
+に囲まれた部分に現れる%数字がdataの階層的キーフィールドに対応する。
+.br
+
+.br
+
+  $ cat data
+  山田 東京 10:00
+  山田 大阪 20:00
+  山田 横浜 09:30
+  鈴木 東京 16:45
+  鈴木 神戸 15:30
+
+  $
+
+.br
+次のtemplateの場合、LABEL-1に囲まれているのは%1、LABEL-1に囲まれている部分にさ
+.br
+らにLABEL-2があり、LABEL-2で囲まれている部分に%2と%3がある。このとき、第1フィー
+.br
+ルドが変化する回数だけ、LABEL-1で囲まれている部分が繰り返し値がはめられ、
+.br
+LABEL-2で囲まれている部分は、同じ第1フィールドの値を持つ第2、第3フィールドの行
+.br
+の数だけ繰り返し値がはめられる。
+.br
+
+.br
+
+  $ mojihame -hLABEL template dat
+  表題 %1
+  氏名＝山田
+  地名＝東京 時刻＝10:00
+  地名＝大阪 時刻＝20:00
+  地名＝横浜 時刻＝09:30
+  氏名＝鈴木
+  地名＝東京 時刻＝16:45
+  地名＝神戸 時刻＝15:30
+
+  $
+
+.br
+
+  $ cat template
+  表題 %1
+  LABEL-1
+  氏名＝%1
+  LABEL-2
+  地名＝%2 時刻＝%3
+  LABEL-2
+  LABEL-1
+
+  $
+
+.br
+階層の深さに制約はない。ラベルは部分一致でラベル行と判定される。コマンドライン
+.br
+上は-hLABELとし、templateでは階層にあわせてLABEL-1、LABEL-2とするのが有効。この
+.br
+ような階層ラベルはtemplateの中でそれぞれ1組ずつのみ認められている。
+.br
+
+.br
+【注意1】
+.br
+
+.br
+デフォルトでは@はヌル文字列として置換される。文字を変更するには-dオプションを使
+.br
+う。-dオプションは-hや-lオプションの後に指定しなくてはならない。
+.br
+
+.br
+
+  $ mojihame -dx template data
+
+.br
+
+  $ mojihame -lLABEL -dx template data
+
+.br
+
+  $ mojihame -hLABEL -dx template data
+
+.br
+【注意2】アンダースコアデータの扱い
+.br
+
+.br
+データの中の.B\ \e
+_はmojihame実行後には_に置換される。エスケープのない_は半角スペースに
+.br
+置換される。
+.br
+
+.br
+
+  $ cat template
+  <input type="text" value="%1" />
+  <input type="text" value="%2" />
+  <input type="text" value="%3" />
+
+  $
+
+.br
+
+  $ cat data
+  usp_lab
+  usp\_lab
+  ______\_\_
+
+  $
+
+.br
+
+  $ mojihame template data
+  <input type="text" value="usp lab" />
+  <input type="text" value="usp_lab" />
+  <input type="text" value="      __" />
+
+  $
+
+.br
+【備考】
+.br
+
+.br
+\ 1.\ ファイル名に-を指定したときは標準入力からのデータを期待する。templateもdata
+.br
+\ \ \ \ のいずれかを指定できる。
+.br
+\ 2.\ -dオプションは文字列を指定しない場合にはdataの値をそのまますべてtemplateに
+.br
+\ \ \ \ はめ込む。
+.br
+
+.br
+【関連項目】
+.br
+
+.br
+filehame(1)、formhame(1)
+.br
+
+.br
+last\ modified:\ Fri\ Aug\ \ 5\ 16:02:27\ JST\ 2022
+.br
+Contact\ us:\ uecinfo@usp-lab.com
+.br
+Copyright\ (c)\ 2012-2022\ Universal\ Shell\ Programming\ Laboratory\ All\ Rights
+.br

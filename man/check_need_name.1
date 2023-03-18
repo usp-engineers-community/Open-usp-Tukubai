@@ -1,0 +1,145 @@
+.TH  Tukubai 1 "20 Oct 2022" "usp Tukubai" "Tukubai コマンド マニュアル"
+
+.br
+check_need_name(1)
+.br
+
+.br
+【名前】
+.br
+
+.br
+check_need_name\ :\ ネームファイルの整合性判定
+.br
+
+.br
+【書式】
+.br
+
+.br
+Usage\ \ \ :\ check_need_name\ <check_file>\ [<name_file>]
+.br
+Option\ \ :\ --blank\ <string>
+.br
+Version\ :\ Oct\ 20\ 17:32:10\ JST\ 2022
+.br
+Edition\ :\ 1
+.br
+
+.br
+【説明】
+.br
+
+.br
+<check_file>に記述されているフィールド値に基づいて、<name_file>ネームファイルの
+.br
+整合性を判断する。<check_file>に記述されている第1フィールドの値が<name_file>の
+.br
+第1フィールドのどこにも存在しなかったり、<name_file>の第2フィールドの値がない、
+.br
+または_だった場合にコマンドはエラー終了し、標準出力にそのフィールド値を出力する
+.br
+。
+.br
+
+.br
+<check_file>ファイルは2フィールドあっても動作する。詳しくは例1を参照のこと。
+.br
+<check_file>は、フィールド値+(_以外の文字列)でも正しく認識する。
+.br
+
+.br
+--blank\ <string>オプションは、<name_file>のデータの値が<string>の場合はデータが
+.br
+ないとみなす。つまり、<check_file>に指定されていて値が<string>である行はエラー
+.br
+になる。<string>のデフォルトは_となる。
+.br
+
+.br
+【例1】通常のチェック
+.br
+
+.br
+
+  $ cat check_file
+  A
+  B
+  C
+  D
+
+  $
+
+.br
+
+  $ cat check_file2               ←check_fileとcheck_file2は同等
+  A need
+  B need
+  C need
+  D need
+  E _
+  F _
+
+  $
+
+.br
+
+  $ cat name_file
+  A _
+  B 12345
+  C abcde
+  D_001 _
+  D_002 xxx
+
+  $
+
+.br
+
+  $ check_need_name check_file name_file
+  A
+  D_001
+
+  $ echo $?
+  1
+
+  $
+
+.br
+【例2】--blank\ オプションでヌルデータを指定する。
+.br
+
+.br
+
+  $ cat name_file2
+  A @
+  B 1
+  C 2
+  D 3
+
+  $
+
+.br
+
+  $ check_need_name --blank @ check_file name_file2
+  A
+
+  $ echo $?
+  1
+
+  $
+
+.br
+【関連項目】
+.br
+
+.br
+ネーム形式(5)
+.br
+
+.br
+last\ modified:\ Fri\ Dec\ \ 2\ 13:48:00\ JST\ 2022
+.br
+Contact\ us:\ uecinfo@usp-lab.com
+.br
+Copyright\ (c)\ 2012-2022\ Universal\ Shell\ Programming\ Laboratory\ All\ Rights
+.br

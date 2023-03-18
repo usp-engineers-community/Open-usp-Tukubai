@@ -1,0 +1,163 @@
+.TH  Tukubai 1 "21 Oct 2011" "usp Tukubai" "Tukubai コマンド マニュアル"
+
+.br
+ulock(1)
+.br
+
+.br
+【名前】
+.br
+
+.br
+ulock\ :\ 排他制御コマンド
+.br
+
+.br
+【書式】
+.br
+
+.br
+Usage\ \ \ :\ ulock\ <lock-file>
+.br
+Usage\ \ \ :\ ulock\ -w\ <lock-file>\ [<counter-file>]
+.br
+          ulock -r <lock-file> <counter-file> <command>
+.br
+Option\ \ :\ --timeout=<sec>/--invalid=<sec>
+.br
+Version\ :\ Fri\ Jun\ \ 6\ 12:29:31\ JST\ 2014
+.br
+Edition\ :\ 1
+.br
+
+.br
+【説明】
+.br
+
+.br
+書式１（ulock\ <lock-file>）は、完全排他区間を実現します。
+.br
+この場合、ulock\ は排他的に\ <lock-file>\ を生成します。
+.br
+
+.br
+書式２は、リード・ライトロックを実現します。
+.br
+-w\ (ライトロック)の場合、ulock\ は排他的に\ <lock-file>\ を生成した上に、
+.br
+<counter-file>\ のリンクカウントが１になるまで待ちます。
+.br
+-r\ (リードロック)の場合、<lock-file>\ が存在しなくなるまで、<counter-
+.br
+file>のリンクカウントを１増やすことを試み、成功したら、<command>\ を
+.br
+実行し、そのあと、<counter-file>\ のリンクカウントを１減らします。
+.br
+
+.br
+--timeout\ オプションで\ command\ が起動されるまでの待ち時間の最大値を
+.br
+指定できます。-1\ を指定すると無限に待ちます。デフォルトは\ -1\ (無限に
+.br
+.SH 待つ です。
+
+.br
+--invalid\ オプションで古いロックファイルの削除を行います。デフォルト
+.br
+は\ 60\ 秒です。
+.br
+
+.br
+【例１】\ 完全排他区間の実現
+.br
+
+.br
+
+  $ cat lock.sh
+  #!/bin/bash
+   
+  if ulock lock; then
+    #
+    # 読み書きなどの処理
+    #
+    rm -f lock
+  fi
+
+.br
+【例２】\ リードライトロックの実現
+.br
+
+.br
+
+  $ cat writelock.sh
+  #!/bin/bash
+   
+  if ulock -w lock counter; then
+   
+    # 書き込み処理(例)
+    up3 key=1 master tran > master.new
+    mv master.new master
+   
+    rm -f lock
+  fi
+
+.br
+
+  $ cat readlock.sh
+  #!/bin/bash
+   
+  ulock -r lock counter cat master
+
+.br
+
+.br
+【備考】\ リードライトロックのアルゴリズム
+.br
+
+.br
+<ライトロック>
+.br
+\ \ X--\ 書き込みロックを取る。(アトミック)
+.br
+\ \ X--\ カウンタ1まで待つ。
+.br
+\ \ ---\ 書き込み処理
+.br
+\ \ ---\ 書き込みロックをはずす。
+.br
+
+.br
+<リードロック>
+.br
+\ \ X--\ カウンタを1足す。(アトミック)
+.br
+\ \ X--\ 書き込みロックがないことを確認。ロックされていれば\ 1\ 減らして戻る。
+.br
+\ \ X--\ 読むだけの処理
+.br
+\ \ X--\ カウンタを1減らす\ (アトミック)
+.br
+
+.br
+ulock\ では書き込みロックはハードリンクファイル生成の一意性を利用し、
+.br
+カウンタオペレーションは、ハードリンクファイルのリンク（一意）数を利
+.br
+用しています。ulock\ は上記アルゴリズムのうち、X\ の部分を実装していま
+.br
+す。
+.br
+
+.br
+lock-file、counter-file\ とも\ NFS\ 上に作成すれば、各サーバーからのリー
+.br
+ドライトロックが実現します。
+.br
+
+.br
+last\ modified:\ Fri\ Aug\ 12\ 12:56:05\ JST\ 2022
+.br
+Contact\ us:\ uecinfo@usp-lab.com
+.br
+Copyright\ (c)\ 2012-2022\ Universal\ Shell\ Programming\ Laboratory\ All\ Rights
+.br

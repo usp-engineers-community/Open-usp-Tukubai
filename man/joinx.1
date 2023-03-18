@@ -1,0 +1,84 @@
+.TH  Tukubai 1 "24 Sep 2022" "usp Tukubai" "Tukubai コマンド マニュアル"
+
+.br
+joinx(1)
+.br
+
+.br
+【名前】
+.br
+
+.br
+joinx\ :\ 総掛けで連結する
+.br
+
+.br
+【書式】
+.br
+
+.br
+Usage\ \ \ :\ joinx\ <file1>\ [<file2>]
+.br
+Version\ :\ Sat\ Sep\ 24\ 08:21:57\ JST\ 2022
+.br
+Edition\ :\ 1
+.br
+
+.br
+【説明】
+.br
+
+.br
+２つのファイルの各レコードを、総てのパターンの掛け合わせを作り連結して出力しま
+.br
+す。引数を指定する順番に総掛けされます。つまり、<file1>\ の各レコードに対し、
+.br
+<file2>\ のすべてのレコードが順番に総掛けされます
+.br
+
+.br
+【例】
+.br
+
+.br
+(元データ1：data1)
+.br
+
+.br
+
+  $ cat data1
+  1 農業
+  2 工業
+  3 サービス業
+
+.br
+(元データ2：data2)
+.br
+
+.br
+
+  $ cat data2
+  1 東京
+  2 大阪
+  3 名古屋
+  4 福岡
+  5 札幌
+
+.br
+
+  $ joinx data1 data2 > data3
+  （data3）       <- data1 と data2 の全レコード同士の組み合わせで出力
+  1 農業 1 東京
+  1 農業 2 大阪
+  1 農業 3 名古屋
+  1 農業 4 福岡
+  1 農業 5 札幌
+  2 工業 1 東京
+
+.br
+last\ modified:\ Sat\ Sep\ 24\ 08:59:32\ JST\ 2022
+.br
+Contact\ us:\ uecinfo@usp-lab.com
+.br
+Copyright\ (c)\ 2012-2022\ Universal\ Shell\ Programming\ Laboratory\ All\ Rights
+.br

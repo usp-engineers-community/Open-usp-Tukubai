@@ -91,6 +91,14 @@ pdf: $(wildcard COMMANDS/*)
 	 rm "$${backcover}"
 	@echo completed!
 
+man:
+	@for man in MANUAL/*.txt; do \
+		command_name="$$(basename "$${man}" .txt)";    \
+		target="man/$${command_name}.1"; \
+		printf "building %s\n" "$${target}" >&2; \
+	 	./MANUAL2man "$${command_name}" < "$${man}" > "$${target}"; \
+	 done
+
 install:
 	${MKDIR} ${DESTDIR}${BINDIR}
 	@for i in ${COMMANDS}; \
@@ -251,4 +259,4 @@ endef
 export PDF_COVER
 export PDF_BACKCOVER
 
-.PHONY: install test
+.PHONY: man install test

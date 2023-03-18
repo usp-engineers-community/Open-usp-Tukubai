@@ -1,0 +1,118 @@
+.TH  Tukubai 1 "22 Jul 2022" "usp Tukubai" "Tukubai コマンド マニュアル"
+
+.br
+cjoin2x(1)
+.br
+
+.br
+【名前】
+.br
+
+.br
+cjoin2x\ :\ キーの値が同じレコードが複数存在するファイル同士を連結。
+.br
+
+.br
+【書式】
+.br
+
+.br
+Usage\ \ \ :\ cjoin2x\ [+<string>]\ key=<n>\ <master>\ <tran>
+.br
+Version\ :\ Thu\ Jun\ 20\ 18:01:27\ JST\ 2019
+.br
+Edition\ :\ 1
+.br
+
+.br
+【説明】
+.br
+
+.br
+テキストファイル\ <tran>\ の\ "key=<n>"\ で指定したキーフィールドがマス
+.br
+ターファイル\ <master>\ の第１フィールド（キーフィールド）とマッチした
+.br
+行を\ <tran>\ から抽出して、<master>\ の情報を連結して出力します。マッ
+.br
+しない行は、ダミーデータ\ "_"\ をフィールド数分だけ結合して出力します。
+.br
+ダミーデータは指定することもできます。
+.br
+
+.br
+<master>\ の第１フィールドについては必ず昇順でソートされていることが
+.br
+条件になります。
+.br
+
+.br
+<master>\ が空ファイル（0バイト）の場合はエラーになります。
+.br
+
+.br
+cjoin2\ との違いは、マスターファイルのキーフィールドの値が同一のレコ
+.br
+ードが複数存在できる点です。マスターとトランザクションファイルのキー
+.br
+フィールド値が同一のレコード同士を総掛けで連結して出力します。
+.br
+
+.br
+【例１】
+.br
+
+.br
+（マスターファイル：master）
+.br
+
+  $ cat master
+  1 東京1
+  1 東京2
+  2 大阪1
+  2 大阪2
+
+.br
+（トランザクションファイル：tran）
+.br
+
+  $ cat tran
+  3 栄
+  2 京橋
+  3 金山
+  1 上野
+  1 新宿
+  4 天神
+  2 難波
+  3 熱田
+  2 梅田
+  4 博多
+
+.br
+
+  $ cjoin2x key=1 master tran >data
+
+  $ cat data
+  3 _ 栄
+  2 大阪1 京橋
+  2 大阪2 京橋
+  3 _ 金山
+  1 東京1 上野
+  1 東京2 上野
+  1 東京1 新宿
+  1 東京2 新宿
+  4 _ 天神
+  2 大阪1 難波
+  2 大阪2 難波
+  3 _ 熱田
+  2 大阪1 梅田
+  2 大阪2 梅田
+  4 _ 博多
+
+.br
+last\ modified:\ Fri\ Jul\ 15\ 16:38:58\ JST\ 2022
+.br
+Contact\ us:\ uecinfo@usp-lab.com
+.br
+Copyright\ (c)\ 2012-2022\ Universal\ Shell\ Programming\ Laboratory\ All\ Rights
+.br

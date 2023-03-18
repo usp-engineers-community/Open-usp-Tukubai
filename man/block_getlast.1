@@ -1,0 +1,91 @@
+.TH  Tukubai 1 "21 Feb 2021" "usp Tukubai" "Tukubai コマンド マニュアル"
+
+.br
+block_getlast(1)
+.br
+
+.br
+【名前】
+.br
+
+.br
+block_getlast\ :\ 同一キーをもつレコードから、参照キーが同じ最終
+.br
+                ブロックをすべて出力する
+.br
+
+.br
+【書式】
+.br
+
+.br
+Usage\ \ \ :\ block_getlast\ key=<key>\ ref=<ref>\ <file>
+.br
+Version\ :\ Sun\ Feb\ 21\ 04:35:04\ JST\ 2021
+.br
+Edition\ :\ 1
+.br
+
+.br
+【説明】
+.br
+
+.br
+key=\ で指定したフィールドの各レコードのうち、ref=\ で指定した参照フィ
+.br
+ールドが同じ値を持つ最終ブロックをすべて出力します。
+.br
+入力データは、key=\ で指定したフィールドについてソートされていることを前提
+.br
+とします。
+.br
+
+.br
+key=\ や\ ref=\ には、範囲指定（例\ 1/3\ 2@5）及び\ "NF"\ の使用が可能です。
+.br
+
+.br
+<file>\ ファイルの指定が無いとき、あるいはファイル名が\ "-"\ の時は、標
+.br
+準入力を読み込みます。
+.br
+
+.br
+【例１】
+.br
+
+.br
+同じ伝票番号を持つレコードのうち、直近の日付のレコードを出力する。
+.br
+（data\ のレイアウト）
+.br
+1:伝票No\ 2:行\ 3:項目１\ 4:項目２\ 5:入力年月日
+.br
+
+.br
+
+  $ cat data
+  0001 1 A 15 20081203
+  0001 2 K 25 20081203
+  0001 3 F 35 20081203
+  0001 1 A 15 20081205
+  0001 3 F 25 20081205
+  0002 2 X 30 20081201
+  0002 1 H 80 20081208
+
+.br
+
+  $ block_getlast key=1 ref=NF data > result
+
+  $ cat result
+  0001 1 A 15 20081205
+  0001 3 F 25 20081205
+  0002 1 H 80 20081208
+
+.br
+last\ modified:\ Fri\ Aug\ 12\ 12:56:05\ JST\ 2022
+.br
+Contact\ us:\ uecinfo@usp-lab.com
+.br
+Copyright\ (c)\ 2012-2022\ Universal\ Shell\ Programming\ Laboratory\ All\ Rights
+.br

@@ -1,0 +1,117 @@
+.TH  Tukubai 1 "20 Nov 2020" "usp Tukubai" "Tukubai コマンド マニュアル"
+
+.br
+unmap(1)
+.br
+
+.br
+【名前】
+.br
+
+.br
+unmap\ :\ 縦キー/横キー形式の表データを縦型ファイルに変換
+.br
+
+.br
+【書式】
+.br
+
+.br
+Usage\ \ \ :\ map\ \ \ \ \ \ \ [-<l>]\ num=<n>x<m>\ <file>
+.br
+        : map +yarr [-<l>] num=<n>x<m> <file>
+.br
+        : map +arr  [-<l>] num=<n>x<m> <file>
+.br
+Version\ :\ Fri\ Nov\ 20\ 17:00:13\ JST\ 2020
+.br
+Edition\ :\ 1
+.br
+
+.br
+【説明】
+.br
+
+.br
+map(1)と逆の動作をする。
+.br
+
+.br
+【例1】
+.br
+
+.br
+表データを縦型ファイルに変換する。num=<n>の値は縦キーのフィールド数を表す。
+.br
+
+.br
+
+  $ cat data
+  *   * 01/01 01/02
+  001 a\1 \2 \3157
+  002 b\1 \2 \3237
+
+  $
+
+.br
+
+  $ unmap num=2 data |  keta
+  001 a店 01/01 103
+  001 a店 01/02 157
+  002 b店 01/01 210
+  002 b店 01/02 237
+
+  $
+
+.br
+【例2】
+.br
+
+.br
+データ部が複数種ある場合は、複数列にマッピングする。
+.br
+
+.br
+
+  $ cat data
+  * * 1日目 2日目 3日目 4日目 5日目 6日目 7日目
+  a店 A\1 \2 \3157\1 \2 \3131\1 \2 \3350   412
+  a店 B\1 \2 \394\1 \2 \384\1 \2 \320   301
+  b店 A\1 \2 \3237\1 \2 \3198\1 \2 \3421   589
+  b店 B\1 \2 \3121\1 \2 \3105\1 \2 \3287   493
+  c店 A\1 \2 \376\1 \2 \381\1 \2 \3109   136
+  c店 B\1 \2 \349\1 \2 \348\1 \2 \391   110
+  d店 A\1 \2 \372\1 \2 \374\1 \2 \398   101
+  d店 B\1 \2 \342\1 \2 \343\1 \2 \369    90
+
+  $
+
+.br
+
+  $ unmap num=1 data |  keta
+  a店 1日目 103 62
+  a店 2日目 157 94
+  a店 3日目 62 30
+  a店 4日目 131 84
+  ・
+  ・
+  d店 6日目 98 69
+  d店 7日目 101 90
+
+  $
+
+.br
+【関連項目】
+.br
+
+.br
+map(1)、tateyoko(1)
+.br
+
+.br
+last\ modified:\ Fri\ Jul\ 15\ 15:42:38\ JST\ 2022
+.br
+Contact\ us:\ uecinfo@usp-lab.com
+.br
+Copyright\ (c)\ 2012-2022\ Universal\ Shell\ Programming\ Laboratory\ All\ Rights
+.br

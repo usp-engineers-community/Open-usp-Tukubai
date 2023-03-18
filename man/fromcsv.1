@@ -1,0 +1,114 @@
+.TH  Tukubai 1 "13 Sep 2022" "usp Tukubai" "Tukubai コマンド マニュアル"
+
+.br
+fromcsv(1)
+.br
+
+.br
+【名前】
+.br
+
+.br
+fromcsv\ :\ CSVフィルター
+.br
+
+.br
+【書式】
+.br
+
+.br
+Usage\ \ \ :\ fromcsv\ [<file>]
+.br
+Option\ \ :\ -n\ <null_string>
+.br
+          -s <space_character>
+.br
+          -e
+.br
+          -q
+.br
+Version\ :\ Tue\ Sep\ 13\ 17:11:29\ JST\ 2022
+.br
+
+.br
+【説明】
+.br
+
+.br
+CSVファイルをスペース区切りのファイルに変換します。
+.br
+ファイル名を指定しない時、または\ '-'\ の時は標準入力を読み込みます。
+.br
+
+.br
+【仕様】
+.br
+
+.br
+\ 1.\ 空の文字列は0に変換します。
+.br
+\ 2.\ 文字列1の中の\ ""\ は\ "\ に変換します。
+.br
+\ 3.\ 文字列の中の半角スペースは、_\ に変換します。
+.br
+.B\ \e
+1 .B\ \e
+2 .B\ \e
+3プションで_を別の1バイト文字に変更できます。
+.br
+\ 4.\ -e\ オプションを指定すると、_（または\ -s\ オプションで指定した文字）
+.br
+.B\ \e
+1 .B\ \e
+2 .B\ \e
+3は\ .B\ \e
+\ を前置します。
+.br
+\ 5.\ -q\ オプションを指定すると、.B\ \e
+"\ は\ "\ に、.B\ \e
+.B\ \e
+\ は\ .B\ \e
+\ に変換します。
+.br
+\ 6.\ 行末の\ .B\ \e
+r.B\ \e
+n\ は自動的に\ .B\ \e
+n\ に変換します。
+.br
+\ 7.\ 文字列1内の改行は\ ".B\ \e
+n"\ と変換します。
+.br
+\ 8.\ 最終行は改行が無くても構いません。
+.br
+
+.br
+【例1】
+.br
+
+  $ cat data
+  ,"",3,"a_b","cde
+  f\gh","i j","k,""l"
+
+.br
+
+  $ fromcsv data
+  0 _ 3 a_b cde\nf\gh i_j k,"l
+
+  $ fromcsv -e data
+  0 _ 3 a\_b cde\nf\\gh i_j k,"l
+
+.br
+【関連項目】
+.br
+
+.br
+tocsv(1)
+.br
+
+.br
+last\ modified:\ Tue\ Sep\ 13\ 17:13:54\ JST\ 2022
+.br
+Contact\ us:\ uecinfo@usp-lab.com
+.br
+Copyright\ (c)\ 2012-2022\ Universal\ Shell\ Programming\ Laboratory\ All\ Rights
+.br

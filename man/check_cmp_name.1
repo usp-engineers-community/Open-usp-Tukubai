@@ -1,0 +1,157 @@
+.TH  Tukubai 1 "19 Oct 2021" "usp Tukubai" "Tukubai コマンド マニュアル"
+
+.br
+check_cmp_name(1)
+.br
+
+.br
+【名前】
+.br
+
+.br
+check_cmp_name\ :\ name\ 形式データの値の大小関係をチェックする
+.br
+
+.br
+【書式】
+.br
+
+.br
+Usage\ \ \ :\ check_cmp_name\ <expression>\ <name_file>
+.br
+Option\ \ :\ --through\ <string>
+.br
+Version\ :\ Tue\ Oct\ 19\ 23:46:03\ JST\ 2021
+.br
+Edition\ :\ 1
+.br
+
+.br
+【説明】
+.br
+
+.br
+<expression>\ の記述に従って、<name_file>\ のデータのタグ同士やタグと
+.br
+値の大小関係をチェックします。
+.br
+
+.br
+エラーがある場合，<expression>\ を満たさないタグ名をすべて標準出力に
+.br
+出力してから、エラー終了します。
+.br
+
+.br
+<expression>\ は、'左辺\ 記号\ 右辺'\ と記述します。左辺と右辺にはタグ名
+.br
+や値を指定します。記号については、次の６種類が使えます。
+.br
+
+.br
+\ \ \ \ -EQ\ -eq\ \ <--\ \ =\ \ (equal)
+.br
+\ \ \ \ -NE\ -ne\ \ <--\ !=\ \ (not\ equal)
+.br
+\ \ \ \ -GE\ -ge\ \ <--\ >=\ \ (greater\ or\ equal)
+.br
+\ \ \ \ -GT\ -gt\ \ <--\ \ >\ \ (greater)
+.br
+\ \ \ \ -LE\ -le\ \ <--\ <=\ \ (less\ or\ equal)
+.br
+\ \ \ \ -LT\ -lt\ \ <--\ \ <\ \ (less)
+.br
+
+.br
+【オプション】
+.br
+
+.br
+--through\ <string>\ に関しては\ <name_file>\ で定義されるデータが
+.br
+<string>\ に一致する場合は、チェックを実施しません。<string>\ の
+.br
+デフォルトは\ '_'\ です。このオプションは繰り返し使って複数の
+.br
+<string>\ を指定できます。
+.br
+
+.br
+【例１】
+.br
+
+.br
+[usp1\ usp@\ ~]$\ cat\ data
+.br
+A\ 200
+.br
+B\ 300
+.br
+C\ _
+.br
+D_001\ 3
+.br
+D_002\ 2
+.br
+D_003\ 1
+.br
+E_001\ 1
+.br
+E_002\ 2
+.br
+E_003\ 3
+.br
+
+.br
+(タグ名とタグ名の比較)
+.br
+
+  $ check_cmp_name 'A -le B' data
+
+  $ echo $?
+  0
+
+  $ check_cmp_name 'A -eq B' data
+  A
+  B
+
+  $ echo $?
+  1
+
+.br
+(タグ名と数値の比較)
+.br
+
+  $ check_cmp_name 'A -gt 300' data
+  A
+
+  $ echo $?
+  1
+
+.br
+('_'\ の場合はチェックしない)
+.br
+
+  $ check_cmp_name 'C -ne 0' data
+
+  $ echo $?
+  0
+
+.br
+(複数レコードも正しくチェックする)
+.br
+
+  $ check_cmp_name 'D -le E' data
+  D_001
+  E_001
+
+  $ echo $?
+  1
+
+.br
+last\ modified:\ Thu\ Aug\ \ 4\ 05:16:09\ JST\ 2022
+.br
+Contact\ us:\ uecinfo@usp-lab.com
+.br
+Copyright\ (c)\ 2012-2022\ Universal\ Shell\ Programming\ Laboratory\ All\ Rights
+.br

@@ -1,0 +1,90 @@
+.TH  Tukubai 1 "08 Oct 2022" "usp Tukubai" "Tukubai コマンド マニュアル"
+
+.br
+fpad(1)
+.br
+
+.br
+【名前】
+.br
+
+.br
+fpad\ :\ フィールドのパディング
+.br
+
+.br
+【書式】
+.br
+
+.br
+Usage\ \ \ :\ fpad\ [-t]\ <s>\ <n>\ [<file>]
+.br
+Version\ :\ Sat\ Oct\ \ 8\ 17:55:00\ JST\ 2022
+.br
+Edition\ :\ 1
+.br
+
+.br
+【説明】
+.br
+
+.br
+<file>\ ファイルの各レコードが\ <n>\ フィールド未満の時、文字列\ <s>\ で
+.br
+残フィールドを埋めます。
+.br
+
+.br
+<file>\ ファイルの指定が無いとき、あるいはファイル名が\ "-"\ の時は、標
+.br
+準入力から読み込みます。
+.br
+
+.br
+-t\ オプションを指定すると、レコードが\ <n>\ フィールドを超える時、超え
+.br
+たフィールドを削除します。（-t\ は\ truncate\ の略）
+.br
+
+.br
+【例１】
+.br
+
+.br
+
+  $ cat data
+  a
+  a a
+  a a a
+  a a a a
+  a a a a a
+
+.br
+
+  $ fpad _ 4 data
+  a _ _ _
+  a a _ _
+  a a a _
+  a a a a
+  a a a a a
+
+.br
+【例２】
+.br
+
+.br
+
+  $ fpad -t _ 4 data
+  a _ _ _
+  a a _ _
+  a a a _
+  a a a a
+  a a a a
+
+.br
+last\ modified:\ Sat\ Oct\ \ 8\ 18:00:45\ JST\ 2022
+.br
+Contact\ us:\ uecinfo@usp-lab.com
+.br
+Copyright\ (c)\ 2012-2022\ Universal\ Shell\ Programming\ Laboratory\ All\ Rights
+.br

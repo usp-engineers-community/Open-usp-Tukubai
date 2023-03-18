@@ -1,0 +1,125 @@
+.TH  Tukubai 1 "21 Nov 2021" "usp Tukubai" "Tukubai コマンド マニュアル"
+
+.br
+check_dble_name(1)
+.br
+
+.br
+【名前】
+.br
+
+.br
+check_dble_name\ :\ name\ 形式データの重複チェックをする
+.br
+
+.br
+【書式】
+.br
+
+.br
+Usage\ \ \ :\ check_dble_name\ <check_file>\ <name_file>
+.br
+Option\ \ :\ --through\ <string>
+.br
+Version\ :\ Sun\ Nov\ 21\ 17:29:32\ JST\ 2021
+.br
+Edition\ :\ 1
+.br
+
+.br
+【説明】
+.br
+
+.br
+<check_file>\ に記述されているタグ名について、
+.br
+<name_file>の値の重複チェックをします。
+.br
+重複があった場合は、そのつど標準出力に重複のあったタグ名を出力し、
+.br
+コマンド終了時には「エラー終了」とします。
+.br
+最初のエラーで終了するのではなく、複数の重複があっても対応します。
+.br
+
+.br
+【オプション】
+.br
+
+.br
+--through\ <string>
+.br
+<name_file>\ のデータが<string>と等しい場合は、
+.br
+チェックを実施しません。<string>のデフォルトは、"_"\ となります。
+.br
+このオプションは繰り返し使って複数の<string>を指定することが
+.br
+できます。
+.br
+
+.br
+【例１】
+.br
+
+.br
+[usp1\ usp@\ ~]$\ cat\ check
+.br
+A
+.br
+
+.br
+[usp1\ usp@\ ~]$\ cat\ data
+.br
+A_001\ 5
+.br
+A_002\ 5
+.br
+A_003\ 6
+.br
+A_004\ 7
+.br
+[usp1\ usp@\ ~]$\ check_dble_name\ check\ data
+.br
+A_001
+.br
+A_002
+.br
+
+  $ echo $?
+  1 
+
+.br
+【例２】
+.br
+
+.br
+[usp1\ usp@\ ~]$\ cat\ data
+.br
+A_001\ 5
+.br
+A_002\ 5
+.br
+A_003\ @
+.br
+A_004\ @
+.br
+A_005\ @
+.br
+[usp1\ usp@\ ~]$\ check_dble_name\ --through\ @\ check\ data
+.br
+A_001
+.br
+A_002
+.br
+
+  $ echo $?
+  1 
+
+.br
+last\ modified:\ Fri\ Jul\ 15\ 16:35:40\ JST\ 2022
+.br
+Contact\ us:\ uecinfo@usp-lab.com
+.br
+Copyright\ (c)\ 2012-2022\ Universal\ Shell\ Programming\ Laboratory\ All\ Rights
+.br

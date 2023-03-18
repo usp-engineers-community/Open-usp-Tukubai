@@ -1,0 +1,106 @@
+.TH  Tukubai 1 "20 May 2020" "usp Tukubai" "Tukubai コマンド マニュアル"
+
+.br
+ctail(1)
+.br
+
+.br
+【名前】
+.br
+
+.br
+ctail\ :\ ファイルの末尾n行を削って出力
+.br
+
+.br
+【書式】
+.br
+
+.br
+Usage\ \ \ :\ ctail\ -n\ <file>
+.br
+        : ctail n <file>
+.br
+        : ctail -<n>c <file>
+.br
+Version\ :\ Wed\ May\ 20\ 04:47:48\ JST\ 2020
+.br
+Edition\ :\ 1
+.br
+
+.br
+【説明】
+.br
+
+.br
+引数のファイルまたは標準入力のテキストデータから、引数-n(またはn)で指定した行数
+.br
+の末尾行を除いて標準出力に出力する。
+.br
+
+.br
+【例】ファイルの末尾3行を削って表示する。
+.br
+
+.br
+
+  $ cat data
+  001 北海道
+  002 東北
+  003 関東
+  004 中部
+  005 近畿
+  006 中部
+  007 四国
+  008 九州
+  009 沖縄
+
+  $
+
+.br
+
+  $ ctail -3 data > data2
+
+  $ cat data2
+  001 北海道
+  002 東北
+  003 関東
+  004 中部
+  005 近畿
+  006 中部
+
+  $
+
+.br
+【例2】ファイルの末尾nバイトを削る
+.br
+
+.br
+
+  $ echo -n abcde | ctail -1c
+  abcd
+
+  $
+
+.br
+
+  $ echo -n abcde | ctail -2c
+  abc
+
+  $
+
+.br
+【関連項目】
+.br
+
+.br
+getfirst(1)、getlast(1)、tcat(1)、ycat(1)
+.br
+
+.br
+last\ modified:\ Fri\ Jul\ 15\ 16:40:15\ JST\ 2022
+.br
+Contact\ us:\ uecinfo@usp-lab.com
+.br
+Copyright\ (c)\ 2012-2022\ Universal\ Shell\ Programming\ Laboratory\ All\ Rights
+.br

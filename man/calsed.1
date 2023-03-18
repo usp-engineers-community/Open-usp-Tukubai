@@ -1,0 +1,235 @@
+.TH  Tukubai 1 "19 Oct 2021" "usp Tukubai" "Tukubai コマンド マニュアル"
+
+.br
+calsed(1)
+.br
+
+.br
+【名前】
+.br
+
+.br
+calsed\ :\ 軽いsed
+.br
+
+.br
+【書式】
+.br
+
+.br
+Usage\ \ \ :\ calsed\ <org>\ <dst>\ <file>
+.br
+          calsed -f <script> <file>
+.br
+Option\ \ :\ -n<string>
+.br
+          -s<c>
+.br
+Version\ :\ Tue\ Oct\ 19\ 23:46:03\ JST\ 2021
+.br
+Edition\ :\ 1
+.br
+
+.br
+【説明】
+.br
+
+.br
+calsed\ は\ sed\ の文字列置換機能の簡易版です。指定した元文字列を指定
+.br
+した文字列に置換します。sed\ のように、元文字列に正規表現を使うこと
+.br
+はできません。ファイル名を指定しないか、"-"\ の時は、標準入力を期待
+.br
+します。
+.br
+置換後文字列が\ "@"\ の場合、ヌル文字列に置換します。この文字列を変
+.br
+更するのに、-n\ オプションを指定します。
+.br
+-s\ オプションは置換後文字列の中で半角空白に変換する文字を指定しま
+.br
+す。
+.br
+
+.br
+【例１】
+.br
+
+.br
+直接置換文字列を指定する。
+.br
+
+  $ cat data
+  <td>NAME</td>
+  <td>AGE</td>
+
+  $ calsed NAME usp data
+  <td>usp</td>
+  <td>AGE</td>
+
+  $ calsed NAME usp data | calsed AGE 25 - > result
+
+  $ cat result
+  <td>usp</td>
+  <td>25</td>
+
+.br
+【例２】
+.br
+
+.br
+置換後文字列に空白がある場合
+.br
+
+  $ calsed NAME "usp lab" data > result
+
+  $ cat result
+  <td>usp lab</td>
+  <td>AGE</td>
+
+.br
+【例３】
+.br
+
+.br
+置換後文字列にヌル文字列
+.br
+
+  $ calsed NAME @ data > result
+
+  $ cat result
+  <td></td>
+  <td>AGE</td>
+
+.br
+【例４】
+.br
+
+.br
+ヌル文字列への変換を行わない
+.br
+
+  $ calsed -n "" NAME @ data > result
+
+  $ cat result
+  <td>@</td>
+  <td>AGE</td>
+
+.br
+【例５】
+.br
+
+.br
+空白に変換する文字を指定する
+.br
+
+  $ calsed -s_ NAME usp_lab data
+  <td>usp lab</td>
+  <td>AGE</td>
+
+.br
+【例６】
+.br
+
+.br
+変換元文字列と変換後文字列をセットにしたファイルを指定して、置換を
+.br
+行うことができます。このファイルは\ name\ 形式であることが必要です。
+.br
+
+.br
+before1\ after1
+.br
+before2\ after2
+.br
+before3\ after3
+.br
+
+.br
+<before>\ 文字列のあと、半角空白を１個はさんで\ <after>\ 文字列を指定
+.br
+します。<after>\ 文字列はヌル文字列でも半角空白を含む文字列でも構い
+.br
+ません。
+.br
+<after>\ 文字列が\ "@"\ の時、ヌル文字列に変換されます。この文字列は
+.br
+-n\ オプションで変更できます。
+.br
+-s\ オプションで\ <after>\ 文字列の文字を半角空白に置換することができ
+.br
+ます。
+.br
+
+.br
+
+  $ cat script
+  NAME usp
+  AGE 25
+
+  $ calsed -f script data > result
+
+  $ cat result
+  <td>usp</td>
+  <td>25</td>
+
+.br
+【例７】
+.br
+
+.br
+
+  $ cat script2
+  NAME @
+  AGE
+
+  $ calsed -f script2 data > result
+
+  $ cat result
+  <td></td>
+  <td></td>
+
+.br
+【例８】
+.br
+
+.br
+空白をそのまま置換する
+.br
+
+  $ cat script3 <- [空白]usp[空白]lab[空白] を指定
+  NAME  usp lab
+  AGE 25
+
+  $ calsed -f script3 data > result
+
+  $ cat result
+  <td> usp lab </td>
+  <td>25</td>
+
+.br
+【例９】
+.br
+
+.br
+空白文字に置換する文字を指定
+.br
+
+  $ cat script4
+  NAME usp_lab
+  AGE 25
+
+  $ calsed -s_ -f script4 data > result
+
+  $ cat result
+  <td>usp lab</td>
+  <td>25</td>
+
+.br
+last\ modified:\ Mon\ Aug\ \ 8\ 11:01:55\ JST\ 2022
+.br
+Contact\ us:\ uecinfo@usp-lab.com
+.br
+Copyright\ (c)\ 2012-2022\ Universal\ Shell\ Programming\ Laboratory\ All\ Rights
+.br

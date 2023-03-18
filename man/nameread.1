@@ -1,0 +1,196 @@
+.TH  Tukubai 1 "20 Sep 2021" "usp Tukubai" "Tukubai コマンド マニュアル"
+
+.br
+nameread(1)
+.br
+
+.br
+【名前】
+.br
+
+.br
+nameread\ :\ ネーム形式(5)のファイル読み込み
+.br
+
+.br
+【書式】
+.br
+
+.br
+Usage\ \ \ :\ nameread\ [-el]\ <name>\ <namefile>
+.br
+Option\ \ :\ -d<c>\ \ \ \ \ \ \ 空白を置換
+.br
+        : -i<string>  ヌルデータの初期化
+.br
+Version\ :\ Mon\ Sep\ 20\ 09:31:28\ JST\ 2021
+.br
+Edition\ :\ 1
+.br
+
+.br
+【説明】
+.br
+
+.br
+ネームファイル(5)からnameを指定して値を読みる。<namefile>が-あるいは指定がない
+.br
+ときは標準入力よりデータを受け取る。
+.br
+
+.br
+-lオプションでnameも合わせて出力する。-eオプションで正規表現を指定でき、-dオプ
+.br
+ションで空白データを置換する文字を指定する(指定がない場合は空白データを削除す
+.br
+る)。-iオプションでヌルデータの初期化を実施する。
+.br
+
+.br
+【例】
+.br
+
+.br
+
+  $ cat namefile
+  A usp
+  B usp laboratory
+  C
+
+  $
+
+.br
+通常の出力
+.br
+
+.br
+
+  $ nameread A namefile
+  usp
+
+  $
+
+.br
+ネーム形式(5)のデータは空白を含む
+.br
+
+.br
+
+  $ nameread B namefile
+  usp laboratory
+
+  $
+
+.br
+空白を変換したいときは-dオプションを使用
+.br
+
+.br
+
+  $ nameread -d_ B namefile
+  usp_laboratory
+
+  $
+
+.br
+空白を削除したいときは-dオプションを引数なしで指定
+.br
+
+.br
+
+  $ nameread -d B namefile
+  usplaboratory
+
+  $
+
+.br
+名前のみ存在している場合には空行を出力
+.br
+
+.br
+
+  $ nameread C namefile
+
+.br
+
+  $
+
+.br
+ヌルデータを初期化する場合は-iオプションを使用
+.br
+
+.br
+
+  $ namread -i@@@ C namefile
+  @@@
+
+  $
+
+.br
+名前が存在しない場合には何も出力しない
+.br
+
+.br
+
+  $ nameread D namefile
+
+  $
+
+.br
+名前も一緒に出力するには-lオプションを使用
+.br
+
+.br
+
+  $ nameread -l A namefile
+  A usp
+
+  $
+
+.br
+-eオプションを指定することで正規表現を利用可能
+.br
+
+.br
+
+  $ cat namefile2
+  A01 1
+  A02 2
+  A03 3
+  A10 5
+
+  $
+
+.br
+
+  $ nameread -e '^A0[0-9]$' namefile2
+  1
+  2
+  3
+
+  $
+
+.br
+
+  $ nameread -el '^A0[0-9]$' namefile2
+  A01 1
+  A02 2
+  A03 3
+
+  $
+
+.br
+【関連項目】
+.br
+
+.br
+cgi-name(1)、mime-read(1)、ネーム形式(5)
+.br
+
+.br
+last\ modified:\ Fri\ Jul\ 15\ 15:42:38\ JST\ 2022
+.br
+Contact\ us:\ uecinfo@usp-lab.com
+.br
+Copyright\ (c)\ 2012-2022\ Universal\ Shell\ Programming\ Laboratory\ All\ Rights
+.br

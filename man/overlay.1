@@ -1,0 +1,140 @@
+.TH  Tukubai 1 "" "usp Tukubai" "Tukubai コマンド マニュアル"
+
+.br
+overlay(1)
+.br
+
+.br
+【名前】
+.br
+
+.br
+overlay\ :\ 二つのテキストファイルを重ねあわせる。
+.br
+
+.br
+【書式】
+.br
+
+.br
+Usage\ \ \ :\ overlay\ basefile\ overfile
+.br
+        : overlay -r basefile overfile
+.br
+        : overlay -f [-m<meta-str>] basefile overfile
+.br
+Version\ :\ Mon\ Mar\ 18\ 16:57:50\ JST\ 2013
+.br
+Edition\ :\ 1
+.br
+
+.br
+【説明】
+.br
+
+.br
+テキストファイル"basefile"の上にもう一つのテキストファイル"overfile"を重ねあわせ
+.br
+、一つのテキストファイルとして出力します。
+.br
+先に"ido"ツールで片方のテキストを移動させ重ねるスペースを空けてから"overlay"にて
+.br
+一つに重ねの帳票にするパターンに多く使われます。
+.br
+
+.br
+【例１】
+.br
+
+.br
+(元データ:ベースファイル)
+.br
+
+  $ cat data1
+                    ★教科別得点
+.br
+                    No  氏名  A  B  C  D  E
+.br
+                    =======================
+.br
+                    000 浜地 91 59 20 76 54
+.br
+                    001 鈴田 46 39  8  5 21
+.br
+                    003 杉山 30 50 71 36 30
+.br
+                    004 白土 58 71 20 10  6
+.br
+                    005 崎村 82 79 16 21 80
+.br
+                    007 梶川 50  2 33 15 62
+.br
+  → 20文字空白が空いている。
+
+.br
+(元データ:オーバーファイル)
+.br
+
+  $ cat data2
+  ★総合ランキング
+  Rank 氏名 総合得点
+  ==================
+  1    安武      402
+  2    柳本      359
+  3    浜地      300
+  4    崎村      278
+  5    杉山      217
+  6    米原      206
+
+.br
+
+.br
+"data1"と"data2"を重ねて一つの帳票にします。
+.br
+
+  $ overlay data1 data2 > data3
+
+  $ cat data3
+  ★総合ランキング    ★教科別得点
+  Rank 氏名 総合得\1 \2 \3\1 \2 \3B  C  D  E
+  ==================  =======================
+  1    安\1 \2 \3000 浜地 91 59 20 76 54
+  2    柳\1 \2 \3001 鈴田 46 39  8  5 21
+  3    浜\1 \2 \3003 杉山 30 50 71 36 30
+  4    崎\1 \2 \3004 白土 58 71 20 10  6
+  5    杉\1 \2 \3005 崎村 82 79 16 21 80
+  6    米\1 \2 \3007 梶川 50  2 33 15 62
+
+.br
+
+.br
+【例２】
+.br
+
+.br
+フィールドオーバーレイ
+.br
+デフォルトでは、over\ ファイルの\ "@"\ は「透明文字」として
+.br
+扱われる。-m\ オプションを使用して透明文字を指定できる。
+.br
+
+  $ cat base
+  1 2 3 4
+  a b c d
+
+  $ cat over
+  @ x @ y
+  @ @ w z
+
+  $ overlay -f base over
+  1 x 3 y
+  a b w z
+
+.br
+last\ modified:\ Fri\ Aug\ 12\ 12:56:05\ JST\ 2022
+.br
+Contact\ us:\ uecinfo@usp-lab.com
+.br
+Copyright\ (c)\ 2012-2022\ Universal\ Shell\ Programming\ Laboratory\ All\ Rights
+.br

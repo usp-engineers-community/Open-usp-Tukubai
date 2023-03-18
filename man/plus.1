@@ -1,0 +1,87 @@
+.TH  Tukubai 1 "20 Jun 2020" "usp Tukubai" "Tukubai コマンド マニュアル"
+
+.br
+plus(1)
+.br
+
+.br
+【名前】
+.br
+
+.br
+plus\ :\ 引数の足し算
+.br
+
+.br
+【書式】
+.br
+
+.br
+Usage\ \ \ :\ plus\ v1\ v2\ ...
+.br
+Version\ :\ Sat\ Jun\ 20\ 21:57:21\ JST\ 2020
+.br
+Edition\ :\ 1
+.br
+
+.br
+【説明】
+.br
+
+.br
+v1\ +\ v2\ +\ v3\ ...の値を出力する。
+.br
+
+.br
+【例】
+.br
+
+.br
+
+  $ plus 1 2 3 4
+  10
+
+  $
+
+.br
+
+  $ plus 1.21 2.345 -2.524
+  1.031
+
+  $
+
+.br
+【例】
+.br
+
+.br
+パイプ処理の直後、パイプ各行のコマンドの結果ステータスを足し算して、0ならばすべ
+.br
+て正常終了、異なればエラー終了である、といった判定処理に利用される。この使い方
+.br
+は${PIPESTATUS[@]}が提供されているbashなどに限定される。
+.br
+
+.br
+
+  $ comman1 |  command2 | command3 | ... > result
+
+.br
+
+  $ [ $plus ${PIPESTATUS[@]}) -ne 0 ] && exit
+
+.br
+【関連項目】
+.br
+
+.br
+kasan(1)、ratio(1)、sm2(1)、sm4(1)、sm5(1)、ysum(1)
+.br
+
+.br
+last\ modified:\ Fri\ Jul\ 15\ 15:42:38\ JST\ 2022
+.br
+Contact\ us:\ uecinfo@usp-lab.com
+.br
+Copyright\ (c)\ 2012-2022\ Universal\ Shell\ Programming\ Laboratory\ All\ Rights
+.br

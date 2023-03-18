@@ -1,0 +1,244 @@
+.TH  Tukubai 1 "22 Feb 2023" "usp Tukubai" "Tukubai コマンド マニュアル"
+
+.br
+wjson(1)
+.br
+
+.br
+【名前】
+.br
+
+.br
+wjson\ :\ フィールド形式ファイルを\ JSON\ 形式に変換する
+.br
+
+.br
+【書式】
+.br
+
+.br
+Usage\ \ \ :\ wjson\ [-p|-p<c>][-m|-m<c>][-s<c>][-n<string>]\ [<field-file>]
+.br
+          --null
+.br
+          --truefalse
+.br
+Version\ :\ Wed\ Feb\ 22\ 16:21:25\ JST\ 2023
+.br
+Edition\ :\ 2
+.br
+
+.br
+【説明】
+.br
+
+.br
+フィールド形式ファイル\ <field-file>\ を\ JSON\ 形式(RFC8259)に変換します。
+.br
+
+.br
+キー部の項目はデフォルトで\ "."\ で区切られますが、値が数字の時は、リストの項番
+.br
+を意味し、それ以外(文字列)の時は、オブジェクトのキー名を意味します。
+.br
+キー部の階層構造に従い、フィールド形式のファイルを\ JSON\ 形式に変換します。
+.br
+
+.br
+【オプション】
+.br
+
+.br
+\ \ \ \ -p\ :\ キー部の区切り文字を変更します。デフォルトは\ "."\ です。
+.br
+
+.br
+\ \ \ \ -m\ :\ キー部において半角空白で出力する文字を変更します。デフォルトは\ "_"\ です。
+.br
+
+.br
+\ \ \ \ -s\ :\ 値部において半角空白で出力する文字を変更します。デフォルトは\ "_"\ です。
+.br
+
+.br
+\ \ \ \ -n\ :\ 値部において空文字列として出力する文字列を変更します。デフォルトは\ "_"です。
+.br
+\ \ \ \ 
+.br
+.B\ \e
+1 .B\ \e
+2 .B\ \e
+3:\ 空文字列の出力を、ヌル値に変更します。ダブルクォーテーションで
+.br
+                 囲まれない null が出力されます。
+.br
+
+.br
+.B\ \e
+1 .B\ \e
+2 .B\ \e
+3字列\ "true"\ の出力を\ true\ に、文字列\ "false"\ の出力を\ false\ に
+.br
+                 変更します。ダブルクォーテーションでは囲まれません。
+.br
+
+.br
+【備考】
+.br
+
+.br
+値に含まれる以下の文字はエスケープされます。
+.br
+
+.br
+\ \ \ \ ダブルクォーテーション(")\ →\ .B\ \e
+"
+.br
+
+.br
+\ \ \ \ バックスラッシュ(.B\ \e
+)\ \ \ \ \ \ \ →\ .B\ \e
+.B\ \e
+
+.br
+
+.br
+【例１】
+.br
+
+.br
+
+  $ cat fielddata
+  1.name Alice_Brown
+  1.sku 54321
+  1.price 199.95
+  1.shipTo.name Bob_Brown
+  1.shipTo.address 456_Oak_Lane
+  1.shipTo.city Pretendville
+  1.shipTo.state _
+  1.shipTo.zip 98999
+  1.billTo.name Alice_Brown
+  1.billTo.address 456_Oak_Lane
+  1.billTo.city Pretendville
+  1.billTo.state HI
+  1.billTo.zip 98999
+  2.name Donald_Tramp
+  2.sku 24680
+  2.price 153.32
+  2.shipTo.name Kim_Jonil
+  2.shipTo.address 123_Hidroask
+  2.shipTo.city Pyonyan
+  2.shipTo.state NK
+  2.shipTo.zip 10012
+  2.billTo.name Donald_Tramp
+  2.billTo.address 456_Oak_Lane
+  2.billTo.city Pretendville
+  2.billTo.state HI
+  2.billTo.zip 98999
+
+.br
+
+  $ wjson < fielddata
+  [{"name":"Alice Brown","sku":"54321","price":"199.95","shipTo":{"name":"Bob Brown","address":"456 Oak Lane","city":"Pretendville","state":"","zip":"98999"},"billTo":{"name":"Alice Brown","address":"456 Oak Lane","city":"Pretendville","state":"HI","zip":"98999"}},{"name":"Donald Tramp","sku":"24680","price":"153.32","shipTo":{"name":"Kim Jonil","address":"123 Hidroask","city":"Pyonyan","state":"NK","zip":"10012"},"billTo":{"name":"Donald Tramp","address":"456 Oak Lane","city":"Pretendville","state":"HI","zip":"98999"}}]
+
+.br
+【例２】
+.br
+
+.br
+
+  $ cat fielddata2
+  1.1 a
+  1.2 b
+  2.1 c
+  2.2 d
+
+.br
+
+  $ wjson fielddata2
+  [["a","b"],["c","d"]]
+
+.br
+【例３】
+.br
+
+.br
+
+  $ cat fielddata3
+  year 2013
+  title Turn_It_Down,_Or_Else!
+  info.directors.1 Alice_Smith
+  info.directors.2 Bob_Jones
+  info.release_date 2013-01-18T00:00:00Z
+  info.rating 6.2
+  info.genres.1 Comedy
+  info.genres.2 Drama
+  info.image_url http://ia.media-imdb.com/images/N/O9ERWAU7FS797AJ7LU8HN09AMUP908RLlo5JF90EWR7LJKQ7@@._V1_SX400_.jpg
+  info.plot A_rock_band_plays_their_music_at_high_volumes,_annoying_the_neighbors.
+  info.rank 11
+  info.running_time_secs 5215
+  info.actors.1 David_Matthewman
+  info.actors.2 Ann_Thomas
+  info.actors.3 Jonathan_G._Neff
+
+.br
+第1引数にファイルのパスを与える。
+.br
+
+.br
+
+  $ wjson fielddata3
+  {"year":"2013","title":"Turn It Down, Or Else!","info":{"directors":["Alice Smith","Bob Jones"],"release date":"2013-01-18T00:00:00Z","rating":"6.2","genres":["Comedy","Drama"],"image url":"http://ia.media-imdb.com/images/N/O9ERWAU7FS797AJ7LU8HN09AMUP908RLlo5JF90EWR7LJKQ7@@. V1 SX400 .jpg","plot":"A rock band plays their music at high volumes, annoying the neighbors.","rank":"11","running time secs":"5215","actors":["David Matthewman","Ann Thomas","Jonathan G. Neff"]}}
+
+.br
+【例４】
+.br
+
+.br
+
+  $ cat fielddata
+  data1 null
+  data2 _
+  data3 _
+  data4 true
+  data5 false
+  data6 0.000000000000000000000000000000000662607
+
+.br
+
+  $ wjson fielddata
+  {"data1":"null","data2":"","data3":"","data4":"true","data5":"false","data6":"0.000000000000000000000000000000000662607"}
+
+.br
+--truefalse\ オプション\ を用いると文字列型ではなく真偽値として表記する。
+.br
+
+.br
+
+  $ wjson --null --truefalse fielddata
+  {"data1":"null","data2":null,"data3":null,"data4":true,"data5":false,"data6":"0.000000000000000000000000000000000662607"}
+
+.br
+-n\ オプションにつづけて空の文字列を代替するラベルを指定する。
+.br
+
+.br
+
+  $ wjson -nnull --null --truefalse fielddata
+  {"data1":null,"data2":" ","data3":" ","data4":true,"data5":false,"data6":"0.000000000000000000000000000000000662607"}
+
+.br
+【関連項目】
+.br
+
+.br
+rjson(1)
+.br
+
+.br
+last\ modified:\ Wed\ Feb\ 22\ 16:37:21\ JST\ 2023
+.br
+Contact\ us:\ uecinfo@usp-lab.com
+.br
+Copyright\ (c)\ 2012-2023\ Universal\ Shell\ Programming\ Laboratory\ All\ Rights
+.br

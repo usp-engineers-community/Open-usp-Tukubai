@@ -1,0 +1,134 @@
+.TH  Tukubai 1 "20 May 2020" "usp Tukubai" "Tukubai コマンド マニュアル"
+
+.br
+haba(1)
+.br
+
+.br
+【名前】\ 
+.br
+
+.br
+haba\ :\ 表示幅をだす
+.br
+
+.br
+【書式】
+.br
+
+.br
+Usage\ \ \ :\ haba\ [-vf]\ <file1>\ <file2>...
+.br
+Version\ :\ Wed\ May\ 20\ 04:47:48\ JST\ 2020
+.br
+Edition\ :\ 1
+.br
+
+.br
+【説明】
+.br
+
+.br
+半角文字の表示幅を１として、引数のファイルの表示幅を出します。ファイ
+.br
+ルは複数指定できます。
+.br
+（註）\ 半角オーバ－ライン「‾」（U+203e）は表示幅は１（半角幅）と判定され、
+.br
+           テキストエディター等でも半角幅で表示されるが、
+.br
+           コマンド実行をするウィンドウによっては表字幅２（全角幅）で表示されることがある。
+.br
+
+.br
+【例１】
+.br
+
+.br
+指定ファイルの表示幅を出します。
+.br
+
+  $ cat data
+  1234
+  東京
+  ｵｵｻｶ
+  オオサカ
+
+.br
+
+  $ haba data
+  4
+  4
+  4
+  8
+
+.br
+【例２】
+.br
+
+.br
+-v\ オプションで表示幅に変化のあった行番号と表示幅を出力します。
+.br
+
+  $ hava -v data
+  1 4\1 \2 \3行目からは表示幅４
+  4 8\1 \2 \3行目からは表示幅８
+
+.br
+【例３】
+.br
+
+.br
+-f\ オプションでファイル名もあわせて出力します。標準入力の場合は、ファ
+.br
+イル名は\ STDIN\ となります。
+.br
+-v\ オプションと併用すると、ファイル名、行番号、表示幅の順になります。
+.br
+
+  $ cat file1
+  1234
+
+  $ cat file2
+  abcdef
+
+  $ haba -f file1 file2
+  file1 4
+  file2 6
+
+  $ haba -vf file1 file2
+  file1 1 4
+  file2 1 6
+
+  $ cat file1 | haba -f - file2
+  STDIN 4
+  file2 6
+
+.br
+【参考】
+.br
+
+.br
+
+  $ cat data
+  1234
+  東京
+  ｵｵｻｶ
+
+  $ awk '{print length($0)}' data\1 \2 \3角・全角問わず文字数がでる。
+  4
+  2
+  4
+
+  $ LANG=C awk '{print length($0)}' data <-- バイト数がでる。
+  4
+  6
+  12
+
+.br
+last\ modified:\ Fri\ Aug\ 12\ 12:56:05\ JST\ 2022
+.br
+Contact\ us:\ uecinfo@usp-lab.com
+.br
+Copyright\ (c)\ 2012-2022\ Universal\ Shell\ Programming\ Laboratory\ All\ Rights
+.br

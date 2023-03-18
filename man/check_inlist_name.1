@@ -1,0 +1,191 @@
+.TH  Tukubai 1 "21 Nov 2021" "usp Tukubai" "Tukubai コマンド マニュアル"
+
+.br
+check_inlist_name(1)
+.br
+
+.br
+【名前】
+.br
+
+.br
+check_inlist_name\ :\ name\ 形式データのリスト内存在チェックをする
+.br
+
+.br
+【書式】
+.br
+
+.br
+Usage\ \ \ :\ check_inlist_name\ <check_file>\ <name_file>
+.br
+Option\ \ :\ --through\ <string>
+.br
+Version\ :\ Tue\ Nov\ 21\ 17:29:32\ JST\ 2021
+.br
+Edition\ :\ 1
+.br
+
+.br
+【説明】
+.br
+
+.br
+<check_file>\ に記述されているタグ名とリスト名にしたがい、
+.br
+<name_file>の値がリストに存在しているかのチェックをします。
+.br
+<check_file>\ で複数のタグ名を「.」で区切って連接しタグ組として指定したときは
+.br
+<name_file>の複数の行で同一の連番でタグ組を構成しそれぞれの値でつくる組が
+.br
+リストファイル中に存在するかをチェックします
+.br
+
+.br
+エラーがあった場合は、コマンドはエラー終了し、標準出力にタグ名
+.br
+とリスト名を出力します。\ 
+.br
+
+.br
+<オプション>
+.br
+--through\ <string>
+.br
+<name_file>\ のデータが<string>に等しい場合は、
+.br
+チェックを実施しません。<string>のデフォルトは、"_"\ となります。
+.br
+このオプションは繰り返し使って複数の<string>を指定することが
+.br
+できます。
+.br
+
+.br
+【例１】
+.br
+
+.br
+[usp1\ usp@\ ~]$\ cat\ check
+.br
+A\ /tmp/OS_FILE.B\ \e
+1 .B\ \e
+2 .B\ \e
+3グ名とリストファイル名(絶対パスであること)
+.br
+B\ /tmp/ABC_FILE
+.br
+
+.br
+[usp1\ usp@\ ~]$\ cat\ /tmp/OS_FILE
+.br
+Linux\ \ \ \ \ #\ comment
+.br
+UNIX\ \ \ \ \ \ #\ comment
+.br
+Windows\ \ \ #\ comment
+.br
+
+.br
+[usp1\ usp@\ ~]$\ cat\ /tmp/ABC_FILE
+.br
+abc\ \ \ #\ comment
+.br
+cde\ \ \ #\ comment
+.br
+
+.br
+[usp1\ usp@\ ~]$\ cat\ data
+.br
+A\ Linux
+.br
+B_001\ abc
+.br
+B_002\ cde
+.br
+B_003\ fgh
+.br
+B_004\ _.B\ \e
+1 .B\ \e
+2 .B\ \e
+3"_"\ はチェックの対象外(--through\ オプションで変更可)
+.br
+
+.br
+[usp1\ usp@\ ~]$\ check_inlist_name\ check\ data
+.br
+B_003\ /tmp/ABC_FILE
+.br
+[usp1\ usp@\ ~]$\ echo\ $?
+.br
+1
+.br
+
+.br
+【例２】
+.br
+
+.br
+複数チェック
+.br
+[usp1\ usp@\ ~]$\ cat\ check
+.br
+A.B\ list1\ \ \ <--\ dataファイル中の（連番が同じ）「A_nの値とB_nの値」の組がlist1ファイルにあるか
+.br
+C\ list2
+.br
+
+.br
+[usp1\ usp@\ ~]$\ cat\ list1
+.br
+1\ 3\ \ #\ comment
+.br
+4\ 5\ \ #\ comment
+.br
+
+.br
+[usp1\ usp@\ ~]$\ cat\ list2
+.br
+5\ \ #\ comment
+.br
+6\ \ #\ comment
+.br
+7\ \ #\ comment
+.br
+
+.br
+[usp1\ usp@\ ~]$\ cat\ data
+.br
+A_01\ 1
+.br
+A_02\ 2
+.br
+B_01\ 3
+.br
+B_02\ 4
+.br
+C\ 1
+.br
+
+.br
+[usp1\ usp@\ ~]$\ check_inlist_name\ check\ data
+.br
+A_02\ B_02\ list1\ \ \ <--\ dataファイル中の「A_02の値とB_02の値の組」は「2\ 4」でこれはlist1ファイルにない
+.br
+C\ list2
+.br
+
+.br
+[usp1\ usp@\ ~]$\ echo\ $?
+.br
+1
+.br
+
+.br
+last\ modified:\ Fri\ Aug\ 12\ 12:56:05\ JST\ 2022
+.br
+Contact\ us:\ uecinfo@usp-lab.com
+.br
+Copyright\ (c)\ 2012-2022\ Universal\ Shell\ Programming\ Laboratory\ All\ Rights
+.br

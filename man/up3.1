@@ -1,0 +1,113 @@
+.TH  Tukubai 1 "21 Oct 2022" "usp Tukubai" "Tukubai コマンド マニュアル"
+
+.br
+up3(1)
+.br
+
+.br
+【名前】
+.br
+
+.br
+up3\ :\ 2つのファイルを同一キーフィールドでマージ
+.br
+
+.br
+【書式】
+.br
+
+.br
+Usage\ \ \ :\ up3\ key=<key>\ <master>\ [<tran>]
+.br
+Version\ :\ Fri\ Nov\ 20\ 17:00:13\ JST\ 2020
+.br
+Edition\ :\ 1
+.br
+
+.br
+【説明】
+.br
+
+.br
+masterとtranの各行をkey=で指定されたフィールド値で比較し、同じキーフィールドを
+.br
+持つ行をmasterの該当行の下に挿入して出力する。masterもtranもキーとなるフィール
+.br
+ドは整列されている必要がある。
+.br
+tran指定を省略すると標準入力（stdin）からの入力となる。
+.br
+
+.br
+【例1】
+.br
+
+.br
+
+  $ cat master
+  a店 1日目 103 62                ←1日目から3日目までのデータ
+  a店 2日目 157 94
+  a店 3日目 62 30
+  b店 1日目 210 113
+  b店 2日目 237 121
+  b店 3日目 150 82
+  c店 1日目 81 52
+  c店 2日目 76 49
+  c店 3日目 38 21
+
+  $
+
+.br
+
+  $ cat tran              ← 4日目から5日目までのデータ
+  a店 4日目 131 84
+  a店 5日目 189 111
+  b店 4日目 198 105
+  b店 5日目 259 189
+  c店 4日目 81 48
+  c店 5日目 98 61
+
+  $
+
+.br
+
+  $ up3 key=1 master tran
+  a店 1日目 103 62
+  a店 2日目 157 94
+  a店 3日目 62 30
+  a店 4日目 131 84                ←masterのa店の下にtranのa店がきている
+  a店 5日目 189 111
+  b店 1日目 210 113
+  b店 2日目 237 121
+  b店 3日目 150 82
+  b店 4日目 198 105
+  b店 5日目 259 189
+  c店 1日目 81 52
+  c店 2日目 76 49
+  c店 3日目 38 21
+  c店 4日目 81 48
+  c店 5日目 98 61
+
+  $
+
+.br
+複数のキーフィールドを指定する場合はkey=2@1のように@でつないで指定する。
+.br
+
+.br
+【関連項目】
+.br
+
+.br
+join0(1)、join1(1)、join2(1)、loopj(1)、loopx(1)、マスタファイル(5)、トランザク
+.br
+ションファイル(5)
+.br
+
+.br
+last\ modified:\ Fri\ Jul\ 15\ 16:27:21\ JST\ 2022
+.br
+Contact\ us:\ uecinfo@usp-lab.com
+.br
+Copyright\ (c)\ 2012-2022\ Universal\ Shell\ Programming\ Laboratory\ All\ Rights
+.br

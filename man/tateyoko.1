@@ -1,0 +1,120 @@
+.TH  Tukubai 1 "20 Jun 2020" "usp Tukubai" "Tukubai コマンド マニュアル"
+
+.br
+tateyoko(1)
+.br
+
+.br
+【名前】
+.br
+
+.br
+tateyoko\ :\ 縦テキストを横テキストへ変換
+.br
+
+.br
+【書式】
+.br
+
+.br
+Usage\ \ \ :\ tateyoko\ <file>
+.br
+Version\ :\ Sat\ Jun\ 20\ 21:57:22\ JST\ 2020
+.br
+Edition\ :\ 1
+.br
+
+.br
+【説明】
+.br
+
+.br
+<file>の行を列に縦横変換する。ファイル名が-の時は、標準入力ファイルを取り込む。
+.br
+<file>として-を指定すると標準入力を使用する。
+.br
+
+.br
+【例1】
+.br
+
+.br
+
+  $ cat data
+  1 2 3
+  A B C
+  4 5 6
+
+  $
+
+.br
+
+  $ tateyoko data
+  1 A 4
+  2 B 5
+  3 C 6
+
+  $
+
+.br
+【例2】
+.br
+
+.br
+map(1)の出力を縦横変換する。
+.br
+
+.br
+
+  $ cat data
+  A 10/01 1
+  A 10/02 2
+  A 10/03 3
+  B 10/01 4
+  B 10/02 5
+  B 10/03 6
+
+  $
+
+.br
+
+  $ map num=1 data |  keta -
+  * 10/01 10/02 10/03
+  A\1 \2 \32     3
+  B\1 \2 \35     6
+
+  $
+
+.br
+
+  $ map num=1 data | tateyoko - | keta -
+  *     A B
+  10/01 1 4
+  10/02 2 5
+  10/03 3 6
+
+  $
+
+.br
+【備考】
+.br
+
+.br
+tateyoko(1)は指定ファイルを一旦すべてメモリへ展開する。
+.br
+
+.br
+【関連項目】
+.br
+
+.br
+map(1)、unmap(1)
+.br
+
+.br
+last\ modified:\ Fri\ Jul\ 15\ 15:42:38\ JST\ 2022
+.br
+Contact\ us:\ uecinfo@usp-lab.com
+.br
+Copyright\ (c)\ 2012-2022\ Universal\ Shell\ Programming\ Laboratory\ All\ Rights
+.br

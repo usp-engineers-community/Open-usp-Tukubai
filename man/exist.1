@@ -1,0 +1,86 @@
+.TH  Tukubai 1 "21 Oct 2011" "usp Tukubai" "Tukubai コマンド マニュアル"
+
+.br
+exist(1)
+.br
+
+.br
+【名前】
+.br
+
+.br
+exist.B\ \e
+1 .B\ \e
+2 .B\ \e
+3数ファイルの存在チェック
+.br
+
+.br
+【書式】
+.br
+
+.br
+Usage\ \ \ :\ exist\ [-v]\ <file1>\ <file2>\ ...
+.br
+Version\ :\ Fri\ Oct\ 21\ 11:26:06\ JST\ 2011
+.br
+Edition\ :\ 1
+.br
+
+.br
+【説明】
+.br
+
+.br
+<file1>\ <file2>\ ...\ すべてのファイルが存在すれば正常終了、
+.br
+それ以外はエラー終了します。
+.br
+
+.br
+【例１】
+.br
+
+.br
+
+  $ touch file.{1..5}
+
+  $ exist file.{1..5} && echo ok > result
+
+  $ cat result
+  ok
+
+.br
+【例２】
+.br
+
+.br
+
+  $ touch file.{1..5}
+
+  $ exist file.{1..6} || echo ng > result  <-- file.6 は無いのでエラー
+
+  $ cat result
+  ng
+
+.br
+【例３】
+.br
+
+.br
+ワイルドカードの展開に成功したら正常終了します。
+.br
+
+  $ touch a{1..5}
+
+  $ exist a* && echo ok > result  <-- "a" から始まるファイル名があれば成功
+
+  $ cat result
+
+.br
+last\ modified:\ Sat\ Aug\ 13\ 12:25:02\ JST\ 2022
+.br
+Contact\ us:\ uecinfo@usp-lab.com
+.br
+Copyright\ (c)\ 2012-2022\ Universal\ Shell\ Programming\ Laboratory\ All\ Rights
+.br

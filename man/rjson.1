@@ -1,0 +1,225 @@
+.TH  Tukubai 1 "12 Sep 2022" "usp Tukubai" "Tukubai コマンド マニュアル"
+
+.br
+rjson(1)
+.br
+
+.br
+【名前】
+.br
+
+.br
+rjson\ :\ JSON\ 形式のファイルをフィールド形式に変換する
+.br
+
+.br
+【書式】
+.br
+
+.br
+Usage\ \ \ :\ rjson\ [-p<c>][-m<c>][-s<c>][-n<string>]\ [<json-file>]
+.br
+Version\ :\ Mon\ Sep\ 12\ 12:13:51\ JST\ 2022
+.br
+Edition\ :\ 1
+.br
+
+.br
+【説明】
+.br
+
+.br
+JSON\ 形式(RFC8259)\ のファイル\ <json-file>\ をフィールド形式にします。
+.br
+オブジェクト名とリスト位置がネストの順に出力され、最後に値が出力されます。
+.br
+
+.br
+【オプション】
+.br
+
+.br
+-p\ :\ オブジェクト名やリスト位置の区切りを変更します。デフォルトは半角空白です。
+.br
+-m\ :\ オブジェクト名に含まれる半角空白を変更します。デフォルトは\ "_"\ です。
+.br
+-s\ :\ 値に含まれる半角空白を変更します。デフォルトは\ "_"\ です。
+.br
+-n\ :\ ヌル値（空文字列）を変更します。デフォルトは\ "_"\ です。
+.br
+
+.br
+【例１】
+.br
+
+.br
+
+  $ cat jsondata
+  {
+    "data1" : "null",
+    "data2" : "",
+    "data3" : null,
+    "data4" : true,
+    "data5" : false,
+    "data6" : "6.62607e-34"
+  }
+
+  $ rjson jsondata
+  data1 null
+  data2 _
+  data3 _
+  data4 true
+  data5 false
+  data6 6.62607e-34
+
+.br
+【例２】
+.br
+
+.br
+
+  $ cat jsondata
+  [
+  { "name"   : "Alice Brown",
+    "sku"    : "54321",
+    "price"  : 199.95,
+    "shipTo" : { "name" : "Bob Brown",
+               "address" : "456 Oak Lane",
+.br
+               "city" : "Pretendville",
+.br
+               "state" : "",
+.br
+               "zip"   : "98999" },
+.br
+    "billTo" : { "name" : "Alice Brown",
+               "address" : "456 Oak Lane",
+.br
+               "city" : "Pretendville",
+.br
+               "state" : "HI",
+.br
+               "zip"   : "98999" }
+.br
+  },
+  { "name"   : "Donald Tramp",
+    "sku"    : "24680",
+    "price"  : 153.32,
+    "shipTo" : { "name" : "Kim Jonil",
+               "address" : "123 Hidroask",
+.br
+               "city" : "Pyonyan",
+.br
+               "state" : "NK",
+.br
+               "zip"   : "10012" },
+.br
+    "billTo" : { "name" : "Donald Tramp",
+               "address" : "456 Oak Lane",
+.br
+               "city" : "Pretendville",
+.br
+               "state" : "HI",
+.br
+               "zip"   : "98999" }
+.br
+  }
+  ]
+
+.br
+
+  $ rjson < jsondata
+  1 name Alice_Brown
+  1 sku 54321
+  1 price 199.95
+  1 shipTo name Bob_Brown
+  1 shipTo address 456_Oak_Lane
+  1 shipTo city Pretendville
+  1 shipTo state _
+  1 shipTo zip 98999
+  1 billTo name Alice_Brown
+  1 billTo address 456_Oak_Lane
+  1 billTo city Pretendville
+  1 billTo state HI
+  1 billTo zip 98999
+  2 name Donald_Tramp
+  2 sku 24680
+  2 price 153.32
+  2 shipTo name Kim_Jonil
+  2 shipTo address 123_Hidroask
+  2 shipTo city Pyonyan
+  2 shipTo state NK
+  2 shipTo zip 10012
+  2 billTo name Donald_Tramp
+  2 billTo address 456_Oak_Lane
+  2 billTo city Pretendville
+  2 billTo state HI
+  2 billTo zip 98999
+
+.br
+
+  $ rjson -p. < jsondata
+  1.name Alice_Brown
+  1.sku 54321
+  1.price 199.95
+  1.shipTo.name Bob_Brown
+  1.shipTo.address 456_Oak_Lane
+  1.shipTo.city Pretendville
+  1.shipTo.state _
+  1.shipTo.zip 98999
+  1.billTo.name Alice_Brown
+  1.billTo.address 456_Oak_Lane
+  1.billTo.city Pretendville
+  1.billTo.state HI
+  1.billTo.zip 98999
+  2.name Donald_Tramp
+  2.sku 24680
+  2.price 153.32
+  2.shipTo.name Kim_Jonil
+  2.shipTo.address 123_Hidroask
+  2.shipTo.city Pyonyan
+  2.shipTo.state NK
+  2.shipTo.zip 10012
+  2.billTo.name Donald_Tramp
+  2.billTo.address 456_Oak_Lane
+  2.billTo.city Pretendville
+  2.billTo.state HI
+  2.billTo.zip 98999
+
+.br
+
+.br
+【例３】
+.br
+
+.br
+
+  $ cat jsondata2
+  [
+  ["a","b"],
+  ["c","d"]
+  ]
+
+.br
+
+  $ rjson jsondata2
+  1 1 a
+  1 2 b
+  2 1 c
+  2 2 d
+
+.br
+【関連項目】
+.br
+
+.br
+wjson(1)
+.br
+
+.br
+last\ modified:\ Thu\ Oct\ 27\ 16:33:08\ JST\ 2022
+.br
+Contact\ us:\ uecinfo@usp-lab.com
+.br
+Copyright\ (c)\ 2012-2022\ Universal\ Shell\ Programming\ Laboratory\ All\ Rights
+.br

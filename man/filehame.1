@@ -1,0 +1,111 @@
+.TH  Tukubai 1 "20 Oct 2022" "usp Tukubai" "Tukubai コマンド マニュアル"
+
+.br
+filehame(1)
+.br
+
+.br
+【名前】
+.br
+
+.br
+filehame\ :\ テンプレートにファイルをはめ込み
+.br
+
+.br
+【書式】
+.br
+
+.br
+Usage\ \ \ :\ filehame\ -l<string>\ <template>\ [<data>]
+.br
+Version\ :\ Oct\ 20\ 2022\ 17:32:09\ JST
+.br
+Edition\ :\ 1
+.br
+
+.br
+【説明】
+.br
+
+.br
+<template>ファイル中で文字列<string>が含まれる行を<data>ファイルの中身に置き換える。
+.br
+
+.br
+【例1】
+.br
+
+.br
+
+  $ cat template
+  <html>
+  <meta>
+  <!-- label1 -->
+  </meta>
+  <body>
+  <!-- label2 -->
+  </body>
+  </html>
+
+  $
+
+.br
+
+  $ cat data1
+  <script type="javascript/text">
+        function sb(i) {
+.br
+                submit(getElementById(i))
+.br
+        }
+.br
+  </script>
+
+  $
+
+.br
+
+  $ cat data2
+  <input id="123" type="button" onclick=sb('123') value="push" />
+
+  $
+
+.br
+
+  $ filehame -llabel1 template data1 | filehame -llabel2 - data2
+  <html>
+  <meta>
+  <script type="javascript/text">
+        function sb(i) {
+.br
+                submit(getElementById(i))
+.br
+        }
+.br
+  </script>
+  </meta>
+  <body>
+  <input id="123" type="button" onclick=sb('123') value="push" />
+  </body>
+  </html>
+
+  $
+
+.br
+
+.br
+【関連項目】
+.br
+
+.br
+formhame(1)、mojihame(1)
+.br
+
+.br
+last\ modified:\ Oct\ 20\ 17:32:09\ JST\ 2022
+.br
+Contact\ us:\ uecinfo@usp-lab.com
+.br
+Copyright\ (c)\ 2012-2022\ Universal\ Shell\ Programming\ Laboratory\ All\ Rights
+.br

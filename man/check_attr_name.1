@@ -1,0 +1,165 @@
+.TH  Tukubai 1 "20 Dec 2021" "usp Tukubai" "Tukubai コマンド マニュアル"
+
+.br
+check_attr_name(1)
+.br
+
+.br
+【名前】
+.br
+
+.br
+check_attr_name\ :\ ネームファイルのデータ種類を行ごとに判定
+.br
+
+.br
+【書式】
+.br
+
+.br
+Usage\ \ \ \ \ \ \ \ \ \ \ :\ check_attr_name\ <check_file>\ <name_file>
+.br
+Option\ \ \ \ \ \ \ \ \ \ :\ --through\ <string>\ --ngword\ <ng_file>
+.br
+Attribute\ \ \ \ \ \ \ :\ n\ N\ (0以上整数)
+.br
+                  s S (符号つき整数)
+.br
+                  f F (小数)
+.br
+                  v V (符号つき小数)
+.br
+                  e E (英字)
+.br
+                  a A (アスキー文字)
+.br
+                  b B (英数字)
+.br
+                  h H (半角文字)
+.br
+                  z Z (全角文字)
+.br
+                  k K (全角カタカナ)
+.br
+                  x X (文字)
+.br
+                  c C (チェックディジット)
+.br
+                  o O (英大文字)
+.br
+                  j J (住所=全角+半角英数)
+.br
+Version\ \ \ \ \ \ \ \ \ :\ Mon\ Dec\ 20\ 21:02:03\ JST\ 2021
+.br
+Edition\ \ \ \ \ \ \ \ \ :\ 1
+.br
+
+.br
+【説明】
+.br
+
+.br
+<check_file>に記述されているタグ名、属性+桁数の指定にしたがって<name_file>のデ
+.br
+ータを判定する。データが大文字なら桁数に等しい値を、小文字なら指定桁数未満の値
+.br
+を要求する。<name_file>のタグは、タグ名_数値であれば、_数値部分を取り除いたタグ
+.br
+名のみでチェックをする。エラーがあった場合は、コマンドはエラー終了し標準出力に
+.br
+タグ名と桁数+属性を出力する。
+.br
+
+.br
+--through\ <string>オプションは、<name_file>のデータが<string>のうちいずれかに等
+.br
+しい場合はチェックを実施しない。<string>のデフォルトは_となる。このオプションは
+.br
+繰り返し使って複数の<string>を指定することができる。
+.br
+
+.br
+--ngword\ <ng_file>オプションは、Z\ X\ K\ などの日本語文字チェックのときに、
+.br
+<ng_file>に含まれてるマルチバイト文字をエラーとする。
+.br
+
+.br
+【例1】通常のチェック
+.br
+
+.br
+
+  $ cat check
+  A N3            ←3桁整数
+  B n4            ←4桁以下の整数
+  C x3            ←5桁以下の文字
+  D X6            ←6桁の文字
+
+  $
+
+.br
+
+  $ cat data
+  A 200
+  B 12345
+  C abcde
+  D_001 xxxxxx    ←"D 6X" としてチェックされる
+  D_002 xxxxx
+  D_003 xxxx
+
+  $
+
+.br
+
+  $ check_attr_name check data
+  B n4
+  C x3
+  D_002 X6
+  D_003 X6
+
+  $ echo $?
+  1
+
+  $
+
+.br
+【例2】--through\ オプションでチェックしない値を指定する
+.br
+
+.br
+
+  $ cat data2
+  A 200
+  B _
+  C _
+  D_001 xxxxxx
+  D_002 _
+  D_003 _
+
+  $
+
+.br
+
+  $ check_attr_name --through _ check data2
+
+  $ echo $?
+  0
+
+  $
+
+.br
+【関連項目】
+.br
+
+.br
+ネーム形式(5)
+.br
+
+.br
+last\ modified:\ Wed\ Aug\ \ 3\ 08:29:48\ JST\ 2022
+.br
+Contact\ us:\ uecinfo@usp-lab.com
+.br
+Copyright\ (c)\ 2012-2022\ Universal\ Shell\ Programming\ Laboratory\ All\ Rights
+.br

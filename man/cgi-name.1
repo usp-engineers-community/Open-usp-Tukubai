@@ -1,0 +1,224 @@
+.TH  Tukubai 1 "18 Mar 2023" "usp Tukubai" "Tukubai コマンド マニュアル"
+
+.br
+cgi-name(1)
+.br
+
+.br
+【名前】
+.br
+
+.br
+cgi-name\ :\ CGI\ POSTメソッドで受け渡されるデータをネーム形式に変換
+.br
+
+.br
+【書式】
+.br
+
+.br
+Usage\ \ \ :\ cgi-name\ [-d<c>][-i<string>]\ [<param_file>]
+.br
+Option\ \ :\ \ \ \ \ \ \ \ \ \ [--template\ <html>]
+.br
+Version\ :\ Mon\ Feb\ 20\ 01:49:00\ JST\ 2023
+.br
+Edition\ :\ 1
+.br
+
+.br
+【説明】
+.br
+
+.br
+cgi-nameはWEBサーバのCGI\ POSTメソッドで受け渡されるデータをネーム形式へ変換する
+.br
+。
+.br
+
+.br
+【例1】
+.br
+
+.br
+Webサーバよりplace=tokyo&country=japanという文字列が渡される場合、キー値と値を
+.br
+ネーム形式に変更して出力する。
+.br
+
+.br
+
+  $ dd bs=$CONTENT_LENGTH | cgi-name
+  place tokyo
+  country japan
+
+  $
+
+.br
+【例2】
+.br
+
+.br
+改行(%0D%0A)は文字列'.B\ \e
+n'に変換される。また、記号'+'は半角空白に変換される。
+.br
+
+.br
+
+  $ echo 'place=%E6%9D%B1%E4%BA%AC%0D%0A%E5%A4%A7%E9%98%AA&country=ja+pan' | cgi-name
+  place 東京\n大阪
+  country ja pan
+
+  $
+
+.br
+【例3】
+.br
+
+.br
+-dオプションを指定すると半角空白は削除あるいは指定文字に変換される。
+.br
+
+.br
+
+  $ echo 'place=tokyo osaka&country=japan' | cgi-name
+  place tokyo osaka
+  country japan
+
+  $
+
+.br
+
+  $ echo 'place=tokyo osaka&country=japan' | cgi-name -d_
+  place tokyo_osaka
+  country japan
+
+  $
+
+.br
+
+  $ echo 'place=tokyo osaka&country=japan' | cgi-name -d
+  place tokyoosaka
+  country japan
+
+  $
+
+.br
+【例4】
+.br
+
+.br
+-iオプションを指定することで、返される文字列がヌルの場合の初期値を指定できる。
+.br
+
+.br
+
+  $ echo 'place=&country=japan' | cgi-name
+  place
+  country japan
+
+  $
+
+.br
+
+  $ echo 'place=&country=japan' | cgi-name -isomewhere
+  place somewhere
+  country japan
+
+  $
+
+.br
+【例5】
+.br
+
+.br
+--templateオプションを指定することで、指定したHTMLテンプレートより、radioboxと
+.br
+checkboxの名称を取り出し、その名称でデータが出力されなければ、出力をその名称で
+.br
+補完する。radioboxやcheckboxは選択しないでsubmitすると値そのものが出力されない
+.br
+。何も選択しなかったというデータを生成するためにこのオプションを使用する。
+.br
+
+.br
+
+  $ cat html
+  -----省略
+  <input type="radiobox" name="XXXX" value="A" />
+  <input type="radiobox" name="XXXX" value="B" />
+  <input type="radiobox" name="XXXX" value="C" />
+  <input type="checkbox" name="YYYY" value="a" />
+  <input type="checkbox" name="YYYY" value="b" />
+  <input type="checkbox" name="YYYY" value="c" />
+  -----省略
+
+  $
+
+.br
+
+  $ dd bs=$CONTENT_LENGTH | cgi-name -i_ --template html
+  -----省略
+  XXXX _
+  YYYY _
+  -----省略
+
+  $
+
+.br
+【例6】
+.br
+
+.br
+radiobox\ checkboxがhtmlテンプレートのmojihame\ -lコマンド対象部分にある場合にお
+.br
+いても、タグ名_%数字を認識して選択値がなくてもタグ名を出力する。
+.br
+
+.br
+
+  $ cat html
+  -----省略
+  <!-- MOJIHAME -->
+  <input type="radiobox" name="X_%1" value="%2" />
+  <!-- MOJIHAME -->
+  -----省略
+
+  $
+
+.br
+
+  $ dd bs=$CONTENT_LENGTH | cgi-name -i_ --template html
+  -----省略
+  X _
+  -----省略
+
+  $
+
+.br
+【備考】
+.br
+
+.br
+CGI\ POSTメソッドで受け渡されるデータには改行がない。通常のファイルとして使用す
+.br
+るには、ファイル末に改行コードを付加しておくほうが扱いやすい。cgi-nameコマンド
+.br
+はファイル末の改行があってもなくても正しく値を取り出す。
+.br
+
+.br
+【関連項目】
+.br
+
+.br
+mime-read(1)、nameread(1)、ネーム形式(5)
+.br
+
+.br
+last\ modified:\ Sat\ Mar\ 18\ 14:13:31\ JST\ 2023
+.br
+Contact\ us:\ uecinfo@usp-lab.com
+.br
+Copyright\ (c)\ 2012-2023\ Universal\ Shell\ Programming\ Laboratory\ All\ Rights
+.br

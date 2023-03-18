@@ -1,0 +1,88 @@
+.TH  Tukubai 1 "20 May 2020" "usp Tukubai" "Tukubai コマンド マニュアル"
+
+.br
+isdate(1)
+.br
+
+.br
+【名前】
+.br
+
+.br
+isdate\ :\ ８桁日付のチェック
+.br
+
+.br
+【書式】
+.br
+
+.br
+Usage\ \ \ :\ isdate\ <date>
+.br
+Version\ :\ Sat\ Apr\ 11\ 15:42:47\ JST\ 2009
+.br
+Edition\ :\ 1
+.br
+
+.br
+【説明】
+.br
+
+.br
+引数の８桁日付が存在する日付であれば正常終了し、
+.br
+.SH そうでなければ、異常終了(ステータス１ する。
+
+.br
+【例】
+.br
+
+.br
+
+  $ isdate 20090101
+
+  $ echo $?
+  0
+
+.br
+
+  $ isdate 20090199
+
+  $ echo $?
+  1
+
+.br
+【備考】
+.br
+
+.br
+閏年について
+.br
+\ \ ４で割れる年は閏年。(２月は２９日まで)
+.br
+\ \ ただし１００で割れる年は、閏年でない。(２月は２８日まで)
+.br
+\ \ さらに、ただし４００で割れる年は閏年。(２月は２９日まで）
+.br
+
+.br
+【バグ】
+.br
+
+.br
+１７５２年９月は３日から１３日は存在しないが、これを
+.br
+エラーとはしていない。
+.br
+ユリウス歴からグレゴリオ歴に移行した月で差分を合わせるために
+.br
+日付がとんでいる。($\ cal\ 9\ 1752\ で確認できる)
+.br
+
+.br
+last\ modified:\ Fri\ Aug\ 12\ 12:56:05\ JST\ 2022
+.br
+Contact\ us:\ uecinfo@usp-lab.com
+.br
+Copyright\ (c)\ 2012-2022\ Universal\ Shell\ Programming\ Laboratory\ All\ Rights
+.br

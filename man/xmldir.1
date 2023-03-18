@@ -1,0 +1,183 @@
+.TH  Tukubai 1 "28 Aug 2022" "usp Tukubai" "Tukubai コマンド マニュアル"
+
+.br
+xmldir(1)
+.br
+
+.br
+【名前】
+.br
+
+.br
+xmldir\ :\ ディレクトリタグの絶対パスを指定して、XMLデータをフィールド
+.br
+         形式に変換する。
+.br
+
+.br
+【書式】
+.br
+
+.br
+Usage\ \ \ :\ xmldir\ /<DirTag1>/<DirTag2>/.../<DirTagN>\ [<xmlfile>]
+.br
+Option\ \ :\ -c<n>
+.br
+Version\ :\ Sun\ Aug\ 28\ 11:35:26\ JST\ 2022\ 
+.br
+Edition\ :\ 1
+.br
+
+.br
+【説明】
+.br
+
+.br
+ディレクトリタグの絶対パスを指定して、絶対パスとすべてのサブツリーの
+.br
+項目、属性、値を出力します。出力は末端のファイルパスに対して１行出力
+.br
+されます。
+.br
+
+.br
+-c\ オプションで、指定パスのインデックスが出力されます。
+.br
+-s\ オプションで設定した文字が空白の代わりに出力されます。
+.br
+
+.br
+N\ 階層のパスの場合、インデックスは\ N\ 個となり、タグが繰り返されると
+.br
+インデックスはインクリメントされます。上位のタグがインクリメントされ
+.br
+た場合、下位のタグのインデックスは１にリセットされます。
+.br
+
+.br
+-c<n>\ の場合、インデックスは前０埋め\ <n>\ 桁の数字になります。
+.br
+
+.br
+【例１】\ 単純な例
+.br
+
+.br
+
+  $ cat xml
+  <dir1>
+      <dir2>
+        <day>23/Jul.2022</day>
+        <day>24/Jul.2022</day>
+      </dir2>
+      <dir2>
+        <day>25/Jul.2022</day>
+        <day>26/Jul.2022</day>
+      </dir2>
+  </dir1>
+
+.br
+
+  $ xmldir /dir1/dir2 xml
+  dir1 dir2 day 23/Jul.2022
+  dir1 dir2 day 24/Jul.2022
+  dir1 dir2 day 25/Jul.2022
+  dir1 dir2 day 26/Jul.2022
+
+.br
+
+  $ xmldir -c3 /dir1/dir2 xml
+  001 001 dir1 dir2 day 23/Jul.2022
+  001 001 dir1 dir2 day 24/Jul.2022
+  001 002 dir1 dir2 day 25/Jul.2022
+  001 002 dir1 dir2 day 26/Jul.2022
+
+.br
+【例２】\ テキストに空白を含む例
+.br
+
+.br
+
+  $ cat xml
+  <dir1>
+      <dir2>
+        <day>23 Jul 2022</day>
+        <day>24 Jul 2022</day>
+      </dir2>
+      <dir2>
+        <day>25 Jul 2022</day>
+        <day>26 Jul 2022</day>
+      </dir2>
+  </dir1>
+
+.br
+
+  $ xmldir -s= /dir1/dir2 xml
+  dir1 dir2 day 23=Jul=2022
+  dir1 dir2 day 24=Jul=2022
+  dir1 dir2 day 25=Jul=2022
+  dir1 dir2 day 26=Jul=2022
+
+.br
+【例３】\ 実用的な例
+.br
+
+.br
+
+  $ cat xml
+  <dir1>
+  	<dir2>
+  		<attributes>
+  			<data>a</data>
+  		</attributes>
+  	</dir2>
+  	<dir2>
+  		<attributes>
+  			<data>b</data>
+  			<data>c</data>
+  		</attributes>
+  		<attributes>
+  			<data>d</data>
+  		</attributes>
+  	</dir2>
+  </dir1>
+  <dir1>
+  	<dir2>
+  		<attributes>
+  			<data>e</data>
+  		</attributes>
+  		<attributes>
+  			<data>f</data>
+  		</attributes>
+  		<attributes>
+  			<data>g</data>
+  		</attributes>
+  	</dir2>
+  </dir1>
+
+.br
+
+  $ xmldir -c3 /dir1/dir2/attributes xml
+  001 001 dir1 dir2 attributes data a
+  001 002 dir1 dir2 attributes data b
+  001 003 dir1 dir2 attributes data c
+  001 004 dir1 dir2 attributes data d
+  002 005 dir1 dir2 attributes data e
+  002 006 dir1 dir2 attributes data f
+  002 007 dir1 dir2 attributes data g
+
+.br
+【関連項目】
+.br
+
+.br
+rjson(1)
+.br
+
+.br
+last\ modified:\ Sun\ Aug\ 28\ 11:59:56\ JST\ 2022
+.br
+Contact\ us:\ uecinfo@usp-lab.com
+.br
+Copyright\ (c)\ 2012-2022\ Universal\ Shell\ Programming\ Laboratory\ All\ Rights
+.br
