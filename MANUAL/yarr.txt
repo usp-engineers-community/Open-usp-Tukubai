@@ -10,7 +10,7 @@ yarr : 縦型のデータを横型に展開
 
 Usage   : yarr [-<n>][-d<str>] [<file>]
         : yarr [-<n>][-d<str>] num=<n> [<file>]
-Version : Wed Aug 3 07:01:40 JST 2022
+Version : Sun Mar 19 08:24:53 JST 2023
 Edition : 1
 
 【説明】
@@ -101,6 +101,6 @@ $
 
 tarr(1)
 
-last modified: Sun Aug 28 12:13:44 JST 2022
+last modified: Sun Mar 19 08:27:54 JST 2023
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights
+Copyright (c) 2012-2023 Universal Shell Programming Laboratory All Rights

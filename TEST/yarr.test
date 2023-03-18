@@ -177,6 +177,10 @@ ${com} -d'n' num=4 $tmp-in >$tmp-out
 diff $tmp-ans2 $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST4-2 error"
 
+${com} -2 -d= <<< "name_1 value_1 name_2 value_2" >$tmp-out
+diff <(echo name_1=value_1; echo name_2=value_2) $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4-3 error"
+
 ###########################################
 #TEST5
 # -d指定で4バイト文字（Unicode符号位置がU+FFFF超の文字）を与える
