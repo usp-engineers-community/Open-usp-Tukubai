@@ -12,7 +12,7 @@ written  by Hinata Yanagi
 
 The MIT License
 
-Copyright (C) 2022 Universal Shell Programming Laboratory
+Copyright (C) 2023 Universal Shell Programming Laboratory
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -36,8 +36,9 @@ THE SOFTWARE.
 showUsage :: IO ()
 showUsage = do
                 System.IO.hPutStr stderr "Usage    : check_need_name [--blank <string>] <check_file> [<name_file>]\n"
-                System.IO.hPutStr stderr "Version  : Fri Dec  2 13:46:27 JST 2022\n"
+                System.IO.hPutStr stderr "Version  : Sun Mar 19 15:46:12 JST 2023\n"
                 System.IO.hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD)\n"
+                exitFailure
 
 main :: IO ()
 main = do args <- getArgs
@@ -89,11 +90,6 @@ isRelated k v = if k == v then True else f k v
           g k ('_':cs) = g k cs
           g k (c:cs)   = if c >= '0' && c <= '9' then g k cs else False
 
-
-{--
-checkNum :: Key -> [Key] -> [Key]
-checkNum k ks = filter ( BS.isPrefixOf k ) ks
---}
 
 parseCheckFile :: [BS.ByteString] -> [Key]
 parseCheckFile clns = [ (myWords ln) !! 0 | ln <- clns ]
