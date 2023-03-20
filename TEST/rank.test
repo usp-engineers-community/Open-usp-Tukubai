@@ -49,6 +49,87 @@ BOMandEOLvariation(){	# BOM無しLF改行ファイル（$1）からBOM付きCRLF
 }
 
 ###########################################
+#TEST9
+# 欄数変化において許容できない場合の試験
+
+# TEST9-1
+#  比較のために正常終了する例を実行する
+
+cat << FIN > $tmp-in
+杉山______ JPN 東 A 26
+崎村______ JPN 東 B 27
+梶川______ JPN 西 C 27
+柳本______ JPN 西 D 27
+BOB_______ USA East E 25
+GEROGE____ USA East F 25
+SAM_______ USA East G 29
+TOM_______ USA West H 35
+FIN
+
+cat << FIN > $tmp-ans
+1 杉山______ JPN 東 A 26
+2 崎村______ JPN 東 B 27
+1 梶川______ JPN 西 C 27
+1 柳本______ JPN 西 D 27
+1 BOB_______ USA East E 25
+1 GEROGE____ USA East F 25
+3 SAM_______ USA East G 29
+1 TOM_______ USA West H 35
+FIN
+
+${com} ref=2@NF-2 key=NF $tmp-in > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST9-1 error"
+
+# TEST9-2
+#  第5行において欄数変化が起きている
+#  この欄数変化により第5行ではref指定の第2欄とNF-2欄が衝突する（エラーメッセージでは「交叉」としている）
+#  このような欄数変化は許容されないのでエラーとなる
+
+# ${name}のTEST9-2はエラーで終了するように設定されている
+
+cat << FIN > $tmp-in
+杉山______ JPN 東 A 26
+崎村______ JPN 東 B 27
+梶川______ JPN 西 C 27
+柳本______ JPN 西 D 27
+BOB_______ USA East   25
+GEROGE____ USA East F 25
+SAM_______ USA East G 29
+TOM_______ USA West H 35
+FIN
+
+${com} ref=2@NF-2 key=NF $tmp-in 2> /dev/null > $tmp-out
+[ $? -ne 0 ] ; ERROR_CHECK "TEST9-2 error"
+
+
+# TEST9-3
+#  ref指定として全欄を指定すると欄数変化は常にエラーとなる
+#  第5行において欄数変化が起きている
+#  このような欄数変化は許容されないのでエラーとなる
+
+# ${name}のTEST9-3はエラーで終了するように設定されている
+
+cat << FIN > $tmp-in
+杉山______ JPN 東 A 26
+崎村______ JPN 東 B 27
+梶川______ JPN 西 C 27
+柳本______ JPN 西 D 27
+BOB_______ USA East   25
+GEROGE____ USA East F 25
+SAM_______ USA East G 29
+TOM_______ USA West H 35
+FIN
+
+${com} ref=0 key=NF $tmp-in 2> /dev/null > $tmp-out
+[ $? -ne 0 ] ; ERROR_CHECK "TEST9-3 error"
+
+###########################################
+rm -f $tmp-*
+echo "${pythonversion} ${name}" OK
+exit 0
+
+###########################################
 #TEST1
 # 引数を何も指定しないときは、単純に行番号を追加する
 
@@ -290,9 +371,118 @@ cat << FIN > $tmp-ans
 FIN
 
 ${com} ref=1@NF-1 key=NF $tmp-in > $tmp-out
-#${com} ref=NF-3/NF-2@NF-3@NF-2@2/1@1/2@2@1@NF-2/NF-3 key=NF $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST8 error"
+
+###########################################
+#TEST9
+# 欄数変化において許容できない場合の試験
+
+# TEST9-1
+#  比較のために正常終了する例を実行する
+
+cat << FIN > $tmp-in
+杉山______ JPN 東 A 26
+崎村______ JPN 東 B 27
+梶川______ JPN 西 C 27
+柳本______ JPN 西 D 27
+BOB_______ USA East E 25
+GEROGE____ USA East F 25
+SAM_______ USA East G 29
+TOM_______ USA West H 35
+FIN
+
+cat << FIN > $tmp-ans
+1 杉山______ JPN 東 A 26
+2 崎村______ JPN 東 B 27
+1 梶川______ JPN 西 C 27
+1 柳本______ JPN 西 D 27
+1 BOB_______ USA East E 25
+1 GEROGE____ USA East F 25
+3 SAM_______ USA East G 29
+1 TOM_______ USA West H 35
+FIN
+
+${com} ref=2@NF-2 key=NF $tmp-in > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST9-1 error"
+
+# TEST9-2
+#  第5行において欄数変化が起きている
+#  この欄数変化により第5行ではref指定の第2欄とNF-2欄が衝突する（エラーメッセージでは「交叉」としている）
+#  このような欄数変化は許容されないのでエラーとなる
+
+echo  ${name}のTEST9-2はエラーで終了するように設定されている
+
+cat << FIN > $tmp-in
+杉山______ JPN 東 A 26
+崎村______ JPN 東 B 27
+梶川______ JPN 西 C 27
+柳本______ JPN 西 D 27
+BOB_______ USA East   25
+GEROGE____ USA East F 25
+SAM_______ USA East G 29
+TOM_______ USA West H 35
+FIN
+
+${com} ref=2@NF-2 key=NF $tmp-in > $tmp-out
+[ $? -ne 0 ] ; ERROR_CHECK "TEST9-2 error"
+
+
+# TEST9-3
+#  ref指定として全欄を指定すると欄数変化は常にエラーとなる
+#  第5行において欄数変化が起きている
+#  このような欄数変化は許容されないのでエラーとなる
+
+echo  ${name}のTEST9-3はエラーで終了するように設定されている
+
+cat << FIN > $tmp-in
+杉山______ JPN 東 A 26
+崎村______ JPN 東 B 27
+梶川______ JPN 西 C 27
+柳本______ JPN 西 D 27
+BOB_______ USA East   25
+GEROGE____ USA East F 25
+SAM_______ USA East G 29
+TOM_______ USA West H 35
+FIN
+
+${com} ref=0 key=NF $tmp-in > $tmp-out
+[ $? -ne 0 ] ; ERROR_CHECK "TEST9-3 error"
+
+###########################################
+#TEST10
+# refとkey指定自由検査
+
+cat << FIN > $tmp-in
+JPN 杉山______ 26
+JPN 崎村______ 27
+JPN 梶川______ 27
+JPN 柳本______ 30
+USA BOB_______ 25
+USA GEROGE____ 29
+USA SAM_______ 29
+USA TOM_______ 35
+FIN
+
+cat << FIN > $tmp-ans
+1 JPN 杉山______ 26
+2 JPN 崎村______ 27
+2 JPN 梶川______ 27
+4 JPN 柳本______ 30
+1 USA BOB_______ 25
+2 USA GEROGE____ 29
+2 USA SAM_______ 29
+4 USA TOM_______ 35
+FIN
+
+${com} ref=1 key=3 $tmp-in > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST10-1 error"
+
+${com} key=3 ref=1 $tmp-in > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST10-2 error"
 
 ###########################################
 rm -f $tmp-*
