@@ -127,6 +127,26 @@ diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST4 error"
 
 ###########################################
+# TEST5
+# 数値の逆順ソート。
+
+cat << FIN > $tmp-data
+banana 2
+apple 01
+coconut 003
+FIN
+
+cat << FIN > $tmp-out
+coconut 003
+banana 2
+apple 01
+FIN
+
+${com} key=2nr <$tmp-data >$tmp-ans
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5 error"
+
+###########################################
 
 rm -f $tmp-*
 echo "${pythonversion} ${name}" OK

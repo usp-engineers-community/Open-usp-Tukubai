@@ -8,7 +8,7 @@
 #
 # The MIT License
 #
-# Copyright (C) 2022 Universal Shell Programming Laboratory
+# Copyright (C) 2023 Universal Shell Programming Laboratory
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,7 @@
 from __future__ import print_function
 
 _usage = "msort key=<key> <file>"
-_version = "Sun Aug 28 11:47:10 JST 2022"
+_version = "Tue Mar 21 06:05:17 JST 2023"
 _code = "Open usp Tukubai (Linux+/PYTHON2.7/UTF-8)"
 _keypat = r'^key=([0-9/nr]+(@[0-9/nr]+)*)$'
 _keypat_factor = r'^([0-9]+[nr]*)(?:/([0-9]+[nr]*))?$'
@@ -135,7 +135,10 @@ if __name__ == '__main__':
 				value += (item[index],)
 			else:
 				if 'n' in attributes[index]:
-					value += (float(item[index]),)
+					if 'r' in attributes[index]:
+						value += (-float(item[index]),)
+					else:
+						value += (float(item[index]),)
 				elif 'r' in attributes[index]:
 					if type(item[index]) is str:
 						inverted_string = ''.join(

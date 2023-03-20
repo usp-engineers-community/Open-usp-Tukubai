@@ -9,7 +9,7 @@ msort : オンメモリソート
 【書式】
 
 Usage   : msort key=<key> [<file>]
-Version : Sun Aug 28 11:47:10 JST 2022
+Version : Tue Mar 21 06:05:17 JST 2023
 Edition : 1
 
 【説明】
@@ -35,6 +35,6 @@ key=<key> にしたがって <file> のソートを行います。<key> とし�
 ファイル名を指定しない、或は - を指定した場合、標準入力から読み込み
 ます。
 
-last modified: Sun Aug 28 11:49:10 JST 2022
+last modified: Tue Mar 21 06:08:57 JST 2023
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights
+Copyright (c) 2012-2023 Universal Shell Programming Laboratory All Rights
