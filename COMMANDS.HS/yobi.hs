@@ -38,7 +38,7 @@ THE SOFTWARE.
 
 
 command_name = "yobi"
-version = "Mon Mar 20 09:28:10 JST 2023"
+version = "Mon Mar 20 09:33:42 JST 2023"
 
 showUsage :: IO ()
 showUsage = do
@@ -60,6 +60,8 @@ main = do args <- getArgs
             ["-e", field_index, file_name] -> openFile file_name ReadMode >>= yobi' English (read field_index)
             ["-j", field_index] -> yobi' Japanese (read field_index) stdin
             ["-j", field_index, file_name] -> openFile file_name ReadMode >>= yobi' Japanese (read field_index)
+            ["-d", string] ->
+              yobi Index string >>= System.IO.putStrLn
             ["-d", "-e", string] ->
               yobi English string >>= System.IO.putStrLn
             ["-d", "-j", string] ->
