@@ -50,10 +50,10 @@ BOMandEOLvariation(){	# BOM無しLF改行ファイル（$1）からBOM付きCRLF
 ###########################################
 #TEST1
 
-EPO=$(echo 19700101 | ${com} 1 - | awk '{print $2}')
+EPO=$(echo 19700101 | ${com} 1 | awk '{print $2}')
 [ "$EPO" -eq 0 ] ; ERROR_CHECK "TEST1-1 error"
 
-EPO=$(echo 0 | ${com} -r 1 - | awk '{print $2}')
+EPO=$(echo 0 | ${com} -r 1 | awk '{print $2}')
 [ "$EPO" -eq 19700101000000 ] ; ERROR_CHECK "TEST1-2 error"
 
 ###########################################
@@ -81,7 +81,7 @@ cat << FIN > $tmp-ans
 0002 0000007 20060210 1139529600 20060206 1139184000 444 31080 0
 FIN
 
-${com} 3 4 $tmp-in > $tmp-out
+${com} 3 4 < $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST2 error"
 
