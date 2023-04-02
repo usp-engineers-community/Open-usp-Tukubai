@@ -3,7 +3,6 @@ Haskell版の実装
 check_attr_name
 keycut
 loopj
-man2
 mime-read
 nameread
 numchar
@@ -13,6 +12,3 @@ sm5
 tcat
 unmap
 up3
-ycat
-yobi
-ysum
