@@ -3,8 +3,9 @@ import System.Environment
 import System.IO
 import Text.ParserCombinators.Parsec
 import Control.Monad
-import Data.ByteString.Lazy.Char8 as BS hiding (length,take,drop,filter,head)
 import Control.Applicative hiding ((<|>), many)
+import Data.ByteString.Lazy.Char8 as BS hiding (length,take,drop,filter,head)
+import System.Exit (exitFailure)
 
 {--
 count（Open usp Tukubai）
@@ -14,7 +15,7 @@ written  by Hinata Yanagi
 
 The MIT License
 
-Copyright (C) 2022 Universal Shell Programming Laboratory
+Copyright (C) 2023 Universal Shell Programming Laboratory
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -38,8 +39,9 @@ THE SOFTWARE.
 showUsage :: IO ()
 showUsage = do
     System.IO.hPutStr stderr "Usage   : count [+ng] <key=n> <master> <tran>\n"
-    System.IO.hPutStr stderr "Version : Sat Oct  1 21:43:34 JST 2022\n"
+    System.IO.hPutStr stderr "Version : Wed Apr 19 07:45:39 JST 2023\n"
     System.IO.hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD)\n"
+    exitFailure
 
 main :: IO ()
 main = do args <- getArgs
