@@ -8,7 +8,7 @@ sm4 : 小計、中計
 
 【書式】
 
-Usage   : sm4 [+h] <k1> <k2> <d1> <d2> <s1> <s2> <file>
+Usage   : sm4 <k1> <k2> <d1> <d2> <s1> <s2> <file>
 Version : Tue Oct 20 15:17:47 JST 2020
 Edition : 1
 
@@ -184,6 +184,6 @@ $
 
 kasan(1)、plus(1)、ratio(1)、sm2(1)、sm5(1)、ysum(1)
 
-last modified: Fri Jul 15 15:42:38 JST 2022
+last modified: Thu Apr 20 08:30:12 JST 2023
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights
+Copyright (c) 2012-2023 Universal Shell Programming Laboratory All Rights
