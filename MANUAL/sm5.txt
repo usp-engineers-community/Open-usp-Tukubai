@@ -8,7 +8,7 @@ sm5 : 大計
 
 【書式】
 
-Usage   : sm5 [+h] <k1> <k2> <s1> <s2> <file>
+Usage   : sm5 <k1> <k2> <s1> <s2> <file>
 Version : Sat Jun 20 21:57:22 JST 2020
 Edition : 1
 
@@ -124,6 +124,6 @@ sm5 1 6 7 NF > result           ←大計を出力
 
 kasan(1)、plus(1)、ratio(1)、sm2(1)、sm4(1)、ysum(1)
 
-last modified: Mon Aug  8 12:27:37 JST 2022
+last modified: Wed Apr 19 08:33:07 JST 2023
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights
+Copyright (c) 2012-2023 Universal Shell Programming Laboratory All Rights
