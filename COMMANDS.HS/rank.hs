@@ -39,10 +39,12 @@ data State = State {
   index :: Int
 }
 
+data FieldIndex = Field Int | NF Int
+
 showUsage :: IO ()
 showUsage = do
    System.IO.hPutStr stderr "Usage    : rank [ref=<ref>] [key=<key>] [<file>]\n"
-   System.IO.hPutStr stderr "Version  : Sat Apr 22 18:26:01 JST 2023\n"
+   System.IO.hPutStr stderr "Version  : Sat Apr 22 19:04:16 JST 2023\n"
    System.IO.hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD)\n"
 
 main :: IO ()
@@ -54,6 +56,18 @@ main = do args <- getArgs
               arguments     ->
                 rank arguments Data.Map.empty State {
                   ref = Nothing, key = Nothing, index = 0} stdin
+
+fieldIndex position =
+  case stripPrefix "NF" position of
+    Nothing ->
+      if position == "x" then
+        Field 0
+      else
+        Field $ read position
+    Just "" ->
+      NF    0
+    Just offset ->
+      NF    $ read offset
 
 collectJust [] = []
 
@@ -92,11 +106,20 @@ rank [] options state source = do
           Nothing ->
             Nothing
           Just ref_index ->
-            Just $ record !! ref_index
+            case ref_index of
+              Field index ->
+                Just $ record !! (index - 1)
+              NF offset ->
+                Just $ record !! (length record - offset - 1)
       maybe_key <- return $
         case key_index of
           Nothing    -> Nothing
-          Just index -> Just $ record !! index
+          Just key_index ->
+            case key_index of
+              Field index ->
+                Just $ record !! (index - 1)
+              NF offset ->
+                Just $ record !! (length record - offset - 1)
       index_duplicate <-
         if ref state /= Nothing && ref state /= maybe_ref then do
           return (1, 0)
@@ -114,11 +137,11 @@ rank [] options state source = do
         index = fst index_duplicate + snd index_duplicate
       } source
   where
-    key_index  :: Maybe Int =
+    key_index  :: Maybe FieldIndex =
       case options !? "key" of
         Nothing ->
           Nothing
         Just key ->
-          Just $ read key - 1
-    ref_index' :: Maybe Int =
-      ((\ref -> ref - 1) <$> read <$> options !? "ref")
+          Just $ fieldIndex key
+    ref_index' :: Maybe FieldIndex =
+      (fieldIndex <$> options !? "ref")
