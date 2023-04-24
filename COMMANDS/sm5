@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 #coding: utf-8
 #
-# sm5 小計/中計挿入ツール（Open usp Tukubai版）
+# sm5 大計追加ツール（Open usp Tukubai版）
 # 
 # designed by Nobuaki Tounaka
 # written  by Masatomo Togashi
 #
 # The MIT License
 #
-# Copyright (C) 2020 Universal Shell Programming Laboratory
+# Copyright (C) 2023 Universal Shell Programming Laboratory
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -30,8 +30,8 @@
 
 from __future__ import print_function
 
-_usage = "sm5 [+h] <d1> <d2> <s1> <s2> <file>"
-_version = "Sat Jun 20 21:57:22 JST 2020"
+_usage = "sm5 [+h] <k1> <k2> <s1> <s2> <file>"
+_version = "Thu Apr 20 00:00:00 JST 2023"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
 _keypat = r'\d+|NF(-\d+)?$'
 wide_class = ["W","F","A"]	# 全角文字クラス
@@ -81,6 +81,22 @@ class FieldLine:
 		if key > self.size():
 			error("フィールド番号が大きすぎます。")
 		return key
+
+	def getFieldNums(self,k1,k2,s1,s2):	# k1,k2,d1,d2,s1,s2は文字列で与えられる
+		min_key = self.getFieldNum(k1)
+		max_key = self.getFieldNum(k2)
+		min_sum = self.getFieldNum(s1)
+		max_sum = self.getFieldNum(s2)
+		# 降順を昇順化
+		if min_key > max_key:
+			min_key,max_key=max_key,min_key
+		if min_sum > max_sum:
+			min_sum,max_sum=max_sum,min_sum
+		# キー位置範囲と集計位置範囲の交叉検査
+		if  max_key < min_sum or max_sum < min_key:	# 2区間が交叉しない
+			return min_key,max_key,min_sum,max_sum	# k1,k2,d1,d2,s1,s2を数値化
+		else:	# 2区間で交叉がある
+			error("キー位置範囲と集計位置範囲の間に交叉がありました。")
 
 	def getField(self, s, e = None):
 		s = self.getFieldNum(s)
@@ -280,6 +296,56 @@ def open_file(n):
 			error("ファイル '%s' をオープンできません。", filename)
 	return file
 
+#
+# 行の欄数検査
+#   先頭行ではkeyの区間指定で絶対欄位置指定とNF相対欄位置指定が混在しているか検査する
+#   先頭行以外では
+#     絶対欄位置リストとNF相対欄位置絶対化リスト（区間の端がNF相対襴位置だったものも含む）の間に重複があるか検査する
+#
+def check_num_fields_variation(line):
+	global	NF,dummy,sum,key,sum,k1,k2,s1,s2,key_range_size,sum_range_size
+
+	start=False
+	nf=line.size()
+	if NF==-1:	start=True
+	if nf != NF:	# 欄数が変化したかまたは先頭行なら
+		NF=nf	# NFを更新
+		k1,k2,s1,s2=line.getFieldNums(min_key_str,max_key_str,min_sum_str,max_sum_str)	# keyとsumの範囲を確定する
+		if start:	# 先頭行なら合計を初期化しておく
+			if not line:
+				sys.exit(0)
+
+			#
+			# ダミー文字列の生成
+			#
+			dummy = " ".join([DUMMY_CHAR * strwidth(line.getField(x)) for x in range(k1,k2+1)])
+
+			# 区間長の確定
+			key_range_size=k2-k1+1
+			sum_range_size=s2-s1+1
+
+			#
+			# 積算値の初期化
+			#
+			sum=[]
+			if not DUMMY_CHAR in line.getField(k1, k2):	# 中計のない行なら積算値を初期化する
+				for i in range(0, sum_range_size):
+					sum.append(getval(line, s1+i))
+				key = line.getField(k1, k2)	# 先頭行のキー
+			print(line.getField(0))	# 行全体を出力する
+
+			return True	# 先頭行
+
+		else:	# 先頭行以外で欄数変化があったら
+			if (k2-k1+1 != key_range_size) or \
+				(s2-s1+1 != sum_range_size):	# keyまたはsumの区間長が変化したらエラー
+				error("欄数変化によってキー位置または集計位置の区間長が変化しました。")
+	return False	# 非先頭行
+
+# 不要な空白の削除関数
+def rm_sp(line):
+	return re.sub(r' {2,}',' ',re.sub(r'^ +| +$','',line))	# 行頭と行末の空白を削除し連続空白を単空白にする
+
 # 改行符号（\r\n）の削除関数
 def rm_eol(line):
 	return line.rstrip("\r\n")	# 改行記号としてCRLF('\r\n')/CR('\r')/LF('\n')のすべてに対応する
@@ -301,6 +367,7 @@ def rm_BOM(line):
 def preproc_line(line):
 	line=rm_eol(line)	# 行末の改行記号を削除する
 	line=rm_BOM(line)	# ファイル先頭行の行頭にBOMがあったらこれを削除する
+	line=rm_sp(line)	# 行頭と行末の空白を削除し連続空白を単空白にする
 	return line
 
 # Python3か判定する
@@ -324,6 +391,8 @@ def getval(line, n):
 #
 if __name__ == '__main__':
 
+	global	NF,dummy,sum,key,sum,k1,k2,s1,s2,key_range_size,sum_range_size
+
 	if len(sys.argv) < 5:
 		usage()
 
@@ -341,12 +410,12 @@ if __name__ == '__main__':
 	#
 	# key=<key>
 	#
-	d1 = sys.argv[1]
-	d2 = sys.argv[2]
-	s1 = sys.argv[3]
-	s2 = sys.argv[4]
+	min_key_str = sys.argv[1]
+	max_key_str = sys.argv[2]
+	min_sum_str = sys.argv[3]
+	max_sum_str = sys.argv[4]
 	p = re.compile(_keypat)
-	if not (p.match(s1) and p.match(s2)):
+	if not (p.match(min_key_str) and p.match(max_key_str) and p.match(min_sum_str) and p.match(max_sum_str)):
 		usage()
 
 	file = open_file(5)
@@ -363,60 +432,26 @@ if __name__ == '__main__':
 		print(line)
 
 	#
-	# １行入力
-	#
-	line = file.readline()
-	if not line:
-		sys.exit(0)
-	line=preproc_line(line)	# 入力行の前処理
-	line = FieldLine(line)
-	d1 = line.getFieldNum(d1)
-	d2 = line.getFieldNum(d2)
-	s1 = line.getFieldNum(s1)
-	s2 = line.getFieldNum(s2)
-	# 降順を昇順化
-	if d1 > d2:	d1,d2=d2,d1
-	if s1 > s2:	s1,s2=s2,s1
-	if d2 > s1:
-		usage()
-
-	#
-	# ダミー文字列の生成
-	#
-	dummy = ''
-	for i in range(d1, d2):
-		dummy += DUMMY_CHAR * strwidth(line.getField(i)) + ' '
-	dummy += DUMMY_CHAR * strwidth(line.getField(d2))
-
-	#
-	# 合計の初期化
-	#
-	sum = [ 0 for i in range(s2 + 1) ]
-	if not DUMMY_CHAR in line.getField(d1, d2):
-		for i in range(s1, s2 + 1):
-			sum[i] = getval(line, i)
-	print(line.getField(0))
-
-	#
 	# メインループ
 	#
+	NF=-1
 	firstline=True
 	for line in file:
 		line=preproc_line(line)	# 入力行の前処理
 		line = FieldLine(line)
-		if DUMMY_CHAR in line.getField(d1, d2):
+		Top=check_num_fields_variation(line)	# 先頭行または欄数変化のあるときの処理
+		if Top:	continue	# 先頭行での集計は済んでいる
+		# キー欄にdummyがあれば行全体をそのまま出力する
+		if DUMMY_CHAR in line.getField(k1, k2):
 			print(line.getField(0))
 			continue
-		for j in range(s1, s2 + 1):
-			sum[j] += getval(line, j)
+		# 集計欄の値を積算する
+		for i in range(s1, s2+1):
+			sum[i-s1] += getval(line, i)
 		print(line.getField(0))
 
 	#
-	# 残り合計の出力
-	#
-	print(dummy, end=' ')
-	for i in range(s1, s2):
-		print(sum[i], end=' ')
-	print(sum[s2])
+	# 残った積算値の出力
+	print(dummy+" "+" ".join([str(sum[x-s1]) for x in range(s1,s2+1)]))
 
 	sys.exit(0)
