@@ -4,11 +4,11 @@
 # tarr 縦アレー: フィールドをレコードに分ける （Open usp Tukubai版）
 #
 # designed by Nobuaki Tounaka
-# written  by Hinata Yanagi
+# written  by Masatomo Togashi
 #
 # The MIT License
 #
-# Copyright (C) 2022 Universal Shell Programming Laboratory
+# Copyright (C) 2023 Universal Shell Programming Laboratory
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -31,8 +31,9 @@
 from __future__ import print_function
 
 _usage = "tarr [-<n>] [-d<str>] [num=<m>] <file>"
-_version = "Mon Jul 25 20:20:42 JST 2022"
+_version = "Thu Apr 20 00:00:00 JST 2023"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4+/UTF-8)"
+_keypat = r'\d+|NF-\d+$'
 
 import re
 import os
@@ -48,22 +49,37 @@ class Operator:
 		self.key_num = 0
 		self.return_num = 1
 		self.value_delimiter = ' '
+		self.tokens=[]
+		self.keys=[]
+		self.values=[]
 
 	def setKeyNum(self,num):
-		try:
+		global NFrel
+		NFrel=False
+		if num=="":
+			return
+		if re.match(r'\d+$', num):	# 絶対欄位置指定
 			self.key_num = int(num)
-		except:
-			die("キー範囲指定に誤りがあります。")
+		else:	# re.match(r'NF-\d+$', num):	# NF相対欄位置指定（NF-x形式）
+			mx=int(num[3:])
+			if mx==0:
+				error("NF-x の x が0です。")
+			self.key_num = len(self.tokens) - mx
+			if self.key_num <= 0:
+				error("NF-x の x が大きすぎます。")
+			NFrel=True	# NF相対指定
 		if self.key_num < 0:
-			die("キー範囲指定に誤りがあります。")
+			error("フィールド番号が負です。")
+		if self.key_num > len(self.tokens):
+			error("フィールド番号が大きすぎます。")
 
 	def setReturnNum(self,num):
 		try:
 			self.return_num = int(num)
 		except:
-			die("数字指定に誤りがあります。")
+			error("数字指定に誤りがあります。")
 		if self.return_num <= 0:
-			die("数字指定に誤りがあります。")
+			error("数字指定に誤りがあります。")
 
 	def setValueDelimiter(self,str):
 		# 縦展開するフィールドのフィールドセパレータはコマンドから-dオプションで与えられる
@@ -75,18 +91,18 @@ class Operator:
 
 	def tokenizer(self,line):
 		if self.value_delimiter == " ":
-			return line.split(' ')
+			self.tokens=line.split(" ")
+			return
 
 		# 値のデリミタが空白でないとき
 
 		# まず空白で区切る
 		sp_tokens = line.split(' ')
 
-		# キーはスペースで区切られている
-		keys = sp_tokens[:self.key_num]
+		# 空白で区切ったリストの最後の要素を値部としてとりだす
+		tmp_values=sp_tokens.pop()
+		self.keys=sp_tokens	# 残りはキー指定された欄のリスト
 
-		# 値部をもとにもどす
-		tmp_values = " ".join(sp_tokens[self.key_num:])
 		# 指定されたデリミタを改行に変換する
 		if LooseMatch:
 			# で値部の中の-d指定のデリミタを拡張文字列のLooseMatchで改行に置換する
@@ -97,37 +113,33 @@ class Operator:
 				tmp_values=to_utf8(tmp_values)	# Python2ではutf8に戻す
 		else:
 			tmp_values = tmp_values.replace(self.value_delimiter,'\n')
-		# 改行で切り離す
-		values = tmp_values.split('\n')
 
-		return keys + values
+		# 改行で切り離す
+		self.values = tmp_values.split('\n')
+
+		self.tokens = self.keys + self.values
 
 	def output(self,line):
-
-		tokens = self.tokenizer(line)
-		keys = tokens[0:self.key_num]
-		values = tokens[self.key_num:]
-
 		n = 0
-		while n < len(values):
+		while n < len(self.values):
 			m = n + self.return_num
-			if m >= len(values):
-				m = len(values)
+			if m >= len(self.values):
+				m = len(self.values)
 
-			if len(keys) != 0:
-				outstr = keys + values[n:m]
+			if len(self.keys) != 0:
+				outstr = self.keys + self.values[n:m]
 			else:
-				outstr = values[n:m]
+				outstr = self.values[n:m]
 
 			print(" ".join(outstr))
 
 			n += self.return_num
 
-def die(message):
-	print("Error[tarr] :", message, file=sys.stderr)
+def error(msg, *arg):
+	print('Error[tarr] :', msg % arg, file=sys.stderr)
 	sys.exit(1)
 
-def printUsage():
+def usage():
 	print("Usage   :", _usage, file=sys.stderr)
 	print("Version :", _version, file=sys.stderr)
 	print("         ", _code, file=sys.stderr)
@@ -137,7 +149,7 @@ def prefixEqual(prefix,token):
 	if len(prefix) > len(token):	return False
 
 	p = token[0:len(prefix)]
-	if p == prefix:	return True	# tokenには指定prefixにつづいて文字があるとき
+	if p == prefix:	return True	# tokenには指定prefixにつづいて文字がある
 
 	return False
 
@@ -180,7 +192,7 @@ def to_utf8(s):
 	try:
 		return s.encode('utf-8')
 	except:
-		die("内部エラー UTF8への変換に失敗しました。")
+		error("内部エラー UTF8への変換に失敗しました。")
 
 #
 # unicode 変換
@@ -190,7 +202,7 @@ def to_unicode(s):
 	try:
 		return unicode(s, 'utf_8')
 	except:
-		die("不当なマルチバイト文字が含まれています。")
+		error("不当なマルチバイト文字が含まれています。")
 
 #
 # NFDtoNFC()のre.sub()から指定patternがみつかるごとに呼ばれるのでNFD/NFC変換をして返す
@@ -219,10 +231,49 @@ def open_file(filename):
 		file = open(filename, mode)
 	except:
 		if filename=='/dev/fd/0':
-			die("標準入力ファイルをオープンできません。")
+			error("標準入力ファイルをオープンできません。")
 		else:
-			die("ファイル '%s' をオープンできません。", filename)
+			error("ファイル '%s' をオープンできません。", filename)
 	return file
+
+# 行のkey部とvalue部について設定と検査をする
+def check_keys_and_values():
+	if op.value_delimiter == " ":	# 空白区切りのときは
+		# op.tokenizer()でop.keysとop.valuesの設定はまだできていないのでここで設定する
+		op.keys = op.tokens[0:op.key_num]	# 空白区切りのときはop.key_num == len(op.keys)になる
+		op.values = op.tokens[op.key_num:]
+	elif op.key_num != len(op.keys):	# 空白区切り以外のときはop.key_num == len(op.keys)を検査する
+		error("キー指定と行のキー欄の数が一致しません。")
+
+#
+# 行の欄数検査
+#   numがNF相対欄位置指定になっているときは欄数変化は受理できない
+#
+def check_num_fields_variation(line,keynum):
+	global	NF,NFrel
+	if NF==-1:	# 先頭行なら
+		if not line:
+			sys.exit(0)
+		op.tokenizer(line)	# 行を欄に分割してop.tokensを得る（-d指定による文字区切りにも対応）
+		nf=len(op.tokens)
+		op.setKeyNum(keynum)	# op.key_numとNFrelを確定する（op.tokensはop.tokenizer()で得ている））
+		check_keys_and_values()	# 行のkey部とvalue部について設定と検査
+		NF=nf
+		return
+	op.tokenizer(line)	# 行を欄に分割してtokensを得る（-d指定による文字区切りにも対応）
+	check_keys_and_values()	# 行のkey部とvalue部について設定と検査
+	nf=len(op.tokens)
+	if nf != NF:	# 欄数が変化したら
+		NF=nf	# NFを更新
+		if NFrel:	# numがNF相対欄位置指定だった
+			error("numがNF相対欄位置指定のときに欄数変化がありました。行=%s", line)
+		elif NF < op.key_num:	# 欄数がキーの欄数未満になった
+			error("行の欄数が変化してキーに指定された欄数未満になりました。行=%s", line)
+	return
+
+# 不要な空白の削除関数
+def rm_sp(line):
+	return re.sub(r' {2,}',' ',re.sub(r'^ +| +$','',line))	# 行頭と行末の空白を削除し連続空白を単空白にする
 
 # 改行符号（\r\n）の削除関数
 def rm_eol(line):
@@ -245,6 +296,7 @@ def rm_BOM(line):
 def preproc_line(line):
 	line=rm_eol(line)	# 行末の改行記号を削除する
 	line=rm_BOM(line)	# ファイル先頭行の行頭にBOMがあったらこれを削除する
+	line=rm_sp(line)	# 行頭と行末の空白を削除し連続空白を単空白にする
 	return line
 
 ###########################################
@@ -536,14 +588,13 @@ def Xreplace(str1,str2,str3):	# str1がstr2の中にあればstr3で置換する
 ###########################################
 if __name__ == '__main__':
 
-	if len(sys.argv) == 1:
-		sys.argv = ["tarr", "-1", "/dev/stdin"]
-
 	# 構文表示
-	if len(sys.argv) < 2: printUsage()
+	if len(sys.argv) < 2: usage()
 	elif len(sys.argv) == 2:
 		if sys.argv[1] == '--help' or \
-		   sys.argv[1] == '--version':	printUsage()
+		   sys.argv[1] == '--version':	usage()
+
+	global	NF,NFrel
 
 	#
 	# NFD文字（清音+結合用濁点/結合用半濁点）検出のための正規表現パターンを準備
@@ -570,24 +621,30 @@ if __name__ == '__main__':
 
 	file = None
 	argc = len(sys.argv)
-
 	# ファイルか、num=か、-nか
+	keynum=""
 	for i in range(1, argc):
 		arg = sys.argv[i]
 		if prefixEqual("-d",arg):	op.setValueDelimiter(arg[2:])
 		elif arg == "-":		file=open_file(arg)
 		elif prefixEqual("-",arg):	op.setReturnNum(arg[1:])
-		elif prefixEqual("num=",arg):	op.setKeyNum(arg[4:])
+		elif prefixEqual("num=",arg):
+			p = re.compile(_keypat)
+			keynum=arg[4:]
+			if not p.match(keynum):
+				usage()
 		else:				file = open_file(arg)
 
 	if not file:
-		die("入力ファイルの指定がありません。")
+		error("入力ファイルの指定がありません。")
 
 	###########################################
 	# 出力
 	###########################################
 	firstline=True
+	NF=-1
 	for line in file:
 		line=preproc_line(line)
 		line=NFDtoNFC(line)
+		check_num_fields_variation(line,keynum)	# 先頭行または欄数変化のあるときの処理
 		op.output(line)
