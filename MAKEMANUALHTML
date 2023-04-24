@@ -2,7 +2,7 @@
 #
 # MAKEMANUAL: MANUAL/*.txt から MANUALHTML を作成する
 #
-# : written by 柳 日向 (h-yanagi@usp-lab.com; 2022-09-19)
+# : written by 柳 日向 (h-yanagi@usp-lab.com; 2023-04-24)
 #
 
 ####################################################################
@@ -20,7 +20,7 @@ commands=COMMANDS
 dir=$(realpath .)
 
 if hash gawk 2> /dev/null; then
-	alias awk=gawk
+	awk() { gawk "$@"; }
 elif [ "$(uname)" = Darwin ]; then
 	echo "GNU awk is required." >&2
 	exit 1
@@ -121,7 +121,7 @@ html2man() {
 
 				content = gensub(/（/, "(",  "g", content)
 				content = gensub(/）/, ")",  "g", content)
-				content = gensub(/\s*(keycut\.c|'"${commands_pattern}"'|(lock|mime|counter)-file|&lt;(file|filename|(json|lock)-file|counter-file)&gt;|%0D%0A|NFS|NF(-[0-9x]+)?|-&lt;.&gt;|\\_|+(age|ng|yarr|[a-z])|\x27.{1,2}\x27|\\n|+&lt;n&gt;h|--|--?[a-z]+( &lt;[-a-z_]+&gt;)*|(&lt;\w+&gt;)+( +&lt;\w+&gt;)*|([0-9][\/@][0-9] ?)+|&quot;(.|NF)&quot;|(&quot;)?[a-z]+=([/0-9a-z;=@.]|&quot;|&lt;|&gt;|&amp;)*)|&lt;\w{5,}&gt;|awk[(]1\)|\x27..?\x27)\s*/, "<code>\\1</code>", "g", content)
+				content = gensub(/\s*(keycut\.c|'"${commands_pattern}"'|(lock|mime|counter)-file|&lt;(file|filename|(json|lock)-file|counter-file)&gt;|%0D%0A|NFS|NF(-[0-9x]+)?|-&lt;.&gt;|\\_|+(age|ng|yarr|[a-z])|\x27.{1,2}\x27|\\n|+&lt;n&gt;h|--|--?[a-z]+( &lt;[-a-z_]+&gt;)*|(&lt;\w+&gt;)+( +&lt;\w+&gt;)*|([0-9][\/@][0-9]\x20?)+|&quot;(.|NF)&quot;|(&quot;)?[a-z]+=([\x2F0-9a-z;=@.]|&quot;|&lt;|&gt;|&amp;)*)|&lt;\w{5,}&gt;|awk[(]1\)|\x27..?\x27)\s*/, "<code>\\1</code>", "g", content)
 				content = hyperlink_category5(content)
 				content = gensub(/touch [(]1[)]/, "<a href=\"https://linuxjm.osdn.jp/html/gnumaniak/man1/touch.1.html\">\\0</a>", "g", content)
 				content = gensub(/([^0-9])([0-9]{6,})([^0-9])/, "\\1<code>\\2</code>\\3", "g", content)
@@ -404,7 +404,7 @@ html2man() {
 	}                                                                               |
 
 	# マニュアル・メニューを作成する。
-	awk -vcommands_string="$(find ${dir}/COMMANDS -type f -printf "%f\n" | sort -u)" '
+	awk -vcommands_string="$(find ${dir}/COMMANDS -not -path "${dir}/COMMANDS/.*" -type f -printf "%f " | sort -u)" '
 		 /^<!-- CONTENTS_MENU -->/ {
 			template = ""
 	
@@ -412,7 +412,7 @@ html2man() {
 				template = template $(position) (position < NF ? " " : "")
 			}
 
-			split(commands_string, commands, "\n")
+			split(commands_string, commands, " ")
 
 			printf("              ")
 
