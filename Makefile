@@ -51,6 +51,27 @@ INSTALL_DOCS=	${INSTALL} -m ${DOCMODE}
 BINMODE=	555
 DOCMODE=	444
 
+# RPM の情報
+
+define SPECFILE
+Summary:     an open source Python implementation of Tukubai.
+Summary(ja): 製品版 usp Tukubai の Python によるオープンソース実装。
+Name:        open-usp-tukubai
+Version:     $(shell git log --date=format-local:"%Y%m%d" -1 --pretty=%cd COMMANDS)
+Release:     1
+License:     $(shell head -1 LICENSE)
+
+%install cp -pr "$(shell pwd)/COMMANDS" "${BINDIR}"
+
+%description
+Open usp Tukubaiは短期間低コストで企業システムを構築するエン
+タープライズ向けコマンド群「usp Tukubai」のオープンソースソ
+フトウェア版。ユニケージ開発手法の普及促進を狙い、usp Tukubai
+から特に利用頻度の高いものを選定して提供されている。
+endef
+
+export SPECFILE
+
 all:
 	@echo "Run 'make install' to install"
 	@echo "    PREFIX=${PREFIX}"
@@ -76,12 +97,25 @@ test: # シェル・スクリプトのみテストを実行する。
 	echo Tests are finished successfully.; \
 	rm -r "$$path";
 
+rpm:
+	@if ! type &> /dev/null rpmbuild; then                              \
+		@echo rpmbuild コマンドが存在しません;                      \
+		exit 1;                                                     \
+	fi;                                                                 \
+	                                                                    \
+	specfile="$$(mktemp --suffix=.spec)";                               \
+	: 最後に specfile は削除する。;                                     \
+	trap "rm '$${specfile}'" EXIT;                                      \
+	                                                                    \
+	cat > "$${specfile}" <<< "$$SPECFILE";                              \
+	rpmbuild -bb --clean "$${specfile}"
+
 pdf: $(wildcard COMMANDS/*)
 	@type wkhtmltopdf 2>&1 > /dev/null || (echo wkhtmltopdf must be installed. >&2; exit 1)
 	@echo Let us make MANUALPDF from $$(awk '{print NF}' <<< "$+") documents.
 	 backcover=$$(mktemp).html;                                                                    \
 	 echo "$$PDF_BACKCOVER" | sed -e "s/<!--YEAR-->/$$(date +%Y)/" > "$${backcover}";              \
-	 last_updated=$$(git log --date=format-local:"%Y年%m月%d日" -1 --pretty=%cd COMMANDS);        \
+	 last_updated=$$(git log --date=format-local:"%Y年%m月%d日" -1 --pretty=%cd COMMANDS);         \
 	 sed -e "s/<!--DATE-->/"$${last_updated}"/" <<< "$$PDF_COVER" |                                \
 	 wkhtmltopdf --enable-local-file-access --print-media-type --footer-center [page]              \
 	 	--title "Open usp Tukubai コマンドマニュアル"                                              \
