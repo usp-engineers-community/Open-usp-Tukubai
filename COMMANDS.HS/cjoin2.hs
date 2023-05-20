@@ -38,7 +38,7 @@ THE SOFTWARE.
 
 showUsage :: IO ()
 showUsage = do
-    System.IO.hPutStr stderr "Usage    : cjoin2 [+ng] <key=n> <master> <tran>\n"
+    System.IO.hPutStr stderr "Usage    : cjoin2 [+ng] <key=n> <master> [<tran>]\n"
     System.IO.hPutStr stderr "Version  : Sat Oct  1 21:43:34 JST 2022\n"
     System.IO.hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD)\n"
 

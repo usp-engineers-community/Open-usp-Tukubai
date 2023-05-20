@@ -1,7 +1,6 @@
 #!/usr/bin/env runghc --
 import System.Environment
 import System.IO
-import Text.ParserCombinators.Parsec
 import Control.Monad
 import Control.Applicative hiding ((<|>), many)
 import Data.ByteString.Lazy.Char8 as BS hiding (length,take,drop,filter,head)
@@ -38,7 +37,7 @@ THE SOFTWARE.
 
 showUsage :: IO ()
 showUsage = do
-    System.IO.hPutStr stderr "Usage   : count [+ng] <key=n> <master> <tran>\n"
+    System.IO.hPutStr stderr "Usage   : count [+ng] <key=n> <master> [<tran>]\n"
     System.IO.hPutStr stderr "Version : Wed Apr 19 07:45:39 JST 2023\n"
     System.IO.hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD)\n"
     exitFailure

@@ -5,7 +5,7 @@ import Text.ParserCombinators.Parsec
 import Control.Monad
 import Data.Time
 import Data.Time.Format (formatTime)
-import Data.Time.Format (parseTime)
+import Data.Time.Format (parseTimeM)
 
 {--
 calclock（Open usp Tukubai）
@@ -15,7 +15,7 @@ written  by Hinata Yanagi
 
 The MIT License
 
-Copyright (C) 2022 Universal Shell Programming Laboratory
+Copyright (C) 2023 Universal Shell Programming Laboratory
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -39,7 +39,7 @@ THE SOFTWARE.
 showUsage :: IO ()
 showUsage = do
         hPutStr stderr (
-         "Usage    : calclock <f1> <f2> ... <file>\n" ++
+         "Usage    : calclock <f1> <f2> ... [<file>]\n" ++
          "Version  : Sat Oct  1 21:43:34 JST 2022\n" ++
          "Open usp Tukubai (LINUX+FREEBSD)\n")
 

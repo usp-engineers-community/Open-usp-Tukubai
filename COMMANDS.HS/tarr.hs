@@ -1,7 +1,6 @@
 #!/usr/bin/env runghc --
 import System.Environment
 import System.IO
-import Text.ParserCombinators.Parsec
 import Control.Monad
 import Data.ByteString.Lazy.Char8 as BS hiding (filter,drop,head,length,take)
 import Data.List as DL
@@ -14,7 +13,7 @@ written  by Hinata Yanagi
 
 The MIT License
 
-Copyright (C) 2022 Universal Shell Programming Laboratory
+Copyright (C) 2023 Universal Shell Programming Laboratory
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
