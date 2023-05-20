@@ -4,11 +4,11 @@
 # ysum 横サム（Open usp Tukubai版）
 # 
 # designed by Nobuaki Tounaka
-# written  by Masatomo Togashi
+# written by  Masatomo Togashi
 #
 # The MIT License
 #
-# Copyright (C) 2020 Universal Shell Programming Laboratory
+# Copyright (C) 2023 Universal Shell Programming Laboratory
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -31,9 +31,9 @@
 from __future__ import print_function
 
 _usage = "ysum [+h] [num=<n>] <file>"
-_version = "Sat Jun 20 21:57:23 JST 2020"
+_version = "Fri May 20 00:00:00 JST 2023"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
-_keypat = r'(\d+|NF(-\d+)?)$'
+_keypatNF=r'(?P<m0>(?P<m01>\d+)|(?P<m02>NF(?P<m03>-\d+)?))$'
 
 import re
 import os
@@ -49,37 +49,6 @@ def usage():
 	print("Version :", _version, file=sys.stderr)
 	print("         ", _code, file=sys.stderr)
 	sys.exit(1)
-
-class FieldLine:
-	def __init__(self, line, allow_z = False):
-		self.__allow_zero = allow_z
-		self.__fields = [ line ]
-		self.__fields += [ x for x in line.split(' ') if x ]
-
-	def size(self):
-		return len(self.__fields) - 1
-
-	def getFieldNum(self, key):
-		if type(key) == type(0):
-			return key
-		if re.match(r'\d+$', key):
-			key = int(key)
-		elif key == 'NF':
-			key = self.size()
-		else:
-			key = self.size() - int(key[3:])
-			if key <= 0:
-				error("NF-x の x が大きすぎます。")
-		if key < 0:
-			error("フィールド番号が負です。")
-		if key == 0 and not self.__allow_zero:
-			error("フィールド番号が０です。")
-		if key > self.size():
-			error("フィールド番号が大きすぎます。")
-		return key
-
-	def getField(self, f):
-		return self.__fields[f]
 
 #
 # 入力ファイルオープン
@@ -100,6 +69,80 @@ def open_file(n):
 		else:
 			error("ファイル '%s' をオープンできません。", filename)
 	return file
+
+# キーフィールド指定処理関連
+
+# NF相対欄位置からNF（欄数）に応じた0発進の欄位置に変換する
+def getpos(base_pos):
+	# NF相対欄位置からの変換:
+	#  nのときはそのまま
+	#  0のときはNF（欄数）
+	#  -nのときはNF-n
+	# 0発進とするために-1を加える
+	if base_pos > 0:
+		pos=base_pos-1
+		if pos >= NF:	error("フィールド番号が大きすぎます。 %s",str(base_pos))
+		return pos	# 元からの絶対欄位置
+	else:
+		pos=NF+base_pos-1
+		if pos < 0:	error("フィールド指定でNF-x の x が大きすぎます。 %s","NF-"+str(-base_pos))
+		return pos	# NF相対欄位置からの絶対化欄位置
+
+# 欄番号文字列をNF相対形式で整数化する
+def getFieldNum(str,str1,str2):
+	# n または NF または NF-x の形式の欄番号をNF相対形式の整数で確定する
+	# 正規表現で「\d+|NF(-\d+)?」にmatchする全体をstrが、「\d+」でmatchする部分をstr1が、「(-\d+)?」でmatchする部分をstr2が保持している
+	# NF相対形式の整数化:
+	#  単独のnが0のときはNone
+	#  単独のnが0以外のときは整数のn
+	#  単独のNFのときは整数の0
+	#  NF-nのときは整数の-n
+	# 実際の欄番号にする際には行ごとに得たNF（欄数）を使用して計算する
+	if str1:	# n
+		fieldnum=int(str1)
+		if fieldnum==0:	# 欄番号0は全欄を集計対象とすることを意味する
+			fieldnum=None
+	else:	# NF-n または NF
+		if str2:	# NF-n
+			fieldnum=int(str2)
+		else:	# NF
+			fieldnum=0
+	return fieldnum
+
+#
+# ひとつの欄指定パラメータからNF相対形式で整数化した欄位置を返す
+#
+def getFieldList(field_param):
+	field_param=field_param.replace("NF-0","NF")	# NF-0はNFと書き替える
+	mobj = re.match(_keypatNF,field_param)
+	if not mobj:	# フィールド指定の形式が不正
+		error("フィールド指定の形式が不正です。 %s",fieldnum)
+	NFrelpos=getFieldNum(field_param,mobj.group('m01'),mobj.group('m03'))	# NF相対形式で整数化して返す
+	return NFrelpos
+
+#
+# 行の欄数検査
+#
+def check_num_fields_variation(fields,keypos):
+	global	NF
+	start=False
+	nf=len(fields)
+	if NF==-1:	start=True
+	if nf != NF:	# 先頭行かまたは欄数が変化したなら
+		NF=nf	# NFを更新
+		if start:	start=False	# 先頭行のとき
+		else:	# 欄数が変化したとき
+			if rel_key>0:	# 絶対欄位置指定なら
+				error("numが絶対欄位置指定のときに欄数が変化しました。")
+		if rel_key==None:	# 実行時パラメータでnum=0またはnum省略のとき
+			keypos=-1	# 全欄を集計対象とするために絶対欄位置を-1に設定する
+		else:
+			keypos=getpos(rel_key)	# 行の欄数NFを見てNF相対欄位置から絶対欄位置を決定する
+	return keypos
+
+# 不要な空白の削除関数
+def rm_sp(line):
+	return re.sub(r' {2,}',' ',re.sub(r'^ +| +$','',line))	# 行頭と行末の空白を削除し連続空白を単空白にする
 
 # 改行符号（\r\n）の削除関数
 def rm_eol(line):
@@ -122,6 +165,7 @@ def rm_BOM(line):
 def preproc_line(line):
 	line=rm_eol(line)	# 行末の改行記号を削除する
 	line=rm_BOM(line)	# ファイル先頭行の行頭にBOMがあったらこれを削除する
+	line=rm_sp(line)	# 行頭と行末の空白を削除し連続空白を単空白にする
 	return line
 
 # Python3か判定する
@@ -165,11 +209,10 @@ if __name__ == '__main__':
 	#
 	if len(sys.argv) > 1 and sys.argv[1][0:4] == 'num=':
 		n=sys.argv[1][4:]
-		if not re.match(_keypat, n):
-			error("フィールドの指定が不正です。")
+		rel_key = getFieldList(n)	# num=0のときは相対欄位置としてNoneを与える
 		del sys.argv[1]
 	else:
-		n = "0"
+		rel_key = None	# "num="がないときはnum=0としたときの相対欄位置としてNoneを与える
 
 	file = open_file(1)
 
@@ -186,22 +229,21 @@ if __name__ == '__main__':
 	#
 	# メインループ
 	#
-	head=True
+	NF=-1
+	keypos=-1	# 仮の値で初期設定する
+	firstline=True
 	for line in file:
-		line = FieldLine(preproc_line(line))
+		line=preproc_line(line)	# 入力行の前処理
+		if not line:	sys.exit(0)
+		fields=line.split(" ")
+		# 先頭行または欄数変化のあるときはkey指定の検査をする ここで絶対欄位置のkeyposを得る
+		keypos=check_num_fields_variation(fields,keypos)
 		sum = 0
-		if head:
-			# NFとNF-x形式があるときために先頭行でnを確定する
-			if n=="0":
-				n=0
-			else:
-				n=line.getFieldNum(n)
-			head=False
-		for i in range(n + 1, line.size() + 1):
+		for i in range(keypos + 1, len(fields)):
 			try:
-				sum += Decimal(line.getField(i))
+				sum += Decimal(fields[i])
 			except:
-				error("数値に変換できません。")
-		print(line.getField(0), sum)
+				error("数値に変換できません。文字列=%s",fields[i])
+		print(line, sum)
 
 	sys.exit(0)

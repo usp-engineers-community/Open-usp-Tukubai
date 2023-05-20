@@ -4,7 +4,7 @@
 # yarr 横アレー: レコードをフィールドへ変換（Open usp Tukubai版）
 #
 # designed by Nobuaki Tounaka
-# written  by Hinata Yanagi
+# written by  Masatomo Togashi
 #
 # The MIT License
 #
@@ -30,8 +30,8 @@
 
 from __future__ import print_function
 
-_usage = "yarr [num=<n>] [-<m>] [<file>]"
-_version = "Sun Mar 19 08:24:53 JST 2023"
+_usage = "yarr [num=<n>] [-<m>] <file>"
+_version = "Fri May 20 00:00:00 JST 2023"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4+, 3.1, 3.2/UTF-8)"
 
 import re
@@ -105,18 +105,18 @@ class Operator:
 			else:
 				outstr = self.hold_values[n:m]
 
-			print(self.value_delimiter.join(outstr))
+			print(" ".join(outstr))
 
 			n += self.return_num
 
-def die(message):
-	sys.stderr.write("Error[yarr] : %s\n" % message)
+def error(msg, *arg):
+	print('Error[sm4] :', msg % arg, file=sys.stderr)
 	sys.exit(1)
 
-def printUsage():
-	sys.stderr.write("Usage   : %s\n" % _usage)
-	sys.stderr.write("Version : %s\n" % _version)
-	sys.stderr.write("          %s\n"% _code)
+def usage():
+	print("Usage   :", _usage, file=sys.stderr)
+	print("Version :", _version, file=sys.stderr)
+	print("         ", _code, file=sys.stderr)
 	sys.exit(1)
 
 def arrayEqual(array1,array2):
@@ -185,15 +185,6 @@ def Python3():
 		return False
 
 #
-# utf8 変換
-#
-def to_utf8(s):
-	try:
-		return s.encode('utf-8')
-	except:
-		die("内部エラー UTF8への変換に失敗しました。")
-
-#
 # unicode 変換
 #
 def to_unicode(s):
@@ -201,7 +192,7 @@ def to_unicode(s):
 	try:
 		return unicode(s, 'utf_8')
 	except:
-		die("不当なマルチバイト文字が含まれています。")
+		error("不当なマルチバイト文字が含まれています。")
 
 #
 # NFDtoNFC()のre.sub()から指定patternがみつかるごとに呼ばれるのでNFD/NFC変換をして返す
@@ -218,6 +209,14 @@ def NFDtoNFC(str):
 	# 全角ひらがな/全角カタカナの濁音/半濁音をNFCで統一して返す
 	return re.sub(pattern,replace,str)
 
+# 不要な空白の削除関数
+def rm_sp(line):
+	return re.sub(r' {2,}',' ',re.sub(r'^ +| +$','',line))	# 行頭と行末の空白を削除し連続空白を単空白にする
+
+# 改行符号（\r\n）の削除関数
+def rm_eol(line):
+	return line.rstrip("\r\n")	# 改行記号としてCRLF('\r\n')/CR('\r')/LF('\n')のすべてに対応する
+
 # BOMの取得関数
 def get_BOM():
 	if Python3():	return chr(int("FEFF",16))	# U+FEFFはBOMのUnicode符号位置
@@ -231,6 +230,13 @@ def rm_BOM(line):
 	if line.startswith(get_BOM()):	line=line[len(get_BOM()):]	# 行頭にBOMがあったらBOMを削除する
 	return line
 
+# ファイル入力行の前処理
+def preproc_line(line):
+	line=rm_eol(line)	# 行末の改行記号を削除する
+	line=rm_BOM(line)	# ファイル先頭行の行頭にBOMがあったらこれを削除する
+	line=rm_sp(line)	# 行頭と行末の空白を削除し連続空白を単空白にする
+	return line
+
 ###########################################
 # メイン関数
 ###########################################
@@ -238,9 +244,10 @@ if __name__ == '__main__':
 	
 	###########################################
 	# 構文表示
-	if len(sys.argv) == 2:
+	if len(sys.argv) < 2: usage()
+	elif len(sys.argv) == 2:
 		if sys.argv[1] == '--help' or \
-		   sys.argv[1] == '--version':	printUsage()
+		   sys.argv[1] == '--version':	usage()
 
 	#
 	# NFD文字（清音+結合用濁点/結合用半濁点）検出のための正規表現パターンを準備
@@ -265,7 +272,7 @@ if __name__ == '__main__':
 		else:				in_file_name = arg
 
 	if not in_file_name:
-		in_file_name = "conIN$" if os.name == "nt" else "/dev/stdin"
+		error("入力ファイルの指定がありません。")
 
 	in_file = getInFile(in_file_name)
 	sys.stdout = resetStdout()
@@ -274,9 +281,8 @@ if __name__ == '__main__':
 	# 出力
 	firstline=True
 	for line in in_file:
-		line = line.rstrip()
-		if firstline:	line=rm_BOM(line)	# BOM処理
-		tokens = line.split(' ')
+		line=preproc_line(line)	# 入力行の前処理
+		tokens = line.split(" ")
 		op.output(tokens)
 
 	op.flush()

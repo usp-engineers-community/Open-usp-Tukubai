@@ -8,7 +8,7 @@
 #
 # The MIT License
 #
-# Copyright (C) 2021 Universal Shell Programming Laboratory
+# Copyright (C) 2023 Universal Shell Programming Laboratory
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -34,9 +34,10 @@ import sys
 import unicodedata
 
 _usage = "block_getlast key=<key> ref=<ref> [<file>]"
-_version = "Sun Feb 21 04:35:04 JST 2021"
+_version = "Fri May 20 00:00:00 JST 2023"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
 _keypat = r'((\d+|NF(-\d+)?)(/(\d+|NF(-\d+)?))?)(@((\d+|NF(-\d+)?)(/(\d+|NF(-\d+)?))?))*$'
+_keypatNF=r'(?P<m0>(?P<m01>\d+)|(?P<m02>NF(?P<m03>-\d+)?))(/(?P<m1>(?P<m11>\d+)|(?P<m12>NF(?P<m13>-\d+)?)))?$'
 
 # 濁音と半濁音のNFD表記でNFC表記もできるもの→NFDtoNFC変換でNFCに統一する
 _comb_pat=r"(((う|か|き|く|け|こ|さ|し|す|せ|そ|た|ち|つ|て|と|は|ひ|ふ|へ|ほ|ウ|カ|キ|ク|ケ|コ|サ|シ|ス|セ|ソ|タ|チ|ツ|テ|ト|ハ|ヒ|フ|ヘ|ホ|ワ|ヰ|ヱ|ヲ)゙)|((は|ひ|ふ|へ|ほ|ハ|ヒ|フ|ヘ|ホ)゚))+"
@@ -67,6 +68,179 @@ def open_file(filename):
 			error("ファイル '%s' をオープンできません。", filename)
 	return file
 
+# キーフィールド指定処理関連
+
+# NF相対欄位置からNF（欄数）に応じた0発進の欄位置に変換する
+def getpos(base_pos):
+	# NF相対欄位置からの変換:
+	#  nのときはそのまま
+	#  0のときはNF（欄数）
+	#  -nのときはNF-n
+	# 0発進とするために-1を加える
+	if base_pos > 0:
+		pos=base_pos-1
+		if pos >= NF:	error("フィールド番号が大きすぎます。 %s",str(base_pos))
+		return False,pos	# 元からの絶対欄位置
+	else:
+		pos=NF+base_pos-1
+		if pos < 0:	error("フィールド指定でNF-x の x が大きすぎます。 %s","NF-"+str(-base_pos))
+		return True,pos	# NF相対欄位置からの絶対化欄位置
+	return pos
+
+# NF相対欄位置リスト（rel_keylist）からNF（欄数）に応じた実際の欄位置リスト（keylist）を作成する
+def make_keylist(rel_keylist,abs_rel_mixed_range):
+	# NF相対欄位置リスト（rel_keylist）とは「NFやNF-xのNF相対欄位置指定を含む欄位置リスト」を意味しリストには絶対欄位置も含む
+	# rel_keylistの要素には区間をあらわす整数tupleの(start,end)と、単一欄をあらわす整数がある
+	# rel_keylistを構成するそれぞれの整数は絶対欄位置指定とNF相対欄位置指定の両方がありうる
+	rel_list=[]	# key指定順に並べたNF相対からの絶対化欄位置リスト
+	abs_list=[]	# key指定順に並べた絶対欄位置リスト
+	abs_rel_cross=False
+	range_list=[]
+	abs_and_rellist=[]
+	for fieldpos in rel_keylist:
+		if type(fieldpos)==int:	# 単一欄
+			rel,pos=getpos(fieldpos)
+			if rel:
+				rel_list.append(pos)
+			else:
+				abs_list.append(pos)
+			abs_and_rellist.append(pos)
+		else:	# (a/b)の区間指定
+			rel1,start=getpos(fieldpos[0])
+			rel2,end=getpos(fieldpos[1])
+			if start <= end:	# 正順
+				range_list=range(start,end+1)
+			else:	# 逆順
+				range_list=range(start,end-1,-1)
+			if rel1 or rel2:	# 区間の端にNF相対襴位置指定があった
+				rel_list+=range_list	# 片端のみがNF相対襴位置指定のときも便宜的にrel_listに加える
+			else:
+				abs_list+=range_list
+			abs_and_rellist+=range_list
+	if abs_rel_mixed_range:	pass	# 絶対欄位置指定とNF相対欄位置指定による区間指定があるときは交叉検査をしない
+	elif len(abs_list)*len(rel_list)==0:	pass	# 絶対欄位置指定群/NF相対欄位置指定群いずれかがないときは交叉検査をしない
+	else:	# 両群ともに存在するときは交叉検査をする
+		min_abs=min(abs_list)
+		max_abs=max(abs_list)
+		min_rel=min(rel_list)
+		max_rel=max(rel_list)
+		if max_abs < min_rel or max_rel < min_abs:	pass	# 両群が交叉しない
+		else:	# 両群が交叉する
+			abs_rel_cross=True
+	# 重複を解消する 出力するkey位置の順序はコマンドパラメータにおける指定出現順を保つ
+	return_list=sorted(set(abs_and_rellist),key=abs_and_rellist.index)
+	return return_list,abs_rel_cross	# 欄位置は0発進 集合化によってリストの重複を解消しkey指定の順序は保つ
+
+# 欄番号文字列をNF相対形式で整数化する
+def getFieldNum(str,str1,str2):
+	# n または NF または NF-x の形式の欄番号をNF相対形式の整数で確定する
+	# 正規表現で「\d+|NF(-\d+)?」にmatchする全体をstrが、「\d+」でmatchする部分をstr1が、「(-\d+)?」でmatchする部分をstr2が保持している
+	# NF相対形式の整数化:
+	#  単独のnが0のときはエラーとする
+	#  単独のnが0以外のときは整数のn
+	#  単独のNFのときは整数の0
+	#  NF-nのときは整数の-n
+	# 実際の欄番号にする際には行ごとに得たNF（欄数）を使用して計算する
+	if str1:	# n
+		fieldnum=int(str1)
+		if fieldnum==0:	# 欄番号0は受理しない
+			error("key指定またはref指定に0がありました。")
+	else:	# NF-n または NF
+		if str2:	# NF-n
+			fieldnum=int(str2)
+		else:	# NF
+			fieldnum=0
+	return fieldnum
+
+#
+# ひとつの欄指定パラメータから欄番号リストを得る（区間指定にも対応する）
+#
+def getFieldList(field_param):
+	mobj = re.match(_keypat,field_param)	# 構文検査のために実行する
+	if not mobj:	# フィールド指定の形式が不正
+		error("フィールド指定の形式が不正です。 %s",field_param)
+	field_param=field_param.replace("NF-0","NF")	# NF-0はNFと書き替える
+	fieldlist=[]
+	abs_rel_mixed_range=False
+	concatlist=field_param.split("@")	# @で分割する
+	for fieldnum in concatlist:
+		mobj = re.match(_keypatNF,fieldnum)
+		if not mobj:	# フィールド指定の形式が不正
+			error("フィールド指定の形式が不正です。 %s",fieldnum)
+		start=getFieldNum(fieldnum,mobj.group('m01'),mobj.group('m03'))	# 前端部を得る
+		if mobj.group('m1'):	# a/bの形式で区間指定をしている
+			end=getFieldNum(fieldnum,mobj.group('m11'),mobj.group('m13'))	# 後端部を得る
+			fieldlist.append((start,end))	# 区間で確定
+			# 絶対欄位置指定とNF相対欄位置指定が混在するときはmarkする
+			if (start>0 and end <=0) or (start<=0 and end >0):
+				abs_rel_mixed_range=True
+		else:
+			fieldlist.append(start)	# 前端部単独で確定
+	return fieldlist,abs_rel_mixed_range
+
+#
+#	コマンドのフィールド指定パラメータから処理対象のNF相対欄位置リストを作成する
+#
+def getTargetFields(param):
+	ans = []
+	fieldlist,abs_rel_mixed_range=getFieldList(param)
+	ans+=fieldlist
+	if None in ans:
+		return [None],abs_rel_mixed_range	# 欄位置にひとつでも0を指定するものがあるときは全欄指定とする
+	# 集合化によってリストの重複を解消する（絶対欄位置/NF相対欄位置それぞれに重複解消される）
+	ans=sorted(set(ans), key=ans.index)	# 元のリスト（set）における出現順を維持する
+	return ans,abs_rel_mixed_range
+
+#
+# 行の欄数検査
+#   先頭行ではkeyの区間指定で絶対欄位置指定とNF相対欄位置指定が混在しているか検査する
+#   先頭行以外では
+#     絶対欄位置リストとNF相対欄位置絶対化リスト（区間の端がNF相対襴位置だったものも含む）の間に交叉（重複）があるか検査する
+#
+def check_num_fields_variation(fields):
+	global	NF,ref,start
+	global	key_list,key_abs_rel_cross_first,key_abs_rel_cross,key_abs_rel_mixed_range
+	global	ref_list,ref_abs_rel_cross_first,ref_abs_rel_cross,ref_abs_rel_mixed_range
+	# key_abs_rel_cross keyの絶対欄位置指定群とNF相対欄位置指定群が交叉していればTrue
+	#               NF=5のときにキー指定が「1/4@NF-3/NF」となっているときなどにTrueとなる
+	# key_abs_rel_cross_first 先頭行においてkey_abs_rel_crossがTrueであればTrue
+	# refについても同様
+
+	start=False
+	nf=len(fields)
+	if NF==-1:	start=True
+	if nf != NF:	# 先頭行かまたは欄数が変化したなら
+		NF=nf	# NFを更新
+		# 行の欄数NFを見てNF相対欄位置リストから(絶対)欄位置リストを決定する
+		key_list,key_abs_rel_cross=make_keylist(key_rel_keylist,key_abs_rel_mixed_range)
+		if ref:
+			ref_list,ref_abs_rel_cross=make_keylist(ref_rel_keylist,ref_abs_rel_mixed_range)
+		if start:	# 先頭行なら
+			if key_abs_rel_cross:	key_abs_rel_cross_first=True	# 先頭行においてkeyの絶対欄位置指定群とNF相対欄位置指定群が交叉していたらmarkしておく
+			else:	key_abs_rel_cross_first=False
+			if ref:
+				if ref_abs_rel_cross:	ref_abs_rel_cross_first=True	# 先頭行においてrefの絶対欄位置指定群とNF相対欄位置指定群が交叉していたらmarkしておく
+				else:	ref_abs_rel_cross_first=False
+		else:	# 欄数変化があったら許容できるか検査する
+			if key_abs_rel_mixed_range:	# 区間指定においてabs_rel混在だったら
+				error("keyの区間指定において絶対欄位置指定とNF相対欄位置指定が混在している状態でフィールド数が変化しました。")
+			if key_abs_rel_cross_first:	# 先頭行でkeyの絶対欄位置指定とNF相対欄位置指定に交叉が生じていたらその後の欄数変化はエラーとする
+				error("keyの絶対欄位置指定群とNF相対欄位置指定群が交叉している状態でフィールド数が変化しました。")
+			if key_abs_rel_cross:	# 第2行以降で絶対欄位置指定とNF相対欄位置指定に交叉が生じたら
+				error("フィールド数が変化してkeyの絶対欄位置指定群とNF相対欄位置指定群に交叉が生じました。")
+			if ref:
+				if ref_abs_rel_mixed_range:	# 区間指定においてabs_rel混在だったら
+					error("refの区間指定において絶対欄位置指定とNF相対欄位置指定が混在している状態でフィールド数が変化しました。")
+				if ref_abs_rel_cross_first:	# 先頭行でrefの絶対欄位置指定とNF相対欄位置指定に交叉が生じていたらその後の欄数変化はエラーとする
+					error("refの絶対欄位置指定群とNF相対欄位置指定群が交叉している状態でフィールド数が変化しました。")
+				if ref_abs_rel_cross:	# 第2行以降で絶対欄位置指定とNF相対欄位置指定に交叉が生じたら
+					error("フィールド数が変化してrefの絶対欄位置指定群とNF相対欄位置指定群に交叉が生じました。")
+	return
+
+# 不要な空白の削除関数
+def rm_sp(line):
+	return re.sub(r' {2,}',' ',re.sub(r'^ +| +$','',line))	# 行頭と行末の空白を削除し連続空白を単空白にする
+
 # 改行符号（\r\n）の削除関数
 def rm_eol(line):
 	return line.rstrip("\r\n")	# 改行記号としてCRLF('\r\n')/CR('\r')/LF('\n')のすべてに対応する
@@ -88,6 +262,7 @@ def rm_BOM(line):
 def preproc_line(line):
 	line=rm_eol(line)	# 行末の改行記号を削除する
 	line=rm_BOM(line)	# ファイル先頭行の行頭にBOMがあったらこれを削除する
+	line=rm_sp(line)	# 行頭と行末の空白を削除し連続空白を単空白にする
 	return line
 
 # Python3か判定する
@@ -97,51 +272,9 @@ def Python3():
 	else:
 		return False
 
-# （NFを含むかもしれない）フィールド要素を整数に変換する
-def intwithNF(str,NF):
-	# フィールド要素にNFを含むとき
-	if str=="NF":
-		return NF
-	elif str.startswith("NF-"):
-		str=str[3:]
-		fieldnum=NF-int(str)
-	# NFを含まないとき
-	else:
-		fieldnum=int(str)
-	if fieldnum<=0:
-		error("キー指定が0または負数です")
-	if fieldnum>NF:
-		error("フィールド指定がレコードのフィールド数を超えています")
-	return fieldnum
-
-# フィールド指定文字列からフィールドリストを作る（NFは確定している）
-def GetKeyList(key,NF):
-	k = re.match(_keypat,key)	# 構文検査のために実行する
-	if not k:
-		error("フィールド指定が不正です,")
-	AtMarkList=key.split("@")	# @で分割
-	keylist=[]
-	for field in AtMarkList:
-		if "/" in field:	# 範囲
-			startend=field.split("/")
-			start=intwithNF(startend[0],NF)
-			end=intwithNF(startend[1],NF)
-			if start <= end:	# 昇順のとき
-				keylist+=range(start,end+1)
-			else:	# 降順のとき
-				keylist+=range(start,end-1,-1)
-		else:	# 列挙
-			keylist+=[intwithNF(field,NF)]
-	# キーリストの重複解消
-	keylist=list(set(keylist)) # 集合化によってリストの重複を解消
-	return keylist
-
-# キーフィールドリストをもとにレコードからキーフィールド値リストをとりだす
+# キーフィールドリストをもとにレコードからキーフィールド値リストを空白区切りの文字列としてとりだす
 def GetKeyFieldValues(line,keylist):
-	keyvaluelist=[]
-	for i in keylist:
-		keyvaluelist.append(line[i-1])
-	return keyvaluelist
+	return " ".join([line[x] for x in range(NF) if x in keylist])
 
 #
 # utf8 変換
@@ -182,6 +315,11 @@ def NFDtoNFC(str):
 
 if __name__ == '__main__':
 
+	# 各関数で値が更新されうるglobal変数
+	global	NF,ref,start
+	global	key_list,key_abs_rel_cross_first,key_abs_rel_cross,key_abs_rel_mixed_range
+	global	ref_list,ref_abs_rel_cross_first,ref_abs_rel_cross,ref_abs_rel_mixed_range
+
 	filename,key,ref = "-", "", "" # default値/初期値
 
 	# コマンドの説明表示
@@ -220,29 +358,36 @@ if __name__ == '__main__':
 	if ref=="":
 		error("refパラメータがありません")
 
+	# フィールド指定パラメータからNF相対欄位置リストを作成する
+	ref_abs_rel_mixed_range=False
+	if ref:
+		ref_rel_keylist,ref_abs_rel_mixed_range = getTargetFields(ref)
+	key_rel_keylist,key_abs_rel_mixed_range = getTargetFields(key)
+
 	file=open_file(filename) # 入力ファイルを開く
 
 	last_block=[] # 同じkey値でref値一定の最終ブロック
-	linecount=0
 	firstline=True
+	NF=-1
+	key_abs_rel_cross,ref_abs_rel_cross,key_abs_rel_cross_first,ref_abs_rel_cross_first= \
+		False,False,False,False
+	start=True
 	for line in file: # 入力ファイルを読む
-		line=preproc_line(line)
-		fields=line.split()
-		# 入力ファイルの最初のレコードで最終フィールド位置（NF）を確認しkeyリストとrefリストを確定する
-		# （keyリストとrefリストはフィールド番号のリスト）
-		if linecount==0:
-			NF=len(fields)
-			keylist=GetKeyList(key,NF) # key指定の文字列からkeyリストへ変換
-			reflist=GetKeyList(ref,NF) # ref指定の文字列からrefリストへ変換
-			# 行のkey値とref値を求めこれを現在のプロックのkey値とref値とする
-			current_keyfieldvalues=keyfieldvalues=list(map(NFDtoNFC,GetKeyFieldValues(fields,keylist))) # key値 NFC正規化しておく
-			current_reffieldvalues=reffieldvalues=list(map(NFDtoNFC,GetKeyFieldValues(fields,reflist))) # ref値 NFC正規化しておく
-		else:
-			# 行のkey値とref値を求める
-			keyfieldvalues=list(map(NFDtoNFC,GetKeyFieldValues(fields,keylist))) # key値 NFC正規化しておく
-			reffieldvalues=list(map(NFDtoNFC,GetKeyFieldValues(fields,reflist))) # ref値 NFC正規化しておく
-		if len(fields)!=NF and linecount>1:
-			error("入力ファイルのフィールド数が一定ではありません")
+		line=preproc_line(line)	# 入力行の前処理
+		if not line:	sys.exit(0)
+		fields=line.split(" ")
+		# 先頭行または欄数変化のあるときはkey指定/ref指定の検査をする ここで絶対欄位置のkey_list/ref_listを得る
+		check_num_fields_variation(fields)
+		# 行のkey値とref値を求める
+		keyfieldvalues=NFDtoNFC(GetKeyFieldValues(fields,key_list)) # key値 NFC正規化しておく
+		reffieldvalues=NFDtoNFC(GetKeyFieldValues(fields,ref_list)) # ref値 NFC正規化しておく
+		if start:	# 先頭行なら
+			# 先頭行のkey値/ref値を現在のプロックのkey値/ref値とする
+			current_keyfieldvalues=keyfieldvalues # key値
+			current_reffieldvalues=reffieldvalues # ref値
+			last_block.append(line)
+			start=False
+			continue
 		# key値が変化したら
 		if  keyfieldvalues != current_keyfieldvalues:
 			# 新しいプロックのkey値とref値を記憶する
@@ -258,7 +403,6 @@ if __name__ == '__main__':
 			del last_block[:]  # これまでの同じkey値のref値が同じ行の最終ブロックをclearする
 		# 同じkey値のref値が同じ行の最終ブロックとして集積する
 		last_block.append(line)
-		linecount+=1
 
 	# EOFに達したので未出力の最終ブロックを出力する
 	for outputline in last_block:

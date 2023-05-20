@@ -4,11 +4,11 @@
 # yobi 曜日挿入フィルタ（Open usp Tukubai版）
 # 
 # designed by Nobuaki Tounaka
-# written  by Masatomo Togashi
+# written by Yoshio Katayama
 #
 # The MIT License
 #
-# Copyright (C) 2020 Universal Shell Programming Laboratory
+# Copyright (C) 2011 Universal Shell Programming Laboratory
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -32,9 +32,9 @@ from __future__ import print_function
 
 _usage = "yobi [-e|-j] <field> <filename>"
 _usage1 = "yobi -d [-e|-j] <string>"
-_version = "Sat Jun 20 21:57:23 JST 2020"
+_version = "Fri Oct 21 11:26:06 JST 2011"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
-_keypat = r'(\d+|NF(-\d+)?)$'
+_keypatNF=r'(?P<m0>(?P<m01>\d+)|(?P<m02>NF(?P<m03>-\d+)?))$'
 
 import re
 import os
@@ -52,47 +52,6 @@ def usage():
 	print("Version :", _version, file=sys.stderr)
 	print("         ", _code, file=sys.stderr)
 	sys.exit(1)
-
-class FieldLine:
-	def __init__(self, line, allow_z = False):
-		self.__allow_zero = allow_z
-		self.__fields = [ line ]
-		self.__fields += [ x for x in line.split(' ') if x ]
-
-	def size(self):
-		return len(self.__fields) - 1
-
-	def getFieldNum(self, key):
-		if type(key) == type(0):
-			return key
-		if re.match(r'\d+$', key):
-			key = int(key)
-		elif key == 'NF':
-			key = self.size()
-		else:
-			key = self.size() - int(key[3:])
-			if key <= 0:
-				error("NF-x の x が大きすぎます。")
-		if key < 0:
-			error("フィールド番号が負です。")
-		if key == 0 and not self.__allow_zero:
-			error("フィールド番号が０です。")
-		if key > self.size():
-			error("フィールド番号が大きすぎます。")
-		return key
-
-	def getField(self, s, e = None):
-		s = self.getFieldNum(s)
-		if e == None:
-			e = s
-		else:
-			e = self.getFieldNum(e)
-		if s <= e:
-			return ' '.join(self.__fields[s : e + 1])
-		else:
-			t = self.__fields[e : s + 1]
-			t.reverse()
-			return ' '.join(t)
 
 #
 # 入力ファイルオープン
@@ -113,6 +72,71 @@ def open_file(n):
 		else:
 			error("ファイル '%s' をオープンできません。", filename)
 	return file
+
+# キーフィールド指定処理関連
+
+# NF相対欄位置からNF（欄数）に応じた0発進の欄位置に変換する
+def getpos(base_pos):
+	# NF相対欄位置からの変換:
+	#  nのときはそのまま
+	#  0のときはNF（欄数）
+	#  -nのときはNF-n
+	# 0発進とするために-1を加える
+	if base_pos > 0:
+		pos=base_pos-1
+		if pos >= NF:	error("フィールド番号が大きすぎます。 %s",str(base_pos))
+		return pos	# 元からの絶対欄位置
+	else:
+		pos=NF+base_pos-1
+		if pos < 0:	error("フィールド指定でNF-x の x が大きすぎます。 %s","NF-"+str(-base_pos))
+		return pos	# NF相対欄位置からの絶対化欄位置
+
+# 欄番号文字列をNF相対形式で整数化する
+def getFieldNum(str,str1,str2):
+	# n または NF または NF-x の形式の欄番号をNF相対形式の整数で確定する
+	# 正規表現で「\d+|NF(-\d+)?」にmatchする全体をstrが、「\d+」でmatchする部分をstr1が、「(-\d+)?」でmatchする部分をstr2が保持している
+	# NF相対形式の整数化:
+	#  単独のnが0のときはエラーとする
+	#  単独のnが0以外のときは整数のn
+	#  単独のNFのときは整数の0
+	#  NF-nのときは整数の-n
+	# 実際の欄番号にする際には行ごとに得たNF（欄数）を使用して計算する
+	if str1:	# n
+		fieldnum=int(str1)
+		if fieldnum==0:	# 欄番号0は受理しない
+			error("フィールド指定に0がありました。")
+	else:	# NF-n または NF
+		if str2:	# NF-n
+			fieldnum=int(str2)
+		else:	# NF
+			fieldnum=0
+	return fieldnum
+
+#
+# ひとつの欄指定パラメータからNF相対形式で整数化した欄位置を返す
+#
+def getFieldList(field_param):
+	field_param=field_param.replace("NF-0","NF")	# NF-0はNFと書き替える
+	mobj = re.match(_keypatNF,field_param)
+	if not mobj:	# フィールド指定の形式が不正
+		error("フィールド指定の形式が不正です。 %s",fieldnum)
+	NFrelpos=getFieldNum(field_param,mobj.group('m01'),mobj.group('m03'))	# NF相対形式で整数化して返す
+	return NFrelpos
+
+#
+# 行の欄数検査
+#
+def check_num_fields_variation(fields,keypos):
+	global	NF
+	nf=len(fields)
+	if nf != NF:	# 先頭行かまたは欄数が変化したなら
+		NF=nf	# NFを更新
+		keypos=getpos(rel_key)	# 行の欄数NFを見てNF相対欄位置から(絶対)欄位置を決定する
+	return keypos
+
+# 不要な空白の削除関数
+def rm_sp(line):
+	return re.sub(r' {2,}',' ',re.sub(r'^ +| +$','',line))	# 行頭と行末の空白を削除し連続空白を単空白にする
 
 # 改行符号（\r\n）の削除関数
 def rm_eol(line):
@@ -135,6 +159,7 @@ def rm_BOM(line):
 def preproc_line(line):
 	line=rm_eol(line)	# 行末の改行記号を削除する
 	line=rm_BOM(line)	# ファイル先頭行の行頭にBOMがあったらこれを削除する
+	line=rm_sp(line)	# 行頭と行末の空白を削除し連続空白を単空白にする
 	return line
 
 # Python3か判定する
@@ -149,7 +174,7 @@ def Python3():
 #
 def weekday(date, lang):
 	if not re.match(r'\d{8}', date):
-		error("日付が8桁整数になっていません。")
+		error("日付が8桁整数になっていません。日付け=%s",date)
 	try:
 		w = datetime(int(date[:4]), int(date[4:6]), int(date[6:])).weekday()
 	except:
@@ -164,6 +189,8 @@ def weekday(date, lang):
 # メイン関数
 #
 if __name__ == '__main__':
+
+	global	NF
 
 	if len(sys.argv) < 2 \
 	 or sys.argv[1] == '--help' \
@@ -191,6 +218,7 @@ if __name__ == '__main__':
 	if not args:
 		error("ファイルまたは文字列の指定がありません。")
 	sys.argv = sys.argv[0:1] + args	# オプションを除くリスト
+
 	#
 	# ダイレクトモード
 	#
@@ -201,28 +229,26 @@ if __name__ == '__main__':
 	#
 	# <field>
 	#
-	if not re.match(_keypat, sys.argv[1]):
-		error("フィールドの指定が不正です。")
-	fld = sys.argv[1]
+	rel_key = getFieldList(sys.argv[1])
 
 	#
 	# メインループ
 	#
+	NF=-1
+	keypos=-1
 	firstline=True
-	head=True
 	for line in open_file(2):
-		line = FieldLine(preproc_line(line))
-		if head:
-			fld=line.getFieldNum(fld)
-			numfld=line.size()
-			head=False
-		elif line.size() != numfld:
-			error("行のフィールド数が一定ではありません。")
-		if fld < line.size(): endchar=' '
-		else:                 endchar=''
-		print(line.getField(1, fld), weekday(line.getField(fld), lang), end=endchar)
-		if fld < line.size():
-			print(line.getField(fld + 1, line.size()), end='')
+		line=preproc_line(line)	# 入力行の前処理
+		if not line:	sys.exit(0)
+		fields=line.split(" ")
+		# 先頭行または欄数変化のあるときはkey指定の検査をする ここで絶対欄位置のkeyposを得る
+		keypos=check_num_fields_variation(fields,keypos)
+		if keypos < len(fields)-1: endchar=' '
+		else:                    endchar=''
+
+		print(" ".join(fields[0:keypos+1]),weekday(fields[keypos], lang), end=endchar)
+		if keypos < len(fields)-1:
+			print(" ".join(fields[keypos+1:]), end='')
 		print()
 
 	sys.exit(0)

@@ -45,7 +45,7 @@ ERROR_CHECK(){
 BOMandEOLvariation(){	# BOM無しLF改行ファイル（$1）からBOM付きCRLF改行ファイル（$2）とBOM付きCR改行ファイル（$3）を生成する
 	 [ $# -eq 3 ]; ERROR_CHECK "TESTスクリプト内のBOMandEOLvariation()でファイル指定が不正"
 	awk '{print '\xEF\xBB\xBF' $0}' $1 > $2 # $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
-	awk 'BEGIN {ORS = "\r"}  {print '\xEF\xBB\xBF' $0}' $1 > $3 # $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
+	awk 'BEGIN {ORS = "\r"}  {print '\xEF\xBB\xBF' $0}' $1 > $3 # $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変
 }
 
 ###########################################
@@ -81,7 +81,19 @@ FIN
 
 ${com} num=1 $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST2 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2-1 error"
+
+# 空白処理の試験
+
+cat << FIN > $tmp-in
+001 山田
+  001  山本  
+002 田中
+FIN
+
+${com} num=1 $tmp-in > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2-2 error"
 
 ###########################################
 #TEST3: use of option num=<n> and -<m>
@@ -176,10 +188,6 @@ diff $tmp-ans1 $tmp-out
 ${com} -d'n' num=4 $tmp-in >$tmp-out
 diff $tmp-ans2 $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST4-2 error"
-
-${com} -2 -d= <<< "name_1 value_1 name_2 value_2" >$tmp-out
-diff <(echo name_1=value_1; echo name_2=value_2) $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST4-3 error"
 
 ###########################################
 #TEST5
@@ -297,27 +305,6 @@ ${com} -dが num=4 $tmp-in >$tmp-out
 
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST7 error"
-
-###########################################
-#TEST8
-# オプションなしの場合は標準入力にデータを期待する。
-
-cat <<FIN  >$tmp-in
-あ
-い
-う
-E
-お
-FIN
-
-cat <<FIN >$tmp-ans
-あ い う E お
-FIN
-
-${com} <$tmp-in >$tmp-out
-
-diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST8 error"
 
 ###########################################
 rm -f $tmp-*

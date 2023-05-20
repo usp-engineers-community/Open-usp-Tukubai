@@ -4,11 +4,11 @@
 # ycat 横ＣＡＴ（Open usp Tukubai版）
 # 
 # designed by Nobuaki Tounaka
-# written  by Masatomo Togashi
+# written by  Masatomo Togashi
 #
 # The MIT License
 #
-# Copyright (C) 2020 Universal Shell Programming Laboratory
+# Copyright (C) 2023 Universal Shell Programming Laboratory
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,7 @@
 from __future__ import print_function
 
 _usage = "ycat [-n] file1 file2..."
-_version = "Sat Jun 20 21:57:22 JST 2020"
+_version = "Fri May 20 00:00:00 JST 2023"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
 wide_class = ["W","F","A"]	# 全角文字クラス
 
@@ -237,6 +237,10 @@ def open_file(n):
 			error("ファイル '%s' をオープンできません。", filename)
 	return file
 
+# 不要な空白の削除関数
+def rm_sp(line):
+	return re.sub(r'^ +| +$','',line)	# 行頭と行末の空白を削除する
+
 # 改行符号（\r\n）の削除関数
 def rm_eol(line):
 	return line.rstrip("\r\n")	# 改行記号としてCRLF('\r\n')/CR('\r')/LF('\n')のすべてに対応する
@@ -258,6 +262,7 @@ def rm_BOM(line):
 def preproc_line(line):
 	line=rm_eol(line)	# 行末の改行記号を削除する
 	line=rm_BOM(line)	# ファイル先頭行の行頭にBOMがあったらこれを削除する
+	line=rm_sp(line)	# 行頭と行末の空白を削除する
 	return line
 
 # Python3か判定する
