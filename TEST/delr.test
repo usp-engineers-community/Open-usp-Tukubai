@@ -32,7 +32,7 @@ if test "$1" = ""; # <command-path>($1)がなければ
 	else commandpath="$1" # <command-path>($1)があればtest対象コマンドは指定のディレクトリーにある
 fi
 com="${pythonversion} ${commandpath}/${name}" # python処理系によるtest対象コマンド実行の先頭部
-tmp=/tmp/$$
+tmp=$(mktemp)
 
 ERROR_CHECK(){
 	[ "$(echo ${PIPESTATUS[@]} | tr -d ' 0')" = "" ] && return
@@ -47,7 +47,6 @@ BOMandEOLvariation(){	# BOM無しLF改行ファイル（$1）からBOM付きCRLF
 	awk '{print '\xEF\xBB\xBF' $0}' $1 > $2 # $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
 	awk 'BEGIN {ORS = "\r"}  {print '\xEF\xBB\xBF' $0}' $1 > $3 # $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
 }
-
 
 ###########################################
 # TEST1
@@ -67,6 +66,7 @@ cat << FIN > $tmp-ans
 FIN
 
 ${com} 1 "0001" $tmp-in >$tmp-out
+
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST1 error"
 
@@ -96,7 +96,6 @@ diff $tmp-ans $tmp-out
 # TEST3
 # 指定したフィールドが完全一致しない行のみ表示する
 # 標準入力を使用する
-
 
 cat << FIN > $tmp-in
 0001 a
@@ -346,6 +345,30 @@ diff $tmp-ans1 $tmp-out
 ${com} 2 "齋藤" $tmp-in >$tmp-out
 diff $tmp-ans2 $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST7-2 error"
+
+###########################################
+# TEST8
+# TEST1の変形
+# 指定したフィールドが完全一致しない行のみ表示する
+# NF-x形式のキー指定とフィールド数変化への対応試験
+
+cat << FIN > $tmp-in
+0001 a A
+0002 b B
+0003 C c
+0004 c C
+FIN
+
+cat << FIN > $tmp-ans
+0001 a A
+0002 b B
+0004 c C
+FIN
+
+${com} NF-1 "C" $tmp-in >$tmp-out
+
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST8 error"
 
 ###########################################
 rm -f $tmp-*
