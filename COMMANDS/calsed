@@ -4,11 +4,11 @@
 # calsed 軽いsed（Open usp Tukubai版）
 # 
 # designed by Nobuaki Tounaka
-# written  by Masatomo Togashi
+# writteen by Masatomo Togashi
 #
 # The MIT License
 #
-# Copyright (C) 2021 Universal Shell Programming Laboratory
+# Copyright (C) 2023 Universal Shell Programming Laboratory
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -37,7 +37,7 @@ _usage = "calsed <org> <dst> [<file>]"
 _usage2 = "calsed -f <script> [<file>]"
 _option = "-n<string>"
 _option2 = "-s<c>"
-_version = "Tue Oct 19 23:46:03 JST 2021"
+_version = "Mon Jun 19 23:20:45 JST 2023"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
 
 # 濁音と半濁音のNFD表記でNFC表記もできるもの→NFDtoNFC変換でNFCに統一する
@@ -72,6 +72,10 @@ def open_file(filename):
 			error("ファイル '%s' をオープンできません。", filename)
 	return file
 
+# 不要な空白の削除関数
+def rm_sp(line):
+	return re.sub(r'^ +','',line)	# 行頭の空白（連続空白も）を削除する
+
 # 改行符号（\r\n）の削除関数
 def rm_eol(line):
 	return line.rstrip("\r\n")	# 改行記号としてCRLF('\r\n')/CR('\r')/LF('\n')のすべてに対応する
@@ -93,6 +97,7 @@ def rm_BOM(line):
 def preproc_line(line):
 	line=rm_eol(line)	# 行末の改行記号を削除する
 	line=rm_BOM(line)	# ファイル先頭行の行頭にBOMがあったらこれを削除する
+	line=rm_sp(line)	# 行頭の空白（連続空白も）を削除する
 	return line
 
 # Python3か判定する
@@ -598,7 +603,7 @@ if __name__ == '__main__':
 		# 置換リストファイルを読む
 		firstline=True
 		for line in file2:
-			line=preproc_line(line)
+			line=preproc_line(line)	# 行頭の空白は削除しておく
 			if line=='': continue # 空行は処理しない
 			line=NFDtoNFC(line)	# 入力行をNFC化
 			# この行の組を置換リストに追加する
@@ -614,7 +619,7 @@ if __name__ == '__main__':
 				org_str=toXstr(to_unicode(replist[i][0]))
 				dst_str=toXstr(to_unicode(replist[i][1]))
 				Xreplist.append([org_str,dst_str])
-	# fオプションがないときはパラメータで置換を指定しorg,dstを調整するする
+	# fオプションがないときはパラメータで置換を指定しorg,dstを調整する
 	else:
 		if Python3():
 			# Python3のときは直接指定の置換対象文字列と置換文字列に対して前処理をする

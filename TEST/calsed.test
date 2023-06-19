@@ -32,7 +32,7 @@ if test "$1" = ""; # <command-path>($1)がなければ
 	else commandpath="$1" # <command-path>($1)があればtest対象コマンドは指定のディレクトリーにある
 fi
 com="${pythonversion} ${commandpath}/${name}" # python処理系によるtest対象コマンド実行の先頭部
-tmp=/tmp/$$
+tmp=$(mktemp)
 
 ERROR_CHECK(){
 	[ "$(echo ${PIPESTATUS[@]} | tr -d ' 0')" = "" ] && return
@@ -43,7 +43,7 @@ ERROR_CHECK(){
 }
 
 BOMandEOLvariation(){	# BOM無しLF改行ファイル（$1）からBOM付きCRLF改行ファイル（$2）とBOM付きCR改行ファイル（$3）を生成する
-	 [ $# -eq 3 ]; ERROR_CHECK "TESTスクリプト内のBOMandEOLvariation()でファイル指定が不正"
+	[ $# -eq 3 ]; ERROR_CHECK "TESTスクリプト内のBOMandEOLvariation()でファイル指定が不正"
 	awk '{print '\xEF\xBB\xBF' $0}' $1 > $2 # $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
 	awk 'BEGIN {ORS = "\r"}  {print '\xEF\xBB\xBF' $0}' $1 > $3 # $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
 }
@@ -208,7 +208,7 @@ diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST5-1 error"
 
 ###########################################
-# TEST6
+# TEST6-1
 # 変換元文字列と変換後文字列をセットにしたファイルを指定して、
 # 置換を行うことができます。
 # このファイルは name 形式であることが必要です。
@@ -225,7 +225,28 @@ FIN
 
 ${com} -f $tmp-script $tmp-data > $tmp-out
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST6 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST6-1 error"
+
+###########################################
+# TEST6-2
+# 変換元文字列と変換後文字列をセットにしたファイルを指定して、
+# 置換を行うことができます。
+# このファイルは name 形式であることが必要です。
+# name形式のname部（変換前文字列）の先頭にある空白（連続空白も）は削除されます
+
+cat << FIN > $tmp-script
+ NAME usp
+  AGE 25
+FIN
+
+cat << FIN > $tmp-ans
+<td>usp</td>
+<td>25</td>
+FIN
+
+${com} -f $tmp-script $tmp-data > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST6-2 error"
 
 ###########################################
 # TEST7

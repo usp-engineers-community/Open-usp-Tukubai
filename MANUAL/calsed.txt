@@ -128,6 +128,6 @@ $ cat result
 <td>usp lab</td>
 <td>25</td>
 
-last modified: Mon Aug  8 11:01:55 JST 2022
+last modified: MODIFIED
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights
+Copyright (c) 2012-2023 Universal Shell Programming Laboratory All Rights

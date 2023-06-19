@@ -4,11 +4,11 @@
 # delr フィールドの非完全一致を見る（Open usp Tukubai版）
 # 
 # designed by Nobuaki Tounaka
-# written  by Masatomo Togashi
+# writteen by Masatomo Togashi
 #
 # The MIT License
 #
-# Copyright (C) 2021 Universal Shell Programming Laboratory
+# Copyright (C) 2023 Universal Shell Programming Laboratory
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -33,9 +33,10 @@ import sys
 import re
 import unicodedata
 
-_usage = "delr <field> <str> <file>"
-_version = "Sun Nov 21 17:29:32 JST 2021"
+_usage = "delr <field> <str> [<file>]"
+_version = "Mon Jun 19 23:20:45 JST 2023"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
+_keypat = r'(\d+)|NF(-\d+)?$'
 
 # 濁音と半濁音のNFD表記でNFC表記もできるもの→NFDtoNFC変換でNFCに統一する
 _comb_pat=r"(((う|か|き|く|け|こ|さ|し|す|せ|そ|た|ち|つ|て|と|は|ひ|ふ|へ|ほ|ウ|カ|キ|ク|ケ|コ|サ|シ|ス|セ|ソ|タ|チ|ツ|テ|ト|ハ|ヒ|フ|ヘ|ホ|ワ|ヰ|ヱ|ヲ)゙)|((は|ひ|ふ|へ|ほ|ハ|ヒ|フ|ヘ|ホ)゚))+"
@@ -66,6 +67,60 @@ def open_file(filename):
 			error("ファイル '%s' をオープンできません。", filename)
 	return file
 
+# 欄番号文字列をNF相対形式で整数化する
+def getFieldNum(str,str1,str2):
+	# n または NF または NF-x の形式の欄番号をNF相対形式の整数で確定する
+	# 正規表現で「\d+|NF(-\d+)?」にmatchする全体をstrが、「\d+」でmatchする部分をstr1が、「(-\d+)?」でmatchする部分をstr2が保持している
+	# NF相対形式の整数化:
+	#  単独のnが0のときはNone
+	#  単独のnが0以外のときは整数のn
+	#  単独のNFのときは整数の0
+	#  NF-nのときは整数の-n
+	# 実際の欄番号にする際には行ごとに得たNF（欄数）を使用して計算する
+	
+	if str1:	# n
+		fieldnum=int(str1)
+		if fieldnum==0:	# 欄番号0はエラー
+			error("フィールド指定が0です。")
+	else:	# NF-n または NF
+		if str2:	# NF-n
+			fieldnum=int(str2)
+		else:	# NF
+			fieldnum=0
+	return fieldnum
+
+# NF相対欄位置からNF（欄数）に応じた0発進の欄位置に変換する
+def getpos(base_pos):
+	# NF相対欄位置からの変換:
+	#  nのときはそのまま
+	#  0のときはNF（欄数）に
+	#  -nのときはNF-nに
+	# 0発進とするために-1を加える
+	if base_pos > 0:
+		pos=base_pos-1
+		if pos > NF-1:	error("フィールド番号が大きすぎます。%s",str(base_pos))
+	else:
+		pos=NF+base_pos-1
+		if pos < 0:	error("フィールド指定で NF-x の x が大きすぎます。 %s","NF-"+str(-base_pos))
+	return pos
+
+#
+# 行の欄数検査
+#   tranの先頭行または欄数変化時の処理
+#
+def check_num_fields_variation(fields):
+	global NF,relkey,abskey
+	nf=len(fields)
+	if NF==-1:	start=True
+	if nf != NF:	# 欄数が変化したかまたは先頭行なら
+		NF=nf
+		abskey=getpos(relkey)	# NF相対欄位置からNF値を使って実際の欄位置リストへ変換する
+	return
+
+# 不要な空白の削除関数
+def rm_sp(line):
+	return re.sub(r' {2,}',' ',re.sub(r'^ +| +$','',line))	# 行頭と行末の空白を削除し連続空白を単空白にする
+
 # 改行符号（\r\n）の削除関数
 def rm_eol(line):
 	return line.rstrip("\r\n")	# 改行記号としてCRLF('\r\n')/CR('\r')/LF('\n')のすべてに対応する
@@ -87,6 +142,7 @@ def rm_BOM(line):
 def preproc_line(line):
 	line=rm_eol(line)	# 行末の改行記号を削除する
 	line=rm_BOM(line)	# ファイル先頭行の行頭にBOMがあったらこれを削除する
+	line=rm_sp(line)	# 行頭と行末の空白を削除し連続空白を単空白にする
 	return line
 
 # Python3か判定する
@@ -372,6 +428,8 @@ def XstrMatch(str1,str2):
 
 if __name__ == '__main__':
 
+	global NF,relkey,abskey
+
 	# コマンドの説明表示
 	if len(sys.argv) <= 1 \
 	 or sys.argv[1] == '--help' \
@@ -409,9 +467,11 @@ if __name__ == '__main__':
 	# パラメータ検査
 	if numparam<2:
 		error("パラメータの数が足りません")
-	if not fieldstring.isdigit():
-		error("フィールド指定が数値ではありません")
-	fieldnum=int(fieldstring)
+	# フィールド指定
+	mobj = re.match(_keypat,fieldstring)	# 構文検査のために実行する
+	if not mobj:	# フィールド指定の形式が不正（フィールド指定が負数の場合を含む）
+		error("フィールド指定の形式が不正です。 %s",fieldstring)
+	relkey=getFieldNum(mobj.group(0),mobj.group(1),mobj.group(2))	# NF相対の欄位置にする
 
 	# strパラメータの処理
 	string=NFDtoNFC(string)	# 文字列中にNFD文字があればNFC文字に変換する
@@ -424,14 +484,16 @@ if __name__ == '__main__':
 
 	# ファイルを読む
 	firstline=True
+	NF=-1
 	for line in file:
-		line=preproc_line(line)
+		fields=preproc_line(line).split(" ")
+		check_num_fields_variation(fields)
 		# 行の指定フィールドの値が指定値と一致しないとき行を表示
 		if LooseMatch:
-			if XstrMatch(toXstr(to_unicode(NFDtoNFC(line.split()[fieldnum-1]))),string):	continue	# 文字列比較はNFCおよび拡張文字列で行なう
+			if XstrMatch(toXstr(to_unicode(NFDtoNFC(fields[abskey]))),string):	continue	# 文字列比較はNFCおよび拡張文字列で行なう
 		else:
-			if NFDtoNFC(line.split()[fieldnum-1]) == string:	continue	# 文字列比較はNFCで行なう
-		print(line)
+			if NFDtoNFC(fields[abskey]) == string:	continue	# 文字列比較はNFCで行なう
+		print(line,end='')	# 入力行そのままを出力
 
 	# ファイルを閉じる
 	file.close()

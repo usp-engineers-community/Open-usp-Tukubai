@@ -4,11 +4,11 @@
 # cjoin2x : キーの値が同じレコードが複数存在するファイル同士を連結（Open usp Tukubai版）
 # 
 # designed by Nobuaki Tounaka
-# written  by Masatomo Togashi
+# writteen by Masatomo Togashi
 #
 # The MIT License
 #
-# Copyright (C) 2022 Universal Shell Programming Laboratory
+# Copyright (C) 2023 Universal Shell Programming Laboratory
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -33,7 +33,7 @@ import re
 import sys
 
 _usage = "cjoin2x [+<string>] key=<n> <master> [<tran>]"
-_version = "Fri Jul 22 01:09:14 JST 2022"
+_version = "Mon Jun 19 23:20:45 JST 2023"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
 _keypat = r'((\d+|NF(-\d+)?)(/(\d+|NF(-\d+)?))?)(@((\d+|NF(-\d+)?)(/(\d+|NF(-\d+)?))?))*$'
 _keypatNF=r'(?P<m0>(?P<m01>\d+)|(?P<m02>NF(?P<m03>-\d+)?))(/(?P<m1>(?P<m11>\d+)|(?P<m12>NF(?P<m13>-\d+)?)))?$'
@@ -109,7 +109,7 @@ def getFieldNum(str,str1,str2):
 	#  単独のNFのときは整数の0
 	#  NF-nのときは整数の-n
 	# 実際の欄番号にする際には行ごとに得たNF（欄数）を使用して計算する
-
+	
 	if str1:	# n
 		fieldnum=int(str1)
 		if fieldnum==0:	# 欄番号0は全欄指定を意味する
@@ -197,7 +197,7 @@ def GetMaster(masterfile):
 	firstline=True
 	for line in masterfile:
 		line=preproc_line(line)
-		fields=line.split()
+		fields=line.split(" ")
 		masterfilelines.append(fields)	# 全フィールドを記憶する
 		if len(fields) > maxmasterfieldnum:
 			maxmasterfieldnum=len(fields)	# masterの最大欄数を記憶する
@@ -213,6 +213,36 @@ def GetMasterPreAndAfterFieldNums(masterkeylist,maxmasterkeypos,maxmasterfieldnu
 	MasterPreFieldNum=maxmasterkeypos+1-len(masterkeylist)	# masterファイルの最大キー位置の前の非キー欄数
 	MasterAfterFieldNum=maxmasterfieldnum-(maxmasterkeypos+1)	# masterファイルの最大キー位置の後の欄数
 	return MasterPreFieldNum,MasterAfterFieldNum
+
+#
+# 行の欄数検査
+#   tranの先頭行または欄数変化時の処理
+#
+def check_num_fields_variation(fields):
+	global NF,rel_keylist,keylist,abs_rel_mixed,maxtrankeypos,masterkeylist,max_master_linecount,maxmasterkeypos
+	global MasterPreFieldNum,MasterAfterFieldNum
+	start=False
+	nf=len(fields)
+	if NF==-1:	start=True
+	if nf != NF:	# 欄数が変化したかまたは先頭行なら
+		NF=nf
+		keylist=make_keylist(rel_keylist)	# NF相対欄リストからNF値を使って実際の欄位置リストへ変換する
+		maxtrankeypos=max(keylist)
+		if start or not abs_rel_mixed:	# 先頭行またはabs_rel_mixedがFalse（絶対欄位置指定かNF相対欄位置指定のみのいずれか）なら
+			# masterのキー位置を設定/再設定する
+			masterkeylist=GetMasterKeylist(keylist)	# tranファイルにおけるキーの欄番号リストからmasterファイルにおける対応欄番号リストを得る
+			max_master_linecount=0	# masterの整列を確認した最終の行位置をresetする
+			maxmasterkeypos=max(masterkeylist)	# masterの最大キー位置を求める
+			# masterの最大キー位置の前の非キー欄数と後の欄数をmaster最大欄数を用いて求める
+			MasterPreFieldNum,MasterAfterFieldNum=GetMasterPreAndAfterFieldNums(masterkeylist,maxmasterkeypos,maxmasterfieldnum)
+		else:	# 先頭行以外でabs_rel_mixedがTrue(絶対欄位置指定かNF相対欄位置指定の混用）なら
+			# tranの欄数変化は受容しない
+			error("キー指定に絶対位置とNF相対位置が混用されているときにtranのフィールド数が変化しました。")
+	return
+
+# 不要な空白の削除関数
+def rm_sp(line):
+	return re.sub(r' {2,}',' ',re.sub(r'^ +| +$','',line))	# 行頭と行末の空白を削除し連続空白を単空白にする
 
 # 改行符号（\r\n）の削除関数
 def rm_eol(line):
@@ -235,6 +265,7 @@ def rm_BOM(line):
 def preproc_line(line):
 	line=rm_eol(line)	# 行末の改行記号を削除する
 	line=rm_BOM(line)	# ファイル先頭行の行頭にBOMがあったらこれを削除する
+	line=rm_sp(line)	# 行頭と行末の空白を削除し連続空白を単空白にする
 	return line
 
 # Python3か判定する
@@ -269,6 +300,9 @@ def utf2ucs(instr):
 # main
 
 if __name__ == '__main__':
+
+	global NF,rel_keylist,keylist,abs_rel_mixed,maxtrankeypos,masterkeylist,max_master_linecount,maxmasterkeypos
+	global MasterPreFieldNum,MasterAfterFieldNum
 
 	dummy="_"
 
@@ -325,28 +359,13 @@ if __name__ == '__main__':
 		if linecount==0:	# 先頭行ならmasterファイルの内容をとりこむ
 			masterfilelines,maxmasterfieldnum=GetMaster(masterfile)	# masterの最大欄数（maxmasterfieldnum）も求めておく
 		line=preproc_line(line)
-		tranfields=line.split()
-		nf=len(tranfields)
-		if nf != NF:	# 欄数が変化したかまたは先頭行なら
-			NF=nf
-			keylist=make_keylist(rel_keylist)	# NF相対欄リストからNF値を使って実際の欄位置リストへ変換する
-			maxtrankeypos=max(keylist)
-			if linecount==0 or not abs_rel_mixed:	# 先頭行またはabs_rel_mixedがFalse（絶対欄位置指定かNF相対欄位置指定のみのいずれか）なら
-				masterkeylist=GetMasterKeylist(keylist)	# tranファイルにおけるキーの欄番号リストからmasterファイルにおける対応欄番号リストを得る
-				max_master_linecount=0	# masterの整列を確認した最終の行位置をresetする
-				# masterとtranの最大キー位置を求める
-				maxmasterkeypos=max(masterkeylist)
-				# masterの最大キー位置の前の非キー欄数と後の欄数をmaster最大欄数を用いて求める
-				MasterPreFieldNum,MasterAfterFieldNum=GetMasterPreAndAfterFieldNums(masterkeylist,maxmasterkeypos,maxmasterfieldnum)
-			else:	# 先頭行以外でabs_rel_mixedがTrue(（絶対欄位置指定かNF相対欄位置指定の混用）なら
-				# tranの欄数変化は受容しない
-				error("tranのフィールド数が一定ではありません。")
-
+		tranfields=line.split(" ")
+		# tranの先頭行または欄数変化時の処理
+		check_num_fields_variation(tranfields)
 		# tranのキーを得る
 		trankeyfieldvalues=GetKeyFieldValues(tranfields,keylist,Separator)
 		prev_masterkeyfieldvalues=""
 		master_linecount=0
-		# ここでtranのkey欄の値が昇順になっていることを確認する予定→まだ（2022年07月17日(日)15時37分26秒）→tranは整列を期待しないのでいらない（）
 		hitcount=0
 		# masterのloop
 		for masterfields in masterfilelines:	# masterの行（フィールドリスト）を見る
