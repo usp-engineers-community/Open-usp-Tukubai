@@ -32,7 +32,7 @@ if test "$1" = ""; # <command-path>($1)がなければ
 	else commandpath="$1" # <command-path>($1)があればtest対象コマンドは指定のディレクトリーにある
 fi
 com="${pythonversion} ${commandpath}/${name}" # python処理系によるtest対象コマンド実行の先頭部
-tmp=/tmp/$$
+tmp=$(mktemp)
 
 ERROR_CHECK(){
 	[ "$(echo ${PIPESTATUS[@]} | tr -d ' 0')" = "" ] && return
@@ -51,6 +51,7 @@ BOMandEOLvariation(){	# BOM無しLF改行ファイル（$1）からBOM付きCRLF
 ###########################################
 # TEST1
 # 通常の連結
+# 行頭/行末の空白削除と行中の連続空白の単空白化
 
 cat << FIN > $tmp-master
 1 東京1
@@ -87,7 +88,33 @@ FIN
 
 ${com} key=1 $tmp-master $tmp-tran >$tmp-out
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST1 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1-1 error"
+
+# master/tranの各行において行頭/行末の空白は削除され 行中の連続空白は単空白に変換される
+
+cat << FIN > $tmp-master
+1 東京1
+  1  東京2  
+  2 大阪1 
+2 大阪2
+FIN
+
+cat << FIN > $tmp-tran
+3 栄
+  2   京橋  
+3 金山
+ 1  上野 
+1 新宿
+4 天神
+2 難波
+3 熱田
+2 梅田
+4 博多
+FIN
+
+${com} key=1 $tmp-master $tmp-tran >$tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST1-2 error"
 
 ###########################################
 # TEST2
@@ -350,7 +377,9 @@ diff $tmp-ans $tmp-out
 # key指定に絶対位置指定とNF相対位置指定を混在させない場合は
 # tranのフィールド数は一定でなくてもよい
 
-# tranの後尾の欄をkeyとする試験
+# TEST10-1
+# tranの後尾の欄をNF相対位置指定でkeyとし
+# tranのフィールド数が変化するときの試験
 
 cat << FIN > $tmp-master
 1 東京1
@@ -389,10 +418,11 @@ ${com} key=NF $tmp-master $tmp-tran >$tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST10-1 error"
 
-# key指定に絶対位置指定とNF相対位置指定を混在させた場合は
-# tranのフィールド数は固定でなければならない
+# key指定に絶対位置指定とNF相対位置指定を混在させた場合の試験
 
-# tranの先頭と後尾の欄をkeyとする試験
+# TEST10-2
+# tranの先頭と後尾の欄をkeyとし
+# tranのフィールド数が一定であるとき
 
 cat << FIN > $tmp-master
 1 東京1 A 10 X Y
@@ -433,6 +463,30 @@ FIN
 ${com} key=1@NF $tmp-master $tmp-tran >$tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST10-2 error"
+
+# TEST10-3
+# tranの先頭と後尾の欄をkeyとし
+# tranのフィールド数を変化させたとき
+
+cat << FIN > $tmp-tran
+3 栄 a 30
+2 京橋 b 20 40
+3 金山 c 30
+1 上野 d 10
+1 新宿 e 20
+4 天神 f 40
+2 難波 g 20
+3 熱田 h 30
+2 梅田 i 20
+4 博多 j 40
+FIN
+
+# ${name}のTEST10-3では
+# 「key指定において絶対欄位置とNF相対欄位置が混在している状態でtranのフィールド数が変化する」例を実行し、
+#  エラーメッセージが出るように設定されている
+
+${com} key=1@NF $tmp-master $tmp-tran >$tmp-out 2> /dev/null
+[ $? -ne 0 ] ; ERROR_CHECK "TEST10-3 error"
 
 ###########################################
 rm -f $tmp-*
