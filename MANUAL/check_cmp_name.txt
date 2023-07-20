@@ -10,7 +10,7 @@ check_cmp_name : name 形式データの値の大小関係をチェックする
 
 Usage   : check_cmp_name <expression> <name_file>
 Option  : --through <string>
-Version : Tue Oct 19 23:46:03 JST 2021
+Version : Thu Jul 20 02:14:04 JST 2023
 Edition : 1
 
 【説明】
@@ -79,6 +79,6 @@ E_001
 $ echo $?
 1
 
-last modified: Thu Aug  4 05:16:09 JST 2022
+last modified: Thu Jul 20 09:21:07 JST 2023
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights
+Copyright (c) 2012-2023 Universal Shell Programming Laboratory All Rights

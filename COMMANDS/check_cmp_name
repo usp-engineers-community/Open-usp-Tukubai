@@ -8,7 +8,7 @@
 #
 # The MIT License
 #
-# Copyright (C) 2021 Universal Shell Programming Laboratory
+# Copyright (C) 2023 Universal Shell Programming Laboratory
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -37,8 +37,8 @@ import unicodedata
 
 _usage = "check_cmp_name <expression> <name_file>"
 _usage2 = "[--through <string>]"
-_version = "Tue Oct 19 23:46:03 JST 2021"
-_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
+_version = "Thu Jul 20 02:14:04 JST 2023"
+_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.6,3.6/UTF-8)"
 
 # 濁音と半濁音のNFD表記でNFC表記もできるもの→NFDtoNFC変換でNFCに統一する
 _comb_pat=r"(((う|か|き|く|け|こ|さ|し|す|せ|そ|た|ち|つ|て|と|は|ひ|ふ|へ|ほ|ウ|カ|キ|ク|ケ|コ|サ|シ|ス|セ|ソ|タ|チ|ツ|テ|ト|ハ|ヒ|フ|ヘ|ホ|ワ|ヰ|ヱ|ヲ)゙)|((は|ひ|ふ|へ|ほ|ハ|ヒ|フ|ヘ|ホ)゚))+"
@@ -70,6 +70,10 @@ def open_file(filename):
 			error("ファイル '%s' をオープンできません。", filename)
 	return file
 
+# 不要な空白の削除関数
+def rm_sp(line):
+	return re.sub(r'^ +','',line)	# 行頭の空白（連続空白も）を削除する
+
 # 改行符号（\r\n）の削除関数
 def rm_eol(line):
 	return line.rstrip("\r\n")	# 改行記号としてCRLF('\r\n')/CR('\r')/LF('\n')のすべてに対応する
@@ -91,6 +95,7 @@ def rm_BOM(line):
 def preproc_line(line):
 	line=rm_eol(line)	# 行末の改行記号を削除する
 	line=rm_BOM(line)	# ファイル先頭行の行頭にBOMがあったらこれを削除する
+	line=rm_sp(line)	# 行頭の空白（連続空白も）を削除する
 	return line
 
 # Python3か判定する
@@ -515,7 +520,7 @@ if __name__ == '__main__':
 	# 拡張文字列の各文字ごとの属性識別用定数
 	UCS,CCS,SVS,IVS=0,1,2,3
 	# UCS: 通常のUnicode文字（Universal Coded Character Set）
-	# CCS: 結合文字列（Combining Charactor Seuence 結合文字列
+	# CCS: 結合文字列（Combining Charactor Seuence 結合文字列)
 	# SVS: 標準異体字列（Standard Variation Sequence）
 	# IVS: 異体字列（Ideographic Variation Sequence）
 
@@ -616,6 +621,7 @@ if __name__ == '__main__':
 		fields=line.split(' ',1) # 最初の半角空白で行を2分割する
 		if len(fields)!=2:
 			error("nameファイルのフィールド数が2ではありません")
+		fields[1]=rm_sp(fields[1])	# 値部先頭の空白を削除する
 		# nameファイルにおけるnameの重複検査
 		if NFDtoNFC(fields[0]) in namedict:
 			error("nameファイルのname部に重複があります")
