@@ -8,7 +8,7 @@
 #
 # The MIT License
 #
-# Copyright (C) 2021 Universal Shell Programming Laboratory
+# Copyright (C) 2023 Universal Shell Programming Laboratory
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -35,8 +35,8 @@ import unicodedata
 
 _usage = "selr <field> <str> <file>"
 _option = "--through <str>"
-_version = "Sun Nov 21 17:29:33 JST 2021"
-_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
+_version = "Thu Jul 20 02:14:04 JST 2023"
+_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.6,3.6/UTF-8)"
 
 # 濁音と半濁音のNFD表記でNFC表記もできるもの→NFDtoNFC変換でNFCに統一する
 _comb_pat=r"(((う|か|き|く|け|こ|さ|し|す|せ|そ|た|ち|つ|て|と|は|ひ|ふ|へ|ほ|ウ|カ|キ|ク|ケ|コ|サ|シ|ス|セ|ソ|タ|チ|ツ|テ|ト|ハ|ヒ|フ|ヘ|ホ|ワ|ヰ|ヱ|ヲ)゙)|((は|ひ|ふ|へ|ほ|ハ|ヒ|フ|ヘ|ホ)゚))+"
@@ -68,6 +68,10 @@ def open_file(filename):
 			error("ファイル '%s' をオープンできません。", filename)
 	return file
 
+# 不要な空白の削除関数
+def rm_sp(line):
+	return re.sub(r' {2,}',' ',re.sub(r'^ +| +$','',line))	# 行頭と行末の空白を削除し連続空白を単空白にする
+
 # 改行符号（\r\n）の削除関数
 def rm_eol(line):
 	return line.rstrip("\r\n")	# 改行記号としてCRLF('\r\n')/CR('\r')/LF('\n')のすべてに対応する
@@ -89,6 +93,7 @@ def rm_BOM(line):
 def preproc_line(line):
 	line=rm_eol(line)	# 行末の改行記号を削除する
 	line=rm_BOM(line)	# ファイル先頭行の行頭にBOMがあったらこれを削除する
+	line=rm_sp(line)	# 行頭と行末の空白を削除し連続空白を単空白にする
 	return line
 
 # Python3か判定する
@@ -102,7 +107,9 @@ def Python3():
 # フィールド値判定関数
 # LooseMatchか否かによって処理を分ける
 def trymatch(line,fieldnum,string):
-	fields=line.split(' ')
+	fields=line.split(" ")
+	if fieldnum>len(fields):
+		error("指定されたフィールド位置「%s」が入力行の最大フィールド位置「%s」を越えています。",fieldnum,len(fields))
 	fieldvalue=NFDtoNFC(fields[fieldnum-1])
 	if LooseMatch:
 		fieldvalue=toXstr(to_unicode(fieldvalue))
