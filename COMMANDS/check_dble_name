@@ -8,7 +8,7 @@
 #
 # The MIT License
 #
-# Copyright (C) 2021 Universal Shell Programming Laboratory
+# Copyright (C) 2023 Universal Shell Programming Laboratory
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -36,8 +36,8 @@ import unicodedata
 
 _usage = "check_dble_name <check_file> <name_file>"
 _usage2 = "[--through <string>]"
-_version = "Sun Nov 21 17:29:32 JST 2021"
-_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
+_version = "Thu Jul 20 02:14:04 JST 2023"
+_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.6,3.6/UTF-8)"
 
 # 濁音と半濁音のNFD表記でNFC表記もできるもの→NFDtoNFC変換でNFCに統一する
 _comb_pat=r"(((う|か|き|く|け|こ|さ|し|す|せ|そ|た|ち|つ|て|と|は|ひ|ふ|へ|ほ|ウ|カ|キ|ク|ケ|コ|サ|シ|ス|セ|ソ|タ|チ|ツ|テ|ト|ハ|ヒ|フ|ヘ|ホ|ワ|ヰ|ヱ|ヲ)゙)|((は|ひ|ふ|へ|ほ|ハ|ヒ|フ|ヘ|ホ)゚))+"
@@ -69,6 +69,14 @@ def open_file(filename):
 			error("ファイル '%s' をオープンできません。", filename)
 	return file
 
+# 不要な空白の削除関数（行中と行末を対象にする）
+def rm_sp2(line):
+	return re.sub(r' {2,}',' ',re.sub(r' +$','',line))	# 行末の空白を削除し行中の連続空白を単空白にする
+
+# 不要な空白の削除関数（行頭を対象にする）
+def rm_sp(line):
+	return re.sub(r'^ +','',line)	# 行頭の空白（連続空白も）を削除する
+
 # 改行符号（\r\n）の削除関数
 def rm_eol(line):
 	return line.rstrip("\r\n")	# 改行記号としてCRLF('\r\n')/CR('\r')/LF('\n')のすべてに対応する
@@ -90,6 +98,7 @@ def rm_BOM(line):
 def preproc_line(line):
 	line=rm_eol(line)	# 行末の改行記号を削除する
 	line=rm_BOM(line)	# ファイル先頭行の行頭にBOMがあったらこれを削除する
+	line=rm_sp(line)	# 行頭の空白（連続空白も）を削除する
 	return line
 
 # Python3か判定する
@@ -379,6 +388,35 @@ def Xin_list(str,strlist):
 	return False
 
 #
+# 文字列の合成
+#
+# 拡張文字列を文字列に変換する	1文字が複数の符号位置であらわされている場合（代用対/結合文字/IVS/SVS）への対応
+# 	拡張文字列は(拡張文字,属性値)のtuplgのlistで
+#		拡張文字は
+# 			UCS2のときはリスト
+# 				[ 通常文字または文字列としての代用対 , 結合文字または異体字選択子（2バイトまたは代用対）または空文字 ]
+# 			UCS4のときは文字列
+# 				文字列（通常文字に結合文字または異体字選択子が付くことがある）
+#		属性値は整数
+def Xstr2Str(xs,start=0,end=None):	# 拡張文字列xsのstartからendの手前までを通常文字列として返す
+	if xs==None:
+		return ""
+	if end==None:	end=len(xs)
+	# startとendは文字単位で与えられる
+	if start<0 or start>len(xs):
+		error("部分文字列の開始位置の指定エラー")
+	if end<0 or end>len(xs):
+		error("部分文字列の終了位置の指定エラー")
+	if start>end: error("部分文字列の開始位置が終了位置の後にあります。")
+	string=""
+	for i in range(start,end):
+		if isUCS2():	# UCS2のとき拡張文字列の各拡張文字部分は長さ2のリスト（[代用対または通常文字,結合文字または異体字選択子（代用対のこともある）]）
+			string+=xs[i][0][0]+xs[i][0][1]
+		else:
+			string+=xs[i][0]	# UCS4のとき拡張文字列のi番目の文字部分をとる
+	return string
+
+#
 # 直接入力文字列の前処理
 #
 #  Python3においてコマンドラインからの直接入力文字列中にUnicode符号位置がU+FFFFを超えるコードがあると
@@ -421,7 +459,7 @@ if __name__ == '__main__':
 	# 拡張文字列の各文字ごとの属性識別用定数
 	UCS,CCS,SVS,IVS=0,1,2,3
 	# UCS: 通常のUnicode文字（Universal Coded Character Set）
-	# CCS: 結合文字列（Combining Charactor Sequence）
+	# CCS: 結合文字列（Combining Charactor Seuence 結合文字列)
 	# SVS: 標準異体字列（Standard Variation Sequence）
 	# IVS: 異体字列（Ideographic Variation Sequence）
 
@@ -475,7 +513,8 @@ if __name__ == '__main__':
 	firstline=True
 	for line in checkfile:
 		line=preproc_line(line)
-		fields=line.split()
+		line=rm_sp2(line)	# 行末の空白を削除し行中の連続空白を単空白にする
+		fields=line.split(" ")
 		if len(fields)!=1:
 			error("checkファイルのフィールド数が1ではありません")
 		if LooseMatch:
@@ -487,13 +526,11 @@ if __name__ == '__main__':
 
 	# checkファイルの重複検査をする
 	for pair in itertools.combinations(checklist,2): # checkファイルの各行のtag名の組み合わせを列挙
+		tag1=pair[0]
+		tag2=pair[1]
 		if LooseMatch:
-			tag1=pair[0]
-			tag2=pair[1]
 			if XstrMatch(tag1,tag2): error("checkファイルのtag部に重複があります")
 		else:
-			tag1=pair[0]
-			tag2=pair[1]
 			if tag1==tag2: error("checkファイルのtag部に重複があります")
 
 	# checkファイルを閉じる
@@ -511,14 +548,14 @@ if __name__ == '__main__':
 		fields=line.split(' ',1) # 最初の半角空白で行を2分割する
 		if len(fields)!=2:
 			error("nameファイルのフィールド数が2ではありません")
+		fields[1]=rm_sp(fields[1])	# 値部先頭の空白を削除する
 		namelist.append(fields[0])	# tag部を通常文字列でリスト化しておく
 		if LooseMatch:
 			fields[1]=toXstr(to_unicode(fields[1]))	# 値部を拡張文字列化
 			fields.append(toXstr(to_unicode(gettag(fields[0]))))	# tag部のtag名を拡張文字列化しfields[2]として追加する
-			#namefilelines.append(fields[:2]) # 追加部をのぞいたフィールドを記憶する
 		else:
 			fields.append(gettag(fields[0]))	# tag部のtag名をfields[2]として追加する
-		namefilelines.append(fields) # 全フィールドを記憶する
+		namefilelines.append(fields) # 全フィールド[tag部,値部,tag名]を記憶する
 
 	# name部の重複検査をする（通常文字列で検査する）
 	if len(namelist)!=len(set(namelist)):
@@ -528,43 +565,38 @@ if __name__ == '__main__':
 	# nameファイルを閉じる
 	namefile.close()
 
-	# nameファイルの各行の組み合わせに対しcheckファイルにあるtagのデータを総当たりで比較する
 	dblelist=[]
-	for pair in itertools.combinations(namefilelines,2): # nameファイルの各行の組み合わせを列挙（tag名も値も拡張文字列）
-		#tag1=gettag(pair[0][0])
-		#tag2=gettag(pair[1][0])
-		if LooseMatch:
-			tag1=pair[0][2]	# 拡張文字列化したtag
-			tag2=pair[1][2]	# 拡張文字列化したtag
-		else:
-			tag1=pair[0][2]
-			tag2=pair[1][2]
-		data1=pair[0][1]	# data部はLooseMatchでは拡張文字列
-		data2=pair[1][1]	# data部はLooseMatchでは拡張文字列
-
-		# tag名がchecklistになければskipする
-		if LooseMatch:
-			if not Xin_list(tag1,checklist): continue
-			if not Xin_list(tag2,checklist): continue
-		else:
-			if not tag1 in checklist: continue
-			if not tag2 in checklist: continue
-		# データ部がthrough文字列ならskipする
-		if LooseMatch:
-			if Xin_list(data1,Xthrough_string): continue
-			if Xin_list(data2,Xthrough_string): continue
-		else:
-			if data1 in through_string: continue
-			if data2 in through_string: continue
-		# 重複がなければskipする
-		if LooseMatch:
-			if not XstrMatch(tag1,tag2) or not XstrMatch(data1,data2): continue
-		else:
-			if tag1 != tag2 or data1 != data2: continue
-		# 重複があったので出力用リストへ追加
-		ret_code=1
-		dblelist.append(pair[0][0])
-		dblelist.append(pair[1][0])
+	# checkファイルを走査
+	for check_tagname in checklist:
+		# nameファイルを走査
+		matchlist=[]
+		for i,namefileline in enumerate(namefilelines):
+			# namefilelineは[tag部,値部,tag名]のリスト
+			tag=namefileline[0]
+			value=namefileline[1]
+			tagname=namefileline[2]
+			# checklistのtag名とnamefileのtag名が一致する行アドレスを列挙する
+			if LooseMatch:
+				if not XstrMatch(check_tagname,tagname):	continue
+			else:
+				if check_tagname != tagname:	continue
+			# namefileの値部がthrough文字列ならskipする
+			if LooseMatch:
+				if Xin_list(value,Xthrough_string): continue
+			else:
+				if value in through_string: continue
+			matchlist.append(i)
+		# 値部重複検査の対象となる行アドレスの組み合わせについて値部の一致をみる
+		for pair in itertools.combinations(matchlist,2):
+			# 値部の一致検査
+			if LooseMatch:
+				if not XstrMatch(namefilelines[pair[0]][1],namefilelines[pair[1]][1]):	continue
+			else:
+				if namefilelines[pair[0]][1] != namefilelines[pair[1]][1]:	continue
+			# 値部重複があったので出力用リストへ追加
+			ret_code=1
+			dblelist.append(namefilelines[pair[0]][0])
+			dblelist.append(namefilelines[pair[1]][0])
 
 	dblelist=sorted(set(dblelist),key=dblelist.index) # 集合化によってリストの重複を解消し元のリストにおける出現位置をキーとしてsort
 	for name in dblelist:
