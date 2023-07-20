@@ -10,7 +10,7 @@ check_date_name : name 形式データの日付をチェックする
 
 Usage   : check_date_name <check_file> <name_file>
 Option  : --through <string>
-Version : Tue Oct 19 23:46:03 JST 2021
+Version : Thu Jul 20 02:14:04 JST 2023
 Edition : 1
 
 【説明】
@@ -48,6 +48,6 @@ C_001 M
 $ echo $?
 1 
 
-last modified: Fri Aug 12 12:56:05 JST 2022
+last modified: Thu Jul 20 09:21:07 JST 2023
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights
+Copyright (c) 2012-2023 Universal Shell Programming Laboratory All Rights
