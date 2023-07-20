@@ -9,7 +9,7 @@ fsed : フィールドの文字列の置換
 【書式】
 
 Usage   : fsed [-e|-i] 's/<org>/<new>/<n>'... <file>
-Version : Sun Feb 21 04:35:05 JST 2021
+Version : Thu Jul 20 02:14:04 JST 2023
 Edition : 1
 
 【説明】
@@ -92,6 +92,6 @@ $ fsed 's,/,-,2' data6
 $ fsed 's/\//-/2' data6
 001 -home-MANUAL-TOOL-fsed.txt
 
-last modified: Fri Jul 15 15:42:38 JST 2022
+last modified: Thu Jul 20 09:21:07 JST 2023
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012-2022 Universal Shell Programming Laboratory All Rights
+Copyright (c) 2012-2023 Universal Shell Programming Laboratory All Rights

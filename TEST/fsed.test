@@ -32,13 +32,13 @@ if test "$1" = ""; # <command-path>($1)がなければ
 	else commandpath="$1" # <command-path>($1)があればtest対象コマンドは指定のディレクトリーにある
 fi
 com="${pythonversion} ${commandpath}/${name}" # python処理系によるtest対象コマンド実行の先頭部
-tmp=/tmp/$$
+tmp=$(mktemp)
 
 ERROR_CHECK(){
 	[ "$(echo ${PIPESTATUS[@]} | tr -d ' 0')" = "" ] && return
 	echo $1
 	echo "${pythonversion} ${name}" NG
-	rm -f $tmp-*
+	rm -f $tmp $tmp-*
 	exit 1
 }
 
@@ -70,6 +70,7 @@ diff $tmp-ans $tmp-out
 # TEST2
 # 第１フィールドの tokyo を TOKYO に、第３フィールドの osaka をOSAKAに置換します。
 # フィールド分割における連続空白/先頭空白/末尾空白の処理を確認
+# フィールド位置指定の検査
 
 cat << FIN > $tmp-in
  tokyo  1234  tokyo  5678 
@@ -83,7 +84,16 @@ FIN
 
 ${com} 's/tokyo/TOKYO/1' 's/osaka/OSAKA/3' $tmp-in >$tmp-out
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST2 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST2-1 error"
+
+# TEST2-2 フィールド位置の検査でエラーとなる例
+# ふたつ目の置換指定でのフィールド位置「5」は入力行のフィールド数を越えている
+# このためエラーで終了する
+
+# ${name}のTEST2-2はエラーで終了するように設定されている
+
+${com} 's/tokyo/TOKYO/1' 's/osaka/OSAKA/5' $tmp-in >$tmp-out 2> /dev/null
+[ $? -ne 0 ] ; ERROR_CHECK "TEST2-2 error"
 
 ###########################################
 # TEST3
