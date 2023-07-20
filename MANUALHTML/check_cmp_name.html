@@ -141,19 +141,19 @@
 <h3>【書式】</h3>
 <pre class="list">Usage   : check_cmp_name &lt;expression&gt; &lt;name_file&gt;
 Option  : --through &lt;string&gt;
-Version : Tue Oct 19 23:46:03 JST 2021
+Version : Thu Jul 20 02:14:04 JST 2023
 Edition : 1</pre>
 <h3>【説明】</h3>
 <p><code>&lt;expression&gt;</code>の記述に従って、<code>&lt;name_file&gt;</code>のデータのタグ同士やタグと値の大小関係をチェックします。</p>
 <p>エラーがある場合，<code>&lt;expression&gt;</code>を満たさないタグ名をすべて標準出力に出力してから、エラー終了します。</p>
 <p><code>&lt;expression&gt;</code>は、'左辺 記号 右辺' と記述します。左辺と右辺にはタグ名や値を指定します。記号については、次の６種類が使えます。</p>
 <pre>
-    -EQ -eq  <--  =  (equal)
-    -NE -ne  <-- !=  (not equal)
-    -GE -ge  <-- >=  (greater or equal)
-    -GT -gt  <--  >  (greater)
-    -LE -le  <-- <=  (less or equal)
-    -LT -lt  <--  <  (less)
+    -EQ -eq  &lt;--  =  (equal)
+    -NE -ne  &lt;-- !=  (not equal)
+    -GE -ge  &lt;-- &gt;=  (greater or equal)
+    -GT -gt  &lt;--  &gt;  (greater)
+    -LE -le  &lt;-- &lt;=  (less or equal)
+    -LT -lt  &lt;--  &lt;  (less)
 <p><code>--through &lt;string&gt;</code>に関しては<code>&lt;name_file&gt;</code>で定義されるデータが<code>&lt;string&gt;</code>に一致する場合は、チェックを実施しません。<code>&lt;string&gt;</code>のデフォルトは<code>'_'</code>です。このオプションは繰り返し使って複数の<code>&lt;string&gt;</code>を指定できます。</p>
 <h3>【例１】</h3>
 <pre class="prettyprint">[usp1 usp@ ~]$ cat data
@@ -192,9 +192,9 @@ $ echo $?
 1</pre>
     </div>
 
-    <div id="lastmodified">Last modified: Thu Aug  4 05:16:09 JST 2022</div>
+    <div id="lastmodified">Last modified: Thu Jul 20 09:21:07 JST 2023/div>
 
-    <div id="footer">Contact us: uecinfo@usp-lab.com<br>Copyright &copy; 2012-2022 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
+    <div id="footer">Contact us: uecinfo@usp-lab.com<br>Copyright &copy; 2012-2023 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
   </div>
 </body>
 </html>
