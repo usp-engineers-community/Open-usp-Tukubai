@@ -4,11 +4,11 @@
 # formhame フォームへのデータのはめこみ（Open usp Tukubai版）
 # 
 # designed by Nobuaki Tounaka
-# written  by Col. Richie
+# written by Masatomo Togashi
 #
 # The MIT License
 #
-# Copyright (C) 2011-2022 Universal Shell Programming Laboratory
+# Copyright (C) 2023 Universal Shell Programming Laboratory
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -28,53 +28,104 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from __future__ import print_function
+
 _usage = "formhame <html_template> <data>"
-_version = "Tue Jun 28 07:39:19 JST 2022"
+_version = "Sun Oct 20 00:00:00 JST 2023"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4+, 3.1, 3.2/UTF-8)"
 _option = ''': -i<c>
 	  : -d<c>'''
 
+# 濁音と半濁音のNFD表記でNFC表記もできるもの→NFDtoNFC変換でNFCに統一する
+_comb_pat=r"(((う|か|き|く|け|こ|さ|し|す|せ|そ|た|ち|つ|て|と|は|ひ|ふ|へ|ほ|ウ|カ|キ|ク|ケ|コ|サ|シ|ス|セ|ソ|タ|チ|ツ|テ|ト|ハ|ヒ|フ|ヘ|ホ|ワ|ヰ|ヱ|ヲ)゙)|((は|ひ|ふ|へ|ほ|ハ|ヒ|フ|ヘ|ホ)゚))+"
 
 import re
 import os
 import sys
 import codecs
+import unicodedata
 
-def die(msg):
-	sys.stderr.write( 'Error[formhame] : %s\n' % msg)
+def error(msg, *arg):
+	print('Error[formhame] :', msg % arg, file=sys.stderr)
 	sys.exit(1)
 
 def usage():
-	sys.stderr.write( "Usage     : %s\n" % _usage );
+	sys.stderr.write( "Usage     :%s\n" % _usage );
 	sys.stderr.write( "Option    %s\n" % _option );
-	sys.stderr.write( "Version   : %s\n" % _version );
-	sys.stderr.write( "            %s\n" % _code );
+	sys.stderr.write( "Version   :%s\n" % _version );
+	sys.stderr.write( "	   %s\n" % _code );
 	sys.exit(1)
 
+#
+# 入力ファイルオープン
+#
+def openReadFile(filename,mode='r'):
+	if filename == '-' or filename == '/dev/fd/0':
+		file = set_stdin()
+	else:
+		try:
+			file = codecs.open(filename,mode,'utf-8')
+		except:
+			error("ファイルを開けません。")
+	return file
 
-def openReadFile(file_name):
-	if file_name != "-":
-		try:    return codecs.open(file_name,'r','utf-8')
-		except: die("ファイルを開けません。")
+# 標準入力ファイルを開く
+# 改行がCRのファイルがpipeやredirectionにより標準入力となっている場合への対応のためにcodecs.getreader()を使用する
+def set_stdin():
+	if Python3():
+		file=codecs.getreader('utf-8')(sys.stdin.detach())
+	else:
+		file=codecs.getreader('utf-8')(sys.stdin)
+	return file
 
-	if sys.version_info[0] < 3:
-		return codecs.getreader('utf-8')(sys.stdin)
+# 不要な空白の削除関数
+def rm_sp(line):
+	return re.sub(r'^ +','',line)	# 行頭の空白（連続空白も）を削除する
 
-	return codecs.getreader('utf-8')(sys.stdin.detach())
+# 改行符号（\r\n）の削除関数
+def rm_eol(line):
+	return line.rstrip("\r\n")	# 改行記号としてCRLF('\r\n')/CR('\r')/LF('\n')のすべてに対応する
+
+# BOMの取得関数
+def get_BOM():
+	if Python3():	return chr(int("FEFF",16))	# U+FEFFはBOMのUnicode符号位置
+	else:			return unichr(int("FEFF",16))	# U+FEFFはBOMのUnicode符号位置
+
+# BOMの削除関数
+def rm_BOM(line):
+	global firstline
+	if not firstline: return line
+	if line.startswith(get_BOM()):	line=line[len(get_BOM()):]	# 行頭にBOMがあったらBOMを削除する
+	firstline=False
+	return line
+
+# ファイル入力行の前処理
+def preproc_line(line):
+	line=rm_eol(line)	# 行末の改行記号を削除する
+	line=rm_BOM(line)	# ファイル先頭行の行頭にBOMがあったらこれを削除する
+	line=rm_sp(line)	# 行頭の空白（連続空白も）を削除する
+	return line
+
+# Python3か判定する
+def Python3():
+	if sys.version_info >= (3, 0):
+		return True
+	else:
+		return False
 
 def resetStdout():
-	if sys.version_info[0] < 3:
+	if not Python3():
 		return codecs.getwriter('utf-8')(sys.stdout)
 
 	return codecs.getwriter('utf-8')(sys.stdout.detach())
 
 def resetStderr():
-	if sys.version_info[0] < 3:
+	if not Python3():
 		return codecs.getwriter('utf-8')(sys.stderr)
 
 	return codecs.getwriter('utf-8')(sys.stderr.detach())
 
-def getAttr(elem,attr):
+def getAttr(elem,attr):	# 「attr="xxxx"」からxxxxをとりだす attrはnameまたはvalueのいずれか
 	tmp = elem.lower().split(attr + '="')
 	if len(tmp) < 2:
 		return None
@@ -89,26 +140,28 @@ def getInputBlock(line,html_file):
 		i = line.index(">")
 		return line[0:i+1],line[i+1:]
 
-	if ">" in line:
-		i = line.index(">")
-		return line[0:i+1],line[i+1:]
-
 	lines = [ line ]
 	for line in html_file:
-		if line[-2:] == "/>":
+		line=rm_eol(line)
+		if line[-2:] == "/>":	# "/>"で終る行のとき
 			lines.append(line)
 			return "\n".join(lines),None
 
-		if "/>" in line:
+		if "/>" in line:	# 途中に"/>"を含む行のとき
 			i = line.index(">")
 			lines.append(line[0:i+1])
 			return "\n".join(lines),line[i+1:]
+
+		lines.append(line)	# "/>"を含まない行のとき
+
+	# />がなかった
+	error("inputブロックに/>がない")
 
 def getBlock(line,html_file,tagname):
 	endtag = "</" + tagname + ">"
 	lines = [ line ]
 	for line in html_file:
-		line = line.rstrip()
+		line=rm_eol(line)
 		if line.lower()[-len(endtag):] == endtag:
 			lines.append(line)
 			return "\n".join(lines),None
@@ -120,32 +173,44 @@ def getBlock(line,html_file,tagname):
 
 		lines.append(line)
 
-def getANameValue(namelist,name):
-	tmp = [ v[1] for v in namelist if v[0] == name ]
+	# 終了ダクがなかった
+	error("%sブロックに終了タグがない",tagname)
 
-	if len(tmp) == 0:
+def getANameValue(Xnamelist,name):
+	tmp=getNameValues(Xnamelist,name)
+	if tmp==None: return None
+	return tmp[-1]	# namelist中に名前部がnameと等しいものの値部のリストから最後のものを返す
+
+def getNameValues(Xnamelist,name):
+	name=NFDtoNFC(name)	# nameをNFCに変換
+	Xname=toXstr(name)	# nameを拡張文字列に変換
+	tmp = [ v[1] for v in Xnamelist if XstrMatch(v[0],Xname) ]
+
+	if len(tmp) == 0:	# namelist中に名前部がnameと等しいものはなかった
 		return None
 
-	return tmp[-1]
+	return tmp	# namelist中に名前部がnameと等しいものの値部のリストを返す 値部に値のない場合はNoneの拡張文字列「(None,None)」が入る
 
-def getNameValues(namelist,name):
-	tmp = [ v[1] for v in namelist if v[0] == name ]
-
-	if len(tmp) == 0:
-		return None
-
-	return tmp
-
-def setRadioValue(input_elem,namelist):
+def setRadioValue(input_elem,Xnamelist):
 	name = getAttr(input_elem,"name")
 	value = getAttr(input_elem,"value")
+	value=NFDtoNFC(value)	# valueをNFCに変換
+	Xvalue=toXstr(value)
+	Xnew_value = getANameValue(Xnamelist,name)
 
-	new_value = getANameValue(namelist,name)
+	# Xnew_valueがNoneであればなにもしない（Xnamelistにnameがなかった）
+	if Xnew_value==None:
+		print(input_elem)
+		return
 
-	if value == new_value:
+	# Xnew_valueの文字列が空であればなにもしない（Xnamelistにnameがあったが対応する値部がなかった）
+	if Xnew_value==(None,None):
+		print(input_elem)
+
+	if XstrMatch(Xvalue,Xnew_value):	# valueとnew_valueの「ゆるい一致」
 		if "checked" not in input_elem.lower():
-			tmp = input_elem.replace("/>",' checked="checked" />')
-			ans = re.sub('  (value|VALUE)',' value',tmp)
+			tmp = input_elem.replace("/>",' checked="checked"/>')
+			ans = tmp
 		else:
 			ans = input_elem
 	else:
@@ -155,69 +220,86 @@ def setRadioValue(input_elem,namelist):
 		else:
 			ans = input_elem
 
-	print(ans.replace("  />"," />"))
+	print(re.sub(' +/>','/>',ans))
 
-def setTextValue(input_elem,namelist):
+def setTextValue(input_elem,Xnamelist):
 	name = getAttr(input_elem,"name")
 	value = getAttr(input_elem,"value")
 
-	new_value = getANameValue(namelist,name)
-	if new_value == None:
+	new_value = getANameValue(Xnamelist,name)	# new_valueは拡張文字列
+
+	if new_value == None:	# nameがnamelistになかった
 		new_value = ""
-	else:
-		new_value = ' value="' + new_value + '"'
-
-	if value == None:
-		ans = re.sub("/?>", new_value + "/>",input_elem)
-	else:
-		ans = re.sub('(value|VALUE)="[^"]*"',new_value,input_elem)
-
-	ans=re.sub('  (value|VALUE)',' value',ans)
+	elif new_value==(None,None):	# nameがnamelistにあり対応する値部がないときはNoneの拡張文字列が返ってくる
+		new_value = ""
+	else:	# namefileで「name」と一致する名前部があり対応する値部もあるとき
+		new_value = 'value="' + Xstr2Str(new_value) + '"'
+	# input_elmはひとつで複数行にわたっているものもある
+	ans=input_elem
+	if value == None:	# 入力htmlにvalue="xxxx"がなかったので「/>」の直前に追加する
+		if new_value!="":	# 追加すべきnew_valueがあるときにかぎり
+			# />の直前にあった空白についてnew_valueの追加後に複数空白とならないようにする
+			m=re.search(r'(^|\n|.)/>',input_elem)
+			if m:
+				if m.group(1)=="" or m.group(1)=="\n":	# 「/>」が文字列の先頭
+					ans = input_elem.replace("/>", new_value+"/>")	# 「/>」の直前にnew_valueを書き込む
+				elif m.group(1)!=" ":	# 「/>」の直前に空白なし
+					ans = input_elem.replace("/>", " "+new_value+"/>")	# 「/>」の直前に単空白を置いてからnew_valueを書き込む
+				else:	# 「/>」の直前に空白あり
+					ans = re.sub(' +/>', " "+new_value+"/>", input_elem)	# 「/>」の前の空白を単空白にしてからnew_valueを書き込む
+	else:	# 入力htmlにvalue="xxxx"があった
+		if new_value!="":	# new_valueがあるときは元のvalue="xxxx"を置換する
+			ans = re.sub('(value|VALUE)="[^"]*"',new_value,input_elem)
+		else:	# new_valueがないときは元のvalue="xxxx"を削除する
+			ans = re.sub(' *(value|VALUE)="[^"]*"*'," ",input_elem)	# 元のvalue="xxxx"の前後の空白を含めて単空白で置換する
+			ans = re.sub(' +/>',"/>",ans)	# />の直前に空白が入っていたらそれを削除する
 	print(ans)
 
-def setTextAreaValue(input_elem,namelist):
+def setTextAreaValue(input_elem,Xnamelist):
 	name = getAttr(input_elem,"name")
 	print(input_elem.split(">")[0] + ">")
-	print(getANameValue(namelist,name).replace("\\n","\n"))
+	Xvalue=getANameValue(Xnamelist,name)
+	value=Xstr2Str(Xvalue)	# Xvalueの先頭を通常文字列に変換する
+	print(value.replace("\\n","\n"))
 	print("</textarea>")
 
-
-def setSelectValue(input_elem,namelist):
+def setSelectValue(input_elem,Xnamelist):
 	name = getAttr(input_elem,"name")
-
-	new_values = getNameValues(namelist,name)
-	if new_values == None:
+	Xnew_values = getNameValues(Xnamelist,name)
+	if Xnew_values == None:
 		tmp = input_elem.replace('selected="selected"',"")
 		print(tmp.replace('selected',""))
 		return
 
-	#valueがある場合
-	#optionは一列で書いてあること
+	# valueがある場合
+	# optionは一列で書いてあること
 	for line in input_elem.split("\n"):
 		value = getAttr(line,"value")
-		if value in new_values:
-			if "selected" not in line.lower():
-				line = line.replace('>',' selected="selected">',1)
-		else:
-			if "selected" in line.lower():
-				line = re.sub('(selected|SELECTED)="(selected|SELECTED)"',"",line)
-				line = re.sub('(selected|SELECTED)',"",line) # 非XHTML仕様対応
-
+		if value != None:
+			Xvalue=toXstr(value)
+			#if value in new_values:
+			if Xin_list(Xvalue,Xnew_values):
+				if "selected" not in line.lower():
+					line = line.replace('>',' selected="selected">',1)
+				print(line)
+				continue
+		if "selected" in line.lower():
+			line = re.sub('(selected|SELECTED)="(selected|SELECTED)"',"",line)
+			line = re.sub('(selected|SELECTED)',"",line) # 非XHTML仕様対応
 		print(line)
 
-
-def setValue(input_elem,namelist):
+def setValue(input_elem,Xnamelist):
 	input_elem_lower=input_elem.lower()
 	if 'type="text"' in input_elem.lower():
-		setTextValue(input_elem,namelist)
+		setTextValue(input_elem,Xnamelist)
 	elif 'type="hidden"' in input_elem.lower():
-		setTextValue(input_elem,namelist)
+		setTextValue(input_elem,Xnamelist)
 	elif 'type="submit"' in input_elem.lower():
-		setTextValue(input_elem,namelist)
+		setTextValue(input_elem,Xnamelist)
 	elif 'type="radio"' in input_elem.lower():
-		setRadioValue(input_elem,namelist)
+		setRadioValue(input_elem,Xnamelist)
 	elif 'type="checkbox"' in input_elem.lower():
-		setRadioValue(input_elem,namelist)
+		setRadioValue(input_elem,Xnamelist)
 	else:
 		print(input_elem)
 
@@ -228,11 +310,11 @@ def setValue(input_elem,namelist):
 #  Unicode文字に正しく変換されない場合があることへの対処をする
 #  Python2においてはUTF8からUnicode文字への通常の変換処理をする
 def utf2ucs(instr):
-	if sys.version_info < (3, 0):	# Python2なら
+	if not Python3():	# Python2なら
 		try:
 			outstr=unicode(instr, 'utf_8')	# utf8からunicdoeへ変換する
 		except:
-			die("不当なマルチバイト文字が含まれています。")
+			error("不当なマルチバイト文字が含まれています。")
 		return outstr
 	outstr=""	# 出力文字列
 	intlist=[]	# 作業用整数リスト
@@ -250,24 +332,363 @@ def utf2ucs(instr):
 	if len(intlist)>0:	outstr+= bytes(intlist).decode("utf_8")
 	return outstr
 
-#メイン関数
+#
+# unicode 変換
+#
+def to_unicode(s):
+	if Python3(): return s
+	try:
+		return unicode(s, 'utf_8')
+	except:
+		error("不当なマルチバイト文字が含まれています。")
+
+#
+# NFDtoNFC()のre.sub()から指定patternがみつかるごとに呼ばれるのでNFD/NFC変換をして返す
+# 置換対象パターンはNFD文字:全角ひらがな/全角カタカナの清音に結合用濁点/結合用半濁点を連接したもの
+# 置換先文字はNFC文字:全角ひらがな/全角カタカナの濁音/半濁音
+#
+def replace(matchobj):
+	return unicodedata.normalize('NFC',matchobj.group(0))
+
+#
+# 全角ひらがな/全角カタカナの濁音/半濁音のNFC化
+#
+def NFDtoNFC(str):
+	# 全角ひらがな/全角カタカナの濁音/半濁音をNFCで統一して返す
+	return re.sub(pattern,replace,str)
+
+#
+# 代用対前半部の判定
+#
+def isHighSurrogate(cp):
+	if 0xd800 <= cp and cp <= 0xdbff: return True
+	else:                             return False
+
+#
+# 代用対後半部の判定
+#
+def isLowSurrogate(cp):
+	if 0xdc00 <= cp and cp <= 0xdfff: return True
+	else:                             return False
+
+#
+# UCS2の判定
+#
+def isUCS2():
+	if sys.maxunicode==0xFFFF: return True
+	else:                      return False
+
+#
+# 合成可能文字の判定
+#
+def isCombiningDiacriticalMark(cp):
+	# unicodeにおける合成可能文字のブロック内か？
+		# 0x3099 0x309a	仮名文字の合成可能濁点と合成可能半濁点
+		# 0x0300-0x036F	ダイアクリティカルマーク（合成可能）
+		# 0x1AB0-0x1AFF	ダイアクリティカルマーク（合成可能）拡張
+		# 0x1DC0-0x1DFF	ダイアクリティカルマーク（合成可能）補助
+		# 0x20D0-0x20FF	記号用ダイアクリティカルマーク（合成可能）
+		# 0xFE20-0xFE2F	半記号（合成可能）
+	if cp == 0x3099 or cp == 0x309a or \
+		0x0300<=cp and cp <=0x036F or \
+		0x1AB0<=cp and cp <=0x1AFF or \
+		0x1DC0<=cp and cp <=0x1DFF or \
+		0x20D0<=cp and cp <=0x20FF or \
+		0xFE20<=cp and cp <=0xFE2F:
+		return True
+	else:	return False
+
+#
+# SVS異体字選択子（variation selector）の判定
+#
+def isSVSVariationSelector(cp):
+	# unicodeにおける異体字選択子のブロック内か？
+		# 0xFE00-0xFE0F	Variation Selectors Supplement	字形選択子補助（SVS用）
+	if  0xFE00<=cp  and cp <=0xFE0F:
+		return True
+	else:	return False
+
+#
+# IVS異体字選択子（variation selector）の判定
+#
+def isIVSVariationSelector(cp):
+	# unicodeにおける異体字選択子のブロック内か？
+		# 0xE0100-0xE01EF	Variation Selectors	字形選択子（IVS用）
+	if  0xE0100<=cp and cp <=0xE01EF:
+		return True
+	else:	return False
+
+#
+# 文字列の拡張文字列化
+#
+# 文字列を拡張文字列に変換する	1文字が複数の符号位置であらわされている場合（代用対/結合文字/IVS/SVS）への対応
+#	返値は(拡張文字,属性情報)のtuppleのlistでこれを「拡張文字列」とする
+# 	このうち
+#	拡張文字は
+# 		UCS2のときはリスト
+# 			[ 通常文字または文字列としての代用対 , 結合文字または異体字選択子（2バイトまたは代用対）または空文字 ]
+# 		UCS4のときは文字列
+# 			文字列（通常文字に結合文字または異体字選択子が付くことがある）
+#	属性情報は属性値（整数）となる
+#		属性は:
+#		UCS: 通常のUnicode文字（Universal Coded Character Set）
+#		CCS: 結合文字列（Combining Charactor Seuence）
+#		SVS: 標準異体字列（Standard Variation Sequence）
+#		IVS: 異体字列（Ideographic Variation Sequence）
+#		に分類される
+def toXstr(s):
+	StringList=[]
+	AttrList=[]	# 拡張文字列の属性リスト
+	if isUCS2():
+		surrogate_pair=False	# UCS2では代用対（surrogate pair）がありうる
+		prevchar=""
+		for c in s:
+			cp=ord(c)	# code point
+			# 代用対（[D800～DBFF]+[DC00～DFFF]のペア）の存在を考慮する
+			if not surrogate_pair:	# 代用対の処理中でなければ
+				if isHighSurrogate(cp):	# 代用対の前半部なら
+					surrogate_pair=True	# surrogate pair starts
+					HighSurrogate=c
+					HighSurrogateCp=cp
+					continue
+				if isLowSurrogate(cp):	error("代用対の構成が無効です。")	# 代用対の後半部が単独で現れた
+				elif isCombiningDiacriticalMark(cp):	# 合成可能文字なら
+					if prevchar=="":	error("結合文字列の構成が無効です。")	# 空文字の次に合成可能文字が現われた
+					StringList.append([prevchar,c])	# 先行文字と合成可能文字の組を追加（合成可能文字は第0面のみにある）
+					AttrList.append(CCS)
+					prevchar=""
+				elif isSVSVariationSelector(cp):	# 異体字選択子なら（代用対ではないのでSVS用異体字選択子の可能性のみ検査する）
+					if prevchar=="":	error("異体字列の構成が無効です。")	# 空文字の次に異体字選択子が現われた
+					StringList.append([prevchar,c])	# 先行文字とSVS用異体字選択子（2バイト）の組を追加
+					AttrList.append(SVS)
+					prevchar=""
+				else:	# 次となる普通の文字がきたら先行文字を単独で追加
+					if prevchar!="":
+						StringList.append([prevchar,""])	# 先行文字と空文字の組を追加
+						AttrList.append(UCS)
+					prevchar=c	# 先行文字とする
+			elif isLowSurrogate(cp):	# 代用対の処理中に代用対の後半部がきたら代用対の完成
+				surrogate_pair=False	# surrogate pair ends
+				sp=HighSurrogate+c	# 代用対を作る
+				uni = 0x10000 + (HighSurrogateCp - 0xD800) * 0x400 + (cp - 0xDC00);	# 代用対をdecodeする
+				if isIVSVariationSelector(uni):	# 代用対が異体字選択子なら（代用対なのでSVSてはなくIVSの可能性のみ検査する
+					if prevchar=="":	error("異体字列の構成が無効です。")	# 空文字の次に異体字選択子が現われた
+					StringList.append([prevchar,sp])	# 先行文字とIVS用異体字選択子（4バイト）の組を追加
+					AttrList.append(IVS)	# 代用対はIVS用異体字選択子
+					prevchar=""
+				else:	# 先行文字があって次に文字としての代用対が来た
+					if prevchar!="":
+						StringList.append([prevchar,""])	# 先行文字と空文字の組を追加
+						AttrList.append(UCS)
+					prevchar=sp	# 代用対を先行文字とする
+			else:	error("代用対の構成が無効です。")	# 代用対の前半部の次に代用対後半部以外が現われた
+		if surrogate_pair: 	error("代用対の構成が無効です。")	# 代用対の前半部で文字列の終端に達した
+		if prevchar!="":
+			StringList.append([prevchar,""])	# 最後の先行文字と空文字の組を追加
+			AttrList.append(UCS)
+	else:	# UCS4
+		prevchar=""
+		for c in s:
+			cp=ord(c)	# code point
+			if isCombiningDiacriticalMark(cp):	# 合成可能文字なら
+				if prevchar=="":	error("結合文字列の構成が無効です。")	# 空文字の次に合成可能文字が現われた
+				StringList.append(prevchar+c)	# 先行文字と合成可能文字の列を追加
+				AttrList.append(CCS)
+				prevchar=""
+			elif isSVSVariationSelector(cp) or isIVSVariationSelector(cp):	# 異体字選択子なら
+				if prevchar=="":	error("異体字列の構成が無効です。")	# 空文字の次に異体字選択子が現われた
+				StringList.append(prevchar+c)	# 先行文字と異体字選択子（4バイト）の列を追加
+				if isSVSVariationSelector(cp):
+					AttrList.append(SVS)
+				else:
+					AttrList.append(IVS)
+				prevchar=""
+			else:
+				if prevchar!="":
+					StringList.append(prevchar)	# 次となる普通の文字がきたら先行文字を単独で追加
+					AttrList.append(UCS)
+				prevchar=c	# 先行文字とする
+		if prevchar!="":
+			StringList.append(prevchar)	# 最後の先行文字を追加
+			AttrList.append(UCS)
+	return list(zip(StringList, AttrList))	# (Xchar,Xattr)のtuppleのlistを返す
+
+#
+# XcharMatch 文字のゆるい一致検査
+#
+#	拡張文字同士で「ゆるい一致検査」をする
+#		通常文字が与えられたときは拡張文字列に変換してから比較する
+#		「拡張文字列」はtoXstr()が出力する文字単位のリストによる「文字列」
+#		ふたつの文字列で同じ位置の文字の比較は
+#			UCSとUCSのときは通常の文字比較で「一致/不一致」を決める
+#			IVSとIVSのときは基底文字と異体字選択子の両方が同じなら「一致」とする
+#			UCSとIVSのときはUCSと「IVSの基底文字」が同じなら（IVSの異体字選択子の値にかかわらず）「一致」（ゆるい一致）とする
+#		これは、IVSに対して、その基底文字に等しいUCSは「異体字選択子による微小な字体差を包摂していて文字比較においてwild-characterのようになっている」ということによる
+#		なお、UCSを表示したときに使用される字体は対応するIVSの異体字組があるときはfontシステムがその中からひとつを省略時字体（default glyph）として用いる
+def XcharMatch(char1,char2):
+	if type(char1)!=tuple:	# char1は通常文字
+		Xchar1=toXstr(char1)[0]	# 拡張文字に変換
+	else:
+		Xchar1=char1
+	if type(char2)!=tuple:	# char2は通常文字
+		Xchar2=toXstr(char2)[0]	# 拡張文字に変換
+	else:
+		Xchar2=char2
+	# LooseMatchでなかったら通常比較
+	if not LooseMatch:
+		return char1==char2
+	# (拡張文字,属性)のtupleを分解
+	char1=Xchar1[0]
+	char2=Xchar2[0]
+	attr1=Xchar1[1]
+	attr2=Xchar2[1]
+	if char1==char2:	# 拡張文字で一致のとき
+		return True
+	if char1[0]!=char2[0]:	# 拡張文字の基底文字部分が等しくないとき
+		return False	# 両文字はここで不一致となった
+	else:	# 文字の基底文字部分が等しいとき
+		if (attr1==UCS and attr2==IVS) or (attr1==IVS and attr2==UCS):	# 基底文字部分が等しく片方はUCSでもう一方はIVS異体字選択子
+			return True	# この拡張文字は一致←「片方はUCSでもう一方はIVS」は拡張部分が異なる場合の例外的一致
+		else:	# 基底文字部分が等しく両方に結合文字/SVS異体字選択子/（異なる）IVS異体字選択子
+			# この段階では基底文字部分が等しく拡張部分が異なるままなので「例外」ではなく不一致となる
+			return False	# 両文字は不一致
+
+#
+# XstrMatch 文字列のゆるい一致検査
+#
+#	拡張文字列同士で「ゆるい一致検査」をする
+#		通常文字列が与えられたときは拡張文字列に変換してから比較する
+#		「拡張文字列」はtoXstr()が出力する文字単位のリストによる「文字列」
+#		ふたつの文字列で同じ位置の文字の比較はXcharMatch()で行なう
+def XstrMatch(str1,str2):
+	# 与えられた文字列が通常文字列のときは拡張文字列に変換しておく（文字列がUTF8ときときはunicodeへの変換もする）
+	if type(str1)!=list:
+		str1=toXstr(str1)
+	if type(str2)!=list:
+		str2=toXstr(str2)
+	if str1==str2:	# 全体一致
+		return True
+	if len(str1)!=len(str2):	# 拡張文字列長（文字数）が異なる
+		return False
+	for i in range(0,len(str1)):
+		if not XcharMatch(str1[i],str2[i]):
+			return False
+	return True	# 最後の文字まで一致した
+
+# リストメソッドのindex()を拡張文字列を使用した「文字列のゆるい一致検査」で実現する代用関数（拡張文字列入力版）
+def Xindex_in_list(Xstr1,Xstrlist):
+	if type(Xstr1)!=list:
+		Xstr1=toXstr(Xstr1)
+	for i in range(0,len(Xstrlist)):	# 拡張文字列リストの前方からみていく
+		Xstr2=Xstrlist[i]
+		if Xstr2==None:
+			continue
+		if type(Xstr2)!=list:
+			Xstr2=toXstr(Xstr2)
+		if XstrMatch(Xstr1,Xstr2):
+			return i	# Xstrlistのi番目でstrがみつかった
+	#raise ValueError	# strlistにstrがみつからなかったらValueError例外を送出する
+	return -1	# リストメソッドのindex()ではstrlistにstrがみつからなかったらValueError例外を送出するが代用関数では-1を返す
+
+# リストに対するin演算子を拡張文字列を使用した「文字列のゆるい一致検査」で実現する代用関数（拡張文字列入力版）
+def Xin_list(str,strlist):
+	if Xindex_in_list(str,strlist)>=0:
+		return True
+	return False
+
+#
+# 文字列の合成
+#
+# 拡張文字列を文字列に変換する	1文字が複数の符号位置であらわされている場合（代用対/結合文字/IVS/SVS）への対応
+# 	拡張文字列は(拡張文字,属性値)のtuplgのlistで
+#		拡張文字は
+# 			UCS2のときはリスト
+# 				[ 通常文字または文字列としての代用対 , 結合文字または異体字選択子（2バイトまたは代用対）または空文字 ]
+# 			UCS4のときは文字列
+# 				文字列（通常文字に結合文字または異体字選択子が付くことがある）
+#		属性値は整数
+def Xstr2Str(xs,start=0,end=None):	# 拡張文字列xsのstartからendの手前までを通常文字列として返す
+	if xs==None:
+		return ""
+	if end==None:	end=len(xs)
+	# startとendは文字単位で与えられる
+	if start<0 or start>len(xs):
+		error("部分文字列の開始位置の指定エラー")
+	if end<0 or end>len(xs):
+		error("部分文字列の終了位置の指定エラー")
+	if start>end: error("部分文字列の開始位置が終了位置の後にあります。")
+	string=""
+	for i in range(start,end):
+		if isUCS2():	# UCS2のとき拡張文字列の各拡張文字部分は長さ2のリスト（[代用対または通常文字,結合文字または異体字選択子（代用対のこともある）]）
+			string+=xs[i][0][0]+xs[i][0][1]
+		else:
+			string+=xs[i][0]	# UCS4のとき拡張文字列のi番目の文字部分をとる
+	return string
+
+# Xindex 「文字列のゆるい一致」にもとづく文字列メソッドindex()の拡張文字列版（ほぼ）代用関数
+#
+def Xindex(str1,str2):	# str1がstr2の中にあれば発見位置を返す
+	len1=len(str1)
+	dif=len(str2)-len1
+	if dif<0: return -1
+	for i in range(dif+1):
+		if XstrMatch(str1,str2[i:i+len1]):
+			return i	# str2の先頭からi番目でmatch
+	return -1
+
+# Xreplace 文字列メソッドreplace()の「文字列のゆるい一致」にもとづく拡張文字列版（ほぼ）代用関数
+#
+def Xreplace(str1,str2,str3):	# str1がstr2の中にあればstr3で置換する
+	i=0
+	while i>=0:
+		i=Xindex(str1,str2)
+		if i>=0:	# str1がstr2の中にあったら
+			# str2の中のstr1に等しい部分をstr3で置換する
+			str2[i:i+len(str1)]=str3
+	return str2
+
+# メイン関数
 if __name__ == '__main__':
 
 	istr = ""
 	dstr = ""
 	shift = 0
 
+	#
+	# NFD文字（清音+結合用濁点/結合用半濁点）検出のための正規表現パターンを準備
+	#
+	# 
+	if not Python3():
+		_comb_pat=to_unicode(_comb_pat)	# Python2のときは_comb_patをunicode化する
+	pattern=re.compile(_comb_pat)
+
+	#
+	# 拡張文字列の各文字ごとの属性識別用定数
+	UCS,CCS,SVS,IVS=0,1,2,3
+	# UCS: 通常のUnicode文字（Universal Coded Character Set）
+	# CCS: 結合文字列（Combining Charactor Seuence 結合文字列
+	# SVS: 標準異体字列（Standard Variation Sequence）
+	# IVS: 異体字列（Ideographic Variation Sequence）
+
+	# 「ゆるい文字列一致」の指定
+	LooseMatch=True	# 現在は固定
+
 	if len(sys.argv) < 3 :		usage()
 	if sys.argv[1][0:2] == "-i" or sys.argv[2][0:2] == "-i":
 		istr = sys.argv[1][2:]
 		istr=utf2ucs(istr)
+		istr=NFDtoNFC(istr)	# -iオプションの値をNFCに変換
 		shift += 1
 	if sys.argv[1][0:2] == "-d" or sys.argv[2][0:2] == "-d":
 		dstr = sys.argv[1][2:]
 		dstr=utf2ucs(dstr)
+		dstr=NFDtoNFC(dstr)	# -dオプションの値をNFCに変換
 		shift += 1
 	if sys.argv[1] == '--help' :	usage()
 	if sys.argv[1] == '--version':	usage()
+	
+	Xistr=toXstr(istr)	# 拡張文字列化
+	Xdstr=toXstr(dstr)	# 拡張文字列化
 
 	# 標準入出力utf8化
 	sys.stdout = resetStdout()
@@ -276,36 +697,60 @@ if __name__ == '__main__':
 	html_file = openReadFile(sys.argv[1 + shift])
 	name_file = openReadFile(sys.argv[2 + shift])
 
-	namelist = []
+	Xnamelist = []
 	
 	# nameファイルの読み取り
+	firstline=True
 	for line in name_file:
-		tokens = line.rstrip().split()
-
-		if len(tokens) >= 2: 	v = tokens[1]
+		line=NFDtoNFC(line)	# name_fileの行をNFCに変換
+		line = preproc_line(line)
+		tokens=line.split(' ',1)	# 最初の半角空白で行を2分割する
+		if len(tokens) >= 2:
+			tokens[1]=rm_sp(tokens[1])	# 値部先頭の空白を削除する
+			v = tokens[1]	# 値部をとる
 		else:			v = None
+		# -iオプションの処理を-dオプションの処理より先に実行する
+		# namefileの値部が-iオプションで指定した文字列に等しい場合は値部を「None」にする
+		if v != None:
+			Xv=toXstr(v)	# 拡張文字列化
+			if XstrMatch(Xv,Xistr):	# vとistrが一致したらvをNoneにする
+				v=None
+		# -dオプションの処理
+		if v != None and dstr != "":	# -iオプション処理でv==Noneになっていたらpassする
+			Xexdstr=toXstr("\\" + dstr)
+			Xzero=toXstr("\0")
+			Xsp=toXstr(" ")
+			# dstrと一致したXv中の文字列を一時保管しておく←namefile中の値部における対応文字列を維持するため
+			loc=Xindex(Xexdstr,Xv)	# Xvは-iオプション処理で作成したものを使用する
+			if loc>=0:
+				Xdstr_in_Xv=Xv[loc+1:loc+1+len(Xdstr)]	# Xv中で「\dstr」と一致した「dstr」の部分を記憶しておく
+				# 「dstr」がXv中に複数あるときは記憶しておくのは最初にmatchしたXv中の「dstr」とする
+			else:
+				Xdstr_in_Xv=Xdstr
+			Xv=Xreplace(Xexdstr,Xv,Xzero)
+			Xv=Xreplace(Xdstr,Xv,Xsp)
+			Xv=Xreplace(Xzero,Xv,Xdstr_in_Xv)
 
-		if v == istr:	v = None
-		if v != None and dstr != "":
-			v = v.replace("\\" + dstr,'\0')
-			v = v.replace(dstr,' ')
-			v = v.replace('\0',dstr)
+		Xtokens0=toXstr(tokens[0])
+		if v==None:
+			Xv=(None,None)	# Noneの拡張文字列
+		Xnamelist.append((Xtokens0,Xv))	# Xnamelistはnamefile各行の名前と値のtupleをlistにしたもの（値部はNoneのこともある）
 
-		namelist.append((tokens[0], v))
-
-	line = html_file.readline()
 	residual = None
+	firstline=True
+	line = html_file.readline()
+	line=rm_BOM(line)	# 先頭行のときはBOM削除をする
 	while line:
-		line=line.rstrip()
+		line=rm_eol(line)	# 改行処理を実行
 		if "<input " in line.lower():
 			input_elem,residual = getInputBlock(line,html_file)
-			setValue(input_elem,namelist)
+			setValue(input_elem,Xnamelist)
 		elif "<select" in line.lower():
 			input_elem,residual = getBlock(line,html_file,"select")
-			setSelectValue(input_elem,namelist)
+			setSelectValue(input_elem,Xnamelist)
 		elif "<textarea" in line.lower():
 			input_elem,residual = getBlock(line,html_file,"textarea")
-			setTextAreaValue(input_elem,namelist)
+			setTextAreaValue(input_elem,Xnamelist)
 		else:
 			print(line)
 

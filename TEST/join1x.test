@@ -32,7 +32,7 @@ if test "$1" = ""; # <command-path>($1)がなければ
 	else commandpath="$1" # <command-path>($1)があればtest対象コマンドは指定のディレクトリーにある
 fi
 com="${pythonversion} ${commandpath}/${name}" # python処理系によるtest対象コマンド実行の先頭部
-tmp=/tmp/$$
+tmp=$(mktemp)
 
 ERROR_CHECK(){
 	[ "$(echo ${PIPESTATUS[@]} | tr -d ' 0')" = "" ] && return
@@ -437,6 +437,101 @@ FIN
 ${com} key=1@NF $tmp-master $tmp-tran >$tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST10-2 error"
+
+###########################################
+# TEST11
+#  TEST1の変形
+# masterファイルがキーについて「（非uniqueな）昇順」になっていることの検査機能の試験
+# tranファイルがキーについて「重複のない昇順」になっていることの検査機能の試験
+
+cat << FIN > $tmp-master1
+1 すすきの
+1 月寒
+2 青葉町
+2 広瀬町
+3 上野
+3 新宿
+4 金山
+4 栄
+4 熱田
+5 烏丸
+5 伏見
+6 梅田
+6 難波
+7 博多
+7 天神
+FIN
+
+cat << FIN > $tmp-tran1
+1 札幌
+3 東京
+5 京都
+7 福岡
+FIN
+
+cat << FIN > $tmp-ans
+1 すすきの 札幌
+1 月寒 札幌
+3 上野 東京
+3 新宿 東京
+5 烏丸 京都
+5 伏見 京都
+7 博多 福岡
+7 天神 福岡
+FIN
+
+# TEST11-1は比較のための正常終了例
+# TEST1と同じmasterとtranでキーも同じ
+# masterファイルがキーについて「（非uniqueな）昇順」になっていて
+# tranファイルがキーについて「重複のない昇順」になっているとき
+# TEST1と同様に正常終了する
+
+${com} key=1 $tmp-master1 $tmp-tran1 >$tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST11-1 error"
+
+# TEST11-2は入力ファイルの整列検査の試験-1
+#  masterファイルがキーについて「（非uniqueな）昇順」になっていないため
+#  エラーで終了する
+
+cat << FIN > $tmp-master2
+1 すすきの
+1 月寒
+2 青葉町
+2 広瀬町
+4 金山
+4 栄
+4 熱田
+3 上野
+3 新宿
+5 烏丸
+5 伏見
+6 梅田
+6 難波
+7 博多
+7 天神
+FIN
+
+#  ${name}のTEST11-2はエラーで終了するように設定されている
+
+${com} key=1 $tmp-master2 $tmp-tran1 >$tmp-out 2> /dev/null
+[ $? -ne 0 ] ; ERROR_CHECK "TEST11-2 error"
+
+# TEST11-3は入力ファイルの整列検査の試験-2
+#  tranファイルがキーについて「重複のない昇順」になっていないため
+#  エラーで終了する
+
+cat << FIN > $tmp-tran2
+1 札幌
+3 東京
+3 京都
+7 福岡
+FIN
+
+# ${name}のTEST11-3はエラーで終了するように設定されている
+
+${com} key=1 $tmp-master1 $tmp-tran2 >$tmp-out 2> /dev/null
+[ $? -ne 0 ] ; ERROR_CHECK "TEST11-3 error"
 
 ###########################################
 rm -f $tmp-*
