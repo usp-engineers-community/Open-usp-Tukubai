@@ -32,7 +32,7 @@ if test "$1" = ""; # <command-path>($1)がなければ
 	else commandpath="$1" # <command-path>($1)があればtest対象コマンドは指定のディレクトリーにある
 fi
 com="${pythonversion} ${commandpath}/${name}" # python処理系によるtest対象コマンド実行の先頭部
-tmp=/tmp/$$
+tmp=$(mktemp)
 
 ERROR_CHECK(){
 	[ "$(echo ${PIPESTATUS[@]} | tr -d ' 0')" = "" ] && return
@@ -109,7 +109,13 @@ FIN
 
 ${com} -d NF-7/NF-4 7/8 "0000000 浜地______ 50 F 91 59 20 76 54" > $tmp-out
 diff $tmp-ans $tmp-out
-[ $? -eq 0 ] ; ERROR_CHECK "TEST3 error"
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-1 error"
+
+# 直接入力文字列に対して空白処理をする
+
+${com} -d NF-7/NF-4 7/8 " 0000000   浜地______ 50 F 91 59 20 76   54  " > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-2 error"
 
 ###########################################
 #TEST4
@@ -190,6 +196,69 @@ FIN
 ${com} NF-7@NF-6/NF-4@7 2@8 $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST5 error"
+
+###########################################
+#TEST6
+# 行頭/行末の空白削除と行中の連続空白の単空白化の試験
+# 可変欄数の試験
+# TEST2の拡大版
+
+# TEST6-1 行頭/行末の空白削除と行中の連続空白の単空白化の試験
+
+cat << FIN > $tmp-in
+ 0000000  浜地______ 50 F   checked 91 59 20 76 54
+  0000001 江頭______ 50 F  checked  46 39 8  5  21  
+0000003   杉山______ 26 F  checked     30 50 71 36 30 
+  0000004 白土______ 40 M checked  58 71 20 10 6  
+0000005   崎村______ 50 F checked  82 79 16 21 80
+FIN
+
+cat << FIN > $tmp-ans
+浜地______ 50 F
+江頭______ 50 F
+杉山______ 26 F
+白土______ 40 M
+崎村______ 50 F
+FIN
+
+# TEST6-1 行頭/行末の空白削除と行中の連続空白の単空白化の試験
+
+${com} 1@5 NF-5/NF $tmp-in > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST6-1 error"
+
+# TEST6-2 可変欄数の試験1
+# 第1欄と後尾の5欄を削除する
+
+cat << FIN > $tmp-in
+ 0000000  浜地______ 50 F   checked 91 59 20 76 54
+  0000001 江頭______ 50 F  checked  46 39 8  5  21  
+0000003   杉山______ 26 F          30 50 71 36 30 
+  0000004 白土______ 40 M checked  58 71 20 10 6  
+0000005   崎村______ 50 F checked  82 79 16 21 80
+FIN
+
+cat << FIN > $tmp-ans
+浜地______ 50 F checked
+江頭______ 50 F checked
+杉山______ 26 F
+白土______ 40 M checked
+崎村______ 50 F checked
+FIN
+
+${com} 1 NF-4/NF $tmp-in > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST6-2 error"
+
+# TEST6-3 可変欄数の試験2
+# 第1欄と後尾の5欄を削除しようとするが
+# 「5/NF」は「キー指定が絶対欄位置とNF相対欄位置による区間指定」で欄数変化を受理できずエラーとなる
+
+# ${name}のTEST6-2で「キー指定が絶対欄位置とNF相対欄位置による区間指定のときにtmp-inの欄数変化があった例」を実行し、
+# エラーで終了するように設定されている
+
+${com} 1 5/NF $tmp-in > $tmp-out 2> /dev/null
+[ $? -ne 0 ] ; ERROR_CHECK "TEST6-3 error"
 
 ###########################################
 rm -f $tmp-*

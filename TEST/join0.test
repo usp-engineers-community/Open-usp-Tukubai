@@ -32,7 +32,7 @@ if test "$1" = ""; # <command-path>($1)がなければ
 	else commandpath="$1" # <command-path>($1)があればtest対象コマンドは指定のディレクトリーにある
 fi
 com="${pythonversion} ${commandpath}/${name}" # python処理系によるtest対象コマンド実行の先頭部
-tmp=/tmp/$$
+tmp=$(mktemp)
 
 ERROR_CHECK(){
 	[ "$(echo ${PIPESTATUS[@]} | tr -d ' 0')" = "" ] && return
@@ -106,7 +106,7 @@ cat << FIN > $tmp-master
 0000004
 FIN
 
-# TEST1で「masterのキーフィールドが「重複のない昇順」になっていない例」を実行しエラーメッセージが出るように設定されている
+# ${name}のTEST1で「masterのキーフィールドが「重複のない昇順」になっていない例」を実行しエラーで終了するように設定されている
 
 ${com} key=1 $tmp-master $tmp-tran > $tmp-out 2> /dev/null
 
@@ -125,7 +125,7 @@ cat << FIN > $tmp-master
 0000004
 FIN
 
-# TEST1で「tranのキーフィールドが「昇順」になっていない例」を実行しエラーメッセージが出るように設定されている
+# ${name}のTEST1で「tranのキーフィールドが「昇順」になっていない例」を実行しエラーで終了するように設定されている
 
 ${com} key=1 $tmp-master $tmp-tran > $tmp-out 2> /dev/null
 
@@ -419,6 +419,56 @@ FIN
 ${com} key=1 $tmp-master $tmp-tran > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST8 error"
+
+###########################################
+#TEST9
+# TEST1の変形
+# 可変欄数の試験
+# 行頭/行末の空白削除と行中の連続空白の単空白化の試験
+# 絶対欄位置指定とNF相対欄位置指定が混在している状態でtranの欄数が変化する
+# 
+
+# TEST9-1は比較のためにtranの欄数に変化がない例
+
+cat << FIN > $tmp-tran
+ 0000000 浜地______ 50 F  91 59 20 76 54 
+0000001 鈴田______ 50 F 46 39 8  5  21
+0000003 杉山______ 26 F 30 50 71 36 30
+0000004 白土______ 40 M 58 71 20 10 6
+0000005 崎村______ 50 F 82 79 16 21 80
+FIN
+
+cat << FIN > $tmp-master
+0000001 鈴田______
+0000004 白土______
+FIN
+
+cat << FIN > $tmp-ans
+0000001 鈴田______ 50 F 46 39 8 5 21
+0000004 白土______ 40 M 58 71 20 10 6
+FIN
+
+${com} key=1/NF-7 $tmp-master $tmp-tran > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST9-1 error"
+
+# TEST9-2
+# keyの区間指定に絶対欄位置指定とNF相対欄位置指定が混在している状態で
+# tranの3行目で欄数が変化する
+
+cat << FIN > $tmp-tran
+ 0000000 浜地______ 50 F  91 59 20 76 54 
+0000001 鈴田______ 50 F 46 39 8  5  21
+0000003 杉山______ 26 F 30 50 71 36
+0000004 白土______ 40 M 58 71 20 10 6
+0000005 崎村______ 50 F 82 79 16 21 80
+FIN
+
+# ${name}のTEST9-2で「keyの区間指定において絶対欄位置指定とNF相対欄位置指定が混在している状態でtranの欄数が変化する例」を実行し、
+# エラーで終了するように設定されている
+
+${com} key=1/NF-7 $tmp-master $tmp-tran > $tmp-out 2> /dev/null
+[ $? -ne 0 ] ; ERROR_CHECK "TEST9-2 error"
 
 ###########################################
 rm -f $tmp-*

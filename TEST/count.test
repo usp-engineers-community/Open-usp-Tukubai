@@ -32,7 +32,7 @@ if test "$1" = ""; # <command-path>($1)がなければ
 	else commandpath="$1" # <command-path>($1)があればtest対象コマンドは指定のディレクトリーにある
 fi
 com="${pythonversion} ${commandpath}/${name}" # python処理系によるtest対象コマンド実行の先頭部
-tmp=/tmp/$$
+tmp=$(mktemp)
 
 ERROR_CHECK(){
 	[ "$(echo ${PIPESTATUS[@]} | tr -d ' 0')" = "" ] && return
@@ -220,6 +220,52 @@ FIN
 ${com}  2 2 <$tmp-in >$tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST4 error"
+
+###########################################
+#TEST5
+# 可変欄数の試験
+# 行頭/行末の空白削除と行中の連続空白の単空白化の試験
+# TEST2の変型
+
+# TEST5-1
+# TEST5-2
+# tmp-inで欄数が変化しておりkey指定は「NF相対欄位置のみによる区間指定」で最後方の2欄となる
+
+cat << FIN > $tmp-in
+ 1 942 checked  001 江頭 
+1.3 421 001 江頭
+-123.0 111 002 上山田
+123.0 11 checked  002 上田
+FIN
+
+cat << FIN > $tmp-ans
+001 江頭 2
+002 上山田 1
+002 上田 1
+FIN
+
+${com} NF-1 NF $tmp-in > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5-1 error"
+
+${com} NF NF-1 $tmp-in > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5-2 error"
+
+# TEST5-3
+# tmp-inで欄数が変化しておりkey指定の「4 NF」は「絶対欄位置とNF相対欄位置による区間指定」
+
+cat << FIN > $tmp-in
+ 1 942 checked  001 江頭 
+1.3 421 checked 001 江頭
+-123.0 111 checked 002 上山田
+123.0 11  002 上田
+FIN
+
+# ${name}のTEST5-3で「キー指定が絶対欄位置とNF相対欄位置による区間指定のときにtmp-inの欄数変化があった例」を実行し、
+# エラーで終了するように設定されている
+${com} 4 NF $tmp-in > $tmp-out 2> /dev/null
+[ $? -ne 0 ] ; ERROR_CHECK "TEST5-3 error"
 
 ###########################################
 rm -f $tmp-*
