@@ -38,22 +38,22 @@ ERROR_CHECK(){
 	[ "$(echo ${PIPESTATUS[@]} | tr -d ' 0')" = "" ] && return
 	echo $1
 	echo "${pythonversion} ${name}" NG
-	rm -f $tmp-*
+	rm -f $tmp $tmp-*
 	exit 1
 }
 
 BOMandEOLvariation(){	# BOM無しLF改行ファイル（$1）からBOM付きCRLF改行ファイル（$2）とBOM付きCR改行ファイル（$3）を生成する
 	 [ $# -eq 3 ]; ERROR_CHECK "TESTスクリプト内のBOMandEOLvariation()でファイル指定が不正"
-	awk '{print '\xEF\xBB\xBF' $0}' $1 > $2 # $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
-	awk 'BEGIN {ORS = "\r"}  {print '\xEF\xBB\xBF' $0}' $1 > $3 # $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r\n/g' -e 's/$/\r/' $1 >$2	# $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r/g' $1 | tr '\n' '\r' >$3	# $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
 }
 ###########################################
 #TEST1
 
-EPO=$(echo 19700101 | ${com} 1 | awk '{print $2}')
+EPO=$(echo 19700101 | ${com} 1 - | awk '{print $2}')
 [ "$EPO" -eq 0 ] ; ERROR_CHECK "TEST1-1 error"
 
-EPO=$(echo 0 | ${com} -r 1 | awk '{print $2}')
+EPO=$(echo 0 | ${com} -r 1 - | awk '{print $2}')
 [ "$EPO" -eq 19700101000000 ] ; ERROR_CHECK "TEST1-2 error"
 
 ###########################################
@@ -81,7 +81,7 @@ cat << FIN > $tmp-ans
 0002 0000007 20060210 1139529600 20060206 1139184000 444 31080 0
 FIN
 
-${com} 3 4 < $tmp-in > $tmp-out
+${com} 3 4 $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST2 error"
 
@@ -291,13 +291,13 @@ cat << FIN > $tmp-in
 FIN
 
 #  key指定のうち絶対欄位置指定の「1」とNF相対欄位置指定の「NF-1」が入力ファイルの2行目で重なるのでエラーとなる
-# TEST7-2は「キーの絶対欄位置指定群とNF相対欄位置指定群が交叉している例」を実行し、
-# エラーメッセージが出るように設定されている
+# ${name}のTEST7-2は「キーの絶対欄位置指定群とNF相対欄位置指定群が交叉している例」を実行し、
+# エラーで終了するように設定されている
 
 ${com} 1 NF-1 $tmp-in > $tmp-out 2> /dev/null
 [ $? -ne 0 ] ; ERROR_CHECK "TEST7-2 error"
 
 ###########################################
-rm -f $tmp-*
+rm -f $tmp $tmp-*
 echo "${pythonversion} ${name}" OK
 exit 0
