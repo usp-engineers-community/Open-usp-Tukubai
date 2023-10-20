@@ -4,11 +4,11 @@
 # ysum 横サム（Open usp Tukubai版）
 # 
 # designed by Nobuaki Tounaka
-# written by  Masatomo Togashi
+# written by Yoshio Katayama
 #
 # The MIT License
 #
-# Copyright (C) 2023 Universal Shell Programming Laboratory
+# Copyright (C) 2011 Universal Shell Programming Laboratory
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,7 @@
 from __future__ import print_function
 
 _usage = "ysum [+h] [num=<n>] <file>"
-_version = "Fri May 20 00:00:00 JST 2023"
+_version = "Fri Oct 21 11:26:06 JST 2011"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
 _keypatNF=r'(?P<m0>(?P<m01>\d+)|(?P<m02>NF(?P<m03>-\d+)?))$'
 
@@ -80,13 +80,12 @@ def getpos(base_pos):
 	#  -nのときはNF-n
 	# 0発進とするために-1を加える
 	if base_pos > 0:
-		pos=base_pos-1
+		pos=base_pos-1	# 元からの絶対欄位置
 		if pos >= NF:	error("フィールド番号が大きすぎます。 %s",str(base_pos))
-		return pos	# 元からの絶対欄位置
 	else:
-		pos=NF+base_pos-1
+		pos=NF+base_pos-1	# NF相対欄位置からの絶対化欄位置
 		if pos < 0:	error("フィールド指定でNF-x の x が大きすぎます。 %s","NF-"+str(-base_pos))
-		return pos	# NF相対欄位置からの絶対化欄位置
+	return pos
 
 # 欄番号文字列をNF相対形式で整数化する
 def getFieldNum(str,str1,str2):
