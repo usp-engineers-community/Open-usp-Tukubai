@@ -38,14 +38,14 @@ ERROR_CHECK(){
 	[ "$(echo ${PIPESTATUS[@]} | tr -d ' 0')" = "" ] && return
 	echo $1
 	echo "${pythonversion} ${name}" NG
-	rm -f $tmp-*
+	rm -f $tmp $tmp-*
 	exit 1
 }
 
 BOMandEOLvariation(){	# BOM無しLF改行ファイル（$1）からBOM付きCRLF改行ファイル（$2）とBOM付きCR改行ファイル（$3）を生成する
 	 [ $# -eq 3 ]; ERROR_CHECK "TESTスクリプト内のBOMandEOLvariation()でファイル指定が不正"
-	awk '{print '\xEF\xBB\xBF' $0}' $1 > $2 # $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
-	awk 'BEGIN {ORS = "\r"}  {print '\xEF\xBB\xBF' $0}' $1 > $3 # $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r\n/g' -e 's/$/\r/' $1 >$2	# $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r/g' $1 | tr '\n' '\r' >$3	# $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
 }
 
 ###########################################
@@ -98,6 +98,7 @@ ${com} key=1 $tmp-master $tmp-tran > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST1-2 error"
 
+# TEST1-3
 # masterのキーフィールドが「重複のない昇順」になっていない例
 
 cat << FIN > $tmp-master
@@ -106,10 +107,13 @@ cat << FIN > $tmp-master
 0000004
 FIN
 
-# ${name}のTEST1で「masterのキーフィールドが「重複のない昇順」になっていない例」を実行しエラーで終了するように設定されている
+# ${name}のTEST1-3で「masterのキーフィールドが「重複のない昇順」になっていない例」を実行し
+# エラーで終了するように設定されている
 
-${com} key=1 $tmp-master $tmp-tran > $tmp-out 2> /dev/null
+${com} key=1 $tmp-master $tmp-tran > $tmp-out
+[ $? -ne 0 ] ; ERROR_CHECK "TEST1-3 error"
 
+# TEST1-4
 # tranのキーフィールドが「昇順」になっていない例
 
 cat << FIN > $tmp-tran
@@ -125,9 +129,11 @@ cat << FIN > $tmp-master
 0000004
 FIN
 
-# ${name}のTEST1で「tranのキーフィールドが「昇順」になっていない例」を実行しエラーで終了するように設定されている
+# ${name}のTEST1-4で「tranのキーフィールドが「昇順」になっていない例」を実行し
+# エラーで終了するように設定されている
 
-${com} key=1 $tmp-master $tmp-tran > $tmp-out 2> /dev/null
+${com} key=1 $tmp-master $tmp-tran > $tmp-out
+[ $? -ne 0 ] ; ERROR_CHECK "TEST1-4 error"
 
 ###########################################
 #TEST2
@@ -467,10 +473,10 @@ FIN
 # ${name}のTEST9-2で「keyの区間指定において絶対欄位置指定とNF相対欄位置指定が混在している状態でtranの欄数が変化する例」を実行し、
 # エラーで終了するように設定されている
 
-${com} key=1/NF-7 $tmp-master $tmp-tran > $tmp-out 2> /dev/null
+${com} key=1/NF-7 $tmp-master $tmp-tran > $tmp-out
 [ $? -ne 0 ] ; ERROR_CHECK "TEST9-2 error"
 
 ###########################################
-rm -f $tmp-*
+rm -f $tmp $tmp-*
 echo "${pythonversion} ${name}" OK
 exit 0
