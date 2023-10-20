@@ -38,14 +38,14 @@ ERROR_CHECK(){
 	[ "$(echo ${PIPESTATUS[@]} | tr -d ' 0')" = "" ] && return
 	echo $1
 	echo "${pythonversion} ${name}" NG
-	rm -f $tmp-*
+	rm -f $tmp $tmp-*
 	exit 1
 }
 
 BOMandEOLvariation(){	# BOM無しLF改行ファイル（$1）からBOM付きCRLF改行ファイル（$2）とBOM付きCR改行ファイル（$3）を生成する
 	 [ $# -eq 3 ]; ERROR_CHECK "TESTスクリプト内のBOMandEOLvariation()でファイル指定が不正"
-	awk '{print '\xEF\xBB\xBF' $0}' $1 > $2 # $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
-	awk 'BEGIN {ORS = "\r"}  {print '\xEF\xBB\xBF' $0}' $1 > $3 # $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r\n/g' -e 's/$/\r/' $1 >$2	# $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r/g' $1 | tr '\n' '\r' >$3	# $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
 }
 
 ###########################################
@@ -514,18 +514,20 @@ cat << FIN > $tmp-tran
 0000004 E X 崎村 あ  50 F
 FIN
 
-# TEST11-3は「キーの絶対欄位置指定群とNF相対欄位置指定群が交叉している」例を実行し、
-# エラーメッセージが出るように設定されている
 #  key指定のうち絶対欄位置指定の「1,2」とNF相対欄位置指定の「NF-3,NF」が入力ファイルの4行目で重なるのでエラーとなる
+# ${name}のTEST11-3は「キーの絶対欄位置指定群とNF相対欄位置指定群が交叉している」例を実行し、
+# エラーで終了するように設定されている
+
 ${com} key=1@2@NF-3@NF $tmp-master $tmp-tran > $tmp-out 2> /dev/null
 [ $? -ne 0 ] ; ERROR_CHECK "TEST11-3 error"
 
 # TEST11-4
 # tranの第4行目の欄数が変化している例
 
-# TEST11-4は「keyの区間指定において絶対欄位置指定とNF相対欄位置指定が混在している状態でフィールド数が変化する」例を実行し、
-# エラーメッセージが出るように設定されている
 #  key指定の区間指定「1/NF-4」は入力ファイルの欄数変化にともなってキーの欄数も変化するのでエラーとなる
+# ${name}のTEST11-4は「keyの区間指定において絶対欄位置指定とNF相対欄位置指定が混在している状態でフィールド数が変化する」例を実行し、
+# エラーで終了するように設定されている
+
 ${com} key=1/NF-4@3@NF $tmp-master $tmp-tran > $tmp-out 2> /dev/null
 [ $? -ne 0 ] ; ERROR_CHECK "TEST11-4 error"
 
@@ -533,8 +535,8 @@ ${com} key=1/NF-4@3@NF $tmp-master $tmp-tran > $tmp-out 2> /dev/null
 # 全欄をキーとしていてtranの第4行目の欄数が変化している例
 
 #  全欄をキーとして指定したときはcjoin1では欄数の変化を受理しないのでエラーとなる
-# TEST11-5は「全フィールドをkeyとする指定においてフィールド数の変化がある」例を実行し、
-# エラーメッセージが出るように設定されている
+# ${name}のTEST11-5は「全フィールドをkeyとする指定においてフィールド数の変化がある」例を実行し、
+# エラーで終了するように設定されている
 
 ${com} key=0 $tmp-master $tmp-tran > $tmp-out 2> /dev/null
 [ $? -ne 0 ] ; ERROR_CHECK "TEST11-5 error"
@@ -543,7 +545,7 @@ ${com} key=0 $tmp-master $tmp-tran > $tmp-out 2> /dev/null
 #TEST12
 # フィールド数変化に対応する試験
 
-# 入力ファイルのフィールド数とキー位指定の間の矛盾検査
+# 入力ファイルのフィールド数とキー位置指定の間の矛盾検査
 # 入力ファイルのフィールド数が変化する場合の処理試験
 
 # TEST12
@@ -563,13 +565,13 @@ cat << FIN > $tmp-master
 FIN
 
 #  キー指定が「1,2」なのに対しmasterの第2行目は1欄しかないのでエラーとなる
-# TEST12は「masterの欄数がキー指定に対して不足する」例を実行し、
-# エラーメッセージが出るように設定されている
+# ${name}のTEST12は「masterの欄数がキー指定に対して不足する」例を実行し、
+# エラーで終了するように設定されている
 
 ${com} key=1@2 $tmp-master $tmp-tran > $tmp-out 2> /dev/null
 [ $? -ne 0 ] ; ERROR_CHECK "TEST12 error"
 
 ###########################################
-rm -f $tmp-*
+rm -f $tmp $tmp-*
 echo "${pythonversion} ${name}" OK
 exit 0
