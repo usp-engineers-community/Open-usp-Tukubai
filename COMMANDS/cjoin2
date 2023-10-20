@@ -31,8 +31,8 @@
 from __future__ import print_function
 
 _usage = "cjoin2 [-d<string>] [+<string>] key=<key> <master> [<tran>]"	# -d + tranは省略可能
-_version = "Thu Jan 19 03:12:32 JST 2023"
-_code = "Open usp Tukubai (LINUX/PYTHON2.4+, 3.6/UTF-8)"
+_version = "Fri Oct 20 00:00:00 JST 2023"
+_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4+, 3.1, 3.2/UTF-8)"
 		# 1: 1st field
 		# 3: 2nd and later fields with separator
 wide_class = ["W","F","A"]	# 全角文字クラス
@@ -53,9 +53,9 @@ def error(msg, *arg):
 	sys.exit(1)
 
 def usage():
-	print( "Usage     : %s" % _usage, file=sys.stderr);
-	print( "Version   : %s" % _version, file=sys.stderr);
-	print( "            %s" % _code, file=sys.stderr);
+	print( "Usage     :%s" % _usage, file=sys.stderr);
+	print( "Version   :%s" % _version, file=sys.stderr);
+	print( "	   %s" % _code, file=sys.stderr);
 	sys.exit(1)
 
 #
@@ -136,7 +136,7 @@ def getpos(base_pos):
 	#  nのときはそのまま
 	#  0のときはNF（欄数）
 	#  -nのときはNF-n
-	# 0発信とするために-1を加える
+	# 0発進とするために-1を加える
 	if base_pos > 0:
 		pos=base_pos-1
 		if pos >= NF:	error("フィールド番号が大きすぎます。 %s",str(base_pos))
@@ -145,7 +145,6 @@ def getpos(base_pos):
 		pos=NF+base_pos-1
 		if pos < 0:	error("フィールド指定でNF-x の x が大きすぎます。 %s","NF-"+str(-base_pos))
 		return True,pos	# NF相対欄位置からの絶対化欄位置
-	return pos
 
 # NF相対欄位置リスト（rel_keylist）からNF（欄数）に応じた実際の欄位置リスト（keylist）を作成する
 def make_keylist(rel_keylist,abs_rel_mixed_range):
