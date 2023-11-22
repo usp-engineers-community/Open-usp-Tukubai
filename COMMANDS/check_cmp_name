@@ -4,7 +4,7 @@
 # check_cmp_name : name 形式データの値の大小関係をチェックする（Open usp Tukubai版）
 # 
 # designed by Nobuaki Tounaka
-# written  by Masatomo Togashi
+# written by Masatomo Togashi
 #
 # The MIT License
 #
@@ -37,8 +37,8 @@ import unicodedata
 
 _usage = "check_cmp_name <expression> <name_file>"
 _usage2 = "[--through <string>]"
-_version = "Thu Jul 20 02:14:04 JST 2023"
-_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.6,3.6/UTF-8)"
+_version = "Mon Nov 20 00:00:00 JST 2023"
+_code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
 
 # 濁音と半濁音のNFD表記でNFC表記もできるもの→NFDtoNFC変換でNFCに統一する
 _comb_pat=r"(((う|か|き|く|け|こ|さ|し|す|せ|そ|た|ち|つ|て|と|は|ひ|ふ|へ|ほ|ウ|カ|キ|ク|ケ|コ|サ|シ|ス|セ|ソ|タ|チ|ツ|テ|ト|ハ|ヒ|フ|ヘ|ホ|ワ|ヰ|ヱ|ヲ)゙)|((は|ひ|ふ|へ|ほ|ハ|ヒ|フ|ヘ|ホ)゚))+"
@@ -570,7 +570,7 @@ if __name__ == '__main__':
 	# expressionの検査
 	lterm,rterm="",""
 	lvalue,rvalue=0,0
-	expression=expression_string.split()	# expressionは[左辺,演算子,右辺]のリスト
+	expression=expression_string.split(" ")	# expressionは[左辺,演算子,右辺]のリスト
 	if len(expression) != 3: error("expressionの形式('%s')が不正です",expression_string)
 	op=expression[1].upper() # 比較演算子
 

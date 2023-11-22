@@ -44,8 +44,8 @@ ERROR_CHECK(){
 
 BOMandEOLvariation(){	# BOM無しLF改行ファイル（$1）からBOM付きCRLF改行ファイル（$2）とBOM付きCR改行ファイル（$3）を生成する
 	 [ $# -eq 3 ]; ERROR_CHECK "TESTスクリプト内のBOMandEOLvariation()でファイル指定が不正"
-	awk '{print '\xEF\xBB\xBF' $0}' $1 > $2 # $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
-	awk 'BEGIN {ORS = "\r"}  {print '\xEF\xBB\xBF' $0}' $1 > $3 # $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
+	gsed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r\n/g' -e 's/$/\r/' $1 >$2	# $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
+	gsed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r/g' $1 | tr '\n' '\r' >$3	# $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
 }
 
 ###########################################
@@ -112,6 +112,105 @@ diff $tmp-ans $tmp-out
 cat $tmp-inBOMCR | ${com} 1.4 - > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST2-4 error"
+
+###########################################
+#TEST3
+# フィールド指定にNFやNF-<n>を使う
+# 連続したフィールドの処理
+
+cat << FIN > $tmp-in
+12 345 6789
+23 456 7890
+FIN
+
+cat << FIN > $tmp-ans
+0012 000345 006789
+0023 000456 007890
+FIN
+
+${com} 1.4 NF-1.6/NF.6 $tmp-in > $tmp-out
+
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST3-1 error"
+
+# ${name}のTEST3-2では
+# 欄位置精度指定において区間指定があって区間前端と後端で精度指定が異なる場合を実行し、
+# エラーで終了するように設定されている
+
+${com} 1.4 NF-1.6/NF.5 $tmp-in > $tmp-out 2> /dev/null
+[ $? -ne 0 ] ; ERROR_CHECK "TEST3-2 error"
+
+# ${name}のTEST3-3では
+# key欄が区間指定であるとき区間前端と後端で位置指定が昇順になっていない場合を実行し、
+# エラーで終了するように設定されている
+
+${com} 1.4 NF.6/NF-1.6 $tmp-in > $tmp-out 2> /dev/null
+[ $? -ne 0 ] ; ERROR_CHECK "TEST3-3 error"
+
+# ${name}のTEST3-4では
+# 欄位置精度指定において欄位置の指定が昇順になっていない場合を実行し、
+# エラーで終了するように設定されている
+
+${com} 3.4 NF-1.6/NF.6 $tmp-in > $tmp-out 2> /dev/null
+[ $? -ne 0 ] ; ERROR_CHECK "TEST3-4 error"
+
+###########################################
+#TEST4
+# --ngthroughパラメータを使う
+
+cat << FIN > $tmp-in
+1
+342
+12
+FIN
+
+cat << FIN > $tmp-ans
+0001
+342
+0012
+FIN
+
+${com} --ngthrough 342 1.4 $tmp-in  > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4.1 error"
+
+cat $tmp-in | ${com} 1.4 --ngthrough 342 - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4.2 error"
+
+cat $tmp-in | ${com} 1.4 --ngthrough 342 > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST4.3 error"
+
+###########################################
+#TEST5
+# --ngthroughパラメータに4バイト文字を使う
+
+cat << FIN > $tmp-in
+1
+𠆢
+12
+FIN
+
+cat << FIN > $tmp-ans
+0001
+𠆢
+0012
+FIN
+
+# 「𠆢」は𠆢(U+201A2)代用対では𠆢(U+D840-U+DDA2)
+
+${com} 1.4 $tmp-in --ngthrough 𠆢 > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5.1 error"
+
+cat $tmp-in | ${com} 1.4 --ngthrough 𠆢 > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5.2 error"
+
+cat $tmp-in | ${com} 1.4 --ngthrough 𠆢 - > $tmp-out
+diff $tmp-ans $tmp-out
+[ $? -eq 0 ] ; ERROR_CHECK "TEST5.3 error"
 
 ###########################################
 rm -f $tmp-*

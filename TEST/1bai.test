@@ -32,7 +32,7 @@ if test "$1" = ""; # <command-path>($1)がなければ
 	else commandpath="$1" # <command-path>($1)があればtest対象コマンドは指定のディレクトリーにある
 fi
 com="${pythonversion} ${commandpath}/${name}" # python処理系によるtest対象コマンド実行の先頭部
-tmp=$(mktemp)
+tmp=/tmp/$$
 
 ERROR_CHECK(){
 	[ "$(echo ${PIPESTATUS[@]} | tr -d ' 0')" = "" ] && return
@@ -44,8 +44,8 @@ ERROR_CHECK(){
 
 BOMandEOLvariation(){	# BOM無しLF改行ファイル（$1）からBOM付きCRLF改行ファイル（$2）とBOM付きCR改行ファイル（$3）を生成する
 	 [ $# -eq 3 ]; ERROR_CHECK "TESTスクリプト内のBOMandEOLvariation()でファイル指定が不正"
-	awk '{print '\xEF\xBB\xBF' $0}' $1 > $2 # $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
-	awk 'BEGIN {ORS = "\r"}  {print '\xEF\xBB\xBF' $0}' $1 > $3 # $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r\n/g' -e 's/$/\r/' $1 >$2	# $1の先頭にBOMを付け全行をCRLFで連接し終端にCRを付加して$2に出力
+	sed -e 's/^/\xEF\xBB\xBF/' -e ':LoopTop; N; $! b LoopTop; s/\n/\r/g' $1 | tr '\n' '\r' >$3	# $1の先頭にBOMを付け全行をCRで連接して$3に出力し$3最終行のLFをCRに変換
 }
 
 ###########################################
@@ -393,10 +393,10 @@ diff $tmp-ans $tmp-out
 # 第2行で欄数が1減少すると絶対欄位置指定群とNF相対欄位置指定が交叉するので
 # この欄数変化に際してはエラーとなる
 
-# TEST10-2は「キーの絶対欄位置指定群とNF相対欄位置指定群が交叉している例」を実行し、
-# エラーメッセージが出るように設定されている
+echo ${name}のTEST10-2は「キーの絶対欄位置指定群とNF相対欄位置指定群が交叉している例」を実行し、
+echo エラーで終了するように設定されている
 
-${com} -r 2/4 NF-1@NF $tmp-file >$tmp-out 2> /dev/null
+${com} -r 2/4 NF-1@NF $tmp-file >$tmp-out
 [ $? -ne 0 ] ; ERROR_CHECK "TEST10-2 error"
 
 # TEST10-3
@@ -404,10 +404,10 @@ ${com} -r 2/4 NF-1@NF $tmp-file >$tmp-out 2> /dev/null
 # 「2/NF-2」は絶対欄位置指定とNF相対欄位置指定が混在した区間指定なので
 # 欄数変化に際してはエラーとなる
 
-# TEST10-3は「キーの絶対欄位置指定とNF相対欄位置指定が混在した区間指定の例」を実行し、
-# エラーメッセージが出るように設定されている
+echo ${name}のTEST10-3は「キーの絶対欄位置指定とNF相対欄位置指定が混在した区間指定の例」を実行し、
+echo エラーで終了するように設定されている
 
-${com} -r 2/4@2@3@NF-2 2@3@4@NF-2/2 $tmp-file >$tmp-out 2> /dev/null
+${com} -r 2/4@2@3@NF-2 2@3@4@NF-2/2 $tmp-file >$tmp-out
 [ $? -ne 0 ] ; ERROR_CHECK "TEST10-3 error"
 
 # TEST10-4
