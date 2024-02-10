@@ -120,8 +120,9 @@ pdf: $(wildcard COMMANDS/*)
 	 wkhtmltopdf --enable-local-file-access --print-media-type --footer-center [page]              \
 	 	--title "Open usp Tukubai コマンドマニュアル"                                              \
 	 	- $(addsuffix .html,$(addprefix MANUALHTML/,$(patsubst COMMANDS/%,%,$+)))                  \
-	 	"MANUALHTML/"{{tag,name,field}-format,{master,name,transaction}-file}.html "$${backcover}" \
-	 	MANUALPDF/all.pdf;                                                                         \
+	 	MANUALHTML/tag-format.html MANUALHTML/name-format.html MANUALHTML/field-format.html        \
+	 	MANUALHTML/master-file.html MANUALHTML/name-file.html MANUALHTML/transaction-file.html     \
+	 	"$${backcover}" MANUALPDF/all.pdf;                                                         \
 	 rm "$${backcover}"
 	@echo completed!
 
