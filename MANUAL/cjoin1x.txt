@@ -76,6 +76,6 @@ $ cat data
 2 大阪1 梅田
 2 大阪2 梅田
 
-last modified: MODIFIED
+last modified: Sat Feb 10 20:19:21 JST 2024
 Contact us: uecinfo@usp-lab.com
 Copyright (c) 2012-2023 Universal Shell Programming Laboratory All Rights

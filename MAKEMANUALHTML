@@ -2,7 +2,7 @@
 #
 # MAKEMANUAL: MANUAL/*.txt から MANUALHTML を作成する
 #
-# : written by 柳 日向 (h-yanagi@usp-lab.com; 2024-02-10)
+# : written by 柳 日向 (h-yanagi@usp-lab.com; 2024-02-11)
 #
 
 ####################################################################
@@ -425,10 +425,8 @@ html2man() {
 				printf(template "\n              ", commands[position], commands[position])
 			}
 
-			if (NF % 3 - 1 != 0) {
-				for (position = 0; position <= NF % 3 - 1; position++) {
-					print "<li></li>\n"
-				}
+			for (position = 0; position <= NR % 3 - 1; position++) {
+				print "<li></li>\n"
 			}
 
 			next
