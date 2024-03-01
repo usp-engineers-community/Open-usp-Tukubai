@@ -68,7 +68,7 @@ a _ \_ \ b_c b\_c "
 d イー エフ
 FIN
 
-cat << FIN | sed 's/$/\r/g' | nkf -s > $tmp-ans
+cat << FIN | sed 's/$/\r/g' | iconv -f utf8 -t cp932 > $tmp-ans
 "a","","_","b c","b_c",""""
 "d","イー","エフ"
 FIN
@@ -86,7 +86,7 @@ cat << FIN > $tmp-in
 a b c d e
 FIN
 
-cat << FIN | sed 's/$/\r/g' | nkf -s > $tmp-ans
+cat << FIN | sed 's/$/\r/g' | iconv -f utf8 -t cp932 > $tmp-ans
 "a","b","","d","e"
 FIN
 

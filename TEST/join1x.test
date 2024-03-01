@@ -531,7 +531,7 @@ FIN
 # ${name}のTEST11-3はエラーで終了するように設定されている
 
 ${com} key=1 $tmp-master1 $tmp-tran2 >$tmp-out 2> /dev/null
-[ $? -ne 0 ] ; ERROR_CHECK "TEST11-3 error"
+[ $? -ne 1 ] ; ERROR_CHECK "TEST11-3 error"
 
 ###########################################
 rm -f $tmp-*

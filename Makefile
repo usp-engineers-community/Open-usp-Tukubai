@@ -87,7 +87,7 @@ test: # シェル・スクリプトのみテストを実行する。
 	@path=$$(mktemp -d); \
 	echo > /dev/null "gsed が存在する場合は sed の代わりに使用する。(macOS で実行している場合のみ)"; \
 	uname | awk '$$0 == "Darwin" {exit 1}' || ln -s $$(which gsed) $$path/sed; \
-	for test_script in $$(echo TEST/* | tr ' ' '\n' | grep -e '\/[^.]*\.test$$'); do \
+	for test_script in $$(echo TEST/* | tr ' ' '\n' | grep -e '\.test$$'); do \
 		PATH=$$path:$$PATH "$${test_script}" "$$(pwd)/COMMANDS"; \
 		if [ "$$?" -ne 0 ]; then \
 			echo "test for $$(basename "$${test_script}" .sh)" failed.; \
