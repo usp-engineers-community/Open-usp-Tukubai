@@ -1,6 +1,6 @@
 ﻿               Universal Shell Programming Laboratory
                          uecinfo@usp-lab.com
-                             2023/07/20
+                             2024/11/14
  
 Open usp Tukubaiとは
 ====================
@@ -20,7 +20,7 @@ Open usp Tukubaiのサポート(有償)、商用版Tukubaiに関するお問合�
 
 ダウンロードページ
 
-- [https://uec.usp-lab.com/tukubai_download](https://uec.usp-lab.com/tukubai_download)
+- [https://www.uni-tama.com/cgi/DOCUMENT_UEC.CGI?CATEGORY=TUKUBAI&POMPA=DOWNLOAD](https://www.uni-tama.com/cgi/DOCUMENT_UEC.CGI?CATEGORY=TUKUBAI&POMPA=DOWNLOAD)
 
 GitHub
 
@@ -44,7 +44,7 @@ Open usp Tukubaiはスクリプト言語Pythonで開発されている。Python�
 
 オンラインコマンドマニュアル
 
-- [https://uec.usp-lab.com/tukubai_man](https://uec.usp-lab.com/tukubai_man)
+- [https://www.uni-tama.com/cgi/COMMAND.CGI](https://www.uni-tama.com/cgi/COMMAND.CGI)
 
 付属のマニュアルデフォルトインストール先は
 
@@ -56,7 +56,7 @@ Open usp Tukubaiはスクリプト言語Pythonで開発されている。Python�
 文献
 ====
 
-- [UEC - usp engineers' community site](https://uec.usp-lab.com/)
+- [ユニケージ魂](https://www.uni-tama.com/)
 - USP MAGAZINE
 - 技術評論社 Software Design
 
