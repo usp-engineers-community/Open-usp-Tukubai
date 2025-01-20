@@ -14,7 +14,7 @@ written  by Hinata Yanagi
 
 The MIT License
 
-Copyright (C) 2023 Universal Shell Programming Laboratory
+Copyright (C) 2025 Universal Shell Programming Laboratory
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -39,7 +39,7 @@ showUsage :: IO ()
 showUsage = do
         hPutStr stderr (
          "Usage    : loopj [-d<string>] num=<num> <file1> <file2> ..\n" ++
-         "Version  : Sun Nov 12 13:32:42 JST 2023\n" ++
+         "Version  : Mon Jan 20 17:18:16 JST 2025\n" ++
          "Open usp Tukubai (LINUX)\n")
         exitFailure
 

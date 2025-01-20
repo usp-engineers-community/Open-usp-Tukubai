@@ -1,4 +1,4 @@
-#!/usr/bin/env runghc --
+#!/usr/bin/env runghc
 import Control.Monad (foldM)
 import Data.Char (isAlpha, isAlphaNum, isAscii, isDigit, isPrint)
 import Data.Ix (range)
@@ -22,7 +22,7 @@ written  by Hinata Yanagi
 
 The MIT License
 
-Copyright (C) 2023 Universal Shell Programming Laboratory
+Copyright (C) 2025 Universal Shell Programming Laboratory
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -47,7 +47,7 @@ showUsage :: IO ()
 showUsage = do
   System.IO.hPutStr stderr "Usage    : check_attr_name <check_file> [<name_file>]\n"
   System.IO.hPutStr stderr "Option   : --through <string> --ngword <ng_file>\n"
-  System.IO.hPutStr stderr "Version  : Sat Aug 19 21:33:04 JST 2023\n"
+  System.IO.hPutStr stderr "Version  : Mon Jan 20 17:18:16 JST 2025\n"
   System.IO.hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD)\n"
   exitFailure
 

@@ -1,4 +1,4 @@
-#!/usr/bin/env runghc --
+#!/usr/bin/env runghc
 import System.Environment
 import System.Exit
 import System.IO
@@ -15,7 +15,7 @@ written  by Hinata Yanagi
 
 The MIT License
 
-Copyright (C) 2023 Universal Shell Programming Laboratory
+Copyright (C) 2025 Universal Shell Programming Laboratory
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -44,7 +44,7 @@ showUsage :: IO ()
 showUsage = do
   System.IO.hPutStr stderr $ "Usage    : " ++ command_name ++ " [-e|-j] <field> [<filename>]\n"
   System.IO.hPutStr stderr $ "           " ++ command_name ++ " -d [-e|-j] <string>\n"
-  System.IO.hPutStr stderr $ "Version  : " ++ version ++ "\n"
+  System.IO.hPutStr stderr $ "Version  : Mon Jan 20 17:18:17 JST 2025\n"
   System.IO.hPutStr stderr $ "           Open usp Tukubai (LINUX+FREEBSD)\n"
   exitFailure
 

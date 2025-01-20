@@ -1,4 +1,4 @@
-#!/usr/bin/env runghc --
+#!/usr/bin/env runghc
 import qualified Data.ByteString.Lazy.Char8 as BS
 import System.Environment
 import System.IO
@@ -35,7 +35,7 @@ THE SOFTWARE.
 showUsage :: IO ()
 showUsage = do
     hPutStr stderr "Usage    : retu [-f] [<file>]\n"
-    hPutStr stderr "Version  : Sat Oct  1 21:24:39 JST 2022\n"
+    hPutStr stderr "Version  : Mon Jan 20 17:18:17 JST 2025\n"
     hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD)\n"
 
 main :: IO ()

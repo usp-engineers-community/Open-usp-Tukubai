@@ -1,4 +1,4 @@
-#!/usr/bin/env runghc --
+#!/usr/bin/env runghc
 import System.Environment
 import System.IO
 import Control.Monad
@@ -12,7 +12,7 @@ written  by Hinata Yanagi
 
 The MIT License
 
-Copyright (C) 2023 Universal Shell Programming Laboratory
+Copyright (C) 2025 Universal Shell Programming Laboratory
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -36,7 +36,7 @@ THE SOFTWARE.
 showUsage :: IO ()
 showUsage = do
     hPutStr stderr "Usage    : tateyoko [<file>]\n"
-    hPutStr stderr "Version  : Sat Oct  1 21:43:34 JST 2022\n"
+    hPutStr stderr "Version  : Mon Jan 20 17:18:17 JST 2025\n"
     hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD)\n"
 
 main :: IO ()

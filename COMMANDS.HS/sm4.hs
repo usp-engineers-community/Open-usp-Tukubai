@@ -1,4 +1,4 @@
-#!/usr/bin/env runghc --
+#!/usr/bin/env runghc
 import Data.Ix (range)
 import Data.List (stripPrefix)
 import Data.Maybe (fromJust)
@@ -14,7 +14,7 @@ written  by Hinata Yanagi
 
 The MIT License
 
-Copyright (C) 2023 Universal Shell Programming Laboratory
+Copyright (C) 2025 Universal Shell Programming Laboratory
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -38,7 +38,7 @@ THE SOFTWARE.
 showUsage :: IO ()
 showUsage = do
     System.IO.hPutStr stderr "Usage    : sm4 <k1> <k2> <d1> <d2> <s1> <s2> [<file>]\n"
-    System.IO.hPutStr stderr "Version  : Thu Apr 20 08:26:58 JST 2023\n"
+    System.IO.hPutStr stderr "Version  : Mon Jan 20 17:18:17 JST 2025\n"
     System.IO.hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD)\n"
     exitWith (ExitFailure 1)
 
