@@ -1,6 +1,6 @@
 ﻿               Universal Shell Programming Laboratory
                          uecinfo@usp-lab.com
-                             2024/11/14
+                             2025/01/20
 
 Open usp Tukubaiとは
 ====================
@@ -48,6 +48,26 @@ Open usp Tukubaiはスクリプト言語Pythonで開発されている。Python�
 なお、業務システム向けに提供されている商用版のTukubaiはC言語で
 開発されている。商用版の提供や教育プログラムに興味がある場合には
 uecinfo@usp-lab.comまでご連絡いただきたい。
+
+
+Haskell をインストールする
+========
+
+現在の最新版 (9.12.1)を例にインストール方法を示す。
+
+  $ dnf install gcc gcc-c++ make tar vim wget -y
+  $ wget https://downloads.haskell.org/~ghc/9.12.1/ghc-9.12.1-x86_64-rocky8-linux.tar.gz -O - |
+    tar fxz - -C /usr/local/src
+  $ cd /usr/local/src/ghc-9.12.1-x86_64-unknown-linux
+  $ ./configure
+  $ make install
+
+インストールが済めば COMMANDS.HS ディレクトリ以下のコマンドが直接実行可能になっている。
+
+  [root@13e8bb175b73 Open-usp-Tukubai]# COMMANDS.HS/juni.hs --version
+  Usage    : juni [<f1> <f2> <file>]
+  Version  : Mon Jan 20 06:55:16 UTC 2025
+  Open usp Tukubai (LINUX+FREEBSD)
 
 
 リファレンス

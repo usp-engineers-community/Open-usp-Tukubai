@@ -1,6 +1,6 @@
 ﻿               Universal Shell Programming Laboratory
                          uecinfo@usp-lab.com
-                             2024/11/14
+                             2025/01/20
  
 Open usp Tukubaiとは
 ====================
@@ -30,6 +30,24 @@ GitHub Read-Only
 
 - git://github.com/usp-engineers-community/Open-usp-Tukubai.git
 
+Haskell をインストールする
+========
+
+現在の最新版 (9.12.1)を例にインストール方法を示す。
+
+    $ dnf install gcc gcc-c++ make tar vim wget -y
+    $ wget https://downloads.haskell.org/~ghc/9.12.1/ghc-9.12.1-x86_64-rocky8-linux.tar.gz -O - |
+      tar fxz - -C /usr/local/src
+    $ cd /usr/local/src/ghc-9.12.1-x86_64-unknown-linux
+    $ ./configure
+    $ make install
+
+インストールが済めば COMMANDS.HS ディレクトリ以下のコマンドが直接実行可能になっている。
+
+    [root@13e8bb175b73 Open-usp-Tukubai]# COMMANDS.HS/juni.hs --version
+    Usage    : juni [<f1> <f2> <file>]
+    Version  : Mon Jan 20 06:55:16 UTC 2025
+    Open usp Tukubai (LINUX+FREEBSD)
 
 利用方法
 ========
@@ -67,3 +85,4 @@ Open usp Tukubaiはスクリプト言語Pythonで開発されている。Python�
 Open up TukubaiはThe MIT Licenseに基づき、USP研究所が無償で配布している。The MIT Licenseの詳細についてはLICENSEファイルを参照のこと。
 
 ※ユニケージはユニバーサル・シェル・プログラミング研究所の登録商標。
+
