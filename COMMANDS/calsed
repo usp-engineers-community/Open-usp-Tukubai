@@ -4,11 +4,11 @@
 # calsed 軽いsed（Open usp Tukubai版）
 # 
 # designed by Nobuaki Tounaka
-# written by Masatomo Togashi
+# written by Hinata Yanagi
 #
 # The MIT License
 #
-# Copyright (C) 2023 Universal Shell Programming Laboratory
+# Copyright (C) 2025 Universal Shell Programming Laboratory
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -37,7 +37,7 @@ _usage = "calsed <org> <dst> [<file>]"
 _usage2 = "calsed -f <script> [<file>]"
 _option = "-n<string>"
 _option2 = "-s<c>"
-_version = "Mon Jun 19 23:20:45 JST 2023"
+_version = "Mon Feb  3 15:53:18 JST 2025"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
 
 # 濁音と半濁音のNFD表記でNFC表記もできるもの→NFDtoNFC変換でNFCに統一する
@@ -478,12 +478,13 @@ def Xindex(str1,str2):	# str1がstr2の中にあれば発見位置を返す
 # Xreplace 文字列メソッドreplace()の「文字列のゆるい一致」にもとづく拡張文字列版（ほぼ）代用関数
 #
 def Xreplace(str1,str2,str3):	# str1がstr2の中にあればstr3で置換する
-	i=0
-	while i>=0:
+	i,j=0,-1
+	while i>=0 and i != j:
 		i=Xindex(str1,str2)
 		if i>=0:	# str1がstr2の中にあったら
 			# str2の中のstr1に等しい部分をstr3で置換する
 			str2[i:i+len(str1)]=str3
+		j=i
 	return str2
 
 #
