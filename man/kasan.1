@@ -1,4 +1,4 @@
-.TH  Tukubai 1 "21 Nov 2022" "usp Tukubai" "Tukubai コマンド マニュアル"
+.TH  Tukubai 1 "28 Dec 2025" "usp Tukubai" "Tukubai コマンド マニュアル"
 
 .br
 kasan(1)
@@ -17,9 +17,9 @@ kasan\ :\ 累計
 .br
 
 .br
-Usage\ \ \ :\ kasan\ [+r]\ [ref=<ref>]\ key=<n>\ [<file>]
+Usage\ \ \ :\ kasan\ [+r]\ [key=<key>]\ val=<n>\ [<file>]
 .br
-Version\ :\ Mon\ Mar\ 20\ 00:00:00\ JST\ 2023
+Version\ :\ Sun\ Dec\ 28\ 02:56:32\ JST\G 2025
 .br
 
 .br
@@ -79,13 +79,13 @@ Version\ :\ Mon\ Mar\ 20\ 00:00:00\ JST\ 2023
 .br
 あるフィールドの値が変わった場所で加算をリセットする場合は、そのリセットのキー
 .br
-となるフィールドをref=で指定する。たとえば店別の累計仕入数を算出する場合には、
+となるフィールドをkey=で指定する。たとえば店別の累計仕入数を算出する場合には、
 .br
 次のように1フィールド目が変更されるごとに加算をリセットする。
 .br
 
 .br
-ref=<ref>で指定できるのは数値、範囲(/)、NF\ NF-<n>である。
+key=<key>で指定できるのは数値、範囲(/)、NF\ NF-<n>である。
 .br
 
 .br
@@ -108,7 +108,7 @@ ref=<ref>で指定できるのは数値、範囲(/)、NF\ NF-<n>である。
 
 .br
 
-  $ kasan ref=1 key=4 data
+  $ kasan key=1 val=4 data
   a店 1日目 103 62 62
   a店 2日目 157 94 156
   a店 3日目 62 30 186
@@ -186,7 +186,7 @@ ref=<ref>で指定できるのは数値、範囲(/)、NF\ NF-<n>である。
 
 .br
 
-  $ kasan ref=1 key=2 data
+  $ kasan key=1 val=2 data
   A 1 1
   A 1.2 2.2
   A 1.23 3.43
@@ -263,9 +263,9 @@ plus(1)、ratio(1)、sm2(1)、sm4(1)、sm5(1)、ysum(1)
 .br
 
 .br
-last\ modified:\ Mon\ Mar\ 20\ 09:12:23\ JST\ 2023\ 
+last\ modified:\ Sun\ Dec\ 28\ 03:09:16\ JST\ 2025
 .br
 Contact\ us:\ uecinfo@usp-lab.com
 .br
-Copyright\ (c)\ 2012-2023\ Universal\ Shell\ Programming\ Laboratory\ All\ Rights
+Copyright\ (c)\ 2012-2025\ Universal\ Shell\ Programming\ Laboratory\ All\ Rights
 .br

@@ -140,7 +140,7 @@
 <p><code>kasan</code> :  累計</p>
 <h3>【書式】</h3>
 <pre class="list">Usage   : kasan [+r] [ref=&lt;ref&gt;] key=&lt;n&gt; [&lt;file&gt;]
-Version : Mon Mar 20 00:00:00 JST 2023</pre>
+Version : Sun Dec 28 02:56:32 JST 2025</pre>
 <h3>【説明】</h3>
 <p>引数のファイルまたは標準入力のテキストデータの指定したフィールドの値を、各行ごとに加算して指定したフィールドの次のフィールドに挿入する。累計値を求める場合などに使用する。<code>&lt;file&gt;</code>として<code>-</code>を指定するか省略すると標準入力を使用する。</p>
 <h3>【例1】</h3>
@@ -180,7 +180,7 @@ c店 2日目 76 49
 c店 3日目 38 21
 c店 4日目 81 48
 $</pre>
-<pre class="prettyprint">$ kasan ref=1 key=4 data
+<pre class="prettyprint">$ kasan key=1 val=4 data
 a店 1日目 103 62 62
 a店 2日目 157 94 156
 a店 3日目 62 30 186
@@ -224,7 +224,7 @@ B 2
 B 2.34
 B 3
 $</pre>
-<pre class="prettyprint">$ kasan ref=1 key=2 data
+<pre class="prettyprint">$ kasan key=1 val=2 data
 A 1 1
 A 1.2 2.2
 A 1.23 3.43
@@ -255,9 +255,9 @@ $</pre>
 <p><a href="plus.html" class="command">plus(1)</a>、<a href="ratio.html" class="command">ratio(1)</a>、<a href="sm2.html" class="command">sm2(1)</a>、<a href="sm4.html" class="command">sm4(1)</a>、<a href="sm5.html" class="command">sm5(1)</a>、<a href="ysum.html" class="command">ysum(1)</a></p>
     </div>
 
-    <div id="lastmodified">Last modified: Mon Mar 20 09:12:23 JST 2023 </div>
+    <div id="lastmodified">Last modified: Sun Dec 28 03:09:16 JST 2025</div>
 
-    <div id="footer">Contact us: uecinfo@usp-lab.com<br>Copyright &copy; 2012-2023 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
+    <div id="footer">Contact us: uecinfo@usp-lab.com<br>Copyright &copy; 2012-2025 <a href="http://www.usp-lab.com/">Universal Shell Programming Laboratory</a> All Rights Reserved.</div>
   </div>
 </body>
 </html>

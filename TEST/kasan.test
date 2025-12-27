@@ -71,15 +71,15 @@ a店 6日目 350 20 401
 a店 7日目 412 301 702
 FIN
 
-${com} key=4 $tmp-in > $tmp-out
+${com} val=4 $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST1-1 error"
 
-cat $tmp-in | ${com} key=4 > $tmp-out
+cat $tmp-in | ${com} val=4 > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST1-2 error"
 
-cat $tmp-in | ${com} key=4 - > $tmp-out
+cat $tmp-in | ${com} val=4 - > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST1-3 error"
 
@@ -116,7 +116,7 @@ c店 3日目 38 21 122
 c店 4日目 81 48 170
 FIN
 
-${com} ref=1 key=4 $tmp-in > $tmp-out
+${com} key=1 val=4 $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST2 error"
 
@@ -143,11 +143,11 @@ a店 6日目 350 401
 a店 7日目 412 702
 FIN
 
-${com} +r key=4 $tmp-in > $tmp-out
+${com} +r val=4 $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST3-1 error"
 
-${com} +r key=NF $tmp-in > $tmp-out
+${com} +r val=NF $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST3-2 error"
 
@@ -172,17 +172,17 @@ B 2.34 4.34 江頭
 B 3 7.34 b
 FIN
 
-${com} ref=1 key=2 $tmp-in > $tmp-out
+${com} key=1 val=2 $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST4-1 error"
 
-${com} ref=1 key=NF-1 $tmp-in > $tmp-out
+${com} key=1 val=NF-1 $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST4-2 error"
 
 ###########################################
 #TEST5
-# refとkeyの逆順処理
+# keyとvalの逆順処理
 # キー指定で「数値、範囲(/)、列挙(@)、NF、NF-<n>」の組み合わせ
 
 cat << FIN > $tmp-in
@@ -203,15 +203,15 @@ B B 2.34 4.34 2.34 4.34 江頭
 B B 3 7.34 3 7.34 b
 FIN
 
-${com} ref=1/2 key=4/3 $tmp-in > $tmp-out
+${com} key=1/2 val=4/3 $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST5-1 error"
 
-${com} ref=2/1 key=NF-1/NF-2 $tmp-in > $tmp-out
+${com} key=2/1 val=NF-1/NF-2 $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST5-2 error"
 
-${com} ref=2/1 key=NF-1/NF-2@NF-2@NF-1@4@3@NF-2/NF-1 $tmp-in > $tmp-out
+${com} key=2/1 val=NF-1/NF-2@NF-2@NF-1@4@3@NF-2/NF-1 $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST5-3 error"
 
@@ -244,31 +244,31 @@ FIN
 BOMandEOLvariation $tmp-in $tmp-inBOMCRLF $tmp-inBOMCR
 
 # BOM付きCRLF
-${com} key=4 $tmp-inBOMCRLF > $tmp-out
+${com} val=4 $tmp-inBOMCRLF > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST6-1 error"
 
 # BOM付きCR
-${com} key=4 $tmp-inBOMCR > $tmp-out
+${com} val=4 $tmp-inBOMCR > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST6-2 error"
 
 # pipe接続
 
 # BOM付きCRLF
-cat $tmp-inBOMCRLF | ${com} key=4 - > $tmp-out
+cat $tmp-inBOMCRLF | ${com} val=4 - > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST6-3 error"
 
 # BOM付きUTF8ファイルCR
-cat $tmp-inBOMCR | ${com} key=4 - > $tmp-out
+cat $tmp-inBOMCR | ${com} val=4 - > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST6-4 error"
 
 ###########################################
 #TEST7
 # TEST5の変型
-# refとkeyの逆順処理
+# keyとvalの逆順処理
 # キー指定で「数値、範囲(/)、列挙(@)、NF、NF-<n>」の組み合わせ
 # NFC文字（濁音/半濁音が1文字）とNFD文字（濁音/半濁音が清音+結合用濁点/結合用半濁点の2文字で構成される）を同値化して処理する
 
@@ -290,15 +290,15 @@ cat << FIN > $tmp-ans
 ぱ ぱ 3 7.34 3 7.34 #「ぱ」は半濁音NFC
 FIN
 
-${com} ref=1/2 key=4/3 $tmp-in > $tmp-out
+${com} key=1/2 val=4/3 $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST7-1 error"
 
-${com} ref=2/1 key=NF-1/NF-2 $tmp-in > $tmp-out
+${com} key=2/1 val=NF-1/NF-2 $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST7-2 error"
 
-${com} ref=2/1 key=NF-1/NF-2@NF-2@NF-1@4@3@NF-2/NF-1 $tmp-in > $tmp-out
+${com} key=2/1 val=NF-1/NF-2@NF-2@NF-1@4@3@NF-2/NF-1 $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST7-3 error"
 
@@ -330,14 +330,14 @@ cat << FIN > $tmp-ans
 7日目 412 951 7 301 432 b店
 FIN
 
-${com} ref=NF key=2@NF-1 $tmp-in > $tmp-out
+${com} key=NF val=2@NF-1 $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST8-1 error"
 
 # 次の例では
 #  「key=2@NF-1」では絶対位置の2とNF相対位置のNF-1の間にある欄の数に増減があるが正しく実行される
 #   一般的には
-#     keyとrefそれぞれについて絶対位置指定群とNF相対位置指定群が離れていればその間にある欄の数は増減してもよい
+#     keyとvalそれぞれについて絶対位置指定群とNF相対位置指定群が離れていればその間にある欄の数は増減してもよい
 
 cat << FIN > $tmp-in
 1日目 103 1  62 a店
@@ -359,7 +359,7 @@ cat << FIN > $tmp-ans
 7日目 412 951 7 301 432 b店
 FIN
 
-${com} ref=NF key=2@NF-1 $tmp-in > $tmp-out
+${com} key=NF val=2@NF-1 $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST8-2 error"
 
@@ -388,7 +388,7 @@ cat << FIN > $tmp-ans
 7日目 412 951 301 b店
 FIN
 
-${com} ref=NF-0 key=2@NF-2 $tmp-in > $tmp-out
+${com} key=NF-0 val=2@NF-2 $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST8-3 error"
 
@@ -412,7 +412,7 @@ a店 6日目 350 20 か
 a店 7日目 412 301 き
 FIN
 
-${com} key=3@NF-1 $tmp-in 2> /dev/null > $tmp-out
+${com} val=3@NF-1 $tmp-in 2> /dev/null > $tmp-out
 [ $? -ne 0 ] ; ERROR_CHECK "TEST9-1 error"
 
 # TEST9-2
@@ -432,11 +432,11 @@ a店 6日目 350 20 か
 a店 7日目 412 301 き
 FIN
 
-${com} key=3@NF-1 $tmp-in 2> /dev/null > $tmp-out
+${com} val=3@NF-1 $tmp-in 2> /dev/null > $tmp-out
 [ $? -ne 0 ] ; ERROR_CHECK "TEST9-2 error"
 
 # TEST9-3
-# keyまたはrefで「/」を使用した区間指定で前端と後端の一方が絶対欄位置指定て他方がNF相対欄位置指定のときは
+# keyまたはvalで「/」を使用した区間指定で前端と後端の一方が絶対欄位置指定て他方がNF相対欄位置指定のときは
 # 欄数の変化があるとエラーとなる
 # 下の例では第3行目で欄数が変化してエラーとなる
 
@@ -452,7 +452,7 @@ a店 6日目 350 60 20 か
 a店 7日目 412 70 301 き
 FIN
 
-${com} key=3/NF-1 $tmp-in 2> /dev/null > $tmp-out
+${com} val=3/NF-1 $tmp-in 2> /dev/null > $tmp-out
 [ $? -ne 0 ] ; ERROR_CHECK "TEST9-3 error"
 
 ###########################################

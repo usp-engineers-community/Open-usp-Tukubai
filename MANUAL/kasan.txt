@@ -9,7 +9,7 @@ kasan : 累計
 【書式】
 
 Usage   : kasan [+r] [ref=<ref>] key=<n> [<file>]
-Version : Mon Mar 20 00:00:00 JST 2023
+Version : Sun Dec 28 02:56:32 JST 2025
 
 【説明】
 
@@ -66,7 +66,7 @@ c店 3日目 38 21
 c店 4日目 81 48
 $
 
-$ kasan ref=1 key=4 data
+$ kasan key=1 val=4 data
 a店 1日目 103 62 62
 a店 2日目 157 94 156
 a店 3日目 62 30 186
@@ -121,7 +121,7 @@ B 2.34
 B 3
 $
 
-$ kasan ref=1 key=2 data
+$ kasan key=1 val=2 data
 A 1 1
 A 1.2 2.2
 A 1.23 3.43
@@ -166,6 +166,6 @@ $ kasan key=NF-2 data
 
 plus(1)、ratio(1)、sm2(1)、sm4(1)、sm5(1)、ysum(1)
 
-last modified: Mon Mar 20 09:12:23 JST 2023 
+last modified: Sun Dec 28 03:09:16 JST 2025
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012-2023 Universal Shell Programming Laboratory All Rights
+Copyright (c) 2012-2025 Universal Shell Programming Laboratory All Rights
