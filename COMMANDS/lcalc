@@ -28,13 +28,14 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+import ast
 import sys
 import math
 import re
 
 _usage = "lcalc <script> <files>..."
 _usage2 = "lcalc -d <script>"
-_version = "Tue Sep 23 11:11:42 JST 2025"
+_version = "Tue Sep 16 01:44:21 JST 2025"
 _code = "Open usp Tukubai (LINUX/PYTHON2.4+, 3.6/UTF-8)"
 
 optind = 1
@@ -49,120 +50,13 @@ def usage():
 	sys.stderr.write("          " + _usage2 + "\n")
 	sys.stderr.write("Version : " + _version + "\n")
 	sys.stderr.write("          " + _code + "\n")
-	sys.exit(1)
 	exit(1)
 
 def escape(value):
 	return re.sub(' ', '_', re.sub('_', "\\_", str(value)))
 
-def format_output(value):
-	if value is False:
-		return "0"
-	elif value is True:
-		return "1"
-	else:
-		return str(value)
-
-def substitute_reference(nr, record, capture):
-	if capture.group(0) == 'NR':
-		reference = 'LCalcValue("%s")' % nr
-	elif capture.group(1) == '0':
-		reference = 'LCalcValue(%s)' % repr(record)
-	elif capture.group(1)[0] == '(':
-		nf = re.sub(r' +', '', capture.group(4))
-		offset = (len(record) - int(nf)) - 2
-		reference = 'LCalcValue("%s")' % record[offset]
-	elif capture.group(1) == 'NF':
-		reference = 'LCalcValue("%s")' % record[len(record) - 2]
-	elif re.match(r'^[0-9]+(|\.[0-9]+)$', record[int(capture.group(1)) - 1]):
-		reference = 'LCalcValue("%s")' % record[int(capture.group(1)) - 1]
-	else:
-		reference = 'LCalcValue(%s)' % repr(record[int(capture.group(1)) - 1])
-
-	return reference
-
-class LCalcValue:
-	def __init__(self, value):
-		if re.match(r'^-?[0-9]+(|\.[0-9]+)$', str(value)) and \
-		   not re.match(r'^0[0-9]+$', str(value)):
-			self.float = float(value)
-			self.string = None
-		else:
-			self.float = None
-			self.string = value
-
-	def __eq__(a, b):
-		if type(a) == int and type(b) == int:
-			return LCalcValue(1 if a == b else 0)
-		elif type(a) == int:
-			return LCalcValue(1 if a == b.float else 0)
-		elif type(b) == int:
-			return LCalcValue(1 if a.float == b else 0)
-		elif not a.string is None and not b.string is None:
-			return LCalcValue(1 if a.string == b.string else 0)
-		else:
-			return LCalcValue(1 if a.float == b.float else 0) 
-
-	def __trunc__(value):
-		return math.floor(value.float)
-
-	def __float__(value):
-		return value.float
-
-	def __add__(a, b):
-		if not a.string is None:
-			return LCalcValue(a.string)
-		elif not b.string is None:
-			return LCalcValue(b.string)
-		else:
-			return LCalcValue(a.float + b.float)
-
-	def __sub__(a, b):
-		if not (type(a)) == LCalcValue or not a.string is None:
-			return LCalcValue(a.string)
-		elif not (type(b)) == LCalcValue or not b.string is None:
-			return LCalcValue(b.string)
-		else:
-			return LCalcValue(a.float - b.float)
-
-	def __div__(a, b):
-		if type(b) == int:
-			b = LCalcValue(b)
-
-		if b.float == 0.0:
-			return LCalcValue(0.0)
-		else:
-			return LCalcValue(float.__div__(a.float, b.float))
-
-	def __mod__(a, b):
-		return LCalcValue(int(a) % int(b))
-
-	def __mul__(a, b):
-		return LCalcValue(a.float * b.float)
-
-	def __str__(value):
-		if value.string is None:
-			return str(value.float)
-		elif type(value.string) is list:
-			return " ".join(map(escape, value.string))
-		else:
-			return value.string
-
-functions = {
-	"LCalcValue": LCalcValue,
-	"sqrt"      : math.sqrt,
-	"ceil"      : math.ceil,
-	"floor"     : math.floor,
-	"round"     : round,
-	"sage"      : lambda value, precision:
-		floor(value / (10 ** precision)) * (10 ** precision),
-	"sage"      : lambda value, precision:
-		math.ceil(value * (10 ** (precision - 1))) / (10 ** (precision - 1))
-}
-
-
 for item in sys.argv[1:]:
-        argument = re.match("^--(divzero|overflow|outdomain)(|=(.+))$", item)
+	argument = re.match("^--(divzero|overflow|outdomain)(|=(.+))$", item)
 
 	if argument is None:
 		break
@@ -177,22 +71,15 @@ for item in sys.argv[1:]:
 if len(sys.argv) <= optind:
 	usage()
 
+def resolve_reference(record, capture):
+	return capture
+
+def evaluate(expr, record):
+	return map(lambda item: resolve_reference(record, item), re.split(r' *, *', expr))
+
 if "-d" == sys.argv[optind]:
 	del sys.argv[optind]
-	try:
-		value = eval(sys.argv[optind], functions)
-	except ValueError:
-		value = [alternatives["outdomain"]]
-	except OverflowError:
-		value = [alternatives["overflow"]]
-	except ZeroDivisionError:
-		value = [alternatives["divzero"]]
-
-	if type(value) == list:
-		print(" ".join(map(format_output, value)))
-	else:
-		print(format_output(value))
-
+	print(evaluate(sys.argv[optind]))
 	exit()
 
 if len(sys.argv) <= 1 or      \
@@ -208,16 +95,5 @@ if files == []:
 	files += [sys.stdin]
 
 for file in files:
-	for nr, record in enumerate(map(lambda line: re.split(r' +', line.rstrip()), file)):
-		try:
-			value = eval(
-				"[%s]" % re.sub(r'NR|\$((NF-)?([0-9]+|NF|\( *NF *(- *[0-9]+ *|)\)))',
-					lambda capture: substitute_reference(nr, record, capture), script), functions)
-		except ValueError:
-			value = [alternatives["outdomain"]]
-		except OverflowError:
-			value = [alternatives["overflow"]]
-		except ZeroDivisionError:
-			value = [alternatives["divzero"]]
-
-		print(" ".join(map(format_output, value)))
+	for record in map(lambda line: re.split(r' +', line.rstrip()), file):
+		print(" ".join(evaluate(script, record)))
