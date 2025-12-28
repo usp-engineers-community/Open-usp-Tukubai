@@ -4,11 +4,11 @@
 # self: select field (Open usp Tukubai)
 # 
 # designed by Nobuaki Tounaka
-# written  by Masatomo Togashi
+# written  by Hinata Yanagi
 # 
 # The MIT License
 # 
-# Copyright (C) 2023 Universal Shell Programming Laboratory
+# Copyright (C) 2025 Universal Shell Programming Laboratory
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -35,7 +35,7 @@ import codecs
 import unicodedata # unicode関連処理用
 
 _usage = [ "self <f1> <f2> ... [<file>]", "self -d <f1> <f2> ... <string>" ]
-_version = "Mon Feb 20 01:49:00 JST 2023"
+_version = "Sun Dec 28 14:05:52 UTC 2025"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.6, 2.7, 3.6/UTF-8)"
 
 _keypat = r'(?P<ndot>(\d+|NF(-\d+)?)(/(\d+|NF(-\d+)?))?)|(?P<dot>(\d+|NF(-\d+)?)(\.\d+(\.\d+)?)?)$'	# a a/b または a a.b a.b.c
@@ -116,7 +116,7 @@ def isFile(opt):
 	if opt[0] == ".": return True
 
 	for tkn in opt.split("/"):
-		p = re.compile('^[0-9\.]+$')
+		p = re.compile(r'^[0-9\.]+$')
 		ret = p.match(tkn)
 		if ret != None: return False
 
@@ -124,15 +124,15 @@ def isFile(opt):
 		ret = p.match(tkn)
 		if ret != None: return False
 	
-		p = re.compile('^NF\.[0-9]*$')
+		p = re.compile(r'^NF\.[0-9]*$')
 		ret = p.match(tkn)
 		if ret != None: return False
 	
-		p = re.compile('^NF\.[0-9]+\.[0-9]+$')
+		p = re.compile(r'^NF\.[0-9]+\.[0-9]+$')
 		ret = p.match(tkn)
 		if ret != None: return False
 	
-		p = re.compile('^NF-[0-9\.]+$')
+		p = re.compile(r'^NF-[0-9\.]+$')
 		ret = p.match(tkn)
 		if ret != None: return False
 
