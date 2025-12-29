@@ -4,11 +4,11 @@
 # comma カンマを振る（Open usp Tukubai版）
 # 
 # designed by Nobuaki Tounaka
-# written  by Masatomo Togashi
+# written  by Hinata Yanagi
 #
 # The MIT License
 #
-# Copyright (C) 2023 Universal Shell Programming Laboratory
+# Copyright (C) 2025 Universal Shell Programming Laboratory
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +32,7 @@ from __future__ import print_function
 
 _usage = "comma [+<n>h] [-4] [<f1> <f2> ...] <file>"	# +<n>h -4 フィールドは省略可能
 _usage1 = "comma -d[4] <string>"	# 4は省略可能
-_version = "Fri Oct 20 00:00:00 JST 2023"
+_version = "Mon Dec 29 05:14:46 UTC 2025"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
 _keypat = r'((\d+|NF(-\d+)?)(/(\d+|NF(-\d+)?))?)(@((\d+|NF(-\d+)?)(/(\d+|NF(-\d+)?))?))*$'
 _keypatNF=r'(?P<m0>(?P<m01>\d+)|(?P<m02>NF(?P<m03>-\d+)?))(/(?P<m1>(?P<m11>\d+)|(?P<m12>NF(?P<m13>-\d+)?)))?$'
@@ -244,7 +244,7 @@ def comma(str, four):
 		flags=0
 	r=re.match(r'[-+]?((\d+)(\.\d*)?|\.\d+)([eE][-+]?\d+)?\Z',str,flags)
 	if not r: error("フィールド値が数値の形式ではありません。%s",str)
-	return str[:r.start(2)]+re.sub('^,','',re.sub('(\d{%d})' % l, r'\1,', r.group(2)[::-1])[::-1])+str[r.end(2):]
+	return str[:r.start(2)]+re.sub(r'^,','',re.sub(r'(\d{%d})' % l, r'\1,', r.group(2)[::-1])[::-1])+str[r.end(2):]
 
 # 不要な空白の削除関数
 def rm_sp(line):
