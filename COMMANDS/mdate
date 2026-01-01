@@ -8,7 +8,7 @@
 #
 # The MIT License
 #
-# Copyright (C) 2022 Universal Shell Programming Laboratory
+# Copyright (C) 2026 Universal Shell Programming Laboratory
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -65,7 +65,7 @@ _usage = """
 # mdate -ly <yyyymmdd>              : 前年同日
 # mdate -ly <f>              : 前年日
 
-_version = "Sun Sep 25 06:47:00 JST 2022"
+_version = "Fri Jan 02 04:25:16 JST 2026"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
 
 import re
@@ -198,21 +198,21 @@ def monthToLastDay(m_str):
 	return shiftDay(date(y,m,d),-1)
 
 def directMode(opt):
-	if re.compile('^-y [0-9]{8}$').match(opt):
+	if re.compile(r'^-y [0-9]{8}$').match(opt):
 		# 日付  mdate -y <yyyymmdd>               : 曜日
 		d = strToDate(sys.argv[2])
 		print(d.weekday() + 1)
-	elif re.compile('^-d [0-9]{6}m$').match(opt):
+	elif re.compile(r'^-d [0-9]{6}m$').match(opt):
 		# mdate -d <yyyymm>m                : 日付を１カ月分出力
 		d1 = monthToFirstDay(sys.argv[2])
 		d2 = monthToLastDay(sys.argv[2])
 		printDays(d1,d2)
 		print()
-	elif re.compile('^[0-9]{6}m/[+-][0-9]*$').match(opt):
+	elif re.compile(r'^[0-9]{6}m/[+-][0-9]*$').match(opt):
 		# mdate <yyyymm>m/±<dif>           : dif 月先の月
 		m1, m2 = parseMonthSlashForm(sys.argv[1])
 		print(m2)
-	elif re.compile('^-e [0-9]{6}m/[+-][0-9]*$').match(opt):
+	elif re.compile(r'^-e [0-9]{6}m/[+-][0-9]*$').match(opt):
 		# mdate -e <yyyymm>m/±<dif>        : dif 月先までの月を連続出力
 		m1, m2 = parseMonthSlashForm(sys.argv[2])
 		if m1 > m2 : m1, m2 = m2, m1
@@ -224,14 +224,14 @@ def directMode(opt):
 			print(m, end=endchar) 
 			m = shiftMonth(m,1)
 		print()
-	elif re.compile('^[0-9]{6}m [0-9]{6}m$').match(opt):
+	elif re.compile(r'^[0-9]{6}m [0-9]{6}m$').match(opt):
 		# mdate <yyyymm1>m <yyyymm2>m       : 月の差
 		m1 = sys.argv[1][:6]
 		m2 = sys.argv[2][:6]
 
 		print(monthDelta(m1,m2))
 
-	elif re.compile('^-e [0-9]{6}m [0-9]{6}m$').match(opt):
+	elif re.compile(r'^-e [0-9]{6}m [0-9]{6}m$').match(opt):
 		# mdate -e <yyyymm1>m <yyyymm2>m    : 月の範囲を連続出力
 		m1 = sys.argv[2][:6]
 		m2 = sys.argv[3][:6]
@@ -242,7 +242,7 @@ def directMode(opt):
 			print(m, end=' ') 
 			m = shiftMonth(m,1)
 		
-	elif re.compile('^-ly [0-9]{6}m$').match(opt):
+	elif re.compile(r'^-ly [0-9]{6}m$').match(opt):
 		# mdate -ly <yyyymm>m               : 前年月
 		y = int(sys.argv[2][:4]) - 1
 		print(str(y) + sys.argv[2][4:6])
@@ -252,19 +252,19 @@ def directMode(opt):
 		d1, d2 = sortTwoDays(date1,date2)
 		printDays(d1,d2)
 		print()
-	elif re.compile('-e [0-9]{8} [0-9]{8}').match(opt):
+	elif re.compile(r'-e [0-9]{8} [0-9]{8}').match(opt):
 	 	# mdate -e <yyyymmdd1> <yyyymmdd2>  : 日付の範囲を連続出力
 		date1 = strToDate(sys.argv[2])
 		date2 = strToDate(sys.argv[3])
 		d1, d2 = sortTwoDays(date1,date2)
 		printDays(d1,d2)
 		print()
-	elif re.compile('^[0-9]{8}/[+-][0-9]*$').match(opt):
+	elif re.compile(r'^[0-9]{8}/[+-][0-9]*$').match(opt):
 		# mdate <yyyywwdd>/±<dif>          : dif 日先の日付
 		d1, d2 = parseDaySlashForm(sys.argv[1])
 		printDay(d2)
 		print()
-	elif re.compile('^[0-9]{8} [0-9]{8}$').match(opt):
+	elif re.compile(r'^[0-9]{8} [0-9]{8}$').match(opt):
 		# mdate <yyyymmdd1> <yyyymmdd2>     : 日付の差
 		d1 = strToDate(sys.argv[1])
 		d2 = strToDate(sys.argv[2])
@@ -277,7 +277,7 @@ def directMode(opt):
 
 
 def filterMode(opt):
-	if re.compile('^-f -e [0-9]+/[+-][0-9]*$').match(opt):
+	if re.compile(r'^-f -e [0-9]+/[+-][0-9]*$').match(opt):
 		# 日付  mdate -f -e <f>/±<dif>       : dif 日先までの日付に展開
 		f, diff = parseFieldSlashForm(sys.argv[3])
 	
@@ -294,7 +294,7 @@ def filterMode(opt):
 			printTokens(f+1,len(tokens),tokens)
 			print("")
 
-	elif re.compile('^-f -e [0-9]+ [0-9]+$').match(opt):
+	elif re.compile(r'^-f -e [0-9]+ [0-9]+$').match(opt):
 		# mdate -f -e <f1> <f2>         : 日付間の展開
 		f1 = int(sys.argv[3]) - 1
 		f2 = int(sys.argv[4]) - 1
@@ -316,7 +316,7 @@ def filterMode(opt):
 			printTokens(f2+1,len(tokens),tokens)
 	
 			print("")
-	elif re.compile('^-f [0-9]+/[+-][0-9]*$').match(opt):
+	elif re.compile(r'^-f [0-9]+/[+-][0-9]*$').match(opt):
 		# mdate -f <f>/±<dif>          : dif 日先の日付
 		f, diff = parseFieldSlashForm(sys.argv[2])
 
@@ -332,7 +332,7 @@ def filterMode(opt):
 			printTokens(f+1,len(tokens),tokens)
 
 			print("")
-	elif re.compile('^-f -y [0-9]+$').match(opt):
+	elif re.compile(r'^-f -y [0-9]+$').match(opt):
 		# 日付  mdate -f -y <f>               : 曜日
 		f = int(sys.argv[3]) - 1
 		for line in sys.stdin:
@@ -348,7 +348,7 @@ def filterMode(opt):
 			printTokens(f+1,len(tokens),tokens)
 			print("")
 
-	elif re.compile('^-f [0-9]+ [0-9]+$').match(opt):
+	elif re.compile(r'^-f [0-9]+ [0-9]+$').match(opt):
 		# mdate -f <f1> <f2>            : 日付の差
 		f1 = int(sys.argv[2]) - 1
 		f2 = int(sys.argv[3]) - 1
@@ -369,7 +369,7 @@ def filterMode(opt):
 			printTokens(f2+1,len(tokens),tokens)
 	
 			print("")
-	elif re.compile('^-f [0-9]+ \+[0-9]+$').match(opt):
+	elif re.compile(r'^-f [0-9]+ \+[0-9]+$').match(opt):
 		# mdate -f <f1> +<f2>         : 日付の加算
 		f1 = int(sys.argv[2]) - 1
 		f2 = abs(int(sys.argv[3])) - 1
@@ -386,7 +386,7 @@ def filterMode(opt):
 
 			printTokens(f2+1,len(tokens),tokens)
 			print("")
-	elif re.compile('^-f [0-9]+ -[0-9]+$').match(opt):
+	elif re.compile(r'^-f [0-9]+ -[0-9]+$').match(opt):
 		# mdate -f <f1> -<f2>         : 日付の加算
 		f1 = int(sys.argv[2]) - 1
 		f2 = abs(int(sys.argv[3])) - 1
@@ -403,7 +403,7 @@ def filterMode(opt):
 
 			printTokens(f2+1,len(tokens),tokens)
 			print("")
-	elif re.compile('^-f -e [0-9]+ \+[0-9]+$').match(opt):
+	elif re.compile(r'^-f -e [0-9]+ \+[0-9]+$').match(opt):
 		# mdate -f -e <f1> +<f2>       : 日付の加算 展開
 		f1 = int(sys.argv[3]) - 1
 		f2 = abs(int(sys.argv[4])) - 1
@@ -423,7 +423,7 @@ def filterMode(opt):
 
 			printTokens(f2+1,len(tokens),tokens)
 			print("")
-	elif re.compile('^-f -e [0-9]+ -[0-9]+$').match(opt):
+	elif re.compile(r'^-f -e [0-9]+ -[0-9]+$').match(opt):
 		# mdate -f -e <f1> -<f2>       : 日付の加算 展開
 		f1 = int(sys.argv[3]) - 1
 		f2 = abs(int(sys.argv[4])) - 1
@@ -441,7 +441,7 @@ def filterMode(opt):
 
 			printTokens(f2+1,len(tokens),tokens)
 			print("")
-	elif re.compile('^-f -d [0-9]+m$').match(opt):
+	elif re.compile(r'^-f -d [0-9]+m$').match(opt):
 		# 月次  mdate -f -d <f>m              : 日付を１カ月分出力
 		f = int(sys.argv[3][:-1]) - 1
 
@@ -457,7 +457,7 @@ def filterMode(opt):
 
 			printTokens(f+1,len(tokens),tokens)
 			print("")
-	elif re.compile('^-f [0-9]+m/[+-][0-9]+$').match(opt):
+	elif re.compile(r'^-f [0-9]+m/[+-][0-9]+$').match(opt):
 		# mdate <f>m/±<dif>         : dif 月先の月
 		opts = sys.argv[2].split("/")
 		f = int(opts[0][:-1]) - 1
@@ -476,7 +476,7 @@ def filterMode(opt):
 			d1 = monthToFirstDay(tokens[f][:6])
 			printTokens(f+1,len(tokens),tokens)
 			print("")
-	elif re.compile('^-f -e [0-9]+m/[+-][0-9]+$').match(opt):
+	elif re.compile(r'^-f -e [0-9]+m/[+-][0-9]+$').match(opt):
 		# mdate -f -e <f>m ±<dif>      : dif 月先の月まで展開
 		opts = sys.argv[3].split("/")
 		f = int(opts[0][:-1]) - 1
@@ -503,7 +503,7 @@ def filterMode(opt):
 			printTokens(f+1,len(tokens),tokens)
 			print("")
 
-	elif re.compile('^-f [0-9]+m [0-9]+m$').match(opt):
+	elif re.compile(r'^-f [0-9]+m [0-9]+m$').match(opt):
 		# mdate -f <f1>m <f2>m          : 月の差
 		f1 = int(sys.argv[2][:-1]) - 1
 		f2 = int(sys.argv[3][:-1]) - 1
@@ -521,7 +521,7 @@ def filterMode(opt):
 			printTokens(f2+1,len(tokens),tokens)
 	
 			print("")
-	elif re.compile('^-f -e [0-9]+m [0-9]+m$').match(opt):
+	elif re.compile(r'^-f -e [0-9]+m [0-9]+m$').match(opt):
 		# mdate -f -e <f1>m <f2>m       : 月の展開
 		f1 = int(sys.argv[3][:-1]) - 1
 		f2 = int(sys.argv[4][:-1]) - 1
@@ -548,7 +548,7 @@ def filterMode(opt):
 	
 			print("")
 
-	elif re.compile('^-f [0-9]+m [-\+][0-9]+$').match(opt):
+	elif re.compile(r'^-f [0-9]+m [-\+][0-9]+$').match(opt):
 		# mdate -f <f>m ±<dif>         : 月の加算
 		f1 = int(sys.argv[2][:-1]) - 1
 		f2 = abs(int(sys.argv[3])) - 1
@@ -568,7 +568,7 @@ def filterMode(opt):
 			print(m2, end='')
 			printTokens(f2+1,len(tokens),tokens)
 			print("")
-	elif re.compile('^-f -e [0-9]+m \+[0-9]+$').match(opt):
+	elif re.compile(r'^-f -e [0-9]+m \+[0-9]+$').match(opt):
 		# mdate -e <f>m ±<dif>      : 月の加算展開
 		f1 = int(sys.argv[3][:-1]) - 1
 		f2 = abs(int(sys.argv[4])) - 1
@@ -594,7 +594,7 @@ def filterMode(opt):
 
 			printTokens(f2+1,len(tokens),tokens)
 			print("")
-	elif re.compile('^-f -ly [0-9]+m$').match(opt):
+	elif re.compile(r'^-f -ly [0-9]+m$').match(opt):
 		# mdate -f -ly <f>m             : 前年月
 		f = int(sys.argv[3][:-1]) - 1
 
@@ -610,7 +610,7 @@ def filterMode(opt):
 			printTokens(f+1,len(tokens),tokens)
 
 			print("")
-	elif re.compile('^-f -ly [0-9]$').match(opt):
+	elif re.compile(r'^-f -ly [0-9]$').match(opt):
 		# mdate -f -ly <f>             : 前年日
 		f = int(sys.argv[3]) - 1
 
