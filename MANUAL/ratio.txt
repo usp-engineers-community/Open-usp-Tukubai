@@ -12,7 +12,7 @@ Usage   : ratio key=<key> [<file>]
 Option  : ref=<ref>             ←参照キーの指定
         : -<s>                  ←小数点以下の精度
         : +<n>h                 ←先頭<n>行をヘッダーとみなす
-Version : Mon Mar 20 00:00:00 JST 2023
+Version : Fri Jan 02 05:04:02 JST 2026
 
 【説明】
 
@@ -139,6 +139,6 @@ $
 
 kasan(1)、plus(1)、sm2(1)、sm4(1)、sm5(1)、ysum(1)
 
-last modified: Mon Mar 20 09:12:23 JST 2023
+last modified: Fri Jan 02 05:10:13 JST 2026
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012-2014 Universal Shell Programming Laboratory All Rights
+Copyright (c) 2012-2026 Universal Shell Programming Laboratory All Rights

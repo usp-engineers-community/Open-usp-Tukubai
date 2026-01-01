@@ -67,19 +67,19 @@ d店 1日目 75 11.0 48
 e店 1日目 211 31.0 140
 FIN
 
-${com} key=3 $tmp-in > $tmp-out
+${com} val=3 $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST1-1 error"
 
-cat $tmp-in | ${com} key=3 > $tmp-out
+cat $tmp-in | ${com} val=3 > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST1-2 error"
 
-cat $tmp-in | ${com} key=3 - > $tmp-out
+cat $tmp-in | ${com} val=3 - > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST1-3 error"
 
-cat $tmp-in | ${com} key=NF-1 - > $tmp-out
+cat $tmp-in | ${com} val=NF-1 - > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST1-4 error"
 
@@ -124,7 +124,7 @@ FIN
 
 cat $tmp-in		|
 sort -k2,2 -k1,1	|
-${com} ref=2 key=3 > $tmp-out
+${com} ref=2 val=3 > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST2 error"
 
@@ -147,11 +147,11 @@ d店 1日目 75 11.029 48
 e店 1日目 211 31.029 140
 FIN
 
-${com} -3 key=3 $tmp-in > $tmp-out
+${com} -3 val=3 $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST3-1 error"
 
-${com} -3 key=NF-1 $tmp-in > $tmp-out
+${com} -3 val=NF-1 $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST3-2 error"
 
@@ -198,13 +198,13 @@ FIN
 
 cat $tmp-in		|
 sort -k2,2 -k1,1	|
-${com} ref=2@2 key=4/3 > $tmp-out
+${com} ref=2@2 val=4/3 > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST4-1 error"
 
 cat $tmp-in		|
 sort -k2,2 -k1,1	|
-${com} ref=2@2 key=NF/NF-1@NF@NF-1@4/3@3/4@4@3@NF-1/NF > $tmp-out
+${com} ref=2@2 val=NF/NF-1@NF@NF-1@4/3@3/4@4@3@NF-1/NF > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST4-2 error"
 
@@ -233,48 +233,48 @@ FIN
 BOMandEOLvariation $tmp-in $tmp-inBOMCRLF $tmp-inBOMCR
 
 # BOM付きCRLF
-${com} key=3 $tmp-inBOMCRLF > $tmp-out
+${com} val=3 $tmp-inBOMCRLF > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST5-1 error"
 
 # BOM付きCR
-${com} key=3 $tmp-inBOMCR > $tmp-out
+${com} val=3 $tmp-inBOMCR > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST5-2 error"
 
 # pipe接続
 
 # BOM付きCRLF
-cat $tmp-inBOMCRLF | ${com} key=3 - > $tmp-out
+cat $tmp-inBOMCRLF | ${com} val=3 - > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST5-3 error"
 
 # BOM付きCR
-cat $tmp-inBOMCR | ${com} key=3 - > $tmp-out
+cat $tmp-inBOMCR | ${com} val=3 - > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST5-4 error"
 
 # keyにNFを使用する
 
 # BOM付きCRLF
-${com} key=NF-1 $tmp-inBOMCRLF > $tmp-out
+${com} val=NF-1 $tmp-inBOMCRLF > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST5-5 error"
 
 # BOM付きCRLF
-${com} key=NF-1 $tmp-inBOMCR > $tmp-out
+${com} val=NF-1 $tmp-inBOMCR > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST5-6 error"
 
 # pipe接続
 
 # BOM付きCRLF
-cat $tmp-inBOMCRLF | ${com} key=NF-1 - > $tmp-out
+cat $tmp-inBOMCRLF | ${com} val=NF-1 - > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST5-7 error"
 
 # BOM付きCRLF
-cat $tmp-inBOMCR | ${com} key=NF-1 - > $tmp-out
+cat $tmp-inBOMCR | ${com} val=NF-1 - > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST5-8 error"
 
@@ -320,7 +320,7 @@ d店 だぢづでど 濁音NFD 34 8.4 19
 e店 だぢづでど 濁音NFC 120 29.7 73
 FIN
 
-${com} ref=2 key=4 $tmp-in > $tmp-out
+${com} ref=2 val=4 $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST6 error"
 
@@ -346,7 +346,7 @@ d店 1日目 処理済 75 11.0 48
 e店 1日目 211 31.0 140
 FIN
 
-cat $tmp-in | ${com} key=NF-1 - > $tmp-out
+cat $tmp-in | ${com} val=NF-1 - > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST7-4 error"
 
@@ -392,13 +392,13 @@ FIN
 
 cat $tmp-in		|
 sort -k2,2 -k1,1	|
-${com} ref=2 key=3 > $tmp-out
+${com} ref=2 val=3 > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST8-1 error"
 
 cat $tmp-in		|
 sort -k2,2 -k1,1	|
-${com} key=3 ref=2 > $tmp-out
+${com} val=3 ref=2 > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST8-2 error"
 
@@ -427,7 +427,7 @@ d店 1日目 75 11.0 48
 e店 1日目 211 31.0 140
 FIN
 
-${com} +h key=3 $tmp-in >$tmp-out
+${com} +h val=3 $tmp-in >$tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST9 error"
 
@@ -454,7 +454,7 @@ d店 1日目 75 11.0 48 11.6 え
 e店 1日目 211 31.0 140 33.7 お
 FIN
 
-${com} key=3@NF-1 $tmp-in > $tmp-out
+${com} val=3@NF-1 $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST10-1 error"
 
@@ -472,7 +472,7 @@ d店 1日目 75   48 え
 e店 1日目 211 140 お
 FIN
 
-${com} key=3@NF-1 $tmp-in 2> /dev/null > $tmp-out
+${com} val=3@NF-1 $tmp-in 2> /dev/null > $tmp-out
 [ $? -ne 0 ] ; ERROR_CHECK "TEST10-2 error"
 
 # TEST10-3
@@ -490,7 +490,7 @@ d店 1日目 75   48 え
 e店 1日目 211 140 お
 FIN
 
-${com} key=3@NF-1 $tmp-in 2> /dev/null > $tmp-out
+${com} val=3@NF-1 $tmp-in 2> /dev/null > $tmp-out
 [ $? -ne 0 ] ; ERROR_CHECK "TEST10-3 error"
 
 # TEST10-4
@@ -508,7 +508,7 @@ FIN
 
 # ${name}のTEST10-4はエラーで終了するように設定されている
 
-${com} key=3/NF-1 $tmp-in 2> /dev/null > $tmp-out
+${com} val=3/NF-1 $tmp-in 2> /dev/null > $tmp-out
 [ $? -ne 0 ] ; ERROR_CHECK "TEST10-4 error"
 
 ###########################################
@@ -534,7 +534,7 @@ cat << FIN > $tmp-ans
 211 31.0 140 33.7
 FIN
 
-${com} key=1@0@NF $tmp-in > $tmp-out
+${com} val=1@0@NF $tmp-in > $tmp-out
 diff $tmp-ans $tmp-out
 [ $? -eq 0 ] ; ERROR_CHECK "TEST11-1 error"
 
@@ -552,7 +552,7 @@ cat << FIN > $tmp-in
 211 140
 FIN
 
-${com} key=1@0@NF $tmp-in 2> /dev/null > $tmp-out
+${com} val=1@0@NF $tmp-in 2> /dev/null > $tmp-out
 [ $? -ne 0 ] ; ERROR_CHECK "TEST11-2 error"
 
 ###########################################

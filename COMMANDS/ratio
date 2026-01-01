@@ -4,11 +4,11 @@
 # ratio 構成比を求める（Open usp Tukubai版）
 # 
 # designed by Nobuaki Tounaka
-# written by Yoshio Katayama
+# written by  Hinata Yanagi
 #
 # The MIT License
 #
-# Copyright (C) 2011 Universal Shell Programming Laboratory
+# Copyright (C) 2026 Universal Shell Programming Laboratory
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -30,11 +30,11 @@
 
 from __future__ import print_function
 
-_usage = "ratio key=<key> [<file>]"
+_usage = "ratio val=<key> [<file>]"
 _option = "ref=<ref> -- 参照キーの指定"
 _option1 = "-<s> ------- 小数点以下の精度"
 _option2 = "+<n>h ------ 先頭<n>行をヘッダーとみなす"
-_version = "Fri Oct 21 11:26:06 JST 2011"
+_version = "Fri Jan 02 05:04:02 JST 2026"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
 
 _keypat = r'((\d+|NF(-\d+)?)(/(\d+|NF(-\d+)?))?)(@((\d+|NF(-\d+)?)(/(\d+|NF(-\d+)?))?))*$'
@@ -64,7 +64,7 @@ def usage():
 	print("        :", _option1, file=sys.stderr)
 	print("        :", _option2, file=sys.stderr)
 	print("Version :", _version, file=sys.stderr)
-	print("         ", _code, file=sys.stderr)
+	print("		", _code, file=sys.stderr)
 	sys.exit(1)
 
 #
@@ -118,8 +118,8 @@ def make_keylist(rel_keylist,abs_rel_mixed_range):
 	# rel_keylistを構成するそれぞれの整数は絶対欄位置指定とNF相対欄位置指定の両方がありうる
 	if rel_keylist==[None]:	# 全欄指定
 		return list(range(0,NF)),False
-	rel_list=[]	# key指定順に並べたNF相対からの絶対化欄位置リスト
-	abs_list=[]	# key指定順に並べた絶対欄位置リスト
+	rel_list=[]	# val指定順に並べたNF相対からの絶対化欄位置リスト
+	abs_list=[]	# val指定順に並べた絶対欄位置リスト
 	abs_rel_cross=False
 	range_list=[]
 	abs_and_rellist=[]
@@ -155,7 +155,7 @@ def make_keylist(rel_keylist,abs_rel_mixed_range):
 			abs_rel_cross=True
 	# 重複を解消する 出力するkey位置の順序はコマンドパラメータにおける指定出現順を保つ
 	return_list=sorted(set(abs_and_rellist),key=abs_and_rellist.index)
-	return return_list,abs_rel_cross	# 欄位置は0発進 集合化によってリストの重複を解消しkey指定の順序は保つ
+	return return_list,abs_rel_cross	# 欄位置は0発進 集合化によってリストの重複を解消しval指定の順序は保つ
 
 # 欄番号文字列をNF相対形式で整数化する
 def getFieldNum(str,str1,str2):
@@ -230,7 +230,7 @@ def check_num_fields_variation(fields):
 	global	key_list,key_abs_rel_cross_first,key_abs_rel_cross,key_abs_rel_mixed_range
 	global	ref_list,ref_abs_rel_cross_first,ref_abs_rel_cross,ref_abs_rel_mixed_range
 	# key_abs_rel_cross keyの絶対欄位置指定群とNF相対欄位置指定群が交叉していればTrue
-	#               NF=5のときにキー指定が「1/4@NF-3/NF」となっているときなどにTrueとなる
+	#		NF=5のときにキー指定が「1/4@NF-3/NF」となっているときなどにTrueとなる
 	# key_abs_rel_cross_first 先頭行においてkey_abs_rel_crossがTrueであればTrue
 	# refについても同様
 	# keyが全欄指定のときは欄数変化は許容しない
@@ -395,15 +395,15 @@ if __name__ == '__main__':
 	n = len(sys.argv)+1	# open_file(n)では「n>=len(sys.argv)」であればstdinとされる
 	head = 0
 	ref = None
-	key = None
+	val = None
 
-	del sys.argv[0]	# コメンド名の部分は除く
+	del sys.argv[0]	# コマンド名の部分は除く
 	for arg in sys.argv:
 		# -<s>
 		if re.match(r'-\d+$', arg):
 			prec = int(arg[1:])
 		# +<n>h
-		elif re.match('\+\d*h$', arg):
+		elif re.match(r'\+\d*h$', arg):
 			if arg == '+h':
 				head = 1
 			else:
@@ -413,13 +413,13 @@ if __name__ == '__main__':
 			if (ref):
 				error("ref= を２回以上指定しています。")
 			if len(arg) > 4: ref = arg[4:]
-		# key=
-		elif arg[0:4] == 'key=':
-			if (key):
-				error("key= を２回以上指定しています。")
-			if len(arg) > 4: key = arg[4:]
-	if key == None:
-		error("keyの指定がありません。")
+		# val=
+		elif arg[0:4] == 'val=':
+			if (val):
+				error("val= を２回以上指定しています。")
+			if len(arg) > 4: val = arg[4:]
+	if val == None:
+		error("valの指定がありません。")
 
 	#
 	# 入力ファイルのオープン
@@ -437,7 +437,7 @@ if __name__ == '__main__':
 	# フィールド指定パラメータからNF相対欄位置リストを作成する
 	if ref:
 		ref_rel_keylist,ref_abs_rel_mixed_range = getTargetFields(ref)
-	key_rel_keylist,key_abs_rel_mixed_range = getTargetFields(key)
+	key_rel_keylist,key_abs_rel_mixed_range = getTargetFields(val)
 
 	key_abs_rel_cross,ref_abs_rel_cross,key_abs_rel_cross_first,ref_abs_rel_cross_first= \
 		False,False,False,False
@@ -452,11 +452,11 @@ if __name__ == '__main__':
 			tmp.write(line)	# stdin入力のときは2nd passのために入力を一時ファイルに記録しておく
 		fields=line.split(" ")
 
-		# 先頭行または欄数変化のあるときはkey指定/ref指定の検査をする ここで絶対欄位置のkey_list/ref_listを得る
+		# 先頭行または欄数変化のあるときはval指定/ref指定の検査をする ここで絶対欄位置のkey_list/ref_listを得る
 		check_num_fields_variation(fields)
 
 	#
-	# 1st pass	key指定欄ごとの総和を求める
+	# 1st pass	val指定欄ごとの総和を求める
 	#
 	sum_list=[]
 	last_ref=""
@@ -469,7 +469,7 @@ if __name__ == '__main__':
 		if not line:	sys.exit(0)
 		fields=line.split(" ")
 
-		# 先頭行または欄数変化のあるときはkey指定/ref指定の検査をする ここで絶対欄位置のkey_list/ref_listを得る
+		# 先頭行または欄数変化のあるときはval指定/ref指定の検査をする ここで絶対欄位置のkey_list/ref_listを得る
 		check_num_fields_variation(fields)
 
 		if data_start:	# ヘッダー部を除いた先頭行なら
