@@ -8,7 +8,7 @@
 # 
 # The MIT License
 # 
-# Copyright (C) 2025 Universal Shell Programming Laboratory
+# Copyright (C) 2026 Universal Shell Programming Laboratory
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -33,9 +33,11 @@ import sys
 import math
 import re
 
+from decimal import Decimal
+
 _usage = "lcalc <script> <files>..."
 _usage2 = "lcalc -d <script>"
-_version = "Tue Sep 16 01:44:21 JST 2025"
+_version = "Sun Jan  4 09:49:03 AM JST 2026"
 _code = "Open usp Tukubai (LINUX/PYTHON2.4+, 3.6/UTF-8)"
 
 optind = 1
@@ -55,6 +57,12 @@ def usage():
 def escape(value):
 	return re.sub(' ', '_', re.sub('_', "\\_", str(value)))
 
+def format_value(value):
+	if type(value) == Decimal:
+		return re.sub(r'(\.........).*$', '\\1', format(value, ".12f"))
+	else:
+		return value
+
 for item in sys.argv[1:]:
 	argument = re.match("^--(divzero|overflow|outdomain)(|=(.+))$", item)
 
@@ -72,14 +80,31 @@ if len(sys.argv) <= optind:
 	usage()
 
 def resolve_reference(record, capture):
-	return capture
+	field = record[int(capture.group(1)) - 1]
+	
+	if re.match(r'^0[0-9]+$', field):
+		return repr(field)
+	elif type(capture) == re.Match and re.match(r'^[0-9]+(\.[0-9]+)?$', field):
+		return "Decimal({})".format(field)
+	else:
+		return repr(record[int(capture.group(1)) - 1])
 
 def evaluate(expr, record):
-	return map(lambda item: resolve_reference(record, item), re.split(r' *, *', expr))
+	expression = re.sub(r'\$([0-9]|NF|NF-[0-9]+)', lambda capture: \
+		str(resolve_reference(record, capture)), expr)
+
+	try:
+		return eval(expression)
+	except NameError:
+		return [expression]
+	except ZeroDivisionError:
+		return [alternatives["divzero"]]
+	except:
+		return ["@"]
 
 if "-d" == sys.argv[optind]:
 	del sys.argv[optind]
-	print(evaluate(sys.argv[optind]))
+	print(evaluate(sys.argv[optind], []))
 	exit()
 
 if len(sys.argv) <= 1 or      \
@@ -96,4 +121,4 @@ if files == []:
 
 for file in files:
 	for record in map(lambda line: re.split(r' +', line.rstrip()), file):
-		print(" ".join(evaluate(script, record)))
+		print(" ".join(map(format_value, evaluate(script, record))))
