@@ -4,11 +4,11 @@
 # sm4 小計/中計挿入ツール（Open usp Tukubai版）
 # 
 # designed by Nobuaki Tounaka
-# written  by Masatomo Togashi
+# written  by Hinata Yanagi
 #
 # The MIT License
 #
-# Copyright (C) 2023 Universal Shell Programming Laboratory
+# Copyright (C) 2026 Universal Shell Programming Laboratory
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,7 @@
 from __future__ import print_function
 
 _usage = "sm4 [+h] <k1> <k2> <d1> <d2> <s1> <s2> <file>"
-_version = "Thu Apr 20 00:00:00 JST 2023"
+_version = "Sun Jan 11 09:31:45 JST 2026"
 _code = "Open usp Tukubai (LINUX+FREEBSD/PYTHON2.4/UTF-8)"
 _keypat = r'\d+|NF(-\d+)?$'
 wide_class = ["W","F","A"]	# 全角文字クラス
@@ -353,7 +353,7 @@ def open_file(n):
 		file = open(filename, mode)
 	except:
 		if filename=='/dev/fd/0':
-			error("標準入力ファイルをオープンできません。")
+			file = sys.stdin
 		else:
 			error("ファイル '%s' をオープンできません。", filename)
 	return file
