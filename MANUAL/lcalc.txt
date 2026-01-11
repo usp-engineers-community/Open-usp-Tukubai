@@ -6,7 +6,7 @@ lcalc
 
 lcalc : １０進演算を行う。
 
-＜説明＞
+【説明】
 引数のファイル又は標準入力のテキストデータの各フィールドに対して、
 <script> にしたがった演算を行います。<script> では、式、フィールド、
 フィールド範囲を単独またはカンマ（,）で区切って複数指定することがで
@@ -77,6 +77,6 @@ sage(123.456, 01) は 120.000になり、sage(123.456, 1) は 123.400 にな
 -d オプションを指定すると、ファイルを読み込まず、スクリプトを直接実
 行します。この場合、$演算子、フィールド、フィールド範囲は使えません。
 
-last modified: Tue Sep 16 01:44:21 JST 2025
+last modified: Sun Jan 11 10:09:14 JST 2026
 Contact us: uecinfo@usp-lab.com
-Copyright (c) 2012-2025 Universal Shell Programming Laboratory All Rights
+Copyright (c) 2012-2026 Universal Shell Programming Laboratory All Rights
