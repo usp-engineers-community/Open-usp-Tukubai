@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 #
 # MANUAL2man : MANUAL ディレクトリ以下のテキスト・ファイルを man の形式に変換する。
-# : written by 柳 日向 (h-yanagi@usp-lab.com; 2023/03/19)
+# : written by 柳 日向 (h-yanagi@usp-lab.com; 2026/01/11)
 #
 
-version="Sat Mar 18 15:55:31 JST 2023"
+version="Sun Jan 11 10:10:16 JST 2026"
 edition=1
 
 case "${1:-}" in
@@ -19,7 +19,14 @@ esac
 
 version="$("$1" --version 2>&1 | fpad _ 3 | selr 1 Version | self 3/NF | xargs -I{} date -d "{}" +%Y%m%d)"
 
-awk -vname="$1" -vsection=1                                                                                 \
+if hash gawk 2> /dev/null; then
+	awk() { gawk "$@"; }
+elif [ "$(uname)" = Darwin ]; then
+	echo "GNU awk is required." >&2
+	exit 1
+fi
+
+gawk -vname="$1" -vsection=1                                                                                 \
      -vversion_date="$(dayslash --output 'yyyy-mm-dd' 1 <<< "${version}" | LANG=C xargs -I{} date -d{} +"%d %b %Y")" \
      -vversion="${version}" -vspace="$(echo -ne '\r\xe2\x80\x89')" '
 	/^(- ?)+$/ { next }
@@ -29,7 +36,7 @@ awk -vname="$1" -vsection=1                                                     
 		next;
 	}
 
-	match($0, /^(＜(.+)＞(.*)|([^（]+)）.+)$/, title) {
+	match($0, /^(＜(.+)＞(.*)|([^%(（]+)）.+)$/, title) {
 		gsub(/[＜＞]/, "", title[1]);
 		gsub("）", " ", title[1]);
 
@@ -73,7 +80,7 @@ awk -vname="$1" -vsection=1                                                     
 	{
 		gsub(/\\t/, " ", $0);
 		gsub(/\\/, "\x5c", $0);
-		$0 = gensub(/([^!-~]  +)([!-~]+) +([^!-~])/, "\\1" space "\\2" space "\\3", "", $0);
+		$0 = gensub(/([^!-~]  +)([!-~]+) +([^!-~])/, "\\1" space "\\2" space "\\3", 1, $0);
 
 		if (source) {
 			print "  " $0;
