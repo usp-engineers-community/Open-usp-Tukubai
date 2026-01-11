@@ -4,7 +4,7 @@
 # : written by 柳 日向 (h-yanagi@usp-lab.com; 2026/01/11)
 #
 
-version="Sun Jan 11 10:10:16 JST 2026"
+version="Sun Jan 11 10:45:52 JST 2026"
 edition=1
 
 case "${1:-}" in
@@ -24,6 +24,10 @@ if hash gawk 2> /dev/null; then
 elif [ "$(uname)" = Darwin ]; then
 	echo "GNU awk is required." >&2
 	exit 1
+fi
+
+if [ "$(uname)" = Darwin ]; then
+	alias date=gdate
 fi
 
 gawk -vname="$1" -vsection=1                                                                                 \
