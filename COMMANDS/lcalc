@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #coding: utf-8
 #
-# laclc: １０進演算を行う。 (Open usp Tukubai)
+# lcalc: １０進演算を行う。 (Open usp Tukubai)
 # 
 # designed by Nobuaki Tounaka
 # written  by Hinata Yanagi
@@ -33,11 +33,11 @@ import sys
 import math
 import re
 
-from decimal import Decimal
+from decimal import Decimal, getcontext
 
 _usage = "lcalc <script> <files>..."
 _usage2 = "lcalc -d <script>"
-_version = "Sun Jan  4 09:49:03 AM JST 2026"
+_version = "Sun Jan 25 15:31:48 JST 2026"
 _code = "Open usp Tukubai (LINUX/PYTHON2.4+, 3.6/UTF-8)"
 
 optind = 1
@@ -46,6 +46,17 @@ alternatives = {
 	"overflow" : "ovflw",
 	"outdomain": "outdm"
 }
+
+getcontext().prec = 10 + 2
+
+class UDecimal(Decimal):
+	def __truediv__(self, divider):
+		if int(divider) == 0:
+			return UDecimal(0)
+		else:
+			return Decimal.__truediv__(self, divider)
+
+	__div__ = __truediv__
 
 def usage():
 	sys.stderr.write("Usage   : " + _usage + "\n")
@@ -58,8 +69,14 @@ def escape(value):
 	return re.sub(' ', '_', re.sub('_', "\\_", str(value)))
 
 def format_value(value):
-	if type(value) == Decimal:
-		return re.sub(r'(\.........).*$', '\\1', format(value, ".12f"))
+	if type(value) in [Decimal, UDecimal]:
+		return re.sub(r'^([0-9]+\.0)0*$', '\\1',
+			re.sub(r'^([0-9]+\.[0-9]{0,9}[1-9])0*$', '\\1',
+			re.sub(r'^([0-9]+\.[0-9]{1,10})[0-9]*$', '\\1',
+			re.sub(r'^([0-9]+\.[0-9]{10}).*$', '\\1',
+				format(value, ".%df" % 15)))))
+	elif type(value) == bool:
+		return "1.0" if value else "0.0"
 	else:
 		return value
 
@@ -80,31 +97,50 @@ if len(sys.argv) <= optind:
 	usage()
 
 def resolve_reference(record, capture):
-	field = record[int(capture.group(1)) - 1]
-	
-	if re.match(r'^0[0-9]+$', field):
-		return repr(field)
-	elif type(capture) == re.Match and re.match(r'^[0-9]+(\.[0-9]+)?$', field):
-		return "Decimal({})".format(field)
+	type_match = type(re.search(r'', '')) if sys.version_info[0] == 2 else re.Match
+	nf_offset = re.match(r'^ *NF *(|- *([0-9]+))$', capture.group(1))
+	field = None
+	offset_string = re.sub(r' *NF *', str(len(record)), capture.group(1))
+
+	if nf_offset is None:
+		field = "UDecimal({})".format(record[eval(offset_string) - 1])
+	elif nf_offset.group(1) == "":
+		field = "UDecimal({})".format(record[len(record) - 1])
 	else:
-		return repr(record[int(capture.group(1)) - 1])
+		field = "UDecimal({})".format(record[len(record) - int(nf_offset.group(1)) - 1])
+	value = None
+	if re.match(r'^0[0-9]+$', field):
+		value = repr(field)
+	elif type(capture) == type_match and re.match(r'^[0-9]+(\.[0-9]+)?$', field):
+		value = "UDecimal({})".format(field)
+	else:
+		field_value = record[eval(offset_string) - 1]
+
+		if re.match(r'^[1-9][0-9]*(|\.[0-9]+)$', field_value):
+			# 数値を表現する文字列の場合のみ変換する。
+			value = "UDecimal({})".format(field_value)
+		else:
+			value = repr(field_value)
+
+	return value
+	
 
 def evaluate(expr, record):
-	expression = re.sub(r'\$([0-9]|NF|NF-[0-9]+)', lambda capture: \
-		str(resolve_reference(record, capture)), expr)
-
+	expression =                                                                        \
+		"[{}]".format(                                                              \
+			re.sub(r'\$([0-9]|NF|NF-[0-9]+|\(NF *- *[0-9]+\))', lambda capture: \
+				str(resolve_reference(record, capture)), expr))
 	try:
+		NF = len(record)
 		return eval(expression)
 	except NameError:
-		return [expression]
+		return expression
 	except ZeroDivisionError:
-		return [alternatives["divzero"]]
-	except:
-		return ["@"]
+		return alternatives["divzero"]
 
 if "-d" == sys.argv[optind]:
 	del sys.argv[optind]
-	print(evaluate(sys.argv[optind], []))
+	print(" ".join(map(str, format_value(evaluate(sys.argv[optind], [])))))
 	exit()
 
 if len(sys.argv) <= 1 or      \
@@ -114,7 +150,7 @@ if len(sys.argv) <= 1 or      \
 
 script = sys.argv[optind].split("#")[0]
 optind += 1
-files = map(lambda file_name: open(file_name, "r"), sys.argv[optind:])
+files = list(map(lambda file_name: open(file_name, "r"), sys.argv[optind:]))
 
 if files == []:
 	files += [sys.stdin]

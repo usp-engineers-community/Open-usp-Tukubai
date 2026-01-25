@@ -77,6 +77,6 @@ sage(123.456, 01) は 120.000になり、sage(123.456, 1) は 123.400 にな
 -d オプションを指定すると、ファイルを読み込まず、スクリプトを直接実
 行します。この場合、$演算子、フィールド、フィールド範囲は使えません。
 
-last modified: Sun Jan 11 10:09:14 JST 2026
+last modified: Sun Jan 25 15:33:15 JST 2026
 Contact us: uecinfo@usp-lab.com
 Copyright (c) 2012-2026 Universal Shell Programming Laboratory All Rights
