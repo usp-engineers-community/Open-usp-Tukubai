@@ -7,8 +7,7 @@ import Control.Monad
 import Data.ByteString.Lazy.Char8 as BS hiding (count,reverse,init,filter,drop,zip)
 import Control.Applicative hiding ((<|>), many)
 import Data.Time
-import Data.Time.Format (formatTime)
-import Data.Time.Format (parseTime)
+import Data.Time.Format (parseTimeM, defaultTimeLocale)
 import Text.Printf
 import Data.List as DL
 
@@ -20,7 +19,7 @@ written  by Hinata Yanagi
 
 The MIT License
 
-Copyright (C) 2025 Universal Shell Programming Laboratory
+Copyright (C) 2026 Universal Shell Programming Laboratory
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -73,7 +72,7 @@ showUsage = do System.IO.hPutStr stderr ("Usage    : \n" ++
                               "         mdate -f -e <f>m ±<dif>       : 月の加算展開\n"++
                               "         mdate -f -ly <f>m             : 前年月\n"++
                               "\n"++
-                              "Version  : Mon Jan 20 17:18:16 JST 2025\n" ++
+                              "Version  : Mon Aug 10 22:55:58 JST 2026\n" ++
                               "Open usp Tukubai (LINUX+FREEBSD)\n")
 
 main :: IO ()
