@@ -1,11 +1,11 @@
 #!/usr/bin/env runghc
 import System.Environment
 import System.IO
-import Text.ParserCombinators.Parsec
 import Control.Monad
-import Data.ByteString.Lazy.Char8 as BS hiding (take,drop,filter,head,last,map,zip,repeat)
 import Control.Applicative hiding ((<|>), many)
+import Data.ByteString.Lazy.Char8 as BS hiding (take,drop,filter,head,last,map,zip,repeat)
 import Data.Char
+import Text.ParserCombinators.Parsec
 
 {--
 cjoin2（Open usp Tukubai）
@@ -15,7 +15,7 @@ written  by Hinata Yanagi
 
 The MIT License
 
-Copyright (C) 2025 Universal Shell Programming Laboratory
+Copyright (C) 2026 Universal Shell Programming Laboratory
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -39,7 +39,7 @@ THE SOFTWARE.
 showUsage :: IO ()
 showUsage = do
     System.IO.hPutStr stderr "Usage    : cjoin2 [+ng] <key=n> <master> [<tran>]\n"
-    System.IO.hPutStr stderr "Version  : Mon Jan 20 17:18:16 JST 2025\n"
+    System.IO.hPutStr stderr "Version  : Mon Aug 10 22:43:26 JST 2026\n"
     System.IO.hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD)\n"
 
 main :: IO ()
@@ -96,7 +96,10 @@ myWords :: BS.ByteString -> [BS.ByteString]
 myWords line = BS.split ' ' line
 
 pickMaster :: [Master] -> [BS.ByteString] -> Master
-pickMaster ms k = if Prelude.length matched > 0 then head matched else dummy
+pickMaster ms k =
+            case matched of
+                [] -> dummy
+                a:_ -> a
             where matched = filter ( matchMaster k ) ms
                   a = last ms
                   dummy = f a
@@ -112,11 +115,13 @@ parseMaster ks lines delim = ms ++ [makeDummy ms delim]
 makeDummy :: [Master] -> String -> Master
 makeDummy ms "" = Master k [ BS.pack $ take y ( repeat '_' ) | y <- x ]
                where x = maxLengths [ getValueLength m | m <- ms ]
-                     h = head ms
+                     h = case ms of
+                        a:_ -> a
                      k = f h
                      f (Master a _) = a
 makeDummy ms str = Master k [ BS.pack str | y <- (g h) ]
-               where h = head ms
+               where h = case ms of
+                        a:_ -> a
                      k = f h
                      f (Master a _) = a
                      g (Master _ b) = b
