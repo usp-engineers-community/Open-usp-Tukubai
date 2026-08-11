@@ -7,6 +7,7 @@ import Control.Monad
 import Data.ByteString.Lazy.Char8 as BS hiding (count,reverse,init,filter,drop,zip)
 import Control.Applicative hiding ((<|>), many)
 import Data.Time
+import Data.Time.Calendar.Month
 import Data.Time.Format (parseTimeM, defaultTimeLocale)
 import Text.Printf
 import Data.List as DL
@@ -72,7 +73,7 @@ showUsage = do System.IO.hPutStr stderr ("Usage    : \n" ++
                               "         mdate -f -e <f>m ±<dif>       : 月の加算展開\n"++
                               "         mdate -f -ly <f>m             : 前年月\n"++
                               "\n"++
-                              "Version  : Mon Aug 10 22:55:58 JST 2026\n" ++
+                              "Version  : Wed Aug 12 06:32:35 JST 2026\n" ++
                               "Open usp Tukubai (LINUX+FREEBSD)\n")
 
 main :: IO ()
@@ -94,6 +95,19 @@ directMode (MonthAhead r) = BS.putStrLn $ monthAhead r
 directMode (EnumMDiff r) = BS.putStrLn $ enumMDiff r
 directMode (MonthDiff str1 str2) = BS.putStrLn $ monthDiff str1 str2
 directMode (LastYearMonth m) = System.IO.putStrLn $ printf "%06d" m
+directMode (FEnumMonthRange f1 f2 file) = do
+        case (maybe_from_month, maybe_to_month) of
+          (Just from_month, Just to_month) ->
+                forM_ (DL.map (\n ->
+                        formatTime defaultTimeLocale "%Y%m" $
+                        addMonths n from_month) $
+                      [0 .. (diffMonths to_month from_month)]) $
+                      (\month -> do
+                        BS.putStr $ BS.pack $ month ++ " ")
+          _ -> showUsage
+    where maybe_from_month = parseTimeM True defaultTimeLocale "%Y%m" (show f1) :: Maybe Data.Time.Calendar.Month.Month
+          maybe_to_month   = parseTimeM True defaultTimeLocale "%Y%m" (show f2) :: Maybe Data.Time.Calendar.Month.Month
+-- $ parseTimeM True defaultTimeLocale "%Y%m" 
 directMode op = print op
 
 filterMode :: Opts -> IO ()
@@ -279,8 +293,12 @@ filterEnumDayDiff :: Int -> Int -> BS.ByteString -> IO ()
 filterEnumDayDiff pos diff cs = BS.putStr $ BS.unlines [ f pos diff (mwords ln) | ln <- (BS.lines cs) ]
             where f pos diff wds = BS.unwords [ g pos diff w | w <- zip [1..] wds ]
                   g pos diff (n,wd) = if pos == n
-                                 then BS.unwords $ if wd == (DL.head gain) then gain else (wd : gain)
-                                 else wd
+                                 then BS.unwords $
+                                 case gain of
+                                   [] ->  []
+                                   gain:gain' ->
+                                     if wd == gain then gain' else (wd : gain')
+                                     else wd
                                  where gain = [ toDayStr d | d <- enumDiff (DayRange (BS.unpack wd) diff) ]
 
 filterWeek :: Int -> BS.ByteString -> IO ()
