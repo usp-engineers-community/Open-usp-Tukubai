@@ -38,7 +38,7 @@ THE SOFTWARE.
 showUsage :: IO ()
 showUsage = do
     System.IO.hPutStr stderr "Usage    : cjoin1 [+ng] <key=n> <master> [<tran>]\n"
-    System.IO.hPutStr stderr "Version  : Mon Aug 10 22:43:26 JST 2026\n"
+    System.IO.hPutStr stderr "Version  : Wed Aug 12 06:48:18 JST 2026\n"
     System.IO.hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD)\n"
 
 main :: IO ()
@@ -93,6 +93,7 @@ myWords line = BS.split ' ' line
 
 pickMaster :: [Master] -> [BS.ByteString] -> Maybe Master
 pickMaster ms k = case filter ( matchMaster k ) ms of
+        []  -> Nothing
         a:_ -> Just a
 
 matchMaster k (Master a b) = k == a
