@@ -1,5 +1,6 @@
 #!/usr/bin/env runghc
 import System.Environment
+import System.Exit
 import System.IO
 import Data.Char
 
@@ -11,7 +12,7 @@ written  by Hinata Yanagi
 
 The MIT License
 
-Copyright (C) 2025 Universal Shell Programming Laboratory
+Copyright (C) 2026 Universal Shell Programming Laboratory
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -37,7 +38,7 @@ showUsage = do
     System.IO.hPutStr stderr "Usage   : keta [n1 n2 .. <filename>]\n"
     System.IO.hPutStr stderr "          keta -v [<filename>]\n"
     System.IO.hPutStr stderr "          keta -- [<filename>]\n"
-    System.IO.hPutStr stderr "Version : Mon Jan 20 17:18:16 JST 2025\n"
+    System.IO.hPutStr stderr "Version : Sun Sep  6 01:36:51 JST 2026\n"
     System.IO.hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD)\n"
 
 main :: IO ()
@@ -49,7 +50,11 @@ main = do args <- getArgs
               ("-v":as)     -> do cs <- readF (getFilename as) 
                                   let wlns = [ words ln | ln <- lines cs ]
                                   let widths = map (wordsWid) wlns
-                                  putStrLn $ unwords $ map show $ head $ solveWid widths
+                                  case solveWid widths of
+                                    [] ->
+                                      exitSuccess
+                                    x:_ ->
+                                      putStrLn $ unwords $ map show x
               ("--":as)  -> main' True  $ parseOpt (Opt [] "-") as
               _          -> main' False $ parseOpt (Opt [] "-") args
 
@@ -57,7 +62,10 @@ main' :: Bool -> Opt -> IO ()
 main' inv (Opt [] fname) = do cs <- readF fname
                               let wlns = [ words ln | ln <- lines cs ]
                               let widths = map (wordsWid) wlns
-                              let outwid = head $ solveWid widths
+                              let outwid =
+                                    case solveWid widths of
+                                      [] -> []
+                                      width:_ -> width
                               let outwid' = if inv then map (\x -> x*(-1)) outwid else outwid
                               putStr $ unlines $ keta outwid' (zip widths wlns)
 main' _ (Opt fs fname) = do cs <- readF fname
@@ -69,10 +77,17 @@ data Opt = Opt [Int] String
 
 parseOpt :: Opt -> [String] -> Opt
 parseOpt opt [] = opt
-parseOpt (Opt fs fname) (a:as)
-  | isDigits a                           = parseOpt (Opt (fs ++ [read a]) fname) as
-  | head a == '-' && isDigits (drop 1 a) = parseOpt (Opt (fs ++ [read a]) fname) as
-  | otherwise                            = parseOpt (Opt fs a) as
+parseOpt (Opt fs fname) (a:as) =
+  if isDigits a then
+    parseOpt (Opt (fs ++ [read a]) fname) as
+  else
+    case a of
+      [] -> parseOpt (Opt fs a) as
+      x:_ ->
+        if isDigits (drop 1 a) then
+          parseOpt (Opt (fs ++ [read a]) fname) as
+        else
+          parseOpt (Opt fs a) as
 
 isDigits :: String -> Bool
 isDigits [ch]    = ch >= '0' && ch <= '9'
@@ -106,6 +121,7 @@ wordsWid :: [String] -> [Int]
 wordsWid ws = map wordWid ws
 
 solveWid :: [[Int]] -> [[Int]]
+solveWid []       = [[]]
 solveWid (a:[])   = [a]
 solveWid (a:b:ks) = solveWid $ (takeMaxes a b) : ks
 
