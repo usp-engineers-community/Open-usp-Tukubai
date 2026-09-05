@@ -1,5 +1,6 @@
 #!/usr/bin/env runghc
 import System.Environment
+import System.Exit
 import System.IO
 import Control.Monad
 import Control.Applicative hiding ((<|>), many)
@@ -39,7 +40,7 @@ THE SOFTWARE.
 showUsage :: IO ()
 showUsage = do
     System.IO.hPutStr stderr "Usage    : cjoin2 [+ng] <key=n> <master> [<tran>]\n"
-    System.IO.hPutStr stderr "Version  : Mon Aug 10 22:43:26 JST 2026\n"
+    System.IO.hPutStr stderr "Version  : Sun Sep  6 06:49:56 JST 2026\n"
     System.IO.hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD)\n"
 
 main :: IO ()
@@ -113,12 +114,22 @@ parseMaster ks lines delim = ms ++ [makeDummy ms delim]
                              f n ws = Master (take n ws) (drop n ws)
 
 makeDummy :: [Master] -> String -> Master
-makeDummy ms "" = Master k [ BS.pack $ take y ( repeat '_' ) | y <- x ]
-               where x = maxLengths [ getValueLength m | m <- ms ]
-                     h = case ms of
-                        a:_ -> a
-                     k = f h
-                     f (Master a _) = a
+makeDummy ms "" =
+  case k of
+    Nothing ->
+      Master [] []
+    Just k' ->
+      Master k' [ BS.pack $ take y ( repeat '_' ) | y <- x ]
+    where x = maxLengths [ getValueLength m | m <- ms ]
+          h = case ms of
+             [] -> Nothing
+             a:_ -> Just a
+          k = f h
+          f master' =
+            case master' of 
+              Nothing -> Nothing
+              Just (Master a _) -> Just a
+
 makeDummy ms str = Master k [ BS.pack str | y <- (g h) ]
                where h = case ms of
                         a:_ -> a

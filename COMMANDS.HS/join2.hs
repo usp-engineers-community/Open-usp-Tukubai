@@ -1,5 +1,6 @@
 #!/usr/bin/env runghc
 import System.Environment
+import System.Exit
 import System.IO
 import Text.ParserCombinators.Parsec
 import Control.Monad
@@ -15,7 +16,7 @@ written  by Hinata Yanagi
 
 The MIT License
 
-Copyright (C) 2025 Universal Shell Programming Laboratory
+Copyright (C) 2026 Universal Shell Programming Laboratory
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -39,7 +40,7 @@ THE SOFTWARE.
 showUsage :: IO ()
 showUsage = do
     System.IO.hPutStr stderr "Usage    : join2 [+ng] <key=n> <master> [<tran>]\n"
-    System.IO.hPutStr stderr "Version  : Mon Jan 20 17:18:16 JST 2025\n"
+    System.IO.hPutStr stderr "Version  : Sun Sep  6 06:49:56 JST 2026\n"
     System.IO.hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD)\n"
 
 main :: IO ()
@@ -77,9 +78,16 @@ parseKey str = case parse keys "" str of
                     Left  err -> Error (show err)
 
 mainProc' :: Keys -> BS.ByteString -> BS.ByteString -> String -> IO ()
-mainProc' (Keys ks) ms ts delim = out (join2 (makeDummy mlines delim) (head mlines) (drop 1 mlines) tlines)
-                               where mlines = parseMaster ks (BS.lines ms) delim
-                                     tlines = parseTran ks (BS.lines ts)
+mainProc' (Error string) ms ts delim =
+    System.IO.hPutStrLn stderr string
+mainProc' (Keys ks) ms ts delim =
+  case mlines of
+    [] -> 
+      exitSuccess
+    mline:_ ->
+      out (join2 (makeDummy mlines delim) mline (drop 1 mlines) tlines)
+  where mlines = parseMaster ks (BS.lines ms) delim
+        tlines = parseTran ks (BS.lines ts)
 
 out :: [OutTran] -> IO ()
 out []               = do return ()
