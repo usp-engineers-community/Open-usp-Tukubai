@@ -5,7 +5,7 @@ import Text.ParserCombinators.Parsec
 import Control.Monad
 import Data.Char
 import Control.Applicative hiding ((<|>)) 
-import Data.ByteString.Lazy.Char8 as BS hiding (filter,head,last,map,zip,repeat,init)
+import Data.Text as T hiding (filter,head,last,map,zip,repeat,init)
 
 {--
 self（Open usp Tukubai）
@@ -39,7 +39,7 @@ THE SOFTWARE.
 showUsage :: IO ()
 showUsage = do
     System.IO.hPutStr stderr "Usage    : self <f1> <f2> ... [<file>]\n"
-    System.IO.hPutStr stderr "Version  : Sat Sep  5 23:42:53 JST 2026\n"
+    System.IO.hPutStr stderr "Version  : Sun Sep  6 01:13:37 JST 2026\n"
     System.IO.hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD)\n"
 
 main :: IO ()
@@ -54,30 +54,35 @@ main = do
       _             -> readF (getFileName os) >>= mainProc (getFields os)
                                      where os = setOpts args
 
-readF :: String -> IO BS.ByteString
-readF "-" = BS.getContents
-readF f   = BS.readFile f
+readF :: String -> IO T.Text
+readF "-" = do
+  string <- getContents
+  return $ T.pack string
+
+readF f   = do
+  string <- readFile f
+  return $ T.pack string
 
 ------------
 -- output --
 ------------
 
 directMode :: [String] -> IO ()
-directMode as = mainProc fs (BS.pack str) 
+directMode as = mainProc fs (T.pack str) 
                 where str = last as
                       fs = getFields $ setOpts (init as)
 
-mainProc :: [Field] -> BS.ByteString -> IO ()
-mainProc fs cs = BS.putStr $ BS.unlines [ lineProc nfs c nf | c <- BS.lines cs ]
+mainProc :: [Field] -> T.Text -> IO ()
+mainProc fs cs = putStr $ T.unpack $ T.unlines [ lineProc nfs c nf | c <- T.lines cs ]
                    where nf =
-                           case BS.lines cs of
+                           case T.lines cs of
                            [] -> error "field index exceeds the length"
                            x:xs -> Prelude.length $ myWords x
                          nfs = [ normalizeField f nf | f <- fs ]
 
-myWords :: BS.ByteString -> [BS.ByteString]
-myWords line = filter (/= x) $ BS.split ' ' line
-               where x = BS.pack ""
+myWords :: T.Text -> [T.Text]
+myWords line = filter (/= x) $ T.split (\character -> character == ' ') line
+               where x = T.pack ""
 
 normalizeField :: Field -> Int -> Field
 normalizeField (SimpleField x) nf     = SimpleField (solveNF x nf)
@@ -88,25 +93,25 @@ normalizeField (SubSubField x y z) nf = SubSubField (solveNF x nf) y z
 solveNF :: Int -> Int -> Int
 solveNF x nf = if x >= 0 then x else x + nf + 1
 
-lineProc :: [Field] -> BS.ByteString -> Int -> BS.ByteString
-lineProc fs ln nf = BS.unwords [ getWords f ws | f <- fs ]
+lineProc :: [Field] -> T.Text -> Int -> T.Text
+lineProc fs ln nf = T.unwords [ getWords f ws | f <- fs ]
                     where ws = ln : (myWords ln)
 
-getWords :: Field -> [BS.ByteString] -> BS.ByteString
+getWords :: Field -> [T.Text] -> T.Text
 getWords (SimpleField n) ws     =
   if Prelude.length ws > n then ws !! n else error "field index exceeds the length"
-getWords (Range x y) ws         = BS.unwords $ Prelude.take (y-x+1) ( Prelude.drop x ws )
+getWords (Range x y) ws         = T.unwords $ Prelude.take (y-x+1) ( Prelude.drop x ws )
 getWords (SubField x y) ws      = cutWord w y 0 where w = ws !! x
 getWords (SubSubField x y z) ws = cutWord w y z where w = ws !! x
 
-cutWord :: BS.ByteString -> Int -> Int -> BS.ByteString
-cutWord str frm 0 = cutWordFrm (BS.unpack str) frm 0
-cutWord str frm to = BS.pack $ cutWordTo x to 0 
-                     where x = BS.unpack $ cutWordFrm (BS.unpack str) frm 0
+cutWord :: T.Text -> Int -> Int -> T.Text
+cutWord str frm 0 = cutWordFrm (T.unpack str) frm 0
+cutWord str frm to = T.pack $ cutWordTo x to 0 
+                     where x = T.unpack $ cutWordFrm (T.unpack str) frm 0
 
-cutWordFrm :: String -> Int -> Int -> BS.ByteString
+cutWordFrm :: String -> Int -> Int -> T.Text
 cutWordFrm [] num cutted = error "wrong cut point"
-cutWordFrm str num cutted = if cutted == num-1 then BS.pack str else cutWordFrm s num (cutted+n)
+cutWordFrm str num cutted = if cutted == num-1 then T.pack str else cutWordFrm s num (cutted+n)
                          where split = takeChar str
                                c = fst split
                                s = snd split
@@ -167,16 +172,16 @@ showOpts :: [Option] -> IO ()
 showOpts opts = print [ f opt | opt <- opts ]
                 where f (Select x) = f' x
                       f (FileName x) = "file:" ++ x
-                      f' (SimpleField s) = show s
-                      f' (Range s t) = (show s) ++ "/" ++ (show t)
-                      f' (SubField s t) = (show s) ++ "." ++ (show t)
-                      f' (SubSubField s t u) = (show s) ++ "." ++ (show t) ++ "." ++ (show u)
+                      f' (SimpleField s) = Prelude.show s
+                      f' (Range s t) = (Prelude.show s) ++ "/" ++ (Prelude.show t)
+                      f' (SubField s t) = (Prelude.show s) ++ "." ++ (Prelude.show t)
+                      f' (SubSubField s t u) = (Prelude.show s) ++ "." ++ (Prelude.show t) ++ "." ++ (Prelude.show u)
 
 setOpts :: [String] -> [Option]
 setOpts as = [ fnc a | a <- as ]
              where fnc str = case parse parseOption "" str of
                                   Right opt -> opt
-                                  Left err -> Error ( show err ) 
+                                  Left err -> Error ( Prelude.show err ) 
 
 parseOption :: Parser Option
 parseOption = try(parseSelect) <|> try(parseFileName)
