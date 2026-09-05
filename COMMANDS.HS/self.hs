@@ -15,7 +15,7 @@ written  by Hinata Yanagi
 
 The MIT License
 
-Copyright (C) 2025 Universal Shell Programming Laboratory
+Copyright (C) 2026 Universal Shell Programming Laboratory
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -39,7 +39,7 @@ THE SOFTWARE.
 showUsage :: IO ()
 showUsage = do
     System.IO.hPutStr stderr "Usage    : self <f1> <f2> ... [<file>]\n"
-    System.IO.hPutStr stderr "Version  : Mon Jan 20 17:18:17 JST 2025\n"
+    System.IO.hPutStr stderr "Version  : Sat Sep  5 23:42:53 JST 2026\n"
     System.IO.hPutStr stderr "Open usp Tukubai (LINUX+FREEBSD)\n"
 
 main :: IO ()
@@ -69,7 +69,10 @@ directMode as = mainProc fs (BS.pack str)
 
 mainProc :: [Field] -> BS.ByteString -> IO ()
 mainProc fs cs = BS.putStr $ BS.unlines [ lineProc nfs c nf | c <- BS.lines cs ]
-                   where nf = Prelude.length $ myWords $ head ( BS.lines cs)
+                   where nf =
+                           case BS.lines cs of
+                           [] -> error "field index exceeds the length"
+                           x:xs -> Prelude.length $ myWords x
                          nfs = [ normalizeField f nf | f <- fs ]
 
 myWords :: BS.ByteString -> [BS.ByteString]
@@ -90,7 +93,8 @@ lineProc fs ln nf = BS.unwords [ getWords f ws | f <- fs ]
                     where ws = ln : (myWords ln)
 
 getWords :: Field -> [BS.ByteString] -> BS.ByteString
-getWords (SimpleField n) ws     = ws !! n
+getWords (SimpleField n) ws     =
+  if Prelude.length ws > n then ws !! n else error "field index exceeds the length"
 getWords (Range x y) ws         = BS.unwords $ Prelude.take (y-x+1) ( Prelude.drop x ws )
 getWords (SubField x y) ws      = cutWord w y 0 where w = ws !! x
 getWords (SubSubField x y z) ws = cutWord w y z where w = ws !! x
